@@ -3,9 +3,11 @@
 namespace App\Repositories\Focus\projectstock;
 
 use App\Exceptions\GeneralException;
+use App\Models\account\Account;
 use App\Models\items\ProjectstockItem;
 use App\Models\projectstock\Projectstock;
-use App\Repositories\Accounting;
+use App\Models\transaction\Transaction;
+use App\Models\transactioncategory\Transactioncategory;
 use App\Repositories\BaseRepository;
 use App\Repositories\Focus\product\ProductRepository;
 use DB;
@@ -16,8 +18,6 @@ use Illuminate\Support\Arr;
  */
 class ProjectStockRepository extends BaseRepository
 {
-    use Accounting;
-
     /**
      * Associated Repository Model.
      */
@@ -30,9 +30,12 @@ class ProjectStockRepository extends BaseRepository
      * @return mixed
      */
     public function getForDataTable()
-    { 
+    {
+        $q = $this->query();
+
+        // 
         
-        return $this->query();
+        return $q->get();
     }
 
     /**
@@ -71,7 +74,9 @@ class ProjectStockRepository extends BaseRepository
 
             $prod_variation = $issue_item->productvariation;
             // skip service product
-            if ($prod_variation->product->stock_type == 'service') continue;
+            if ($prod_variation->product){
+                if($prod_variation->product->stock_type == 'service') continue;
+            } 
                 
             // apply unit conversion
             $units = $prod_variation->product->units;
@@ -97,12 +102,12 @@ class ProjectStockRepository extends BaseRepository
         $result->save();
 
         /** accounting */
-        $this->post_projectstock_issuance($result);
+        $this->post_transaction($result);
 
-        if ($result) {
-            DB::commit();
-            return $result;
-        }
+        DB::commit();
+        if ($result) return $result;
+
+        throw new GeneralException('Error Creating Lead');
     }
 
     /**
@@ -116,6 +121,8 @@ class ProjectStockRepository extends BaseRepository
     public function update(Projectstock $projectstock, array $input)
     {
         dd($input);
+
+        throw new GeneralException(trans('exceptions.backend.productcategories.update_error'));
     }
 
     /**
@@ -150,12 +157,51 @@ class ProjectStockRepository extends BaseRepository
             }   
         }
 
-        $projectstock->transactions()->delete();
-        $projectstock->items()->delete();
         $result = $projectstock->delete();
         if ($result) {
             DB::commit(); 
             return true;
         }
-    }    
+                
+        throw new GeneralException(trans('exceptions.backend.productcategories.delete_error'));
+    }
+
+    /**
+     * Post Inventory and WIP Account transactions
+     * @param \App\Models\projectstock\Projectstock $projectstock
+     * @return void
+     */
+    public function post_transaction($projectstock)
+    {
+        // credit Inventory (stock) Account
+        $account = Account::where('system', 'stock')->first('id');
+        $tr_category = Transactioncategory::where('code', 'stock')->first(['id', 'code']);
+        $tid = Transaction::where('ins', auth()->user()->ins)->max('tid') + 1;
+        $cr_data = [
+            'tid' => $tid,
+            'account_id' => $account->id,
+            'trans_category_id' => $tr_category->id,
+            'credit' => $projectstock->total,
+            'tr_date' => $projectstock->date,
+            'due_date' => $projectstock->date,
+            'note' => $projectstock->note,
+            'user_id' => $projectstock->user_id,
+            'ins' => $projectstock->ins,
+            'tr_type' => $tr_category->code,
+            'tr_ref' => $projectstock->id,
+            'user_type' => 'customer',
+            'is_primary' => 1,
+        ];
+        Transaction::create($cr_data);
+
+        // debit WIP Account
+        unset($cr_data['credit'], $cr_data['is_primary']);
+        $account = Account::where('system', 'wip')->first('id');
+        $dr_data = array_replace($cr_data, [
+            'account_id' =>  $account->id,
+            'debit' => $projectstock['total'],
+        ]);
+        Transaction::create($dr_data);
+        aggregate_account_transactions();
+    }
 }

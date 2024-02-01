@@ -27,7 +27,9 @@ class LeadRepository extends BaseRepository
      */
     public function getForDataTable()
     {
-        return $this->query();
+        $q = $this->query();
+
+        return $q->get();
     }
 
     /**
@@ -69,7 +71,7 @@ class LeadRepository extends BaseRepository
             $quote->update(['customer_id' => $lead->client_id, 'branch_id' => $lead->branch_id]);
             if ($quote->project) $quote->project->update(['customer_id' => $lead->client_id, 'branch_id' => $lead->branch_id]);
         }
-
+        
         if ($result) {
             DB::commit();
             return true;

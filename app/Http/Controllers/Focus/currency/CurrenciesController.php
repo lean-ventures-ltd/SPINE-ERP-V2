@@ -90,12 +90,8 @@ class CurrenciesController extends Controller
         ]);
         $input = $request->except(['_token', 'ins']);
         $input['ins'] = auth()->user()->ins;
-        try {
-            //Create the model using repository create method
-            $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Currencies', $th);
-        }
+        //Create the model using repository create method
+        $this->repository->create($input);
         //return with successfull message
         return new RedirectResponse(route('biller.currencies.index'), ['flash_success' => trans('alerts.backend.currencies.created')]);
     }
@@ -132,12 +128,8 @@ class CurrenciesController extends Controller
         ]);
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
-        try {
-            //Update the model using repository update method
-            $this->repository->update($currency, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Currencies', $th);;
-        }
+        //Update the model using repository update method
+        $this->repository->update($currency, $input);
         //return with successfull message
         return new RedirectResponse(route('biller.currencies.index'), ['flash_success' => trans('alerts.backend.currencies.updated')]);
     }
@@ -151,16 +143,11 @@ class CurrenciesController extends Controller
      */
     public function destroy(Currency $currency, ManageCompanyRequest $request)
     {
-       try {
-         //Calling the delete method on repository
-         $this->repository->delete($currency);
-       } catch (\Throwable $th) {
-        return errorHandler('Error Deleting Currencies', $th);
-       }
+        //Calling the delete method on repository
+        $result = $this->repository->delete($currency);
         //returning with successfull message
-        // if ($result) return new RedirectResponse(route('biller.currencies.index'), ['flash_success' => trans('alerts.backend.currencies.deleted')]);
-        // return errorHandler('Error Deleting Currencies', $th);
-        return new RedirectResponse(route('biller.currencies.index'), ['flash_success' => trans('alerts.backend.currencies.deleted')]);
+        if ($result) return new RedirectResponse(route('biller.currencies.index'), ['flash_success' => trans('alerts.backend.currencies.deleted')]);
+        return new RedirectResponse(route('biller.currencies.index'), ['flash_error' => trans('meta.delete_error')]);
     }
 
     /**

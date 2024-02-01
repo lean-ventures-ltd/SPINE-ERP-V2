@@ -71,7 +71,7 @@ class Salary extends Model
     {
             parent::boot();
             static::addGlobalScope('ins', function($builder){
-            $builder->where('ins', '=', auth()->user()->ins);
+            $builder->where('salary.ins', '=', auth()->user()->ins);
     });
     }
 }

@@ -86,12 +86,8 @@ class BanksController extends Controller
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
         $input['ins'] = auth()->user()->ins;
-        try {
-            //Create the model using repository create method
-            $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Bank!', $th);
-        }
+        //Create the model using repository create method
+        $this->repository->create($input);
         //return with successfull message
         return new RedirectResponse(route('biller.banks.index'), ['flash_success' => trans('alerts.backend.banks.created')]);
     }
@@ -124,13 +120,8 @@ class BanksController extends Controller
         ]);
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
-        
-        try {
-            //Update the model using repository update method
+        //Update the model using repository update method
         $this->repository->update($bank, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Bank!', $th);
-        }
         //return with successfull message
         return new RedirectResponse(route('biller.banks.index'), ['flash_success' => trans('alerts.backend.banks.updated')]);
     }
@@ -144,13 +135,8 @@ class BanksController extends Controller
      */
     public function destroy(Bank $bank, ManageCompanyRequest $request)
     {
-        
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($bank);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Bank!', $th);
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($bank);
         //returning with successfull message
         return new RedirectResponse(route('biller.banks.index'), ['flash_success' => trans('alerts.backend.banks.deleted')]);
     }

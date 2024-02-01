@@ -15,7 +15,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="base-tab2" data-toggle="tab" aria-controls="tab2" href="#tab2" role="tab"
-                    aria-selected="false"><span>Tx Monthly Allowances</span>
+                    aria-selected="false"><span>Taxable Allowances</span>
                     <i class="text-danger fa fa-times float-right cancel_allowance" aria-hidden="true"></i>
                     <i class="text-success fa fa-check float-right d-none tick_allowance" aria-hidden="true"></i>
                 </a>
@@ -23,7 +23,7 @@
             <li class="nav-item">
                 <a class="nav-link" id="base-tab3" data-toggle="tab" aria-controls="tab3" href="#tab3" role="tab"
                     aria-selected="false">
-                    <span>Tx Monthly Deductions</span>
+                    <span>Taxable Deductions</span>
                     <i class="text-danger fa fa-times float-right cancel_deduction" aria-hidden="true"></i>
                     <i class="text-success fa fa-check float-right d-none tick_deduction" aria-hidden="true"></i>
                 </a>
@@ -39,7 +39,7 @@
             <li class="nav-item">
                 <a class="nav-link" id="base-tab7" data-toggle="tab" aria-controls="tab7" href="#tab7" role="tab"
                     aria-selected="false">
-                    <span>NHIF</span>
+                    <span>NHIF & Housing Levy</span>
                     <i class="text-danger fa fa-times float-right cancel_nhif" aria-hidden="true"></i>
                     <i class="text-success fa fa-check float-right d-none tick_nhif" aria-hidden="true"></i>
                 </a>
@@ -141,19 +141,21 @@
         };
 
         const Index = {
-            payroll_items: @json($payroll->payroll_items),
+            payroll_items: @json($payrollItems),
             salary_total: @json($payroll->salary_total),
             allowance_total: @json($payroll->allowance_total),
+            totalGrossPay: @json($payroll->gross_post_allowances),
             deduction_total: @json($payroll->deduction_total),
             paye_total: @json($payroll->paye_total),
             total_nhif: @json($payroll->total_nhif),
             other_deductions_total: @json($payroll->other_deductions_total),
             other_benefits_total: @json($payroll->other_benefits_total),
-            total_netpay: @json($payroll->total_netpay),
+            total_salary_after_bnd: @json($payroll->total_salary_after_bnd),
             init() {
+                // console.table(this.payroll_items);
             $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
             $('#employeeTbl').on('keyup', '.absent, .present, .rate, .rate-month, .total', this.employeeChange);
-            $('#employeeTbl').on('change', '.absent_rate', this.absentRateChange);
+            $('#employeeTbl').on('change', '.absent_deduction', this.absentRateChange);
             $('.ab-days').on('keyup', this.absentChange);
             $('#allowanceModal').on('keyup', '.ha, .oa, .ta', this.houseTransportChange);
             $('#deductionTbl').on('keyup', '.deduction', this.deductionChange);
@@ -185,6 +187,8 @@
                         $('#allowanceTbl tbody').html('');
                         this.payroll_items.forEach((v, i) => $('#allowanceTbl tbody').append(Index.allowanceRow(v, i)));
                         $('#allowance_total').val(accounting.formatNumber(this.allowance_total));
+                        $('#totalGrossPay').val(accounting.formatNumber(this.totalGrossPay));
+                        console.log("TOTAL ALLOWANCE: " + this.allowance_total);
                         $('.tick_allowance').removeClass('d-none');
                         $('.cancel_allowance').addClass('d-none');
                         $('.submit-allowances').addClass('d-none');
@@ -210,7 +214,7 @@
                                     $('.cancel_other_deductions').addClass('d-none');
                                     $('.tick_other_deductions').removeClass('d-none');
                                     $('.submit-otherbenefits').addClass('d-none');
-                                    if(this.total_netpay && this.total_netpay.length){
+                                    if(this.total_salary_after_bnd && this.total_salary_after_bnd.length){
                                         $('.cancel_total_netpay').addClass('d-none');
                                         $('.tick_total_netpay').removeClass('d-none');
                                         $('.submit-netpay').addClass('d-none');
@@ -256,10 +260,11 @@
 
                 const cal_total_allowance = cal_house_allowance + cal_transport_allowance + other_allowance;
                 const total_basic_allowance = cal_total_allowance + basic;
-                row.find('.house_allowance').val(accounting.unformat(cal_house_allowance));
-                row.find('.transport_allowance').val(accounting.unformat(cal_transport_allowance));
-                row.find('.total_allowance').val(accounting.unformat(cal_total_allowance));
-                row.find('.total_basic_allowance').val(accounting.unformat(total_basic_allowance));
+                row.find('.house_allowance').val(accounting.unformat(cal_house_allowance).toFixed(2));
+                row.find('.transport_allowance').val(accounting.unformat(cal_transport_allowance).toFixed(2));
+                row.find('.total_allowance').val(accounting.unformat(cal_total_allowance).toFixed(2));
+                row.find('.total_basic_allowance').val(accounting.unformat(total_basic_allowance).toFixed(2));
+                row.find('.basic_plus_allowance').val(accounting.unformat(total_basic_allowance).toFixed(2));
 
                 Index.calallowanceTotal();
             },
@@ -270,44 +275,71 @@
 
 
                 const absent = accounting.unformat(row.find('.absent').val());
+
                 const rate = accounting.unformat(row.find('.rate').val());
-                const absent_rate = accounting.unformat(row.find('.absent_rate').val());
-                const basic_pay = accounting.unformat(row.find('.basic_salary').val());
+
+                const absent_rate = accounting.unformat(row.find('.absent_deduction').val());
+
+                const fixed_salary = accounting.unformat(row.find('.fixed_salary').val());
+
+                const hourly_salary = accounting.unformat(row.find('.basic_hourly_salary').val());
+
                 const working_days = $('.working_days').val();
+
                 const month_days = $('.month_days').val();
-                const absent_amount_deduct = basic_pay / month_days * absent;
-                const total_basic_salary = basic_pay - absent_amount_deduct;
+
+                const absent_amount_deduct = fixed_salary / month_days * absent;
+
+                const total_basic_salary = fixed_salary + hourly_salary - absent_amount_deduct;
+
+                // console.table({
+                //     'Fixed Salary' :  fixed_salary,
+                //     "Hourly Salary" : hourly_salary,
+                //     "Total Salary" : total_basic_salary
+                // });
+
                 const days_to_be_paid = month_days - absent;
-                const rate_per_day = basic_pay / month_days;
+
+                const rate_per_day = fixed_salary / month_days;
+
                 const month_rate = days_to_be_paid * rate_per_day;
 
-                row.find('.rate').val(accounting.unformat(rate_per_day));
-                row.find('.absent_rate').val(accounting.unformat(absent_amount_deduct));
+
+                row.find('.rate').val(accounting.unformat(rate_per_day).toFixed(2));
+                row.find('.absent_deduction').val(accounting.unformat(absent_amount_deduct).toFixed(2));
                 row.find('.rate-month').val(accounting.unformat(month_rate));
-                row.find('.total').val(accounting.unformat(month_rate));
+                row.find('.total').val(accounting.unformat(total_basic_salary).toFixed(2));
                 Index.calTotal();
 
             },
             absentRateChange(){
                 const el = $(this);
                 const row = el.parents('tr:first');
-               // row.find('.absent_rate').val('');
+               // row.find('.absent_deduction').val('');
                 const absent = accounting.unformat(row.find('.absent').val());
                 const rate = accounting.unformat(row.find('.rate').val());
-                const absent_rate = accounting.unformat(row.find('.absent_rate').val());
+                const absent_rate = accounting.unformat(row.find('.absent_deduction').val());
                 const basic_pay = accounting.unformat(row.find('.basic_salary').val());
                 const working_days = $('.working_days').val();
                 const month_days = $('.month_days').val();
                 const days_to_be_paid = month_days - absent;
                 const absent_amount = absent_rate;
                 const month_rate = basic_pay - absent_rate;
+
                 row.find('.total').val(accounting.unformat(month_rate));
-                //row.find('.absent_rate').val(row.find('.absent_rate').val());
+                //row.find('.absent_deduction').val(row.find('.absent_deduction').val());
                 Index.calTotal();
             },
             deductionChange() {
                 const el = $(this);
                 const row = el.parents('tr:first');
+
+                const deduction = accounting.unformat(row.find('.deduction').val());
+                const basic_plus_allowance = accounting.unformat(row.find('#basic_plus_allowance').val());
+                const netPay = basic_plus_allowance - deduction;
+                row.find('#net_post_tx_deduction').val(accounting.formatNumber(netPay));
+
+
                 Index.calTxDeductions();
 
             },
@@ -315,16 +347,24 @@
                 let grandTotal = 0;
                 $('#employeeTbl tbody tr').each(function() {
                     if (!$(this).find('.absent').val()) return;
-                    const absent = accounting.unformat($(this).find('.absent').val());
-                    const basic_pay = accounting.unformat($(this).find('.basic_salary').val());
-                    const working_days = $('.working_days').val();
 
-                    const absent_amount = basic_pay / working_days * absent;
-                    const total_basic_salary = basic_pay - absent_amount;
+                    const basic_pay = accounting.unformat($(this).find('.fixed_salary').val());
+                    const hourly_pay = accounting.unformat($(this).find('.basic_hourly_salary').val());
+                    const absent = accounting.unformat($(this).find('.absent_deduction').val());
+
+                    const total_basic_salary = basic_pay + hourly_pay - absent;
+
+                    // console.table({
+                    //     'Basic pay' : basic_pay,
+                    //     'Hourly pay' : hourly_pay,
+                    //     'Absent' : absent,
+                    //     'Salary' : total_basic_salary,
+                    // });
+
                     grandTotal += total_basic_salary;
                 });
                 //
-                $('#salary_total').val(accounting.unformat(grandTotal));
+                $('#salary_total').val(accounting.unformat(grandTotal).toFixed(2));
             },
             calTxDeductions() {
                 let grandTotal = 0;
@@ -359,6 +399,10 @@
                 const loan = accounting.unformat(row.find('.loan').val());
                 const advance = accounting.unformat(row.find('.advance').val());
                 const others = accounting.unformat(row.find('.other-deductions').val());
+                const netpay = accounting.unformat(row.find('#netpay').val());
+
+                const pay_after_bnd = netpay + benefits + otherallowances - loan - advance - others;
+                row.find('.net_after_bnd').val(pay_after_bnd);
 
                 row.find('.other-allow').val(accounting.unformat(otherallowances));
                 row.find('.benefits').val(accounting.unformat(benefits));
@@ -372,6 +416,7 @@
             calTotalBenefitsAndDeductions() {
                 let benefitsTotal = 0;
                 let deductionsTotal = 0;
+                let loansTotal = 0;
                 let otherAllowancesTotal = 0;
                 $('#otherBenefitsTbl tbody tr').each(function() {
 
@@ -384,6 +429,8 @@
                     const dedu = loans + advance + others;
                     benefitsTotal += net;
                     deductionsTotal += dedu;
+                    loansTotal += loans;
+                    console.log("LOANS TOTAL : " + loansTotal);
                     otherAllowancesTotal += otherallowances;
                 });
 
@@ -393,6 +440,7 @@
             },
             calallowanceTotal() {
                 let grandTotal = 0;
+                let totalGross = 0;
                 $('#allowanceTbl tbody tr').each(function() {
                     if (!$(this).find('.absent_day').val()) return;
                     const absent_day = accounting.unformat($(this).find('.absent_day').val());
@@ -403,6 +451,8 @@
                     const other_allowance = accounting.unformat($(this).find('.other_allowance').val());
                     const month_days = $('.month_days').val();
                     const working_days = $('.working_days').val();
+                    const basicPlusAllowance = accounting.unformat($(this).find('.basic_plus_allowance').val());
+                    totalGross += basicPlusAllowance;
 
                     const absent_allowance = house / month_days * absent_day;
                     const cal_house_allowance = house - absent_allowance;
@@ -413,27 +463,32 @@
                     grandTotal += cal_total_allowance;
                 });
 
-                $('#allowance_total').val(accounting.unformat(grandTotal));
+                $('#allowance_total').val(accounting.unformat(grandTotal).toFixed(2));
+                $('#totalGrossPay').val(accounting.unformat(totalGross).toFixed(2));
             },
             employeeRow(v, i) {
                 return `
                     <tr>
-                        <td>${i+1}</td>    
-                        <td>${v.employee_name}</td>    
-                        <td class="editable-cell">${accounting.formatNumber(v.basic_pay)}</td>    
-                        <td class="editable-cell">${v.absent_days}</td>      
-                        <td>${accounting.formatNumber(v.rate_per_day)}</td> 
-                        <td>${accounting.formatNumber(v.absent_rate)}</td>    
-                        <td>${accounting.formatNumber(v.basic_pay)}</td> 
-                        <td>
-                            <a href="#" class="btn btn-danger btn-sm my-1 edit" data-toggle="modal" data-target="#basicModal">
-                                <i class="fa fa-pencil" aria-hidden="true"></i> Edit
-                            </a>
-                        </td>
+                        <td>${v.employee_id}</td>
+                        <td>${v.name}</td>
+                        <td class="editable-cell">${accounting.formatNumber(v.fixed_salary)}</td>
+                        <td>${accounting.formatNumber((v.max_hourly_salary))}</td>
+                        <td>${accounting.formatNumber((v.pay_per_hr))}</td>
+                        <td>${accounting.formatNumber((v.man_hours))}</td>
+                        <td>${accounting.formatNumber((v.basic_hourly_salary))}</td>
+                        <td class="editable-cell">${v.absent_days}</td>
+                        <td>${accounting.formatNumber(v.absent_daily_deduction)}</td>
+                        <td>${accounting.formatNumber(v.absent_total_deduction)}</td>
+                        <td>${accounting.formatNumber(v.basic_salary)}</td>
+<!--                        <td>-->
+<!--                            <a href="#" class="btn btn-danger btn-sm my-1 edit" data-toggle="modal" data-target="#basicModal">-->
+<!--                                <i class="fa fa-pencil" aria-hidden="true"></i> Edit-->
+<!--                            </a>-->
+<!--                        </td>-->
                         <input type="hidden" name="id[]" value="${v.id}" class="form-control pid"  id="payroll_item-${i}">
                         <input type="hidden" name="absent_days[]" value="${v.absent_days}" class="form-control absent"  id="absent_days-${i}">
                         <input type="hidden" name="basic_salary[]" value="${v.basic_salary}" class="form-control basic_salary"  id="basic_salary-${i}">  
-                        <input type="hidden" name="absent_rate[]" value="${v.absent_rate}" class="form-control absent_rate"  id="absent_rate-${i}"> 
+                        <input type="hidden" name="absent_rate[]" value="${v.absent_deduction}" class="form-control absent_rate"  id="absent_rate-${i}"> 
                         <input type="hidden" name="rate_per_day[]" value="${v.rate_per_day} class="form-control rate"  id="rate-days-${i}">
                         <input type="hidden" name="rate_per_month[]" value="${v.basic_pay} class="form-control rate-month"  id="rate-month-${i}"> 
                     </tr>
@@ -467,9 +522,9 @@
             showModal(){
                 const el = $(this);
                 const row = el.parents('tr:first');
-               // row.find('.absent_rate').val('');
+               // row.find('.absent_deduction').val('');
                 const absent = accounting.unformat(row.find('.absent').val());
-                const absent_rate = accounting.unformat(row.find('.absent_rate').val());
+                const absent_rate = accounting.unformat(row.find('.absent_deduction').val());
                 const basic_salary = accounting.unformat(row.find('.basic_salary').val());
                 const id = row.find('.pid').val();
                 const month_days = $('.month_days').val();
@@ -484,10 +539,10 @@
             absentChange(){
                 const el = $(this);
                 const row = el.parents('tr:first');
-               // row.find('.absent_rate').val('');
+               // row.find('.absent_deduction').val('');
                 const ab_days = $('.ab-days').val();
                 const absent = accounting.unformat(row.find('.absent').val());
-                const absent_rate = accounting.unformat(row.find('.absent_rate').val());
+                const absent_rate = accounting.unformat(row.find('.absent_deduction').val());
                 
                 const basic_salary = $('.salary').val();
                 const month_days = $('.month_days').val();
@@ -503,7 +558,7 @@
             showAllowanceModal(){
                 const el = $(this);
                 const row = el.parents('tr:first');
-               // row.find('.absent_rate').val('');
+               // row.find('.absent_deduction').val('');
                 const house_allowance = accounting.unformat(row.find('.house_allowance').val());
                 const absent = accounting.unformat(row.find('.absent').val());
                 const transport_allowance = accounting.unformat(row.find('.transport_allowance').val());
@@ -522,7 +577,7 @@
             houseTransportChange() {
                 const el = $(this);
                 const row = el.parents('tr:first');
-               // row.find('.absent_rate').val('');
+               // row.find('.absent_deduction').val('');
                 const house = $('.ha').val();
                 const transport = $('.ta').val();
                 const other = $('.oa').val();
@@ -551,17 +606,19 @@
                 return `
                     <tr>
                         <td>${i+1}</td>    
-                        <td>${v.employee_name}</td>   
-                        <td>${v.absent_days}</td>  
+                        <td>${v.name}</td>
+                        <td>${ accounting.formatNumber((parseFloat(v.fixed_salary) + parseFloat(v.basic_hourly_salary)).toFixed(2)) }</td>
+                        <td>${v.absent_days}</td>
                         <td><input type="text" name="house_allowance[]" value="${accounting.formatNumber(v.house_allowance)}" class="form-control house_allowance"  id="house_allowance-${i}" readonly></td>      
                         <td><input type="text" name="transport_allowance[]" value="${accounting.formatNumber(v.transport_allowance)}" class="form-control transport_allowance"  id="transport_allowance-${i}" readonly></td>    
                         <td><input type="text" name="other_allowance[]" value="${accounting.formatNumber(v.other_allowance)}" class="form-control other_allowance"  id="other_allowance-${i}" readonly></td>    
                         <td><input type="text" name="total_allowance[]" value="${accounting.formatNumber(v.total_allowance)}" class="form-control total_allowance"  id="total_allowance-${i}" readonly></td> 
-                        <td>
-                            <a href="#" class="btn btn-danger btn-sm my-1 edit-allowance" data-toggle="modal" data-target="#allowanceModal">
-                                <i class="fa fa-pencil" aria-hidden="true"></i> Edit
-                            </a>
-                        </td>
+                        <td><input type="text" value="${ accounting.formatNumber(v.basic_plus_allowance) }" class="form-control total_allowance"  id="total_allowance-${i}" readonly></td>
+<!--                        <td>-->
+<!--                            <a href="#" class="btn btn-danger btn-sm my-1 edit-allowance" data-toggle="modal" data-target="#allowanceModal">-->
+<!--                                <i class="fa fa-pencil" aria-hidden="true"></i> Edit-->
+<!--                            </a>-->
+<!--                        </td>-->
                         <input type="hidden" name="id[]" value="${v.id}" class="form-control payid"  id="payroll_item-${i}">
                         <input type="hidden" name="absent_days[]" value="${v.absent_days}" class="form-control absent"  id="absent_days-${i}"> 
                         <input type="hidden" name="rate_per_day[]" value="${v.rate_per_day} class="form-control rate"  id="rate-days-${i}">
@@ -574,47 +631,41 @@
                 return `
                 <tr>
                                 <td> ${v.employee_id }</td>
-                                <td>${v.employee_name }</td>
+                                <td>${ v.name }</td>
+                                <td>${ accounting.formatNumber(v.netpay) }</td>
+                                <td><input type="text" name="total_other_allowances[]" class="form-control other-allow"
+                                        id="total_other_allowances-${i}" value="${v.other_allowances }" readonly>
+                                </td>
+                                <td>
+                                    <input type="text" name="total_benefits[]" class="form-control benefits"
+                                        id="total_benefits-${i}" value="${v.benefits }" readonly>
+                                </td>
+
+                                <td>
+                                    <input type="text" name="loan[]" class="form-control loan"
+                                        id="loan-${i}" value="${v.loan }" readonly>
+                                </td>
+                                <td>
+                                    <input type="text" name="advance[]" class="form-control advance"
+                                        id="advance-${i}" value="${v.advance }" readonly>
+                                </td>
+                                <td>
+                                    <input type="text" id="other_deductions-${i }" name="other_deductions[]"   value="${v.other_deductions }" class="form-control other-deductions" readonly>
+                                </td>
+                                <td>
+                                    <input type="text" id="net_after_bnd-${i }" name="net_after_bnd[]"   value="${(v.net_after_bnd) }" class="form-control other-deductions" readonly style="min-width: 150px">
+                                </td>
+
+
+
+<!--                                <td>-->
+<!--                                    <a href="#" class="btn btn-danger btn-sm my-1 edit-other" data-toggle="modal" data-target="#otherModal">-->
+<!--                                        <i class="fa fa-pencil" aria-hidden="true"></i> Edit-->
+<!--                                    </a>-->
+<!--                                </td>-->
+
                                 <input type="hidden" name="id[]" class="other-id" value="${ v.id }">
                                 <input type="hidden" name="payroll_id" value="${v.payroll_id }">
-                                <td><input type="text" name="total_other_allowances[]" class="form-control other-allow"
-                                        id="total_other_allowances-${i}" value="${v.total_other_allowances }" ></td>
-                                <td><input type="text" name="total_benefits[]" class="form-control benefits"
-                                        id="total_benefits-${i}" value="${v.total_benefits }" ></td>
-                                <td>
-                                    <table>
-                                        
-                                        <thead>
-                                            <tr>
-                                            <th>Loan</th>
-                                            <th>Advance</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <input type="text" name="loan[]" class="form-control loan"
-                                                        id="loan-${i}" value="${v.loan }">
-                                                </td>
-                                                <td>
-                                                    <input type="text" name="advance[]" class="form-control advance"
-                                                        id="advance-${i}" value="${v.advance }">
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-
-                                <td><input type="text" name="total_other_deduction[]"
-                                        class="form-control other-deductions" id="total_other_deduction-${i}" value="${v.total_other_deduction }">
-                                </td>
-                                
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-sm my-1 edit-other" data-toggle="modal" data-target="#otherModal">
-                                        <i class="fa fa-pencil" aria-hidden="true"></i> Edit
-                                    </a>
-                                </td>
-
 
                 </tr>
                 `;

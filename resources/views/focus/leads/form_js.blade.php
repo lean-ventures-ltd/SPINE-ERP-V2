@@ -76,5 +76,27 @@
     };
 
     $(() => Form.init());
+
+
+    $(document).ready(function () {
+        // Hide broker input and label by default
+        $('#broker, label[for="broker"]').hide();
+
+        // Listen for changes in the select box
+        $('#source').change(function () {
+            // Check if the selected value is 'Broker'
+            if ($(this).val() === 'Broker') {
+                // Show the broker input and label, and make them required
+                $('#broker, label[for="broker"]').show().prop('required', true);
+            } else {
+                // Hide the broker input, label, set input value to blank, and make them not required
+                $('#broker, label[for="broker"]').hide().val('').prop('required', false);
+            }
+        });
+
+        // Trigger change event to check the initial value on page load
+        $('#source').trigger('change');
+    });
+
 </script>
 @endsection

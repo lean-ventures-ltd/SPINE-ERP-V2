@@ -1,4 +1,4 @@
-{{ Html::script('focus/js/select2.min.js') }}
+{{-- {{ Html::script('focus/js/select2.min.js') }}
 <script>   
     // initialize html editor
     editor();
@@ -159,12 +159,12 @@
         $('#quoteTbl tbody tr.invisible').remove();
 
         const i = `p${rowId}`;
-        const newRowHtml = `<tr class="misc"> ${rowHtml.replace(/p0/g, i)} </tr>`;
+        const newRowHtml = `<tr class="misc" style="background-color:rgba(229, 241, 101, 0.4); opacity:0.3;"> ${rowHtml.replace(/p0/g, i)} </tr>`;
         $("#quoteTbl tbody").append(newRowHtml);
         $('#name-'+i).autocomplete(autoComp(i));
         $('#misc-'+i).val(1);
         $('#qty-'+i).val(1).addClass('invisible');
-        ['rate', 'price', 'taxrate', 'amount', 'lineprofit'].forEach(v => {
+        ['rate', 'price','lineprofit'].forEach(v => {
             $(`#${v}-${i}`).addClass('invisible');
         });
 
@@ -376,9 +376,8 @@
                 // maintenance service product 
                 const docType = @json(request('doc_type'));
                 if (docType == 'maintenance') {
-                    const schedule_url = "{{ route('biller.taskschedules.quote_product_search') }}";
+                    url = "{{ route('biller.taskschedules.quote_product_search') }}";
                     data.customer_id = $('#lead_id option:selected').attr('customer_id');
-                    if ($('#price_customer').val()) url = schedule_url;
                 } 
                 $.ajax({
                     url, data,
@@ -418,4 +417,4 @@
             }
         };
     }
-</script>
+</script> --}}

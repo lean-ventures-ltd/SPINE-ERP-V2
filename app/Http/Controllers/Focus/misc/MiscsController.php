@@ -18,6 +18,7 @@
 namespace App\Http\Controllers\Focus\misc;
 
 use App\Models\misc\Misc;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
@@ -96,12 +97,8 @@ class MiscsController extends Controller
         $input['ins'] = auth()->user()->ins;
 
         if ($input['section'] == 'tag') $input['section'] = 1; else   $input['section'] = 2;
-        try {
-            //Create the model using repository create method
-            $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Miscs', $th);
-        }
+        //Create the model using repository create method
+        $this->repository->create($input);
         //return with successfull message
         return new RedirectResponse(route('biller.miscs.index') . '?module=' . $request->section, ['flash_success' => trans('alerts.backend.miscs.created')]);
     }
@@ -129,12 +126,8 @@ class MiscsController extends Controller
     {
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
-        try {
-            //Update the model using repository update method
-            $this->repository->update($misc, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Miscs', $th);
-        }
+        //Update the model using repository update method
+        $this->repository->update($misc, $input);
         //return with successfull message
         if ($misc->section == 2) return new RedirectResponse(route('biller.miscs.index') . '?module=task', ['flash_success' => trans('alerts.backend.miscs.updated')]);
         return new RedirectResponse(route('biller.miscs.index'), ['flash_success' => trans('alerts.backend.miscs.updated')]);
@@ -149,12 +142,8 @@ class MiscsController extends Controller
      */
     public function destroy(Misc $misc, EditMiscRequest $request)
     {
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($misc);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Miscs', $th);
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($misc);
         //returning with successfull message
         return json_encode(array('status' => 'Success', 'message' => trans('alerts.backend.miscs.deleted')));
 

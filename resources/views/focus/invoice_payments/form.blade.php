@@ -52,7 +52,7 @@
         <label for="payment_mode">Mode</label>
         <select name="payment_mode" id="payment_mode" class="custom-select" required>
             <option value="">-- Select Mode --</option>
-            @foreach (['eft', 'rtgs','cash', 'mobile-money', 'cheque'] as $val)
+            @foreach (['eft', 'rtgs','cash', 'mpesa', 'cheque'] as $val)
                 <option value="{{ $val }}">{{ strtoupper($val) }}</option>
             @endforeach
         </select>
@@ -76,7 +76,7 @@
     <div class="col-6">
         <label for="note">Note</label>
         {{ Form::text('note', null, ['class' => 'form-control', 'id' => 'note']) }}
-    </div>   
+    </div>  
 </div>
 
 <div class="table-responsive">
@@ -103,7 +103,7 @@
                     <tr>
                         <td>{{ dateFormat($invoice->invoiceduedate) }}</td>
                         <td>{{ gen4tid('Inv-', $invoice->tid) }}</td>
-                        <td>{{ $invoice->notes }}</td>
+                        <td style="text-align: left;">{{ $invoice->notes }}</td>
                         <td>{{ $invoice->status }}</td>
                         <td class="inv-amount">{{ numberFormat($invoice->total) }}</td>
                         <td>{{ numberFormat($invoice->amountpaid) }}</td>

@@ -2,25 +2,45 @@
     <div class="card-body">
         <div class="row mb-1">
             <div class="col-2 h4">Total NETPAY</div>                           
-            <div class="col-4 h4 netpay_worth">0.00</div>
+            <div class="col-4 h4 netpay_worth">{{ $tallies['netpay_total'] }}</div>
         </div>
         <table id="payrollTable" class="table table-striped table-responsive table-bordered zero-configuration" cellspacing="0" width="100%">
             <thead>
                 <tr>
-                    <th>Payroll No.</th>
-                    <th>Employee Id</th>
-                    <th>Employee Name</th>
-                    <th>Total Basic Salary</th>
-                    <th>Total Tx Allowances</th>
+                    <th>Payroll ID</th>
+                    <th>Employee ID</th>
+                    <th>Fixed Salary</th>
+                    <th>Max Hourly Salary</th>
+                    <th>Pay Per Hour</th>
+                    <th>Man Hours</th>
+                    <th>Basic Hourly Salary</th>
+                    <th>Absent Days</th>
+                    <th>Absent Daily Deduction</th>
+                    <th>Absent Total Deduction</th>
+                    <th>Basic Salary</th>
+                    <th>House Allowance</th>
+                    <th>Transport Allowance</th>
+                    <th>Other Allowance</th>
+                    <th>Total Allowance</th>
+                    <th>Basic Plus Allowance</th>
+                    <th>Taxable Deductions</th>
+                    <th>Deduction Narration</th>
                     <th>NSSF</th>
-                    <th>Total Tx Monthly Deductions</th>
                     <th>Taxable Gross</th>
-                    <th>Total PAYE</th>
                     <th>NHIF</th>
-                    <th>Other Allowances</th>
-                    <th>Other Benefits</th>
+                    <th>Housing Levy</th>
+                    <th>Income Tax</th>
+                    <th>NHIF Relief</th>
+                    <th>Personal Relief</th>
+                    <th>PAYE</th>
+                    <th>Netpay</th>
+                    <th>Loan</th>
+                    <th>Advance</th>
+                    <th>Benefits</th>
                     <th>Other Deductions</th>
+                    <th>Other Allowances</th>
                     <th>Net Pay</th>
+                    <th>MPESA Number</th>
                 </tr>
             </thead>
             <tbody>

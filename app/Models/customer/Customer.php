@@ -31,13 +31,6 @@ class Customer extends Model
     protected $fillable = [];
 
     /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = ['password'];
-
-    /**
      * Default values for model fields
      * @var array
      */
@@ -79,12 +72,11 @@ class Customer extends Model
 
         static::creating(function ($instance) {
             $instance->ins = auth()->user()->ins;
-            $instance->user_id = auth()->user()->id;
             return $instance;
         });
 
         static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', auth()->user()->ins);
+            $builder->where('ins', '=', auth()->user()->ins);
         });
     }
 
@@ -101,7 +93,7 @@ class Customer extends Model
     public function getPictureAttribute()
     {
         if (!$this->attributes['picture']) return 'example.png';
-
+            
         return $this->attributes['picture'];
     }
 }

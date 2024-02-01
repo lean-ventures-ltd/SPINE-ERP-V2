@@ -96,16 +96,12 @@ class LendersController extends Controller
         // extract input fields
         $input = $request->except(['_token', 'ins']);
 
-        //Input received from the request
-        
-        $input['ins'] = auth()->user()->ins;
-        $input['created_by'] = auth()->user()->id;
-        try {
-            //Create the model using repository create method
-            $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Lender', $th);
-        }
+               //Input received from the request
+               
+               $input['ins'] = auth()->user()->ins;
+               $input['created_by'] = auth()->user()->id;
+               //Create the model using repository create method
+               $this->repository->create($input);
             
         return new RedirectResponse(route('biller.lenders.index'), ['flash_success' => 'Lender Created Successfully']);
     }
@@ -139,12 +135,7 @@ class LendersController extends Controller
         // extract input fields
         $input = $request->except(['_token', 'ins']);
         
-        
-        try {
-            $this->repository->update($lender, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Lender', $th);
-        }
+        $this->repository->update($lender, $input);
 
         return new RedirectResponse(route('biller.lenders.show', $lender), ['flash_success' => 'Lender Updated Successfully']);
     }
@@ -158,11 +149,7 @@ class LendersController extends Controller
      */
     public function destroy(Lender $lender)
     {
-        try {
-            $this->repository->delete($lender);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Lender', $th);
-        }
+        $this->repository->delete($lender);
 
         return new RedirectResponse(route('biller.lenders.index'), ['flash_success' => 'Lender Deleted Successfully']);
     }

@@ -21,7 +21,7 @@
         <div class="card">
             <div class="card-content">
                 <div class="card-body">
-                    {{ Form::open(['route' => 'biller.creditnotes.store', 'method' => 'POST']) }}
+                    {{ Form::open(['route' => 'biller.creditnotes.store', 'method' => 'POST', 'id' => 'creditNoteForm']) }}
                         @include('focus.creditnotes.form')
                     {{ Form::close() }}
                 </div>
@@ -39,7 +39,13 @@
     $('.datepicker').datepicker({format: "{{config('core.user_date_format')}}", autoHide: true})
     .datepicker('setDate', new Date())
 
-    // Load customers
+    $(document).ready(function() {
+
+        $('#is_tax_exc').val(0);
+
+    });
+
+        // Load customers
     $('#customer').select2({
         ajax: {
             url: "{{ route('biller.customers.select') }}",
@@ -102,5 +108,24 @@
         $('#total').val(accounting.formatNumber(total));
         $('#tax').val(accounting.formatNumber(total-subtotal));
     }
+
+    let canSubmit = false;
+
+
+    $("#creditNoteForm").submit(function(event) {
+
+        canSubmit = $("#cuConfirmation").val() === "{{ $newCuInvoiceNo }}".slice(-3);
+
+        // Check if the condition is true
+        if (!canSubmit) {
+            // If the condition is not true, prevent form submission
+            event.preventDefault();
+            alert("Please confirm whether the auto-generated CU Invoice No '" + $("#cu_invoice_no").val() + "' matches with the ETR generated CU Invoice Number.\nEnter the Last 3 Digits in the Box Above the Submit Button.");
+            // You can add more logic or UI updates here based on your requirements
+        }
+        // If the condition is true, the form will be submitted
+    });
+
+
 </script>
 @endsection

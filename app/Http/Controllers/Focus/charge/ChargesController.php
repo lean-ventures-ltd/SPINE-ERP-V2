@@ -89,11 +89,7 @@ class ChargesController extends Controller
         $data['ins'] = auth()->user()->ins;
         $data['user_id'] = auth()->user()->id;
 
-        try {
-            $this->repository->create($data);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Charge', $th);
-        }
+        $this->repository->create($data);
 
         return new RedirectResponse(route('biller.charges.index'), ['flash_success' => 'Charge successfully created']);
     }
@@ -126,12 +122,8 @@ class ChargesController extends Controller
         ]);
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
-        try {
-            //Update the model using repository update method
-            $this->repository->update($charge, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Charge', $th);
-        }
+        //Update the model using repository update method
+        $this->repository->update($charge, $input);
         //return with successfull message
         return new RedirectResponse(route('biller.charges.index'), ['flash_success' => 'Charge successfully updated']);
     }
@@ -145,12 +137,8 @@ class ChargesController extends Controller
      */
     public function destroy(Charge $charge, StoreChargeRequest  $request)
     {
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($charge);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Charge', $th);
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($charge);
         //returning with successfull message
         return new RedirectResponse(route('biller.charges.index'), ['flash_success' => 'Charge successfully deleted']);
     }

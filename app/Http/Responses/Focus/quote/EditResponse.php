@@ -8,6 +8,10 @@ use App\Models\customer\Customer;
 use App\Models\lead\Lead;
 use App\Models\quote\Quote;
 use Illuminate\Contracts\Support\Responsable;
+use App\Models\fault\Fault;
+use App\Models\hrm\Hrm;
+use App\Models\productvariable\Productvariable;
+use App\Models\template_quote\TemplateQuote;
 
 class EditResponse implements Responsable
 {
@@ -48,8 +52,14 @@ class EditResponse implements Responsable
         $lastpi->tid = $quote->query()->where('ins', $quote->ins)->where('bank_id', '>', 0)->max('tid');
 
         $prefixes = prefixesArray(['quote', 'proforma_invoice', 'lead'], $quote->ins);
+        $equipments = $quote->equipments()->orderBy('row_index_id', 'ASC')->get();
+        $faults = Fault::all(['name']);
+        $productvariables = Productvariable::all();
+        $employees = Hrm::all();
 
-        $common_params = ['lastquote', 'quote', 'leads', 'words', 'additionals', 'price_customers', 'prefixes'];
+        $templateQuotes = TemplateQuote::all();
+      
+        $common_params = ['templateQuotes','lastquote', 'quote', 'leads', 'words', 'additionals', 'price_customers', 'prefixes','equipments','faults','productvariables', 'employees'];
 
         // copy quote to quote
         if (request('task') == 'quote_to_quote') {

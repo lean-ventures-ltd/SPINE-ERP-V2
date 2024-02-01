@@ -48,41 +48,21 @@ class RjcsTableController extends Controller
      */
     public function __invoke(ManageRjcRequest $request)
     {
-        $query = $this->rjc->getForDataTable();
-        $ins = auth()->user()->ins;
-        $prefixes = prefixesArray(['rjc_report', 'project'], $ins);
+        $core = $this->rjc->getForDataTable();
 
-        return Datatables::of($query)
+        return Datatables::of($core)
             ->escapeColumns(['id'])
             ->addIndexColumn()
-            ->editColumn('tid', function ($rjc) use ($prefixes) {
-                return gen4tid("{$prefixes[0]}-", $rjc->tid);
+            ->addColumn('tid', function ($rjc) {
+                return 'RjR-'.sprintf('%04d', $rjc->tid);
             })
-            ->filterColumn('tid', function($query, $tid) use($prefixes) {
-                $arr = explode('-', $tid);
-                if (strtolower($arr[0]) == strtolower($prefixes[0]) && isset($arr[1])) {
-                    $query->where('tid', floatval($arr[1]));
-                } elseif (floatval($tid)) {
-                    $query->where('tid', floatval($tid));
-                }
-            })
-            ->addColumn('project_no', function ($rjc) use ($prefixes) {
+            ->addColumn('project_no', function ($rjc) {
                 if ($rjc->project) 
-                    return gen4tid("{$prefixes[1]}-", $rjc->project->tid);
-            })
-            ->filterColumn('project_no', function($query, $tid) use($prefixes) {
-                $arr = explode('-', $tid);
-                if (strtolower($arr[0]) == strtolower($prefixes[1]) && isset($arr[1])) {
-                    $query->whereHas('project', fn($q) => $q->where('tid', floatval($arr[1])));
-                    //$query->where('tid', floatval($arr[1]));
-                } elseif (floatval($tid)) {
-                    $query->whereHas('project', fn($q) => $q->where('tid', floatval($tid)));
-                    // $query->where('tid', floatval($tid));
-                }
+                    return gen4tid('Prj-', $rjc->project->tid);
             })
             ->addColumn('customer', function ($rjc) {
                 $client_name = $rjc->project ? $rjc->project->customer_project->company : '';
-                $branch_name = $rjc->project ? $rjc->project->branch->name : '';
+                $branch_name = $rjc->project ? @$rjc->project->branch->name : '';
                 if ($client_name && $branch_name) 
                     return $client_name . ' - ' . $branch_name;
             })
@@ -105,7 +85,6 @@ class RjcsTableController extends Controller
             ->addColumn('created_at', function ($rjc) {
                 return dateFormat($rjc->created_at);
             })
-            ->orderColumn('created_at', '-created_at $1')
             ->addColumn('actions', function ($rjc) {
                 $valid_token = token_validator('', 'd' . $rjc->id, true);
 

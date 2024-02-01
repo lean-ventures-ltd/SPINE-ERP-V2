@@ -5,6 +5,7 @@ namespace App\Http\Responses\Focus\purchase;
 use App\Models\additional\Additional;
 use App\Models\pricegroup\Pricegroup;
 use App\Models\purchase\Purchase;
+use App\Models\PurchaseClass\PurchaseClass;
 use App\Models\supplier\Supplier;
 use App\Models\warehouse\Warehouse;
 use Illuminate\Contracts\Support\Responsable;
@@ -26,7 +27,8 @@ class CreateResponse implements Responsable
         $last_tid = Purchase::where('ins', auth()->user()->ins)->max('tid');
         $supplier = Supplier::where('name', 'Walk-in')->first(['id', 'name']);
         $price_supplier = Supplier::whereHas('products')->get(['id', 'name']);
+        $purchaseClasses = PurchaseClass::all();
 
-        return view('focus.purchases.create', compact('last_tid', 'additionals', 'supplier', 'pricegroups', 'warehouses','price_supplier'));
+        return view('focus.purchases.create', compact('last_tid', 'additionals', 'supplier', 'pricegroups', 'warehouses','price_supplier', 'purchaseClasses'));
     }
 }

@@ -20,6 +20,7 @@ namespace App\Http\Controllers\Focus\quote;
 use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 use App\Repositories\Focus\quote\QuoteRepository;
+use DB;
 
 /**
  * Class QuotesTableController.
@@ -49,8 +50,8 @@ class QuotesTableController extends Controller
     {
         $query = $this->repository->getForDataTable();
 
-        $query_1 = clone $query;
-        $sum_total = numberFormat($query_1->sum('total'));
+        $query_1 = clone $query->latest()->take(1000);
+        $sum_total = $query_1->sum('total');
 
         $ins = auth()->user()->ins;
         $prefixes = prefixesArray(['quote', 'proforma_invoice', 'lead', 'invoice'], $ins);
@@ -87,9 +88,32 @@ class QuotesTableController extends Controller
             })
             ->orderColumn('date', '-date $1')
             ->addColumn('total', function ($quote) {
-                if ($quote->currency) return amountFormat($quote->total, $quote->currency->id);
+                if ($quote->taxable > 0) $this->quote_taxable_amount = $quote->taxable;
+                else $this->quote_taxable_amount = $quote->subtotal;
+                
                 return numberFormat($quote->total);
             })   
+            ->addColumn('exp_total', function ($quote) {
+                $project = $quote->project;
+                if ($project) {
+                    $no_quotes = $project->quotes()->count();
+                    
+                    $issued_stock_amount = $quote->projectstock? $quote->projectstock()->sum('total') : 0;
+                    $dir_purchase_amount = $project->purchase_items->sum('amount');
+                    $grn_amount = $project->grn_items()->sum(DB::raw('rate*qty'));
+                    $labour_amount = $project->labour_allocations()->sum(DB::raw('hrs * 500'));
+                    $expense_amount = (($dir_purchase_amount + $grn_amount + $labour_amount) / $no_quotes) + $issued_stock_amount;
+                    
+                    $this->quote_expense_total = $expense_amount;
+                    if ($expense_amount > 0)
+                    return '<a href="'. route('biller.projects.show', ['project' => $project, 'tab' => 'expense']) .'" key="'. $project->id .'">'
+                        . numberFormat($expense_amount) .'</a>' ;
+                }
+            })
+            ->addColumn('exp_diff', function ($quote) {
+                if ($quote->project && $this->quote_expense_total > 0)
+                return numberFormat($this->quote_taxable_amount - $this->quote_expense_total);
+            })
             ->addColumn('approved_date', function ($quote) {
                 return $quote->approved_date? dateFormat($quote->approved_date) : '';
             })
@@ -97,7 +121,6 @@ class QuotesTableController extends Controller
             ->editColumn('lead_tid', function($quote) use($prefixes) {
                 $link = '';
                 if ($quote->lead) {
-                    if (auth()->user()->customer_id) return gen4tid("{$prefixes[2]}-", $quote->lead->reference);
                     $link = '<a href="'. route('biller.leads.show', $quote->lead) .'">'.gen4tid("{$prefixes[2]}-", $quote->lead->reference).'</a>';
                 }
                 return $link;
@@ -122,8 +145,8 @@ class QuotesTableController extends Controller
                     $query->whereHas('invoice', fn($q) => $q->where('tid', floatval($tid)));
                 }
             })
-            ->addColumn('sum_total', function() use($sum_total) {
-                return $sum_total;
+            ->addColumn('sum_total', function($quote) use($sum_total) {
+                return numberFormat($sum_total);
             })
             ->addColumn('budget_status', function ($quote) {
                 return $quote->budget? '<span class="badge badge-success">budgeted</span>' : 
@@ -135,8 +158,6 @@ class QuotesTableController extends Controller
                     $name = 'biller.quotes.show';
                     $action_buttons = str_replace(route($name, $quote), route($name, [$quote, 'page=pi']), $action_buttons);
                 }
-                if (auth()->user()->customer_id) return $action_buttons;
-
                 $valid_token = token_validator('', 'q'.$quote->id .$quote->tid, true);
                 $copy_text = $quote->bank_id ? 'PI Copy' : 'Quote Copy';
                 $task = $quote->bank_id ? 'page=pi&task=pi_to_pi' : 'task=quote_to_quote';

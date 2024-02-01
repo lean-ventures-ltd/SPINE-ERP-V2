@@ -163,13 +163,16 @@
 				<span class="customer-dt-title">SHIPPING DETAILS:</span><br><br>
 				<b>PO Number :</b> {{ gen4tid('PO-', $resource->tid) }}<br><br>				
 				<b>Branch :</b> Head Office<br>		
-				<b>Client :</b> {{ $company->cname }}<br>		
-				<b>Address :</b> P.O Box {{ $company->postbox }}, {{ $company->city }}<br>
-				<b>Email :</b> {{ $company->email }}
+				<b>Client :</b> Lean Ventures Ltd<br>		
+				<b>Address :</b> P.O Box 36082-00200, Nairobi <br>
+				<b>Email :</b> info@leanventures.co.ke
 			</td>
 		</tr>
 	</table><br>
-	
+	<table  class="ref" cellpadding="10">
+		<tr><td colspan="2">Subject : <b>{{ $resource->note }}</b></td></tr>
+	</table>
+	<br>
 	<table class="items" cellpadding="8">
 		<thead>
 			<tr>
@@ -189,7 +192,7 @@
                     <td class="align-c">{{ +$item->qty }}</td>
 					<td class="align-c">{{ $item->uom }}</td>
                     <td class="align-r">{{ numberFormat($item->rate) }}</td>
-                    <td class="align-r">{{ numberFormat(+$item->qty * $item->rate) }}</td>
+                    <td class="align-r">{{ numberFormat($item->qty * $item->rate) }}</td>
                 </tr>
 			@endforeach
 			<!-- 20 dynamic empty rows -->
@@ -211,10 +214,7 @@
                 <td class="align-r">{{ number_format($resource->grandtax, 2) }}</td>
 			</tr>
 			<tr>
-				@php
-					$user = \App\Models\Access\User\User::find($resource->user_id);
-				@endphp
-				<td colspan="4"><em>Approved By : </em><b>{{ !$user? $user->full_name : '' }}</b></td>
+				<td colspan="4"><em>Approved By : </em><b>{{ 'Sheila.M' }}</b></td>
 				<td class="bd align-r"><b>Grand Total:</b></td>
 				<td class="bd align-r">{{ number_format($resource->grandttl, 2) }}</td>
 			</tr>

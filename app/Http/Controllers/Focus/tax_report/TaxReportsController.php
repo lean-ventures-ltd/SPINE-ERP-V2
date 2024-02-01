@@ -171,7 +171,8 @@ class TaxReportsController extends Controller
     }
 
     /**
-     * Sales to be filed on report creation
+     * Sales to be filed (Tax output)
+     * 
      */
     public function get_sales()
     {
@@ -179,6 +180,7 @@ class TaxReportsController extends Controller
         $month = current($sale_month);
         $year = end($sale_month);
         
+        // invoices
         $invoices = Invoice::when($month, fn($q) => $q->whereMonth('invoicedate', $month)->whereYear('invoicedate', $year))
             ->where('tid', '>', 0)
             ->where(function ($q) {
@@ -191,6 +193,7 @@ class TaxReportsController extends Controller
                 $attr = [
                     'id' => $v->id,
                     'invoice_tid' => $v->tid,
+                    'cu_invoice_no' => $v->cu_invoice_no ?: '',
                     'invoice_date' => $v->invoicedate,
                     'tax_pin' => @$v->customer->taxid ?: '',
                     'customer' => @$v->customer->company ?: '',
@@ -210,6 +213,7 @@ class TaxReportsController extends Controller
                 return $v_mod;
             });
 
+        // credit notes
         $credit_notes = CreditNote::when($month, fn($q) => $q->whereMonth('date', $month)->whereYear('date', $year))
         ->whereHas('invoice')
         ->where(function ($q) {
@@ -221,6 +225,7 @@ class TaxReportsController extends Controller
         ->whereNull('supplier_id')->get()
         ->map(function($v) {
             $v_mod = clone $v;
+            $invoice = $v->invoice;
             $attr = [
                 'id' => $v->id,
                 'credit_note_tid' => $v->tid,
@@ -233,8 +238,9 @@ class TaxReportsController extends Controller
                 'tax' =>  -1 * $v->tax,
                 'tax_rate' => $v->subtotal > 0? round($v->tax/$v->subtotal * 100) : 0,
                 'type' => 'credit_note',
-                'credit_note_date' => $v->invoice->invoicedate,
-                'invoice_tid' => $v->invoice->tid,
+                'credit_note_date' => @$invoice->invoicedate,
+                'invoice_tid' => @$invoice->tid ?: '',
+                'cu_invoice_no' => @$invoice->cu_invoice_no ?: '',
                 'is_tax_exempt' => @$v->customer->is_tax_exempt ?: 0,
             ];
             foreach ($attr as $key => $value) {
@@ -249,7 +255,7 @@ class TaxReportsController extends Controller
     }
 
     /**
-     * Purchases to be filed on report creation
+     * Purchases to be filed (Tax Input)
      */
     public function get_purchases()
     {
@@ -257,6 +263,7 @@ class TaxReportsController extends Controller
         $month = current($purchase_month);
         $year = end($purchase_month);
         
+        // bills
         $bills = UtilityBill::when($month, fn($q) => $q->whereMonth('date', $month)->whereYear('date', $year))
             ->where('tid', '>', 0)
             ->whereIn('document_type', ['direct_purchase', 'goods_receive_note'])
@@ -267,7 +274,6 @@ class TaxReportsController extends Controller
             ->get()
             ->map(function ($v) {
                 $v_mod = clone $v;
-
                 $note = '';
                 $suppliername = '';
                 $supplier_taxid = '';
@@ -318,7 +324,8 @@ class TaxReportsController extends Controller
                 }
                 return $v_mod;
             });
-
+        
+        // debit notes
         $debit_notes = CreditNote::when($month, fn($q) => $q->whereMonth('date', $month)->whereYear('date', $year))
         ->whereHas('supplier')
         ->where(function ($q) {

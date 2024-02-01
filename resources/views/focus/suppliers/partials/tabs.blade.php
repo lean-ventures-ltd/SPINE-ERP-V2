@@ -11,6 +11,9 @@
     <li class="nav-item">
         <a class="nav-link " id="active-tab3" data-toggle="tab" href="#active3" aria-controls="active3" role="tab">Statement on Bill</a>
     </li>
+    <li class="nav-item">
+        <a class="nav-link " id="active-tab5" data-toggle="tab" href="#active5" aria-controls="active5" role="tab">Statement on Orders</a>
+    </li>
 </ul>
 <div class="tab-content px-1 pt-1">
     <!-- Supplier info -->
@@ -144,5 +147,96 @@
             <tbody></tbody> 
         </table>
         <div class="stment-aging-wrapper"></div>
-    </div>    
+    </div>
+
+    <div class="tab-pane" id="active5" aria-labelledby="link-tab5" role="tabpanel">
+
+        <div class="col-2">
+            <button type="button" id="refresh5" class="btn btn-success btn-sm refresh"><i class="fa fa-refresh" aria-hidden="true"></i></button>
+        </div>
+
+        <table id="grn-table" class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Unit Of Measure</th>
+                <th>Quantity</th>
+                <th>Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td colspan="100%" class="text-center text-success font-large-1"><i class="fa fa-spinner spinner"></i></td>
+            </tr>
+            </tbody>
+        </table>
+
+
+    </div>
+
 </div>
+
+
+{{--@section('after-scripts')--}}
+{{--    {{ Html::script(mix('js/dataTable.js')) }}--}}
+{{--    {{ Html::script('focus/js/select2.min.js') }}--}}
+
+{{--    <script>--}}
+{{--        setTimeout(() => draw_data(), "{{ config('master.delay') }}");--}}
+
+{{--        $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': "{{ csrf_token() }}"} });--}}
+
+{{--        function draw_data() {--}}
+{{--            const tableLan = {@lang('datatable.strings')};--}}
+{{--            var dataTable = $('#grn-table').dataTable({--}}
+{{--                processing: true,--}}
+{{--                serverSide: true,--}}
+{{--                responsive: true,--}}
+{{--                language: tableLan,--}}
+{{--                ajax: {--}}
+{{--                    url: '{{ route("biller.grn-items-by-supplier-v2") }}',--}}
+{{--                    type: 'GET',--}}
+{{--                    data: {--}}
+{{--                        supplierId: {{$supplier->id}}--}}
+{{--                    },--}}
+{{--                    // month: $('#month').val(),--}}
+{{--                    // year: $('#year').val(),--}}
+{{--                },--}}
+{{--                columns: [--}}
+{{--                    {--}}
+{{--                        data: 'code',--}}
+{{--                        name: 'code'--}}
+{{--                    },--}}
+{{--                    {--}}
+{{--                        data: 'name',--}}
+{{--                        name: 'name'--}}
+{{--                    },--}}
+{{--                    {--}}
+{{--                        data: 'quantity',--}}
+{{--                        name: 'quantity'--}}
+{{--                    },--}}
+{{--                    {--}}
+{{--                        data: 'value',--}}
+{{--                        name: 'value'--}}
+{{--                    },--}}
+{{--                    // {--}}
+{{--                    //     data: 'action',--}}
+{{--                    //     name: 'action',--}}
+{{--                    //     searchable: false,--}}
+{{--                    //     sortable: false--}}
+{{--                    // }--}}
+{{--                ],--}}
+{{--                order: [--}}
+{{--                    [1, "desc"]--}}
+{{--                ],--}}
+{{--                searchDelay: 500,--}}
+{{--                dom: 'Blfrtip',--}}
+{{--                buttons: ['csv', 'excel', 'print'],--}}
+{{--            });--}}
+{{--        }--}}
+
+
+{{--    </script>--}}
+
+{{--@endsection--}}

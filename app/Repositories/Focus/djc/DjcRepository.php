@@ -48,8 +48,10 @@ class DjcRepository extends BaseRepository
      * @return mixed
      */
     public function getForDataTable()
-    {                
-        return $this->query();
+    {
+        $q = $this->query();
+                
+        return $q->get();
     }
 
     /**

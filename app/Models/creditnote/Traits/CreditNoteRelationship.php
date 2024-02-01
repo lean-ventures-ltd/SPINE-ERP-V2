@@ -21,6 +21,16 @@ trait CreditNoteRelationship
         return $this->hasMany(TaxReportItem::class, 'debit_note_id');
     }
 
+    public function debitnote_transactions()
+    {
+        return $this->hasMany(Transaction::class, 'tr_ref')->whereIn('tr_type', ['dnote']);
+    }
+
+    public function creditnote_transactions()
+    {
+        return $this->hasMany(Transaction::class, 'tr_ref')->whereIn('tr_type', ['cnote']);
+    }
+
     public function bill()
     {
         return $this->belongsTo(Bill::class);
@@ -39,15 +49,5 @@ trait CreditNoteRelationship
     public function customer()
     {
         return $this->belongsTo(Customer::class);
-    }
-
-    public function debitnote_transactions()
-    {
-        return $this->hasMany(Transaction::class, 'dnote_id');
-    }
-
-    public function creditnote_transactions()
-    {
-        return $this->belongsTo(Transaction::class, 'cnote_id');
     }
 }

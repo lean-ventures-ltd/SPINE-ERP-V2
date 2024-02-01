@@ -37,7 +37,7 @@ class Role extends BaseModel
      *
      * @var array
      */
-    protected $fillable = ['name', 'all', 'sort', 'status'];
+    protected $fillable = ['name', 'all', 'sort'];
 
     /**
      * @param array $attributes

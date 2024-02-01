@@ -34,7 +34,7 @@
             <div class="row form-group">
                 <div class="col-9">
                     <label for="note">Note</label>
-                    {{ Form::text('note', null, ['class' => 'form-control']) }}
+                    {{ Form::text('note', null, ['class' => 'form-control', 'required' => 'required']) }}
                 </div>
             </div>
             

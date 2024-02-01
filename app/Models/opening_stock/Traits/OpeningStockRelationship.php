@@ -3,7 +3,6 @@
 namespace App\Models\opening_stock\Traits;
 
 use App\Models\items\OpeningStockItem;
-use App\Models\transaction\Transaction;
 use App\Models\warehouse\Warehouse;
 
 trait OpeningStockRelationship
@@ -16,10 +15,5 @@ trait OpeningStockRelationship
     public function items()
     {
         return $this->hasMany(OpeningStockItem::class);
-    }
-
-    public function transactions()
-    {
-        return $this->hasMany(Transaction::class, 'opening_stock_id');
     }
 }

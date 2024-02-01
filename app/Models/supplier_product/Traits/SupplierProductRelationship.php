@@ -10,4 +10,12 @@ trait SupplierProductRelationship
     {
         return $this->belongsTo(Supplier::class);
     }
+     public function products()
+    {
+        return $this->hasOne(ProductVariation::class, 'code', 'product_code');
+    }
+    public function product()
+    {
+        return $this->hasOne(ProductVariation::class, 'code', 'product_code');
+    }
 }

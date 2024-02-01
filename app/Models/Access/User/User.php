@@ -42,7 +42,6 @@ class User extends Authenticatable
         'first_name',
         'last_name',
         'email',
-        'password',
         'status',
         'confirmation_code',
         'confirmed',
@@ -88,7 +87,9 @@ class User extends Authenticatable
      */
     public function setPasswordAttribute($password)
     {
-        if ($password) $this->attributes['password'] = bcrypt($password);
+        if (!empty($password)) {
+            $this->attributes['password'] = bcrypt($password);
+        }
     }
 
     /**

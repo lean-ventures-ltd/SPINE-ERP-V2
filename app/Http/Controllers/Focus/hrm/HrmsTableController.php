@@ -19,6 +19,9 @@
 namespace App\Http\Controllers\Focus\hrm;
 
 use App\Http\Controllers\Controller;
+use App\Models\department\Department;
+use App\Models\hrm\HrmMeta;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
 use App\Repositories\Focus\hrm\HrmRepository;
 use App\Http\Requests\Focus\hrm\ManageHrmRequest;
@@ -80,8 +83,16 @@ class HrmsTableController extends Controller
                 $role = $hrm->role;
                 if ($role) return $role->name;
             })
-            ->addColumn('created_at', function ($hrm) {
-                return dateFormat($hrm->created_at);
+            ->addColumn('department', function ($hrm) {
+
+                $dept = HrmMeta::where('user_id', $hrm->id)->first()->department_id;
+
+                $deptName = Department::find($dept)->name;
+
+                return $deptName;
+            })
+            ->addColumn('dob', function ($hrm) {
+                return dateFormat($hrm->meta->dob);
             })
             ->addColumn('actions', function ($hrm) {
                 return $hrm->action_buttons;

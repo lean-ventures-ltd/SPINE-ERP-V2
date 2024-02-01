@@ -48,8 +48,9 @@ class RjcRepository extends BaseRepository
      */
     public function getForDataTable()
     {
+        $q = $this->query();
 
-        return $this->query();
+        return $q->get();
     }
 
     /**

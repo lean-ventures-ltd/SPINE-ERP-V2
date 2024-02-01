@@ -50,13 +50,13 @@ class PurchaseordersTableController extends Controller
      */
     public function __invoke()
     {
-        $query = $this->purchaseorder->getForDataTable();
-        $query_1 = clone $query;
+        $core = $this->purchaseorder->getForDataTable();
+
         $prefixes = prefixesArray(['purchase_order'], auth()->user()->ins);
         // aggregate
-        $order_total = $query_1->sum('grandttl');
+        $order_total = $core->sum('grandttl');
         $grn_total = 0;
-        foreach ($query_1 as $po) {
+        foreach ($core as $po) {
             $grn_total += $po->grns->sum('total');
         }
         $aggregate = [
@@ -65,26 +65,15 @@ class PurchaseordersTableController extends Controller
             'due_total' => numberFormat($order_total - $grn_total),
         ];   
 
-        return Datatables::of($query)
+        return Datatables::of($core)
             ->escapeColumns(['id'])
             ->addIndexColumn()
-            ->editColumn('tid', function ($po) use($prefixes) {
+            ->addColumn('tid', function ($po) use($prefixes) {
                 return '<a class="font-weight-bold" href="' . route('biller.purchaseorders.show', $po) . '">' . gen4tid("{$prefixes[0]}-", $po->tid) . '</a>';
-            })
-            ->filterColumn('tid', function($query, $tid) use($prefixes) {
-                $arr = explode('-', $tid);
-                if (strtolower($arr[0]) == strtolower($prefixes[0]) && isset($arr[1])) {
-                    $query->where('tid', floatval($arr[1]));
-                } elseif (floatval($tid)) {
-                    $query->where('tid', floatval($tid));
-                }
             })
             ->addColumn('supplier', function ($po) {
                 if ($po->supplier)
                 return ' <a class="font-weight-bold" href="' . route('biller.suppliers.show', $po->supplier) . '">'. $po->supplier->name . '</a>';
-            })
-            ->filterColumn('supplier', function($query, $supplier) {
-                $query->whereHas('supplier', fn($q) => $q->where('name', 'LIKE', "%{$supplier}%"));
             })
             ->addColumn('count', function ($po) {
                 return $po->items->count();
@@ -92,14 +81,10 @@ class PurchaseordersTableController extends Controller
             ->addColumn('date', function ($po) {
                 return dateFormat($po->date);
             })
-            ->orderColumn('date', '-date $1')
             ->addColumn('amount', function ($po) {
                 return numberFormat($po->grandttl);
             })
-            ->orderColumn('amount', function ($query, $order) {
-                $query->orderBy('grandttl', $order);
-            })
-            ->editColumn('status', function ($po) {
+            ->addColumn('status', function ($po) {
                 if ($po->closure_status) return 'Closed';
                 return $po->status;
             })

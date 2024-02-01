@@ -12,6 +12,7 @@
                         <span class="badge" style="background-color:{{ $row['color'] }}">{{ $row['name'] }}</span>
                     @endforeach
                 </div>
+                <br>
                 <ul class="list-inline list-inline-pipe text-center p-1 border-bottom-grey border-bottom-lighten-3">
                     <li>{{ trans('projects.owner') }}: 
                         <span class="text-muted text-bold-600 blue">{{ @$project->creator->fullname }}</span>
@@ -49,9 +50,8 @@
                     </li>
                 </ul>
                 <ul class="list-inline list-inline-pipe text-center border-bottom-grey border-bottom-lighten-3 h5">
-                    <li>Project Ended By: 
-                        <span class=" text-bold-600 purple">{{ $project->user? $project->user->full_name : ''  }}</span>
-                    </li>
+                    <li>Project Created At: <span class=" text-bold-600 purple">{{ dateFormat($project->created_at) }}</span></li>
+                    <li>Project Ended By: <span class=" text-bold-600 purple">{{ @$project->user->full_name }}</span></li>
                 </ul>
                 @if ($project->end_note)
                     <ul class="list-inline list-inline-pipe text-center border-bottom-grey border-bottom-lighten-3 h5">

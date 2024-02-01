@@ -1,230 +1,241 @@
 @extends ('core.layouts.app')
 @section('title', trans('general.dashboard_title') . ' | ' . config('core.cname'))
 @section('content')
+
+    <head>
+        <title>Laravel 8 Chart JS Example Tutorial - Pie Chart - Tutsmake.com</title>
+        <!-- Latest CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+{{--        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.js"></script>--}}
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.0.0/dist/chart.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    </head>
+
     <!-- BEGIN: Content-->
     <div class="">
         <div class="content-wrapper">
             <div class="content-header row">
             </div>
             <div class="content-body">
-                <!-- Stats -->
-                <div class="row">
-                    <div class="col-xl-3 col-lg-6 col-12">
-                        <div class="card">
-                            <div class="card-content">
-                                <div class="media align-items-stretch">
-                                    <div class="p-2 text-center bg-primary bg-darken-2">
-                                        <i class="fa fa-file-text-o font-large-2 white"></i>
-                                    </div>
-                                    <div class="p-2 bg-gradient-x-primary white media-body">
-                                        <h5>{{ trans('dashboard.today_invoices') }}</h5>
-                                        <h5 class="text-bold-400 mb-0"><i class="ft-plus"></i> <span id="dash_1"><i
-                                                    class="fa fa-spinner spinner"></i></span>
-                                        </h5>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-6 col-12">
-                        <div class="card">
-                            <div class="card-content">
-                                <div class="media align-items-stretch">
-                                    <div class="p-2 text-center bg-warning bg-darken-2">
-                                        <i class="icon-basket-loaded font-large-2 white"></i>
-                                    </div>
-                                    <div class="p-2 bg-gradient-x-warning white media-body">
-                                        <h5>{{ trans('dashboard.today_sales') }}</h5>
-                                        <h5 class="text-bold-400 mb-0"><i class="ft-arrow-up"></i><span id="dash_2"><i
-                                                    class="fa fa-spinner spinner"></i></span>
-                                        </h5>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-6 col-12">
-                        <div class="card">
-                            <div class="card-content">
-                                <div class="media align-items-stretch">
-                                    <div class="p-2 text-center bg-danger bg-darken-2">
-                                        <i class="icon-notebook font-large-2 white"></i>
-                                    </div>
-                                    <div class="p-2 bg-gradient-x-danger white media-body">
-                                        <h5>{{ trans('dashboard.month_invoices') }}</h5>
-                                        <h5 class="text-bold-400 mb-0"><i class="ft-arrow-up"></i><span id="dash_3"><i
-                                                    class="fa fa-spinner spinner"></i></span>
-                                        </h5>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-6 col-12">
-                        <div class="card">
-                            <div class="card-content">
-                                <div class="media align-items-stretch">
-                                    <div class="p-2 text-center bg-success bg-darken-2">
-                                        <i class="icon-wallet font-large-2 white"></i>
-                                    </div>
-                                    <div class="p-2 bg-gradient-x-success white media-body">
-                                        <h5>{{ trans('dashboard.month_sales') }}</h5>
-                                        <h5 class="text-bold-400 mb-0"><i class="ft-arrow-up"></i> <span id="dash_4"><i
-                                                    class="fa fa-spinner spinner"></i></span>
-                                        </h5>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!--/ Stats -->
-                <!--Product sale & buyers -->
-                <div class="row match-height">
-                    <div class="col-xl-8 col-lg-12">
-                        <div class="card">
+
+{{--                <code>{{ json_encode($keyMetrics)}}</code>--}}
+
+                <div class="row match-height height-70-per">
+
+                    <div class="col-12 col-lg-6">
+                        <div class="card radius-8">
                             <div class="card-header">
-                                <h4 class="card-title">{{ trans('dashboard.sales_invoice_graph') }}</h4>
-                                <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+                                <h4 class="card-title">{{ trans('dashboard.recent') }} Projects</h4>
+                                <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
                                 <div class="heading-elements">
                                     <ul class="list-inline mb-0">
-                                        <li><a data-action="reload"><i class="ft-rotate-cw"></i></a></li>
-                                        <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
+                                        <li><a href="{{ route('biller.projects.index') }}" class="btn btn-success btn-sm rounded">Manage Projects</a></li>
+                                        <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                                        <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
                                     </ul>
                                 </div>
                             </div>
+
+                            <div class="card-body">
+                                <div class="table-responsive height-300">
+                                    <table class="table table-hover mb-1">
+                                        <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>#Project No.</th>
+                                            <th width="5em">Project Name</th>
+                                            <th>Priority</th>
+                                            <th>Status</th>
+                                            <th>Deadline</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        @foreach ($projects as $i => $project)
+                                            <tr>
+                                                <td class="text-truncate">{{ $i+1 }}</td>
+                                                <td class="text-truncate">
+                                                    <a href="{{ route('biller.projects.show', $project) }}">{{ gen4tid('PRJ-', $project->tid) }}</a>
+                                                </td>
+                                                <td class="text-truncate">{{ $project->name }}</td>
+                                                <td class="text-truncate">{{ $project->priority }} </td>
+                                                <td class="text-truncate">{{ @$project->misc->name }}</td>
+                                                <td class="text-truncate">{{ dateFormat($project->end_date) }}</td>
+                                            </tr>
+                                        @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Labour Hours Graph -->
+                    <div class="col-12 col-lg-6">
+                        <div class="card radius-8">
+
                             <div class="card-content">
                                 <div class="card-body">
-                                    <div id="products-sales" class="height-300"></div>
-                                    <div class="row">
-                                        <div class="col-xl-3 col-lg-6 col-12">
-                                            <div class="card">
-                                                <div class="card-content">
-                                                    <div class="card-body">
-                                                        <div class="media">
-                                                            <div class="media-body text-left w-100">
-                                                                <h3 class="info"><span id="dash_5"><i
-                                                                            class="fa fa-spinner spinner"></i></span>
-                                                                </h3>
-                                                                <span>{{ trans('dashboard.today_sales') }}</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="progress progress-sm mt-1 mb-0">
-                                                            <div class="progress-bar bg-info" role="progressbar"
-                                                                style="width: 80%" aria-valuenow="25" aria-valuemin="0"
-                                                                aria-valuemax="100"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    <div class="bar-chart-container">
+                                        <p class="ml-6 card-title"> {{ $sevenDayLabourHours['chartTitle'] }} </p>
+                                        <canvas id="key-quantities-chart"></canvas>
+                                    </div>
+                                                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+
+                </div>
+
+
+
+
+
+                <div class="row ">
+                    <!-- Sale Invoices Graph -->
+                    <div class="col-12 col-xl-8 col-lg-12">
+                        <div class="card radius-8">
+
+                            <div class="card-content">
+                                <div class="card-body">
+                                        <div class="bar-chart-container">
+                                            <p class="ml-6 card-title">{{ $sevenDaySalesExpenses['chartTitle'] }}</p>
+                                            <canvas id="invoice-totals-chart" ></canvas>
                                         </div>
-                                        <div class="col-xl-3 col-lg-6 col-12">
-                                            <div class="card">
-                                                <div class="card-content">
-                                                    <div class="card-body">
-                                                        <div class="media">
-                                                            <div class="media-body text-left w-100">
-                                                                <h3 class="success"><span id="dash_6"><i
-                                                                            class="fa fa-spinner spinner"></i></span>
-                                                                </h3>
-                                                                <span>{{ trans('dashboard.today_income') }}</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="progress progress-sm mt-1 mb-0">
-                                                            <div class="progress-bar bg-success" role="progressbar"
-                                                                style="width: 80%" aria-valuenow="25" aria-valuemin="0"
-                                                                aria-valuemax="100"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+{{--                                    </div>--}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-4 col-lg-12">
+
+                        <div>
+
+                            <!-- Yesterday's Man Hours -->
+                            <div class="card mb-3 radius-8">
+                                <div class="card-content">
+                                    <div class="media align-items-stretch">
+                                        <div class="p-2 text-center bg-warning bg-darken-2 radius-8-left">
+                                            <i class="icon-clock font-large-1 white"></i>
                                         </div>
-                                        <div class="col-xl-3 col-lg-6 col-12">
-                                            <div class="card">
-                                                <div class="card-content">
-                                                    <div class="card-body">
-                                                        <div class="media">
-                                                            <div class="media-body text-left w-100">
-                                                                <h3 class="danger"><span id="dash_7"><i
-                                                                            class="fa fa-spinner spinner"></i></span>
-                                                                </h3>
-                                                                <span>{{ trans('dashboard.today_expenses') }}</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="progress progress-sm mt-1 mb-0">
-                                                            <div class="progress-bar bg-danger" role="progressbar"
-                                                                style="width: 80%" aria-valuenow="25" aria-valuemin="0"
-                                                                aria-valuemax="100"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-xl-3 col-lg-6 col-12">
-                                            <div class="card">
-                                                <div class="card-content">
-                                                    <div class="card-body">
-                                                        <div class="media">
-                                                            <div class="media-body text-left w-100">
-                                                                <h3 class="purple"><span id="dash_8"><i
-                                                                            class="fa fa-spinner spinner"></i></span>
-                                                                </h3>
-                                                                <span>{{ trans('dashboard.today_revenue') }}</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="progress progress-sm mt-1 mb-0">
-                                                            <div class="progress-bar bg-purple" role="progressbar"
-                                                                style="width: 80%" aria-valuenow="25" aria-valuemin="0"
-                                                                aria-valuemax="100"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <div class="p-2 bg-gradient-x-warning white media-body radius-8-right">
+                                            <h6>Yesterday's Labour Hours</h6>
+                                            <h5 class="text-bold-400 mb-0">
+                                                {{ $labourAllocationData['yesterday']['ylaTotalManHours'] }} hrs
+                                                <small class="float-right mr-4">Target: 72</small>
+                                            </h5>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-4 col-lg-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h4 class="card-title">{{ trans('dashboard.recent_buyers') }}</h4>
-                                <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
-                                <div class="heading-elements">
-                                    <ul class="list-inline mb-0">
-                                        <li><a data-action="reload"><i class="ft-rotate-cw"></i></a></li>
-                                    </ul>
+
+                            <!-- Yesterday Invoices -->
+                            <div class="card mb-3 radius-8">
+                                <div class="card-content">
+                                    <div class="media align-items-stretch">
+                                        <div class="p-2 text-center bg-primary bg-darken-2 radius-8-left">
+                                            <i class="fa fa-file-text-o font-large-1 white"></i>
+                                        </div>
+                                        <div class="p-2 bg-gradient-x-primary white media-body radius-8-right">
+                                            <h6>Yesterday Invoices</h6>
+                                            <h5 class="text-bold-400 mb-0">
+                                                <!--<i class="ft-plus"></i> -->
+                                                <!--<span id="dash_1"><i class="fa fa-spinner spinner"></i></span>-->
+                                                {{ $data['invoices']->count() }} invoice(s)
+                                            </h5>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="card-content px-1">
-                                <div id="recent-buyers_p" class="media-list height-450 position-relative">
-                                    @foreach ($data['customers'] as $customer)
-                                        <a href="#" class="media border-0">
-                                            <div class="media-left pr-1">
-                                                <span class="avatar avatar-md avatar-online"><img
-                                                        class="media-object rounded-circle"
-                                                        src="{{ Storage::disk('public')->url('app/public/img/customer/' . $customer->picture) }}">
-                                                    <i></i>
-                                                </span>
-                                            </div>
-                                            <div class="media-body w-100">
-                                                <h6 class="list-group-item-heading">
-                                                    {{ $customer->company ?: $customer->name }}
-                                                </h6>                                                
-                                            </div>
-                                        </a>
-                                    @endforeach
+
+                            <div class="card mb-3 radius-8">
+                                <div class="card-content">
+                                    <div class="media align-items-stretch">
+                                        <div class="p-2 text-center bg-primary bg-darken-2 radius-8-left">
+                                            <i class="fa icon-credit-card font-large-1 white"></i>
+                                        </div>
+                                        <div class="p-2 bg-gradient-x-primary white media-body radius-8-right">
+                                            <h6>Yesterday Purchases</h6>
+                                            <h5 class="text-bold-400 mb-0">
+                                                <!--<i class="ft-plus"></i> -->
+                                                <!--<span id="dash_1"><i class="fa fa-spinner spinner"></i></span>-->
+                                                {{ $data['purchases']->count() + $data['purchase_orders']->count() }} purchase(s)
+                                            </h5>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- This Month's Man Hours -->
+                            <div class="card mb-3 radius-8">
+                                <div class="card-content">
+                                    <div class="media align-items-stretch">
+                                        <div class="p-2 text-center bg-success bg-darken-2 radius-8-left">
+                                            <i class="icon-clock font-large-1 white"></i>
+                                        </div>
+                                        <div class="p-2 bg-gradient-x-success white media-body radius-8-right">
+                                            <h6>This Month's Labour Hours</h6>
+                                            <h5 class="text-bold-400 mb-0">
+                                                <!--<i class="ft-arrow-up"></i> <span id="dash_4"><i class="fa fa-spinner spinner"></i></span>-->
+                                                {{ $labourAllocationData['thisMonth']['tmlaTotalManHours'] }} hrs
+                                                <small class="float-right mr-4">Target: {{  $labourAllocationData['thisMonth']['monthHoursTarget'] }}</small>
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- This Month's Sales Total-->
+                            <div class="card mb-3 radius-8">
+                                <div class="card-content">
+                                    <div class="media align-items-stretch">
+                                        <div class="p-2 text-center bg-success bg-darken-2 radius-8-left">
+                                            <i class="icon-note font-large-1 white"></i>
+                                        </div>
+                                        <div class="p-2 bg-gradient-x-success white media-body radius-8-right">
+                                            <h6>This Month Sales Total</h6>
+                                            <h5 class="text-bold-400 mb-0">
+                                                <!--<i class="ft-arrow-up"></i> <span id="dash_4"><i class="fa fa-spinner spinner"></i></span>-->
+                                                KES {{ number_format($keyMetrics['thisMonth']['totals']['sales'], 2, '.', ',') }}
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- This Month's Purchases Total-->
+                            <div class="card mb-3 radius-8">
+                                <div class="card-content">
+                                    <div class="media align-items-stretch">
+                                        <div class="p-2 text-center bg-success bg-darken-2 radius-8-left">
+                                            <i class="icon-clock font-large-1 white"></i>
+                                        </div>
+                                        <div class="p-2 bg-gradient-x-success white media-body radius-8-right">
+                                            <h6>This Month Purchases Total</h6>
+                                            <h5 class="text-bold-400 mb-0">
+                                                <!--<i class="ft-arrow-up"></i> <span id="dash_4"><i class="fa fa-spinner spinner"></i></span>-->
+                                               KES {{ number_format($keyMetrics['thisMonth']['totals']['expenses'], 2, '.', ',') }}
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
                         </div>
+
                     </div>
                 </div>
-                <!--/ Product sale & buyers -->
-                <!--Recent Orders & Monthly Salse -->
+                
+                <!-- Recent & Monthly Sales -->
                 <div class="row match-height">
                     <div class="col-xl-8 col-lg-12">
-                        <div class="card">
+                        <div class="card radius-8">
                             <div class="card-header">
                                 <h4 class="card-title">{{ trans('dashboard.recent_invoices') }}</h4>
                                 <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
@@ -240,6 +251,8 @@
                                     </ul>
                                 </div>
                             </div>
+
+                            <!-- Recent Invoices -->
                             <div class="card-content">
                                 <div class="table-responsive">
                                     <table id="recent-orders"
@@ -288,97 +301,67 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-4 col-lg-12">
-                        <div class="card">
-                            <div class="card-content">
-                                <div class="card-header">
-                                    <div class="chart-title mb-1 text-center">
-                                        <h3>{{ trans('dashboard.income_vs_expenses') }}</h3>
-                                    </div>
-                                    <hr>
-                                </div>
-                                <div class="card-body sales-growth-chart">
-                                    <div class="dashboard-sales-breakdown-chart height-350" id="income-compare-chart">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!--/Recent Orders & Monthly Salse -->
-                <div class="row match-height">
-                    <div class="col-xl-8 col-lg-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h4 class="card-title">{{ trans('dashboard.recent') }} <a
-                                        href="{{ route('biller.transactions.index') }}"
-                                        class="btn btn-primary btn-sm rounded">{{ trans('transactions.transactions') }}</a>
-                                </h4>
-                                <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
-                                <div class="heading-elements">
-                                    <ul class="list-inline mb-0">
-                                        <li><a data-action="reload"><i class="icon-reload"></i></a></li>
-                                        <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-1">
-                                        <thead>
-                                            <tr>
-                                                <th>{{ trans('transactions.payment_date') }}</th>
-                                                <th>{{ trans('transactions.account_id') }}</th>
-                                                <th>{{ trans('transactions.debit') }}</th>
-                                                <th>{{ trans('transactions.credit') }}</th>
-                                                <th>{{ trans('transactions.method') }}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($transactions as $item)
-                                                <tr>
-                                                    <td class="text-truncate"><a
-                                                            href="{{ route('biller.transactions.show', [$item['id']]) }}">{{ dateFormat($item['payment_date']) }}
-                                                            #{{ $item['id'] }}</a></td>
-                                                    <td class="text-truncate">{{ @$item->account->holder }}</td>
-                                                    <td class="text-truncate">{{ amountFormat($item['debit']) }} </td>
-                                                    <td class="text-truncate">{{ amountFormat($item['credit']) }}</td>
-                                                    <td class="text-truncate">{{ $item['method'] }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-4 col-lg-12">
-                        <div class="card">
-                            <div class="card-header ">
-                                <h4 class="card-title">{{ trans('dashboard.stock_alert') }}</h4>
-                            </div>
-                            <div class="card-body">
-                                <ul class="list-group list-group-flush">
-                                    @foreach ($data['stock_alert'] as $productvariation)
-                                        <li class="list-group-item">
-                                            <span class="badge badge-danger float-xs-right">
-                                                Qty: {{ +$productvariation->qty }} {{ @$productvariation->product->unit->code }}                                             
-                                            </span> - 
-                                            <a href="{{ route('biller.products.show', $productvariation->parent_id) }}">
-                                                {{ $productvariation->name }}
-                                            </a> - 
-                                            <small class="purple"> <i class="ft-map-pin"></i>{{ @$productvariation->warehouse->title }}</small>
-                                        </li>
-                                    @endforeach
+
+                    <!-- Income Vs Expense Report -->
+{{--                    <div class="col-xl-4 col-lg-12">--}}
+{{--                        <div class="card radius-8">--}}
+{{--                            <div class="card-content">--}}
+{{--                                <div class="card-header">--}}
+{{--                                    <div class="chart-title mb-1 text-center">--}}
+{{--                                        <h3>{{ trans('dashboard.income_vs_expenses') }}</h3>--}}
+{{--                                    </div>--}}
+{{--                                    <hr>--}}
+{{--                                </div>--}}
+{{--                                <div class="card-body sales-growth-chart">--}}
+{{--                                    <div class="dashboard-sales-breakdown-chart height-350" id="income-compare-chart">--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+
+
+                    <!-- Recent Buyers -->
+                    <div class="col-12 col-lg-4 card radius-8" >
+                        <div class="card-header">
+                            <h4 class="card-title">{{ trans('dashboard.recent_buyers') }}</h4>
+                            <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+                            <div class="heading-elements">
+                                <ul class="list-inline mb-0">
+                                    <li><a data-action="reload"><i class="ft-rotate-cw"></i></a></li>
                                 </ul>
                             </div>
                         </div>
+                        <div class="card-content px-1">
+                            <div id="recent-buyers_p" class="media-list height-450 position-relative">
+                                @foreach ($data['customers'] as $customer)
+                                    <a href="#" class="media border-0">
+                                        <div class="media-left pr-1">
+                                                <span class="avatar avatar-md avatar-online"><img
+                                                            class="media-object rounded-circle"
+                                                            src="{{ Storage::disk('public')->url('app/public/img/customer/' . $customer->picture) }}">
+                                                    <i></i>
+                                                </span>
+                                        </div>
+                                        <div class="media-body w-100">
+                                            <h6 class="list-group-item-heading">
+                                                {{ $customer->company ?: $customer->name }}
+                                            </h6>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
+
+
                 </div>
+
             </div>
             <div class="row">
-                <div class="col-xl-7 col-lg-12">
-                    <div class="card" id="transactions">
+                <!-- CashFlow Graph -->
+                {{-- <div class="col-xl-7 col-lg-12">
+                    <div <div class="card radius-8"> id="transactions">
                         <div class="card-body">
                             <h4>{{ trans('dashboard.cash_flow') }}</h4>
                             <p>{{ trans('dashboard.cash_flow_graph') }}</p>
@@ -403,9 +386,11 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-xl-5 col-lg-12">
-                    <div class="card">
+                </div> --}}
+
+                <!-- Task Manager -->
+                {{-- <div class="col-xl-5 col-lg-12">
+                    <div class="card radius-8">
                         <div class="card-header">
                             <h4 class="card-title">{{ trans('dashboard.task_manager') }} <a
                                     href="{{ route('biller.todo') }}"><i class="icon-arrow-right deep-orange"></i></a>
@@ -429,221 +414,569 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>
     <input type="hidden" id="loader_url" value="{{ route('biller.tasks.load') }}">
     <input type="hidden" id="mini_dash" value="{{ route('biller.mini_dash') }}">
     <!-- END: Content-->
-    @include('focus.projects.modal.task_view')
+    {{-- @include('focus.projects.modal.task_view') --}}
 @endsection
+
 @section('after-styles')
     {!! Html::style('core/app-assets/vendors/css/charts/morris.css') !!}
 @endsection
+
 @section('extra-scripts')
-    {{ Html::script('core/app-assets/vendors/js/charts/raphael-min.js') }}
-    {{ Html::script('core/app-assets/vendors/js/charts/morris.min.js') }}
-    {{ Html::script(mix('js/dataTable.js')) }}
-    <script type="text/javascript">
-        const ps = new PerfectScrollbar('#recent-buyers_p', {
-            wheelSpeed: 2,
-            wheelPropagation: true,
-            minScrollbarLength: 20
-        });
-        $(window).on("load", function() {
+{{ Html::script('core/app-assets/vendors/js/charts/raphael-min.js') }}
+{{ Html::script('core/app-assets/vendors/js/charts/morris.min.js') }}
+{{ Html::script(mix('js/dataTable.js')) }}
+<script type="text/javascript">
 
-            setTimeout(function() {
-                loadDash();
-            }, 1500);
-        });
-
-        function loadDash() {
-
-            var action_url = $('#mini_dash').val();
-
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                }
-            });
-            $.ajax({
-                url: action_url,
-                type: 'POST',
-                dataType: 'json',
-                success: function(data) {
-                    var i = 1;
-                    //  var obj = jQuery.parseJSON(data);
-                    $.each(data.dash, function(key, value) {
-                        $('#dash_' + i).text(value);
-                        i++;
-                    });
-                    drawIncomeChart(data.income_chart);
-                    drawExpenseChart(data.expense_chart);
-                    drawCompareChart(data.inv_exp);
-                    sales(data.sales);
-
-                }
-            });
-            //ajax_end
+    Chart.register(ChartDataLabels);
 
 
-            var dataTable = $('#tasks-table').dataTable({
-                processing: true,
-                serverSide: true,
-                responsive: true,
-                "searching": false,
-                "paging": false,
-                "info": false,
-                "bLengthChange": false,
-                "sDom": 't',
-                language: {
-                    @lang('datatable.strings')
-                },
-                ajax: {
-                    url: '{{ route('biller.tasks.get') }}',
-                    type: 'post'
-                },
-                columns: [{
-                        data: 'tags',
-                        name: 'tags'
+    // Daily Sales and Expense Totals
+    $(function(){
+
+        let sevenDaySalesExpenses = @json($sevenDaySalesExpenses);
+
+        var ctx = $("#invoice-totals-chart");
+
+        var chart1 = new Chart(ctx, {
+            type: 'line',
+
+            data: {
+                labels: sevenDaySalesExpenses.salesDates,
+                datasets: [
+                    {
+                        label: "Sales",
+                        data: sevenDaySalesExpenses.salesTotals,
+                        tension: 0.1,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192)',
                     },
                     {
-                        data: 'start',
-                        name: 'start'
+                        label: "Expenses",
+                        data: sevenDaySalesExpenses.expensesTotals,
+                        tension: 0.1,
+                        backgroundColor: 'rgba(255, 205, 86, 0.2)',
+                        borderColor: 'rgba(255, 205, 86)',
                     },
-                    {
-                        data: 'duedate',
-                        name: 'duedate'
-                    },
-                    {
-                        data: 'status',
-                        name: 'status'
-                    },
-                ],
-                buttons: [],
-                order: [
-                    [0, "desc"]
-                ],
-                searchDelay: 500,
-                dom: 'Blfrtip'
-            });
-            $('#tasks-table_wrapper').removeClass('form-inline');
-            window.dispatchEvent(new Event('resize'));
-
-        }
-
-        function drawCompareChart(inv_exp) {
-            $('#dashboard-sales-breakdown-chart').empty();
-            Morris.Donut({
-                element: 'income-compare-chart',
-                data: [{
-                        label: "{{ trans('accounts.Income') }}",
-                        value: inv_exp.income
-                    },
-                    {
-                        label: "{{ trans('accounts.Expenses') }}",
-                        value: inv_exp.expense
-                    }
-                ],
-                resize: true,
-                colors: ['#34cea7', '#ff6e40'],
-                gridTextSize: 6,
-                gridTextWeight: 400
-            });
-        }
-
-
-        function drawIncomeChart(dataIncome) {
-            $('#dashboard-income-chart').empty();
-            Morris.Area({
-                element: 'dashboard-income-chart',
-                data: dataIncome,
-                xkey: 'x',
-                ykeys: ['y'],
-                ymin: 'auto 40',
-                labels: ['{{ trans('general.amount') }}'],
-                xLabels: "day",
-                hideHover: 'auto',
-                yLabelFormat: function(y) {
-                    // Only integers
-                    if (y === parseInt(y, 10)) {
-                        return y;
-                    } else {
-                        return '';
-                    }
-                },
-                resize: true,
-                lineColors: [
-                    '#00A5A8',
-                ],
-                pointFillColors: [
-                    '#00A5A8',
-                ],
-                fillOpacity: 0.4,
-            });
-        }
-
-        function drawExpenseChart(dataExpenses) {
-
-            $('#dashboard-expense-chart').empty();
-            Morris.Area({
-                element: 'dashboard-expense-chart',
-                data: dataExpenses,
-                xkey: 'x',
-                ykeys: ['y'],
-                ymin: 'auto 0',
-                labels: ['{{ trans('general.amount') }}'],
-                xLabels: "day",
-                hideHover: 'auto',
-                yLabelFormat: function(y) {
-                    // Only integers
-                    if (y === parseInt(y, 10)) {
-                        return y;
-                    } else {
-                        return '';
-                    }
-                },
-                resize: true,
-                lineColors: [
-                    '#ff6e40',
-                ],
-                pointFillColors: [
-                    '#34cea7',
                 ]
-            });
-        }
-
-        function sales(sales_data) {
-            var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            Morris.Area({
-                element: 'products-sales',
-                data: sales_data,
-                xkey: 'y',
-                ykeys: ['sales', 'invoices'],
-                labels: ['sales', 'invoices'],
-                behaveLikeLine: true,
-                xLabelFormat: function(x) { // <--- x.getMonth() returns valid index
-                    var day = x.getDate();
-                    var month = months[x.getMonth()];
-                    return day + ' ' + month;
+            },
+            options: {
+                datasets : {
+                    bar : {
+                        borderRadius : 6,
+                        borderSkipped : 'bottom',
+                    }
                 },
-                resize: true,
-                pointSize: 0,
-                pointStrokeColors: ['#00B5B8', '#FA8E57', '#F25E75'],
-                smooth: true,
-                gridLineColor: '#E4E7ED',
-                numLines: 6,
-                gridtextSize: 14,
-                lineWidth: 0,
-                fillOpacity: 0.9,
-                hideHover: 'auto',
-                lineColors: ['#00B5B8', '#F25E75']
-            });
-        }
-
-        $('a[data-toggle=tab').on('shown.bs.tab', function(e) {
-            window.dispatchEvent(new Event('resize'));
+                scales: {
+                    xAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Day of the month'
+                        }
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Invoice Totals'
+                        },
+                        ticks: {
+                            beginAtZero:true,
+                            userCallback: function(value, index, values) {
+                                value = value.toString();
+                                value = value.split(/(?=(?:...)*$)/);
+                                value = value.join(',');
+                                return value;
+                            }
+                        }
+                    }]
+                },
+                tooltips: {
+                    enabled: true,
+                    mode: 'single',
+                    callbacks: {
+                        title: function (tooltipItems, data) {
+                            //Return value for title
+                            return dailySalesExpensesData.month + ' ' + tooltipItems[0].xLabel;
+                        },
+                        label: function (tooltipItems, data) { // Solution found on https://stackoverflow.com/a/34855201/6660135
+                            //Return value for label
+                            return 'KES ' + tooltipItems.yLabel;
+                        }
+                    }
+                },
+                responsive: true,
+                transitions: {
+                    show: {
+                        animations: {
+                            x: {
+                                from: 0
+                            },
+                            y: {
+                                from: 0
+                            }
+                        }
+                    },
+                    hide: {
+                        animations: {
+                            x: {
+                                to: 0
+                            },
+                            y: {
+                                to: 0
+                            }
+                        }
+                    }
+                },
+                plugins:{
+                    datalabels: {
+                        display: true,
+                        color: 'black',
+                        anchor: 'top',
+                        align: 'right',
+                        labels: {
+                            title: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        formatter: (value, context) => {
+                            // Use Intl.NumberFormat to format the value with commas
+                            return new Intl.NumberFormat('en-US').format(value);
+                        },
+                    }
+                }
+            }
         });
-    </script>
+
+
+    });
+
+
+    // Key Metrics Quantities
+    $(function(){
+
+        let sevenDayLabourHours = @json($sevenDayLabourHours);
+
+
+        //get the pie chart canvas
+        var ctx = $("#key-quantities-chart");
+
+        //create Pie Chart class object
+        var chart1 = new Chart(ctx, {
+            type: 'bar',
+
+            data: {
+                labels: (sevenDayLabourHours.labourDates),
+                datasets: [
+
+                    {
+                        label: "Labour Hours",
+                        data: sevenDayLabourHours.hoursTotals,
+                        backgroundColor: 'rgba(75,192,77,0.2)',
+                        borderColor: 'rgba(75,192,77)',
+                        borderWidth: 1,
+                    },
+
+                ]
+            },
+            options: {
+                datasets : {
+                    bar : {
+                        borderRadius : 6,
+                        borderSkipped : 'bottom',
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Day of the month'
+                        }
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Invoice Totals'
+                        },
+                        ticks: {
+                            beginAtZero:true,
+                            userCallback: function(value, index, values) {
+                                value = value.toString();
+                                value = value.split(/(?=(?:...)*$)/);
+                                value = value.join(',');
+                                return value;
+                            }
+                        }
+                    }]
+                },
+                // tooltips: {
+                //     enabled: true,
+                //     mode: 'single',
+                //     callbacks: {
+                //         title: function (tooltipItems, data) {
+                //             //Return value for title
+                //             return keyMetrics.month + ' ' + tooltipItems[0].xLabel;
+                //         },
+                //         label: function (tooltipItems, data) { // Solution found on https://stackoverflow.com/a/34855201/6660135
+                //             //Return value for label
+                //             return 'KES ' + tooltipItems.yLabel;
+                //         }
+                //     }
+                // },
+                responsive: true,
+                transitions: {
+                    show: {
+                        animations: {
+                            x: {
+                                from: 0
+                            },
+                            y: {
+                                from: 0
+                            }
+                        }
+                    },
+                    hide: {
+                        animations: {
+                            x: {
+                                to: 0
+                            },
+                            y: {
+                                to: 0
+                            }
+                        }
+                    }
+                },
+                plugins:{
+                    datalabels: {
+                        color: 'black',
+                        anchor: 'top',
+                        labels: {
+                            title: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        padding:{
+                            bottom: 20,
+                        }
+                    }
+                }
+            }
+        });
+
+
+    });
+
+
+    //Key Metrics TOTALS
+    $(function(){
+
+        let keyMetrics = @json($keyMetrics);
+        let yesterdayTotals = keyMetrics.yesterday.totals;
+        let monthTotals = keyMetrics.thisMonth.totals;
+
+        //get the pie chart canvas
+        var ctx = $("#key-totals-chart");
+
+        //create Pie Chart class object
+        var chart1 = new Chart(ctx, {
+            type: 'bar',
+
+            data: {
+                labels: ["Yesterday", "This Month"],
+                datasets: [
+                    {
+                        label: "Sales",
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 205, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(201, 203, 207, 0.2)'
+                        ],
+                        borderWidth: 1,
+                        borderColor: 'rgba(255, 205, 86)',
+                        data: [yesterdayTotals.sales, monthTotals.sales]
+                    },
+                    {
+                        label: "Expense",
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderWidth: 1,
+                        borderColor: 'rgba(153, 102, 255)',
+                        data: [yesterdayTotals.expenses, monthTotals.expenses]
+                    },
+                    // {
+                    //     label: "Labour Entries",
+                    //     backgroundColor: 'rgba(201, 203, 207, 0.2)',
+                    //     borderWidth: 1,
+                    //     borderColor: 'rgba(201, 203, 207)',
+                    //     data: [yesterdayTotals.labourEntries, monthTotals.labourEntries]
+                    // },
+                ]
+            },
+            options: {
+                datasets : {
+                    bar : {
+                        borderRadius : 6,
+                        borderSkipped : 'bottom',
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Day of the month'
+                        }
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Invoice Totals'
+                        },
+                        ticks: {
+                            beginAtZero:true,
+                            userCallback: function(value, index, values) {
+                                value = value.toString();
+                                value = value.split(/(?=(?:...)*$)/);
+                                value = value.join(',');
+                                return value;
+                            }
+                        }
+                    }]
+                },
+                // tooltips: {
+                //     enabled: true,
+                //     mode: 'single',
+                //     callbacks: {
+                //         title: function (tooltipItems, data) {
+                //             //Return value for title
+                //             return keyMetrics.month + ' ' + tooltipItems[0].xLabel;
+                //         },
+                //         label: function (tooltipItems, data) { // Solution found on https://stackoverflow.com/a/34855201/6660135
+                //             //Return value for label
+                //             return 'KES ' + tooltipItems.yLabel;
+                //         }
+                //     }
+                // },
+                responsive: true,
+                transitions: {
+                    show: {
+                        animations: {
+                            x: {
+                                from: 0
+                            },
+                            y: {
+                                from: 0
+                            }
+                        }
+                    },
+                    hide: {
+                        animations: {
+                            x: {
+                                to: 0
+                            },
+                            y: {
+                                to: 0
+                            }
+                        }
+                    }
+                },
+                plugins:{
+                    datalabels: {
+                        color: 'black',
+                        anchor: 'top',
+                        labels: {
+                            title: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        padding:{
+                            bottom: 20,
+                        }
+                    }
+                }
+            }
+        });
+
+
+    });
+
+
+
+    // const ps = new PerfectScrollbar('#recent-buyers_p', {
+    //     wheelSpeed: 2,
+    //     wheelPropagation: true,
+    //     minScrollbarLength: 20
+    // });
+    // $(window).on("load", function() {
+    //     setTimeout(function() { loadDash() }, 1500);
+    // });
+
+    function loadDash() {
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        var action_url = $('#mini_dash').val();
+        $.ajax({
+            url: action_url,
+            type: 'POST',
+            dataType: 'json',
+            success: function(data) {
+                var i = 1;
+                //  var obj = jQuery.parseJSON(data);
+                $.each(data.dash, function(key, value) {
+                    $('#dash_' + i).text(value);
+                    i++;
+                });
+                // drawIncomeChart(data.income_chart);
+                // drawExpenseChart(data.expense_chart);
+                drawCompareChart(data.inv_exp);
+                sales(data.sales);
+            }
+        });
+        window.dispatchEvent(new Event('resize'));
+    }
+
+    function drawCompareChart(inv_exp) {
+        $('#dashboard-sales-breakdown-chart').empty();
+        Morris.Donut({
+            element: 'income-compare-chart',
+            data: [{
+                    label: "{{ trans('accounts.Income') }}",
+                    value: inv_exp.income
+                },
+                {
+                    label: "{{ trans('accounts.Expenses') }}",
+                    value: inv_exp.expense
+                }
+            ],
+            resize: true,
+            colors: ['#34cea7', '#ff6e40'],
+            gridTextSize: 6,
+            gridTextWeight: 400
+        });
+    }
+
+    function drawIncomeChart(dataIncome) {
+        $('#dashboard-income-chart').empty();
+        Morris.Area({
+            element: 'dashboard-income-chart',
+            data: dataIncome,
+            xkey: 'x',
+            ykeys: ['y'],
+            ymin: 'auto 40',
+            labels: ['{{ trans('general.amount') }}'],
+            xLabels: "day",
+            hideHover: 'auto',
+            yLabelFormat: function(y) {
+                // Only integers
+                if (y === parseInt(y, 10)) return y;
+                return '';
+            },
+            resize: true,
+            lineColors: ['#00A5A8'],
+            pointFillColors: ['#00A5A8'],
+            fillOpacity: 0.4,
+        });
+    }
+
+    function drawExpenseChart(dataExpenses) {
+        $('#dashboard-expense-chart').empty();
+        Morris.Area({
+            element: 'dashboard-expense-chart',
+            data: dataExpenses,
+            xkey: 'x',
+            ykeys: ['y'],
+            ymin: 'auto 0',
+            labels: ['{{ trans('general.amount') }}'],
+            xLabels: "day",
+            hideHover: 'auto',
+            yLabelFormat: function(y) {
+                // Only integers
+                if (y === parseInt(y, 10)) return y;
+                return '';
+            },
+            resize: true,
+            lineColors: ['#ff6e40'],
+            pointFillColors: ['#34cea7']
+        });
+    }
+
+    function sales(sales_data) {
+        $('#products-sales').empty();
+        var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        Morris.Area({
+            element: 'products-sales',
+            data: sales_data,
+            xkey: 'y',
+            ykeys: ['sales', 'invoices'],
+            labels: ['sales', 'invoices'],
+            behaveLikeLine: true,
+            xLabelFormat: function(x) {
+                var day = x.getDate();
+                var month = months[x.getMonth()];
+                return day + ' ' + month;
+            },
+            resize: true,
+            pointSize: 0,
+            pointStrokeColors: ['#00B5B8', '#FA8E57', '#F25E75'],
+            smooth: true,
+            gridLineColor: '#E4E7ED',
+            numLines: 6,
+            gridtextSize: 14,
+            lineWidth: 0,
+            fillOpacity: 0.9,
+            hideHover: 'auto',
+            lineColors: ['#00B5B8', '#F25E75'],
+        });
+    }
+
+    $('a[data-toggle=tab').on('shown.bs.tab', function(e) {
+        window.dispatchEvent(new Event('resize'));
+    });
+</script>
+
+<style>
+    div.scroll {
+        background-color: #fed9ff;
+        width: 600px;
+        height: 150px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        text-align: center;
+        padding: 20px;
+    }
+    .radius-8-right {
+        border-radius: 0 8px 8px 0;
+    }
+    .radius-8-left {
+        border-radius: 8px 0 0 8px;
+    }
+    .radius-8 {
+        border-radius: 8px;
+    }
+
+    .grid-container-2 {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: auto auto;
+    }
+</style>
+
 @endsection

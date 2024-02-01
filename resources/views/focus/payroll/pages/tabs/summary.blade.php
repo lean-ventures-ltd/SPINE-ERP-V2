@@ -8,17 +8,38 @@
                     <tr>
                         <th>Employee Id</th>
                         <th>Employee Name</th>
-                        <th>Total Basic Salary</th>
-                        <th>Total Tx Allowances</th>
+                        <th>Basic Salary</th>
+                        <th>Max Hourly Salary</th>
+                        <th>Hourly Wage</th>
+                        <th>Hours Worked</th>
+                        <th>Basic Hourly Salary</th>
+                        <th>Absent Days</th>
+                        <th>Absenteeism Deduction Rate</th>
+                        <th>Absenteeism Deduction</th>
+                        <th>Total Basic Salary </th>
+                        <th>House Allowance</th>
+                        <th>Transport Allowance</th>
+                        <th>Other Allowance</th>
+                        <th>Total Allowances</th>
+                        <th>Basic + Allowance</th>
+                        <th>Taxable Deductions</th>
+                        <th>Narration</th>
                         <th>NSSF</th>
-                        <th>Total Tx Monthly Deductions</th>
                         <th>Taxable Gross</th>
-                        <th>Total PAYE</th>
                         <th>NHIF</th>
-                        <th>Other Allowances</th>
+                        <th>Housing Levy</th>
+                        <th>Income Tax</th>
+                        <th>NHIF Relief</th>
+                        <th>Personal Relief</th>
+                        <th>PAYE</th>
+                        <th>Pay after PAYE</th>
+                        <td>Loan Deduction</td>
+                        <td>Advance Deduction</td>
                         <th>Other Benefits</th>
                         <th>Other Deductions</th>
+                        <th>Other Allowances</th>
                         <th>Net Pay</th>
+
                         
                     </tr>
                 </thead>
@@ -27,46 +48,47 @@
                         $i = 1;
                         
                     @endphp
-                    @foreach ($payroll->payroll_items as $item)
+                    @foreach ($payrollItems as $item)
                         @if ($item)
-                      
 
-                        @php
-                       
-                            $salary =  $item->basic_pay;
-                           
-                            $allowances =  $item->total_allowance;
-                            $deductions =  $item->tx_deductions;
-                            $paye =  $item->paye;
-                            $nssf =  $item->nssf;
-                            $nhif =  $item->nhif;
-                            $total_other_allowances =  $item->total_other_allowances;
-                            $taxable_gross = $item->gross_pay;
-                            $benefits =  $item->total_benefits;
-                            $loan_advance = $item->loan + $item->advance;
-                            $otherdeductions =  $item->total_other_deduction + $loan_advance;
-                            $net_pay = $taxable_gross - ($item->paye + $item->nhif);
-                            $net = $net_pay + $total_other_allowances + $benefits - ($otherdeductions);
-                            @endphp
                         <tr>
                             <td>{{ gen4tid('EMP-', $item->employee_id) }}</td>
-                            <td>{{ $item->employee_name }}</td>
-                            <input type="hidden" name="id[]" value="{{ $item->id }}">
-                            <input type="hidden" name="payroll_id" value="{{ $item->payroll_id }}">
-                            <td>{{ amountFormat($salary) }}</td>
-                            <td>{{amountFormat($allowances) }}</td>
-                            <td>{{amountFormat($nssf) }}</td>
-                            <td>{{ amountFormat($deductions) }}</td>
-                            <td>{{ amountFormat($taxable_gross) }}</td>
-                            <td >{{ amountFormat($paye) }}</td>
-                            <td >{{ amountFormat($nhif) }}</td>
-                            <td >{{ amountFormat($total_other_allowances) }}</td>
-                            <td>{{ amountFormat($benefits) }}</td>
-                            <td>{{ amountFormat($otherdeductions) }}</td>
-                            <input type="hidden" name="netpay[]" value="{{ $net }}"
-                            id="">
-                            <td class="netpay">{{ amountFormat($net) }} </td>   
-                            
+                            <td>{{ $item->name }}</td>
+                            <input type="hidden" name="id[]" value="{{ $item->fixed_salary }}">
+                            <input type="hidden" name="payroll_id" value="{{ $item->max_hourly_salary }}">
+                            <td>{{ amountFormat($item->fixed_salary) }}</td>
+                            <td>{{ amountFormat($item->max_hourly_salary) }}</td>
+                            <td>{{ amountFormat($item->pay_per_hr) }}</td>
+                            <td>{{ $item->man_hours }}</td>
+                            <td>{{amountFormat($item->basic_hourly_salary) }}</td>
+                            <td>{{ $item->absent_days }}</td>
+                            <td>{{ amountFormat($item->absent_daily_deduction) }}</td>
+                            <td >{{ amountFormat($item->absent_total_deduction) }}</td>
+                            <td >{{ amountFormat($item->basic_salary) }}</td>
+                            <td >{{ amountFormat($item->house_allowance) }}</td>
+                            <td>{{ amountFormat($item->transport_allowance) }}</td>
+                            <td>{{ amountFormat($item->other_allowance) }}</td>
+                            <td>{{ amountFormat($item->total_allowance) }}</td>
+                            <td>{{ amountFormat($item->basic_plus_allowance) }}</td>
+                            <td>{{ amountFormat($item->taxable_deductions) }}</td>
+                            <td>{{ $item->deduction_narration }}</td>
+                            <td>{{ amountFormat($item->nssf) }}</td>
+                            <td>{{ amountFormat($item->taxable_gross) }}</td>
+                            <td>{{ amountFormat($item->nhif) }}</td>
+                            <td>{{ amountFormat($item->housing_levy) }}</td>
+                            <td>{{ amountFormat($item->income_tax) }}</td>
+                            <td>{{ amountFormat($item->nhif_relief) }}</td>
+                            <td>{{ amountFormat($item->personal_relief) }}</td>
+                            <td>{{ amountFormat($item->paye) }}</td>
+                            <input type="hidden" name="netpay[]" value="{{ $item->netpay }}" id="">
+                            <td class="netpay">{{ amountFormat($item->netpay) }} </td>
+                            <td>{{ amountFormat($item->loan) }}</td>
+                            <td>{{ amountFormat($item->advance) }}</td>
+                            <td>{{ amountFormat($item->benefits) }}</td>
+                            <td>{{ amountFormat($item->other_deductions) }}</td>
+                            <td>{{ amountFormat($item->other_allowances) }}</td>
+                            <td>{{ amountFormat($item->net_after_bnd) }}</td>
+
                            
                         </tr>
                         

@@ -26,9 +26,6 @@ class EquipmentRepository extends BaseRepository
     public function getForDataTable()
     {
         $q = $this->query();
-
-        $customer_id = auth()->user()->customer_id;
-        $q->when($customer_id, fn($q) => $q->where('customer_id', $customer_id));
         
         $q->when(request('customer_id'), function ($q) {
             $q->where('customer_id', request('customer_id'));
@@ -54,7 +51,7 @@ class EquipmentRepository extends BaseRepository
         
         
         $q->with(['customer', 'branch']);
-        return $q;
+        return $q->get();
     }
 
     /**
@@ -91,6 +88,7 @@ class EquipmentRepository extends BaseRepository
         // dd($input);
         foreach ($input as $key => $val) {
             if ($key == 'install_date') $input[$key] = date_for_database($val);
+            if ($key == 'end_of_warranty') $input[$key] = date_for_database($val);
             if ($key == 'service_rate') $input[$key] = numberClean($val);
         }
         
@@ -108,9 +106,13 @@ class EquipmentRepository extends BaseRepository
      */
     public function delete($equipment)
     {
-        $service = $equipment->contract_service;
-        if ($service) throw ValidationException::withMessages(["Equipment is attached to a report! Jobcard No. {$service->jobcard_no}"]);
-            
+        if ($equipment->contract_service) {
+            $service = $equipment->contract_service;
+            throw ValidationException::withMessages(["Equipment is attached to a report! Jobcard No. {$service->jobcard_no}"]);
+        }
+        
         if ($equipment->delete()) return true;
+            
+        throw new GeneralException(trans('exceptions.backend.productcategories.delete_error'));
     }
 }

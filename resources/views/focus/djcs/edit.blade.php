@@ -3,13 +3,13 @@
 @php
     $part_title = request('page') == 'copy'? 'Copy' : 'Edit';
 @endphp
-@section ('title', $part_title . ' | Diagnosis Job Card')
+@section ('title', $part_title . ' | Site Survey Report')
 
 @section('content')
 <div class="content-wrapper">
     <div class="content-header row mb-1">
         <div class="content-header-left col-6">
-            <h4 class="content-header-title">Djc Report Management</h4>
+            <h4 class="content-header-title">Site Survey Report Management</h4>
         </div>
         <div class="content-header-right col-6">
             <div class="media width-250 float-right">

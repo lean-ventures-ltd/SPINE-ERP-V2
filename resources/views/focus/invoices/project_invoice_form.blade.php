@@ -119,6 +119,18 @@
                 @endforeach
             </select>
         </div>
+    @else
+        <div class="col-md-2">
+            <label for="cu_invoice_no">CU Invoice No.</label>
+            <input type="text" id="cu_invoice_no" name="cu_invoice_no" required readonly class="form-control box-size"
+                   @if(!empty($newCuInvoiceNo))
+                       value="{{$newCuInvoiceNo}}"
+                    @elseif(!empty($invoice->cu_invoice_no))
+                        value="{{$invoice->cu_invoice_no}}"
+                    @endif
+            >
+
+        </div>
     @endif
 </div>
 
@@ -127,6 +139,20 @@
         <div class="input-group"><label for="title" class="caption">Note</label></div>
         {{ Form::text('notes', null, ['class' => 'form-control']) }}
     </div>
+    @if (@$quote_ids && count($quote_ids) == 1)
+        <div class="col-md-2">
+            <label for="cu_invoice_no">CU Invoice No.</label>
+{{--            {{ Form::text('cu_invoice_no', null, ['class' => 'form-control']) }}--}}
+            <input type="text" id="cu_invoice_no" name="cu_invoice_no" required readonly class="form-control box-size"
+                   @if(!empty($newCuInvoiceNo))
+                       value="{{substr_replace($newCuInvoiceNo, 'XXX', -3)}}"
+                   @elseif(!empty($invoice->cu_invoice_no))
+                       value="{{$invoice->cu_invoice_no}}"
+                    @endif
+            >
+
+        </div>
+    @endif
 </div>
 
 <div class="table-responsive">
@@ -231,7 +257,17 @@
     <div class="col-2 ml-auto">
         <label for="grandtotal">Grand Total</label>
         {{ Form::text('total', null, ['class' => 'form-control', 'id' => 'total', 'readonly']) }}
-    </div>                                    
+    </div>
+
+@if(empty($invoice))
+
+    <div class="col-2 ml-auto mt-1">
+        <label for="cuConfirmation" style="color: red;">Confirm Last 3 Digits Of CU No:</label>
+        <input type="number" id="cuConfirmation" class="form-control">
+    </div>
+
+@endif
+
     <div class="row no-gutters mt-1">
         <div class="col-1 ml-auto pl-1">
             <a href="{{ route('biller.invoices.uninvoiced_quote') }}" class="btn btn-danger block">Cancel</a>    

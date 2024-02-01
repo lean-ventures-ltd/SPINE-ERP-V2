@@ -34,20 +34,26 @@
 
                                 <div class="row">
 
-{{--                                    <div class="col-md-4">--}}
-{{--                                        <label>EDL Number:</label>--}}
-{{--                                        <input type="text" readonly value="{{ $edl['edl_number'] }}" class="form-control box-size mb-2">--}}
-{{--                                    </div>--}}
-                                    <div class="col-md-4">
+                                    <div class="col-10 col-lg-3">
                                         <label>Employee:</label>
                                         <input type="text" readonly value="{{ $edl['employee'] }}" class="form-control box-size mb-2">
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-10 col-lg-2">
+                                        <label>Role:</label>
+                                        <input type="text" readonly value="{{ $edl['role'] }}" class="form-control box-size mb-2">
+                                    </div>
+
+                                    <div class="col-6 col-lg-3">
                                         <label>Date:</label>
                                         <input type="text" readonly value="{{ (new DateTime($edl['date']))->format('l, jS F, Y') }}" class="form-control box-size mb-2">
                                     </div>
+                                    <div class="col-6 col-lg-1">
+                                        <label>Total Hours:</label>
+                                        <input type="text" readonly value="{{ $totalHours }}" class="form-control box-size mb-2">
+                                    </div>
 
                                 </div>
+
                             @endforeach
 
                             <h2 class="font-weight-bold mb-2 mt-2">EDL Tasks</h2>
@@ -69,7 +75,7 @@
                                         <label>Category:</label>
                                         <input type="text" readonly value="{{ $task['subcategory'] . " | " . $task['frequency'] }}" class="form-control box-size">
                                     </div>
-                                    <div class="col-12 col-md-2">
+                                    <div class="col-6 col-md-2 mt-1 mt-lg-0">
                                         <label>Frequency:</label>
                                         <input type="text" readonly value="{{ $task['frequency'] }}" class="form-control box-size">
                                     </div>
@@ -93,6 +99,7 @@
                             @endforeach
 
                             {{ Form::open(['route' => ['biller.edl-remark-save', $edlNumber], 'method' => 'POST', 'id' => 'create-employee-log-remark']) }}
+                            <h2 class="font-weight-bold mb-2 mt-2">Remarks</h2>
 
                                 <div class="form-group col-md-4">
                                     <label for="rating">Rating:</label>

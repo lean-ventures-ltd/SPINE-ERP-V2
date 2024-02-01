@@ -59,7 +59,48 @@
         // });
         // $('#date').datepicker('setDate', '{{ date(config('core.user_date_format')) }}');
 
-        $("#tags").select2();
+
+        function select2Config(url, callback) {
+            return {
+                ajax: {
+                    url,
+                    dataType: 'json',
+                    type: 'POST',
+                    quietMillis: 50,
+                    data: ({term}) => ({q: term, keyword: term}),
+                    processResults: callback
+                }
+            }
+        }
+
+        // load projects dropdown
+        const projectUrl = "{{ route('biller.projects.project_search') }}";
+        function projectData(data) {
+
+            return {results: data.map(v => ({id: v.id, text: v.name}))};
+        }
+        $("#project").select2(select2Config(projectUrl, projectData));
+
+
+        $(document).ready(function () {
+
+            // project
+            @php
+                $project_name = '';
+                $project = $data->project;
+                if ($project) {
+                    $sirProject = \App\Models\project\Project::find($project);
+                }
+            @endphp
+            const projectName = "{{ $sirProject->name }}";
+            const projectId = "{{ $sirProject->id }}";
+            $('#project').append(new Option(projectName, projectId, true, true)).change();
+
+
+        });
+
+
+            $("#tags").select2();
         $("#employee").select2();
         $("#person").select2({
             ajax: {

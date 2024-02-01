@@ -146,11 +146,7 @@ class MakepaymentsController extends Controller
         $invoice = array_replace($invoice, $extras, ['credit' => $amount_paid]);
         $debit_entry = array_replace($debit_entry, $extras, ['debit' => $amount_paid]);
         
-        try {
-            $result = $this->repository->create(compact('invoice', 'debit_entry'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating MakePayments', $th);
-        }
+        $result = $this->repository->create(compact('invoice', 'debit_entry'));
 
         return response()->json([
             'status' => 'Success', 

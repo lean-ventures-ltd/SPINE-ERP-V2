@@ -71,11 +71,11 @@
                                                 <th>Buyer</th>
                                                 <th>ETR Code</th>
                                                 <th>Invoice Date</th>
-                                                <th>Invoice No.</th>
+                                                <th>CU Invoice No.</th>
                                                 <th>Description</th>
                                                 <th>Taxable Amount</th>
                                                 <th>&nbsp;</th>
-                                                <th>CN Invoice No.</th>
+{{--                                                <th>Invoice No.</th>--}}
                                                 <th>CN Invoice Date</th>
                                             </tr>
                                         </thead>
@@ -183,8 +183,8 @@
                     },
                 },
                 columns: [
-                    ...['pin', 'customer', 'etr_code', 'invoice_date', 'invoice_no', 'note', 'subtotal',
-                        'empty_col', 'cn_invoice_no', 'cn_invoice_date',
+                    ...['pin', 'customer', 'etr_code', 'invoice_date', 'cu_invoice_no', 'note', 'subtotal',
+                        'empty_col', 'cn_invoice_date',
                     ].map(v => ({data: v, name: v})),
                 ],
                 order: [[3, "desc"]],
@@ -195,6 +195,7 @@
                     [25, 50, 100, 200, -1],
                     [25, 50, 100, 200, "All"]
                 ],
+                pageLength: -1,
             });
         },
 
@@ -229,6 +230,7 @@
                     [25, 50, 100, 200, -1],
                     [25, 50, 100, 200, "All"]
                 ],
+                pageLength: -1,
             });
         }
     };

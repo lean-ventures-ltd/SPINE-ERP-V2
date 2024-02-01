@@ -22,6 +22,7 @@ use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 use App\Repositories\Focus\product\ProductRepository;
 use App\Http\Requests\Focus\product\ManageProductRequest;
+use App\Models\productcategory\Productcategory;
 use DB;
 
 /**
@@ -54,46 +55,41 @@ class ProductsTableController extends Controller
      */
     public function __invoke()
     {
-        $query = $this->repository->getForDataTable();
-        $query_1 = clone $query;
+        $core = $this->repository->getForDataTable();
+
         // aggregate
         $product_count = 0;
         $product_worth = 0;
-        foreach ($query_1->get() as $product) {
+        foreach ($core as $product) {
             $product_count += $product->variations()->count();
             $product_worth += $product->variations()->sum(DB::raw('purchase_price*qty'));
         }
         $product_worth = amountFormat($product_worth);
         $aggregate = compact('product_count', 'product_worth');
        
-        return Datatables::of($query)
+        return Datatables::of($core)
             ->escapeColumns(['id'])
             ->addIndexColumn()
             ->addColumn('name', function ($product) {
-                if ($product->standard) {
-                    $this->standard_product = $product->standard;
-                    $product_name = $product->name == $product->standard->name? $product->name : "{$product->name} ({$product->standard->name})";
-                    return '<a class="font-weight-bold" href="' . route('biller.products.show', [$product->id]) . '">' . $product_name . '</a>';
-                }
                 $this->standard_product = $product->standard ?: $product;
                 return '<a class="font-weight-bold" href="' . route('biller.products.show', [$product->id]) . '">' . $product->name . '</a>';
             })
-            ->filterColumn('name', function($query, $name) {
-                $query->where('name', 'LIKE', "%{$name}%");
+             ->addColumn('productcategory_id', function ($product) {
+                $this->standard_product = $product->standard ?: $product;
+                $name = Productcategory::where('id',$product->productcategory_id)->first();
+                return  $name->title;
             })
             ->addColumn('code', function ($product) {
-                return  $this->standard_product->code;
-            })
-            ->filterColumn('code', function($query, $code) {
-
-                $query->whereHas('variations', fn($q) => $q->where('code', 'LIKE', "%{$code}%"));
+                $code = $this->standard_product->code;
+                 if ($code) 
+                return '<a class="font-weight-bold" href="' . route('biller.products.view', [$code]) . '">' . $code . '</a>';
             })
             ->addColumn('qty', function ($product) {
                 return $product->variations->sum('qty');       
             })
             ->addColumn('unit', function ($product) {
-                $unit = $this->standard_product->unit;
-                if ($unit) return $unit->code;  
+                $unit = $product->unit;
+                if ($unit) return $unit->code;   
             })
             ->addColumn('purchase_price', function ($product) {
                 return NumberFormat($this->standard_product->purchase_price);
@@ -106,11 +102,18 @@ class ProductsTableController extends Controller
                 return NumberFormat($total);
             })
             ->addColumn('created_at', function ($product) {
-                return dateFormat($product->created_at);
+                return $product->created_at->format('d-m-Y');
             })
-            ->orderColumn('created_at', '-created_at $1')
+           ->addColumn('expiry', function ($product) {
+                $expiry = $this->standard_product->expiry;
+                if ($expiry) {
+                    return dateFormat($expiry);
+                }
+               return '';
+            })
             ->addColumn('actions', function ($product) {
-                return $product->action_buttons;
+                if ($product->action_buttons) return $product->action_buttons;
+                if (isset($product->product->action_buttons)) return $product->product->action_buttons;
             })
             ->addColumn('aggregate', function () use($aggregate) {
                 return $aggregate;

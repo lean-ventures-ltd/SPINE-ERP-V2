@@ -17,6 +17,7 @@
  */
 namespace App\Http\Controllers\Focus\salary;
 
+use App\Models\payroll\Payroll;
 use App\Models\salary\Salary;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -82,6 +83,11 @@ class SalaryController extends Controller
         // dd($request->all());
         //Input received from the request
         $input = $request->except(['_token','allowance_id','amount']);
+
+//        $empDetails = json_decode($request->employee, true);
+////        $empDetails = json_decode(json_encode($empDetails), true);
+//        $input = array_merge(['employee_name' => $empDetails['full_name'], 'employee_id' => $empDetails['id']], $input);
+
        // dd($request->all());
         $input['ins'] = auth()->user()->ins;
         $input['user_id'] = auth()->user()->id;
@@ -119,7 +125,7 @@ class SalaryController extends Controller
     {
         //Input received from the request
        // $input = $request->except(['_token', 'ins']);
-        $data = $request->only(['employee_id', 'employee_name', 'basic_pay', 'contract_type','workshift_id','start_date','duration', 'pay_per_hr']);
+        $data = $request->only(['employee_id', 'employee_name', 'basic_pay', 'contract_type','workshift_id','start_date','duration', 'pay_per_hr', 'nhif', 'deduction_exempt']);
         //dd($input);
         $data_items = $request->only([
             'allowance_id','amount','id'
@@ -150,7 +156,7 @@ class SalaryController extends Controller
     {
         //Calling the delete method on repository
         $this->repository->delete($salary);
-        //returning with successfull message
+
         return new RedirectResponse(route('biller.salary.index'), ['flash_success' => trans('alerts.backend.salary.deleted')]);
     }
 
@@ -163,9 +169,11 @@ class SalaryController extends Controller
      */
     public function show(Salary $salary, Request $request)
     {
+
+        $user = $salary->user;
         $workshifts = Workshift::all(['id','name']);
         //returning with successfull message
-        return new ViewResponse('focus.salary.view', compact('salary','workshifts'));
+        return new ViewResponse('focus.salary.view', compact('salary', 'user','workshifts'));
     }
     
     public function select(Request $request)

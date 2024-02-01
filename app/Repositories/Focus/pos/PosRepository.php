@@ -61,16 +61,18 @@ class PosRepository extends BaseRepository
      */
     public function create(array $input)
     {
+        // dd($input);
         DB::beginTransaction();
 
-        foreach ($input as $key => $value) {
-            $keys = ['total', 'subtotal', 'tax', 'tax_id', 'product_qty', 'product_price', 'product_tax', 'product_subtotal', 'total_tax'];
-            if (in_array($key, $keys)) {
-                if (is_array($value)) $input[$key] = array_map(fn($v) => numberClean($v), $value);
-                else $input[$key] = numberClean($value);
-            } 
+        foreach ($input as $key => $val) {
             if (in_array($key, ['invoicedate', 'invoiceduedate'])) 
-                $input[$key] = date_for_database($value);
+                $input[$key] = date_for_database($val);
+            if (in_array($key, ['total', 'subtotal', 'tax', 'tax_id'])) 
+                $input[$key] = numberClean($val);
+
+            $item_keys = ['product_qty', 'product_price', 'product_tax', 'product_subtotal', 'total_tax'];
+            if (in_array($key, $item_keys)) 
+                $input[$key] = array_map(fn($v) => numberClean($v), $val);
         }
         
         // invoice
@@ -132,6 +134,8 @@ class PosRepository extends BaseRepository
             DB::commit();
             return $result;
         }
+
+        throw new GeneralException('Error Creating Invoice');
     }
 
     /**

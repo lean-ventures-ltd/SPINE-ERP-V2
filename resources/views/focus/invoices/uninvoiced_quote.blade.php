@@ -32,8 +32,7 @@
                                 <div class="col-3">
                                     <div class="form-group">
                                         <label><strong>Customer :</strong></label>
-                                        <select name="customer_id" id="customer_id" class="form-control select2" data-placeholder="Choose Customer" required>
-                                            <option value=""></option>
+                                        <select name="customer_id" id="customer_id" class="form-control" data-placeholder="Choose Customer" required>
                                             @foreach ($customers as $row)
                                                 <option value="{{ $row->id }}">{{ $row->company }}</option>
                                             @endforeach
@@ -43,8 +42,7 @@
                                 <div class="col-3">
                                     <div class="form-group">
                                         <label><strong>LPO :</strong></label>
-                                        <select name="lpo_id" id="lpo_number" class="form-control select2" data-placeholder="Choose Client LPO" required>
-                                            <option value=""></option>
+                                        <select name="lpo_id" id="lpo_number" class="form-control" data-placeholder="Choose Client LPO" required>
                                             @foreach ($lpos as $row)
                                                 <option value="{{ $row->id }}" customer_id="{{ $row->customer_id }}">{{ $row->lpo_no }}</option>
                                             @endforeach
@@ -54,8 +52,7 @@
                                 <div class="col-3">
                                     <div class="form-group">
                                         <label><strong>Project :</strong></label>
-                                        <select name="project_id" id="project_id" class="form-control select2" data-placeholder="Choose Project" required>
-                                            <option value=""></option>
+                                        <select name="project_id" id="project_id" class="form-control" data-placeholder="Choose Project" required>
                                             @foreach ($projects as $row)
                                                 <option value="{{ $row->id }}" customer_id="{{ $row->customer_id }}">{{ $row->name }}</option>
                                             @endforeach
@@ -111,15 +108,16 @@
 {{ Html::script(mix('js/dataTable.js')) }}
 <script>
     config = {
-        select: {allowClear: true},
-        ajax: { headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"} }
+        select: {allowClear: true}
     };
 
     setTimeout(() => draw_data(), "{{ config('master.delay') }}");
-    $.ajaxSetup(config.ajax);
+    $.ajaxSetup({ headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"} });
 
     // init select2
-    $('.select2').select2({allowClear: true});
+    $('#customer_id').select2(config.select).val('').change();
+    $('#lpo_number').select2(config.select).val('').change();
+    $('#project_id').select2(config.select).val('').change();
 
     // filter records by date
     $('#search').click(function() {
@@ -256,7 +254,11 @@
                 data: { customer_id, lpo_number, project_id },
             },
             columns: [
-                {data: 'mass_select', searchable: false, sortable: false},
+                {
+                    data: 'mass_select',
+                    searchable: false,
+                    sortable: false
+                },
                 ...[
                     'customer', 'tid', 'title', 'total', 'verified_total', 'diff_total', 
                     'created_at', 'lpo_number', 'project_tid'

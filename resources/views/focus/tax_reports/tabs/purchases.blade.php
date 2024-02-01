@@ -1,5 +1,4 @@
 <div class="form-group row">
-
     <div class="col-3 ml-auto">
         <label for="file_status">Action Status</label>
         <div>
@@ -14,7 +13,7 @@
         </div>
     </div>
 </div>
-<div class="responsive">
+<div class="table-responsive">
     <table id="purchaseTbl" class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
         <thead>
             <tr class="bg-gradient-directional-blue white">

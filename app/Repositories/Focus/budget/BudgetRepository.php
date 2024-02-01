@@ -127,7 +127,6 @@ class BudgetRepository extends BaseRepository
                 'price' => numberClean($item['price']),
                 'new_qty' => numberClean($item['new_qty']),
                 'budget_id' => $budget->id,
-                'product_id' => $item['product_id'] ?: 0,
             ]);
             $new_item = BudgetItem::firstOrNew(['id' => $item['item_id']]);
             $new_item->fill($item);
@@ -172,12 +171,8 @@ class BudgetRepository extends BaseRepository
      */
     public function delete(Budget $budget)
     {   
-        DB::beginTransaction();
-
-        $budget->items()->delete();
-        if ($budget->delete()) {
-            DB::commit();
-            return true;
-        }            
+        if ($budget->delete() && $budget->items()->delete()) return true;
+            
+        throw new GeneralException(trans('exceptions.backend.leave_category.delete_error'));
     }
 }

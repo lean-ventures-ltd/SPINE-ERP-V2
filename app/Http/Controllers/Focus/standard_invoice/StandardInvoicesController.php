@@ -19,6 +19,7 @@
 namespace App\Http\Controllers\Focus\standard_invoice;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Focus\cuInvoiceNumber\CuInvoiceNumberController;
 use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
 use App\Models\account\Account;
@@ -31,6 +32,7 @@ use App\Models\invoice\Invoice;
 use App\Models\term\Term;
 use App\Repositories\Focus\standard_invoice\StandardInvoiceRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -80,8 +82,12 @@ class StandardInvoicesController extends Controller
         $terms = Term::where('type', 1)->get();  // invoice term type is 1
         $tax_rates = Additional::all();
         $currencies = Currency::all();
-        
-        return new ViewResponse('focus.standard_invoices.create', compact('tid', 'customers', 'banks', 'accounts', 'terms', 'tax_rates', 'currencies'));
+
+        $latestCuInvoiceNo = Invoice::latest()->first()->cu_invoice_no;
+
+        $newCuInvoiceNo = (new CuInvoiceNumberController())->getNext();
+
+        return new ViewResponse('focus.standard_invoices.create', compact('tid', 'customers', 'banks', 'accounts', 'terms', 'tax_rates', 'currencies', 'newCuInvoiceNo'));
     }
 
     /**
@@ -89,23 +95,27 @@ class StandardInvoicesController extends Controller
      *
      * @param StoreBankRequestNamespace $request
      * @return \App\Http\Responses\RedirectResponse
+     * @throws \Exception
      */
     public function store(Request $request)
     {
+//        Validator::make($request->all(),
+//            ['cu_invoice_no' => 'unique:invoices,cu_invoice_no', 'unique:credit_notes,cu_invoice_no'],
+//            ['cu_invoice_no.unique' => 'The Specified CU Invoice Number is Already Taken']
+//        )->validate();
+
+        $request['cu_invoice_no'] = (new CuInvoiceNumberController())->allocate();
+
         $data = $request->only([
             'customer_id', 'tid', 'invoicedate', 'tax_id', 'bank_id', 'validity', 'account_id', 'currency_id', 'term_id', 'notes', 
-            'taxable', 'subtotal', 'tax', 'total'
+            'taxable', 'subtotal', 'tax', 'total', 'cu_invoice_no',
         ]);
         $data_items = $request->only([
             'numbering', 'description', 'unit', 'product_qty', 'product_price', 'product_tax', 'product_amount', 
             'product_id'
         ]);
 
-        try {
-            $this->repository->create(compact('data', 'data_items'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Invoice', $th);
-        }
+        $this->repository->create(compact('data', 'data_items'));
 
         return new RedirectResponse(route('biller.invoices.index'), ['flash_success' => 'Invoice successfully created']);
     }
@@ -139,12 +149,8 @@ class StandardInvoicesController extends Controller
         ]);
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
-        try {
-            //Update the model using repository update method
-            $this->repository->update($invoice, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Standard Invoice', $th);
-        }
+        //Update the model using repository update method
+        $this->repository->update($invoice, $input);
         //return with successfull message
         return new RedirectResponse(route('biller.invoices.index'), ['flash_success' => 'Invoice successfully updated']);
     }
@@ -158,14 +164,10 @@ class StandardInvoicesController extends Controller
      */
     public function destroy(Invoice $invoice, Request  $request)
     {
-        //dd($invoice);
+        dd($invoice);
 
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($invoice);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Standard Invoice', $th);
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($invoice);
         //returning with successfull message
         return new RedirectResponse(route('biller.invoices.index'), ['flash_success' => 'Invoice successfully deleted']);
     }
@@ -194,17 +196,19 @@ class StandardInvoicesController extends Controller
 
         $input = $request->only(['company', 'name', 'email', 'phone', 'address', 'tax_pin']);
 
+        $email_exists = Customer::where('email', $input['email'])->count();
+        if ($email_exists) throw ValidationException::withMessages(['Email already exists!']);
+
         $is_company = Customer::where('company', $input['company'])->count();
         if ($is_company) throw ValidationException::withMessages(['Company already exists!']);
 
-        $email_exists = Customer::where('email', $input['email'])->whereNotNull('email')->count();
-        if ($email_exists) throw ValidationException::withMessages(['Email already exists!']);
+        if (isset($input['tax_pin'])) {
+            $taxid_exists = Customer::where('taxid', $input['tax_pin'])->count();
+            if ($taxid_exists) throw ValidationException::withMessages(['Tax Pin already exists!']);
 
-        $taxid_exists = Customer::where('taxid', $input['tax_pin'])->whereNotNull('taxid')->count();
-        if ($taxid_exists) throw ValidationException::withMessages(['Tax Pin already exists!']);
-
-        $is_company = Company::where(['id' => auth()->user()->ins, 'taxid' => $input['tax_pin']])->whereNotNull('taxid')->count();
-        if ($is_company) throw ValidationException::withMessages(['Company Tax Pin is not allowed!']);
+            $is_company = Company::where(['id' => auth()->user()->ins, 'taxid' => $input['tax_pin']])->count();
+            if ($is_company) throw ValidationException::withMessages(['Company Tax Pin is not allowed!']);
+        } 
         
         $input['taxid'] = $input['tax_pin'];
         unset($input['tax_pin']);

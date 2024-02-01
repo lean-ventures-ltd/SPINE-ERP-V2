@@ -17,8 +17,10 @@ trait NoteAttribute
      */
     public function getActionButtonsAttribute()
     {
-        return $this->getViewButtonAttribute("manage-note", "biller.notes.show")
-        .' '.$this->getEditButtonAttribute("edit-note", "biller.notes.edit")
-        .' '.$this->getDeleteButtonAttribute("delete-note", "biller.notes.destroy");
+        return '
+         '.$this->getViewButtonAttribute("manage-note", "biller.notes.show").'
+                '.$this->getEditButtonAttribute("edit-note", "biller.notes.edit").'
+                '.$this->getDeleteButtonAttribute("delete-note", "biller.notes.destroy",'table').'
+                ';
     }
 }

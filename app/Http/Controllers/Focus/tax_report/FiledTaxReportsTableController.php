@@ -19,6 +19,8 @@ namespace App\Http\Controllers\Focus\tax_report;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\Focus\tax_report\TaxReportRepository;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Str;
 use Request;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -62,7 +64,9 @@ class FiledTaxReportsTableController extends Controller
         if (request('is_purchase')) return $this->purchase_data();
     }
 
-    // sale table data
+    /**
+     * Sales data table
+     * */
     public function sale_data()
     {
         $core = $this->repository->getForSalesDataTable();
@@ -90,7 +94,7 @@ class FiledTaxReportsTableController extends Controller
             })
             ->addColumn('customer', function ($item) {
                 if ($this->customer)
-                return $this->customer->company;
+                return Str::limit($this->customer->company,47);
             })
             ->addColumn('etr_code', function ($item) {
                 return 0;
@@ -103,19 +107,22 @@ class FiledTaxReportsTableController extends Controller
 
                 return $date;
             })
-            ->addColumn('invoice_no', function ($item) {
-                $tid = '';
-                if ($this->credit_note) $tid = $this->credit_note->tid;
-                elseif ($this->invoice) $tid = $this->invoice->tid;
+            ->addColumn('cu_invoice_no', function ($item) {
 
-                return $tid;
+                $cuInvoiceNo = '';
+
+                if ($this->credit_note) $cuInvoiceNo = $this->credit_note->cu_invoice_no ?? '';
+                elseif ($this->invoice) $cuInvoiceNo = $this->invoice->cu_invoice_no ?? '';
+
+                if (!empty($cuInvoiceNo)){
+                    if ($cuInvoiceNo[0] != 0 && is_numeric($cuInvoiceNo[0])) return "'" . $cuInvoiceNo;
+                }
+
+                return $cuInvoiceNo;
             })
             ->addColumn('note', function ($item) {
-                $note = '';
-                if ($this->credit_note) $note = 'Credit Note';
-                elseif ($this->invoice) $note = $this->invoice->notes;
-
-                return $note;
+                if ($this->credit_note) return 'Credit Note';
+                elseif ($this->invoice) return $this->invoice->notes;
             })
             ->addColumn('subtotal', function ($item) {
                 $subtotal = 0;
@@ -127,14 +134,19 @@ class FiledTaxReportsTableController extends Controller
             ->addColumn('empty_col', function ($item) {
                 return '';
             })
-            ->addColumn('cn_invoice_no', function ($item) {
-                $cn_invoice_no = '';
-                if ($this->credit_note) {
-                    $invoice = $this->credit_note->invoice;
-                    if ($invoice) $cn_invoice_no .= $invoice->tid;
-                }
-                return $cn_invoice_no;
-            })
+//            ->addColumn('invoice_no', function ($item) {
+////                $cn_invoice_no = '';
+////                if ($this->credit_note) {
+////                    $invoice = $this->credit_note->invoice;
+////                    if ($invoice) $cn_invoice_no .= ($invoice->cu_invoice_no ?: $invoice->tid);
+////                }
+////                return $cn_invoice_no;
+//
+//                if ($this->credit_note) return $this->credit_note->tid;
+//                elseif ($this->invoice) return $this->invoice->tid;
+//
+//
+//            })
             ->addColumn('cn_invoice_date', function ($item) {
                 $cn_invoice_date = '';
                 if ($this->credit_note) {
@@ -146,7 +158,9 @@ class FiledTaxReportsTableController extends Controller
             ->make(true);
     }
 
-    // purchases table data
+    /**
+     * Purchase data table
+     * */
     public function purchase_data()
     {
         $core = $this->repository->getForPurchasesDataTable();
@@ -187,7 +201,7 @@ class FiledTaxReportsTableController extends Controller
                 } else $suppliername .= $this->supplier->name;
                 
                 // limit to 50 chars as per KRA portal
-                return substr($suppliername, 0, 50);
+                return  Str::limit($suppliername,47);
             })
             ->addColumn('invoice_date', function ($item) {
                 $date = '';
@@ -201,6 +215,8 @@ class FiledTaxReportsTableController extends Controller
                 $tid = '';
                 if ($this->debit_note) $tid = $this->debit_note->tid;
                 elseif ($item->bill) $tid = $item->bill->reference;
+
+                if ($tid[0] != 0 && is_numeric($tid[0])) return "'" . $tid;
 
                 return $tid;
             })

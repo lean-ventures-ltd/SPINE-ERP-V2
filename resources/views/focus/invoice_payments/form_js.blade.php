@@ -24,7 +24,7 @@
 
         init() {
             $.ajaxSetup(config.ajax);
-            $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
+            $('.datepicker').datepicker(config.date);
             $('#person').select2(config.select2);
 
             $('#person').change(this.customerChange);
@@ -225,11 +225,11 @@
 
                 let balance = parseFloat(opt.attr('amount')) - parseFloat(opt.attr('allocateTotal'));
                 const unallocated = accounting.unformat(balance);
-                $('#amount').val(unallocated).keyup().focusout();
+                $('#amount').prop('readonly', true).val(unallocated).keyup().focusout();
             } else {
                 ['amount', 'reference'].forEach(v => $('#'+v).val('').attr('readonly', false).keyup());
                 ['account', 'payment_mode'].forEach(v => $('#'+v).val('').attr('disabled', false));
-                $('#date').datepicker('setDate', new Date()).attr('readonly', false);
+                // $('#date').datepicker('setDate', new Date()).attr('readonly', false);
             }
         },
 

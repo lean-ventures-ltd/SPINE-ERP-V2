@@ -3,19 +3,19 @@
         <div class="card-body">
             <div class="row mb-1">
                 <div class="col-2 h4">Total NHIF</div>                           
-                <div class="col-4 h4 nhif_worth">0.00</div>
+                <div class="col-4 h4 nhif_worth">{{ $tallies['nhif_total'] }}</div>
             </div>
             <table id="nhifTbl"
                 class="table table-striped table-bordered zero-configuration" cellspacing="0"
                 width="100%">
                 <thead>
                     <tr>
-                        <th>Payroll No</th>
-                        <th>Employee Id</th>
-                        <th>Employee Name</th>
-                        <th>NHIF No.</th>
-                        <th>NHIF Amount</th>
-                        <th>TOTAL</th>
+                        <th>PAYROLL NO</th>
+                        <th>LAST NAME</th>
+                        <th>FIRST NAME</th>
+                        <th>ID NO</th>
+                        <th>NHIF NO</th>
+                        <th>AMOUNT</th>
                     </tr>
                 </thead>
                 <tbody>

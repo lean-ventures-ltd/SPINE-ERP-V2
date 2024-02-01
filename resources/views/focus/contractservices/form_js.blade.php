@@ -22,6 +22,7 @@
         if (!$(this).val()) return;
         // fetch branches
         $("#branch").html('').select2({
+            allowClear: true,
             ajax: {
                 url: "{{ route('biller.branches.select') }}",
                 type: 'POST',
@@ -35,6 +36,7 @@
         });
         // fetch customer contracts
         $("#contract").html('').select2({
+            allowClear: true,
             ajax: {
                 url: "{{ route('biller.contracts.customer_contracts')  }}",
                 type: 'POST',
@@ -53,6 +55,7 @@
         // fetch schedules
         if (!$(this).val()) return;
         $("#schedule").html('').select2({
+            allowClear: true,
             ajax: {
                 url: "{{ route('biller.contracts.task_schedules')  }}",
                 type: 'POST',
@@ -63,7 +66,14 @@
                     is_report: 1
                 }),                             
                 processResults: data => {
-                    return { results: data.map(v => ({ text: v.title, id: v.id })) };
+                    return { 
+                        results: data.map(v => {
+                            let start = v.start_date ? v.start_date.split('-').reverse().join('-') : '';
+                            let end = v.end_date ? v.end_date.split('-').reverse().join('-') : '';
+                            let dt = start && end? ` (${start} - ${end})` : '';
+                            return { text: v.title + dt, id: v.id };
+                        }),
+                    };
                 },
             }
         });
@@ -136,6 +146,14 @@
                 $('#location-'+i).text(data.location);
                 $('#tid-'+i).text(data.tid);
                 $('#rate-'+i).text(accounting.formatNumber(data.service_rate));
+                $('#status-'+i).val(data.status);
+
+                if(data.status === 'decommissioned' || data.status === 'cannibalised' || data.status === 'under warranty'){
+                    $('#bill-'+i).val('0');
+                }
+
+                console.log("STATUS NI: " + data.status);
+
                 calcTotal();
                 loadedIds.add(data.id);
             }

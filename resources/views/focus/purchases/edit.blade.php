@@ -68,8 +68,9 @@
     // expense tab row 1
     let rowItems = @json($purchase->products);
     rowItems = rowItems.filter(v => v.type == 'Expense');
-    if (rowItems[0]) $('#projectexptext-0').val(rowItems[0]['project']?.name);
-    
+    if(!rowItems)
+    $('#projectexptext-0').val(rowItems[0]['project']?.name);
+
     // if amount is tax exclusive
     const isTaxExc =  @json($purchase->is_tax_exc);
     if (isTaxExc) {

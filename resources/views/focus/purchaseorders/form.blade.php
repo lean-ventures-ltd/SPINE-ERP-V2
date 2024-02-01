@@ -54,6 +54,14 @@
                                 <td class="text-center">0.00</td>
                             @endfor                                                                                                      
                         </tr>
+
+                        <tr class="sub_c" style="display: table-row;">
+                            <td align="right" colspan="4">
+                                <p id="milestone_warning" class="text-red ml-2" style="display: inline-block; color: red; font-size: 16px; "> </p>
+                            </td>
+                        </tr>
+
+
                         <tr class="sub_c" style="display: table-row;">
                             <td align="right" colspan="3">
                                 @foreach (['paidttl', 'grandtax', 'grandttl'] as $val)
@@ -108,15 +116,10 @@
                     <label for="pricing" >Pricing</label>                    
                     <select id="pricegroup_id" name="pricegroup_id" class="custom-select">
                         <option value="0" selected>Default </option>
-                        {{-- @foreach($pricegroups as $group)
-                            @if (!$group->is_client)
-                                <option value="{{ $group->id }}">{{ $group->name }}</option>
-                            @endif
-                        @endforeach --}}
                         @foreach($price_supplier as $group)
-                            @if (!$group->is_client)
+                            {{-- @if (!$group->is_client) --}}
                                 <option value="{{ $group->id }}">{{ $group->name }}</option>
-                            @endif
+                            
                         @endforeach
                     </select>                    
                 </div>
@@ -135,18 +138,50 @@
             
             <div class="form-group row">
                 <div class="col-sm-12">
-                    <label for="toAddInfo" class="caption">{{trans('general.note')}}*</label>
+                    <label for="toAddInfo" class="caption">Subject*</label>
                     {{ Form::textarea('note', null, ['class' => 'form-control', 'placeholder' => trans('general.note'), 'rows'=>'2', 'required']) }}
                 </div>
             </div>
             <div class="form-group row">
-                <div class="col-sm-12">
+                <div class="col-sm-6">
                     <div class="form-group">
                         <label for="project" class="caption">Projects</label>
                         <select class="form-control" name="project_id" id="project" data-placeholder="Search Project by Name, Customer, Branch">
                         </select>
                     </div>
                 </div>
+
+                <div class="col-6">
+                    <label for="project_milestone" class="caption">Project Budget Line</label>
+                    
+                    <select id="project_milestone" name="project_milestone" class="form-control">
+                        <option value="">Select a Budget Line</option>
+                    </select>
+                </div>
+
+                <div class="col-6">
+                    <label for="purchase_class" class="caption" style="display: inline-block;">Purchase Class</label>
+                    <select id="purchase_class" name="purchase_class" class="custom-select round" >
+                        <option value="">-- Select Purchase Class --</option>
+                        @foreach ($purchaseClasses as $pc)
+                            <option value="{{ $pc->id }}" @if(@$purchase->purchase_class == $pc->id) selected @endif>
+                                {{ $pc->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+
+                <div class="col-6">
+                    <label for="payer" class="caption">Requisition Items</label>                                       
+                    <select class="form-control" id="quoteselect" data-placeholder="Search Quote">
+                        <option value="">-----Select Requisition Items-----</option>
+                        <option value="all">All Items</option>
+                    </select>
+                    <input type="hidden" name="quote_id" value="0" id="quoteid">
+                </div>
+
+
             </div>
         </div>
     </div>
@@ -161,8 +196,11 @@
         <a class="nav-link " id="active-tab2" data-toggle="tab" href="#active2" aria-controls="active2" role="tab">Expenses</a>
     </li>
     <li class="nav-item bg-success">
-        <a class="nav-link" id="active-tab3" data-toggle="tab" href="#active3" aria-controls="active3" role="tab">Assets & Equipments</a>
+        <a class="nav-link text-danger" id="active-tab3" data-toggle="tab" href="#active3" aria-controls="active3" role="tab">Assets & Equipments</a>
     </li>
+    {{-- <li class="nav-item bg-secondary">
+        <a class="nav-link" id="active-tab4" data-toggle="tab" href="#active4" aria-controls="active4" role="tab">Queued Requisition Items</a>
+    </li> --}}
 </ul>
 <div class="tab-content px-1 pt-1">
     <!-- tab1 -->
@@ -171,5 +209,7 @@
     @include('focus.purchaseorders.partials.expense_tab')
     <!-- tab3 -->
     @include('focus.purchaseorders.partials.asset_tab')
+    <!-- tab4 -->
+    {{-- @include('focus.purchaseorders.partials.queue_stock') --}}
 </div>
 <input type="hidden" name="supplier_type" value="supplier">

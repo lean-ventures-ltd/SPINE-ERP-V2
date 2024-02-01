@@ -28,7 +28,6 @@ use App\Http\Requests\Focus\purchaseorder\StorePurchaseorderRequest;
 use App\Http\Responses\Focus\purchaseorder\CreateResponse;
 use App\Http\Responses\RedirectResponse;
 use App\Models\supplier\Supplier;
-use Illuminate\Validation\ValidationException;
 use Request;
 
 /**
@@ -83,15 +82,19 @@ class PurchaseordersController extends Controller
      */
     public function store(StorePurchaseorderRequest $request)
     {
+       // dd($request->all());
         // extract input fields
         $order = $request->only([
             'supplier_id', 'tid', 'date', 'due_date', 'term_id', 'project_id', 'note', 'tax',
             'stock_subttl', 'stock_tax', 'stock_grandttl', 'expense_subttl', 'expense_tax', 'expense_grandttl',
-            'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl'
+            'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'project_milestone', 'purchase_class',
         ]);
         $order_items = $request->only([
-            'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type'
+            'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type','product_code','warehouse_id', 'item_purchase_class'
         ]);
+
+        if (!empty($order['project'])) $order['purchase_class'] = '';
+        if (!empty($order['itemproject_id'])) $order['item_purchase_class'] = '';
 
         $order['ins'] = auth()->user()->ins;
         $order['user_id'] = auth()->user()->id;
@@ -99,12 +102,7 @@ class PurchaseordersController extends Controller
         $order_items = modify_array($order_items);
         $order_items = array_filter($order_items, function ($v) { return $v['item_id']; });
 
-        try {
-            $result = $this->repository->create(compact('order', 'order_items'));
-        } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
-            return errorHandler('Error creating Purchase Order', $th);
-        }
+        $result = $this->repository->create(compact('order', 'order_items'));
 
         return new RedirectResponse(route('biller.purchaseorders.index'), ['flash_success' => 'Purchase Order created successfully']);
     }
@@ -135,15 +133,15 @@ class PurchaseordersController extends Controller
             $purchaseorder->update($request->only('closure_status', 'closure_reason'));
             return redirect()->back()->with('flash_success', 'Closure Status Updated Successfully');
         }
-            
+        
         // extract input fields
         $order = $request->only([
             'supplier_id', 'tid', 'date', 'due_date', 'term_id', 'project_id', 'note', 'tax',
             'stock_subttl', 'stock_tax', 'stock_grandttl', 'expense_subttl', 'expense_tax', 'expense_grandttl',
-            'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl'
+            'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'project_milestone',
         ]);
         $order_items = $request->only([
-            'id', 'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type'
+            'id', 'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type','product_code','warehouse_id'
         ]);
 
         $order['ins'] = auth()->user()->ins;
@@ -152,12 +150,7 @@ class PurchaseordersController extends Controller
         $order_items = modify_array($order_items);
         $order_items = array_filter($order_items, function ($val) { return $val['item_id']; });
 
-        try {
-            $result = $this->repository->update($purchaseorder, compact('order', 'order_items'));
-        } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
-            return errorHandler('Error Updating Purchase Order', $th);
-        }
+        $result = $this->repository->update($purchaseorder, compact('order', 'order_items'));
 
         return new RedirectResponse(route('biller.purchaseorders.index'), ['flash_success' => 'Purchase Order updated successfully']);
     }
@@ -171,11 +164,7 @@ class PurchaseordersController extends Controller
      */
     public function destroy(Purchaseorder $purchaseorder)
     {
-        try {
-            $this->repository->delete($purchaseorder);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Purchase Order', $th);
-        }
+        $this->repository->delete($purchaseorder);
 
         return new RedirectResponse(route('biller.purchaseorders.index'), ['flash_success' => 'Purchase Order deleted successfully']);        
     }
@@ -201,6 +190,20 @@ class PurchaseordersController extends Controller
         $stock_goods = $purchaseorder? $purchaseorder->goods()->where('type', 'Stock')->get() : collect();
         $stock_goods = $stock_goods->map(function($v) {
             if ($v->productvariation) $v->description .= " - {$v->productvariation->code}";
+            if ($v->project){
+                $quote_tid = !$v->project->quote ?: gen4tid('QT-', $v->project->quote->tid);
+                $customer = !$v->project->customer ?: $v->project->customer->company;
+                $branch = !$v->project->branch ?: $v->project->branch->name;
+                $project_tid = gen4tid('PRJ-', $v->project->tid);
+                $project = $v->project->name;
+                $customer_branch = "{$customer}" .'-'. "{$branch}";
+                //
+                $v['project_tid'] = "[" . $quote_tid ."]"." - " . $customer_branch. " - ".$project_tid." - ".$project;
+            }else{
+                $v->project_tid = '';
+            }
+             $v->project_id = Purchaseorder::find($v->purchaseorder_id)->project->id ?? '';
+             $v->project_name= Purchaseorder::find($v->purchaseorder_id)->project->name ?? '';
             return $v;
         });
 

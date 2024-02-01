@@ -50,11 +50,11 @@
                         </div>
                         <div class="row">
                             <div class="col-2">
-                                <label for="amount">Total Amount</label>
+                                <label for="amount">Total Amount (Ksh.)</label>
                                 <input type="text" id="amount_total" class="form-control" readonly>
                             </div>                            
                             <div class="col-2">
-                                <label for="unallocate">Outstanding</label>
+                                <label for="unallocate">Outstanding (Ksh.)</label>
                                 <input type="text" id="balance_total" class="form-control" readonly>
                             </div>
                         </div>
@@ -185,6 +185,7 @@
                 processing: true,
                 stateSave: true,
                 responsive: true,
+                deferRender: true,
                 language: {@lang('datatable.strings')},
                 ajax: {
                     url: "{{ route('biller.invoices.get') }}",
@@ -211,9 +212,42 @@
                         data: 'DT_Row_Index',
                         name: 'id'
                     },
-                    ...[
-                        'customer', 'tid', 'notes', 'invoicedate', 'invoiceduedate', 'total', 'balance', 'quote_tid', 'last_pmt',
-                    ].map(v => ({data: v, name: v})),
+                    {
+                        data: 'customer',
+                        name: 'customer'
+                    },
+                    {
+                        data: 'tid',
+                        name: 'tid'
+                    },
+                    {
+                        data: 'notes',
+                        name: 'notes'
+                    },
+                    {
+                        data: 'invoicedate',
+                        name: 'invoicedate'
+                    },
+                    {
+                        data: 'invoiceduedate',
+                        name: 'invoiceduedate'
+                    },
+                    {
+                        data: 'total',
+                        name: 'total'
+                    },
+                    {
+                        data: 'balance',
+                        name: 'balance'
+                    },                    
+                    {
+                        data: 'quote_tid',
+                        name: 'quote_tid'
+                    },
+                    {
+                        data: 'last_pmt',
+                        name: 'last_pmt'
+                    },
                     {
                         data: 'actions',
                         name: 'actions',

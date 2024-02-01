@@ -21,9 +21,14 @@ namespace App\Http\Controllers\Focus\project;
 use App\Http\Controllers\Controller;
 use App\Models\items\ProjectstockItem;
 use App\Models\items\PurchaseItem;
+use App\Models\items\PurchaseorderItem;
+use App\Models\items\VerifiedItem;
+use App\Models\project\BudgetSkillset;
+use App\Models\project\ProjectMileStone;
 use Yajra\DataTables\Facades\DataTables;
 use App\Repositories\Focus\project\ProjectRepository;
 use App\Models\items\GoodsreceivenoteItem;
+use App\Models\labour_allocation\LabourAllocation;
 
 /**
  * Class ProjectsTableController.
@@ -144,14 +149,19 @@ class ExpensesTableController extends Controller
             ->get();
         foreach ($dir_purchase_items as $item) {
             $indx++;
+
+            $projectMilestone = ProjectMileStone::where('id',$item->purchase->project_milestone)->first();
+
             $data = (object) [
                 'id' => $indx,
                 'exp_category' => $item->type == 'Stock' ? 'dir_purchase_stock' : ($item->type == 'Expense' ? 'dir_purchase_service' : ''),
+                'milestone' => empty($projectMilestone) ? 'No Budget Line Selected' : $projectMilestone->name,
                 'ledger_id' => @$item->account->id,
                 'ledger_account' => @$item->account->holder,
                 'supplier_id' => @$item->purchase->supplier->id,
                 'supplier' => @$item->purchase->suppliername ? $item->purchase->suppliername : ($item->purchase->supplier ? $item->purchase->supplier->name : ''),
                 'product_name' => $item->purchase? '(' . gen4tid('DP-', $item->purchase->tid) . ') <br>' . $item->description : '',
+                'date' => $item->purchase? dateFormat($item->purchase->date) : '',
                 'uom' => $item->uom,
                 'qty' => $item->qty,
                 'rate' => $item->qty > 0 ? ($item->amount / $item->qty) : $item->amount,
@@ -173,11 +183,13 @@ class ExpensesTableController extends Controller
             $data = (object) [
                 'id' => $indx,
                 'exp_category' => 'inventory_stock',
+                'milestone' => 'No Budget Line Selected',
                 'ledger_id' => '',
                 'ledger_account' => '',
                 'supplier_id' => '',
                 'supplier' => '',
                 'product_name' => @$product_variation->name,
+                'date' => $item->project_stock? dateFormat($item->project_stock->date) : '',
                 'uom' => $item->unit,
                 'qty' => $item->qty,
                 'rate' => @$product_variation->purchase_price ?: 0,
@@ -187,22 +199,30 @@ class ExpensesTableController extends Controller
         }
 
         // purchase order goods received
-        $goods_receive_items = GoodsreceivenoteItem::whereHas('purchaseorder_item', function ($q) {
-            $q->where('itemproject_id', request('project_id'));
-        })->get();
+        $goods_receive_items = GoodsreceivenoteItem::whereHas('project', fn($q) => $q->where('itemproject_id', request('project_id')))->get();
         foreach ($goods_receive_items as $item) {
             $indx++;
             $grn = $item->goodsreceivenote;
             $po_item = $item->purchaseorder_item;
             $po = @$po_item->purchaseorder;
+
+            if (empty($item->purchaseorder_item)){
+                continue;
+//                return compact('item');
+            }
+
+            $projectMilestone = ProjectMileStone::where('id',$item->purchaseorder_item->purchaseorder->project_milestone)->first();
+
             $data = (object) [
                 'id' => $indx,
                 'exp_category' => 'purchase_order_stock',
+                'milestone' => empty($projectMilestone) ? 'No Budget Line Selected' : $projectMilestone->name,
                 'ledger_id' => @$item->account->id,
                 'ledger_account' => @$item->account->holder,
                 'supplier_id' => @$grn->supplier->id,
                 'supplier' => @$grn->supplier->name,
                 'product_name' => $po? '(' . gen4tid('PO-', $po->tid) . ') <br>' . @$po_item->description : '',
+                'date' => $item->goodsreceivenote? dateFormat($item->goodsreceivenote->date) : '',
                 'uom' => @$po_item->uom,
                 'qty' => $item->qty,
                 'rate' => $item->rate,
@@ -210,6 +230,39 @@ class ExpensesTableController extends Controller
             ];
             $expenses->add($data);
         }
+        $labour = LabourAllocation::whereHas('project', fn($q) => $q->where('project_id', request('project_id')))->get();
+        foreach ($labour as $item) {
+           // dd($item);
+            $labour_items = $item->items;
+            $employee = [];
+
+            if($labour_items){
+                foreach($labour_items as $labour_item){
+                    $employee[] = $labour_item->employee->first_name.' '.$labour_item->employee->last_name;
+                }
+            }
+
+            $projectMilestone = ProjectMileStone::where('id',$item->project_milestone)->first();
+
+            $indx++;
+            $data = (object) [
+                'id' => $indx,
+                'exp_category' => 'labour_service',
+                'milestone' => empty($projectMilestone) ? 'No Budget Line Selected' : $projectMilestone->name,
+                'ledger_id' => '',
+                'ledger_account' => '',
+                'supplier_id' => '',
+                'supplier' => @$employee,
+                'product_name' => @$item->type,
+                'date' => dateFormat(@$item->date),
+                'uom' => 'Mnhrs',
+                'qty' => @$item->hrs,
+                'rate' => 500,
+                'amount' => @$item->hrs * 500,
+            ];
+            $expenses->add($data);
+        }
+
 
         return $expenses;
     }

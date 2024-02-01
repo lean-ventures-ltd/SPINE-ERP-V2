@@ -55,8 +55,12 @@
     $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
 
     const equipment = @json($equipment);
-    if (equipment.install_date) 
+    if (equipment.install_date) {
         $('.datepicker').datepicker('setDate', new Date(equipment.install_date));
+    }
+    if (equipment.end_of_warranty){
+        $('#end_of_warranty').datepicker('setDate', new Date(equipment.end_of_warranty));
+    }
 
     // fetch customers
     $("#person").select2({

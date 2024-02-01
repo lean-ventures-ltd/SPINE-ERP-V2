@@ -46,10 +46,10 @@
         <div class="tab-content px-1 pt-1">
               <!---Biodata tab-->
             <div class="tab-pane active" id="tab1" role="tabpanel" aria-labelledby="base-tab1">
-                <div class='form-group'>
+                <div class='form-group' hidden>
                     {{ Form::label( 'employee_no', 'Employee Number',['class' => 'col-lg-2 control-label']) }}
                     <div class='col-lg-10'>
-                        {{ Form::text('employee_no', null, ['class' => 'form-control round', 'placeholder' => 'Enter Number'.'*','required'=>'required']) }}
+                        {{ Form::text('employee_no', null, ['class' => 'form-control round', 'placeholder' => 'Enter Number'.'*',]) }}
                     </div>
                 </div>
                 <div class='form-group'>
@@ -77,7 +77,7 @@
                     </div>
                 </div>
                 <div class='form-group'>
-                    {{ Form::label( 'primary_contact', trans('hrms.phone'),['class' => 'col-lg-2 control-label']) }}
+                    {{ Form::label( 'primary_contact', trans('hrms.phone') . ' (MPESA)', ['class' => 'col-lg-2 control-label']) }}
                     <div class='col-lg-10'>
                         {{ Form::text('primary_contact', null, ['class' => 'form-control round', 'placeholder' => trans('hrms.phone').'*','required'=>'required']) }}
                     </div>
@@ -117,9 +117,15 @@
                 </div>
 
                 <div class='form-group'>
-                    {{ Form::label( 'email', trans('hrms.email'),['class' => 'col-lg-2 control-label']) }}
+                    {{ Form::label( 'email', 'Official/Business Email',['class' => 'col-lg-2 control-label']) }}
                     <div class='col-lg-10'>
                         {{ Form::text('email', null, ['class' => 'form-control round', 'placeholder' => trans('hrms.email').'*','required'=>'required']) }}
+                    </div>
+                </div>
+                <div class='form-group'>
+                    {{ Form::label( 'personal_email', ' Employee Personal Email (for payslip remittance)',['class' => 'col-lg-4 control-label']) }}
+                    <div class='col-lg-10'>
+                        {{ Form::text('personal_email', null, ['class' => 'form-control round', 'placeholder' => trans('hrms.email').'*']) }}
                     </div>
                 </div>
                 <div class='form-group hide_picture'>
@@ -241,6 +247,14 @@
                         {{ Form::text('award', null, ['class' => 'form-control round', 'placeholder' => 'Award*','required']) }}
                     </div>
                 </div>
+                <div class='form-group hide_picture'>
+                    {{ Form::label( 'cv', 'Curriculum Vitae',['class' => 'col-lg-2 control-label']) }}
+                    <div class='col-lg-6'>
+                        {!! Form::file('cv', array('class'=>'input' )) !!}  @if(@$hrms->id)
+                            <small>{{trans('hrms.blank_field')}}</small>
+                        @endif
+                    </div>
+                </div>
             
            
             
@@ -249,7 +263,7 @@
                <!---HRM tab-->
 
             <div class="tab-pane" id="tab5" role="tabpanel" aria-labelledby="base-tab5">
-                <div class='form-group'>
+                 <div class='form-group'>
                     {{ Form::label( 'department', trans('departments.department'),['class' => 'col-lg-2 control-label']) }}
                     <div class='col-lg-10'>
                         {!! Form::select('department_id', @$departments, null, [
@@ -433,6 +447,7 @@
 
 @section('after-scripts')
 {{ Html::script('focus/js/jquery.password-validation.js') }}
+{{ Html::script('focus/js/select2.min.js') }}
 <script>
     // check all roles
     $('#check_all').change(function() {
@@ -446,6 +461,8 @@
             })
         }
     });
+    
+    
 
     $(document).ready(function () {
         $("#u_password").passwordValidation({
@@ -516,7 +533,7 @@
 
     // initialize datepicker
     $('.datepicker').datepicker({format: "{{ config('core.user_date_format') }}", autoHide: true});
-    $('#dob').datepicker('setDate', new Date());
+    // $('#dob').datepicker('setDate', new Date());
     $('#employement_date').datepicker('setDate', new Date());
     const hrm = @json(@$hrms);
     if (hrm) {

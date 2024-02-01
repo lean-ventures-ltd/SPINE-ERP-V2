@@ -8,6 +8,7 @@
                         'labour_service' => 'Labour Service', 
                         'inventory_stock' => 'Inventory Stock', 
                         'dir_purchase_stock' => 'Direct Purchase Stock', 
+                        'purchase_order_stock' => 'Purchase Order Stock', 
                         'dir_purchase_service' => 'Direct Purchase Service',
                     ];
                 @endphp
@@ -47,7 +48,7 @@
                     <th>Labour Service</th>
                     <th>Direct Purchase Stock</th>
                     <th>Direct Purchase Service</th>
-                    {{-- <th>Purchase Order Stock</th> --}}
+                    <th>Purchase Order Stock</th>
                     <th>Expense Grand Total</th>
                 </tr>
             </thead>
@@ -57,7 +58,7 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    {{-- <td></td> --}}
+                    <td></td>
                     <td class="font-weight-bold"></td>
                 </tr>
             </tbody>
@@ -68,8 +69,10 @@
                 <tr>
                     <th>No.</th>
                     <th>Expense Category</th>
+                    <th>Budget Line</th>
                     <th>Supplier</th>
                     <th>Item Description</th>
+                    <th>Date</th>
                     <th>UoM</th>
                     <th>Qty</th>
                     <th>Rate</th>

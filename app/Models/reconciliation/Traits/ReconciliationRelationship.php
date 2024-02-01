@@ -16,9 +16,4 @@ trait ReconciliationRelationship
     {
         return $this->hasMany(Transaction::class);
     }
-
-    public function transactions()
-    {
-        return $this->hasMany(Transaction::class, 'reconciliation_id');
-    }
 }

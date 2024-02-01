@@ -3,6 +3,23 @@
     // ajax
     $.ajaxSetup({ headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"}});
 
+
+    $(document).ready(function () {
+        // Handle change event of the main select element
+        $('#purchase_class').change(function () {
+            // Get the selected value
+            var selectedValue = $(this).val();
+
+            // Update the values of all other select elements with class 'item-purchase-class'
+            $('.item-purchase-class').val(selectedValue);
+            //console.log(selectedValue);
+        });
+
+
+
+    });
+
+
     // select2 config
     function select2Config(url, callback) {
         return {
@@ -16,10 +33,21 @@
             }
         }
     }
+    function select2Config2(url, callback) {
+        return {
+            ajax: {
+                url,
+                dataType: 'json',
+                type: 'POST',
+                quietMillis: 50,
+                data: ({term}) => ({q: term, keyword: term}),
+                processResults: callback
+            }
+        }
+    }
 
     // datepicker
-    $('.datepicker').datepicker({format: "{{ config('core.user_date_format')}}", autoHide: true})        
-    .datepicker('setDate', new Date());
+    $('.datepicker').datepicker({format: "{{ config('core.user_date_format')}}", autoHide: true});
         
     // On selecting supplier type
     $("input[name='supplier_type']").change(function() {
@@ -57,6 +85,135 @@
     }
     $('#supplierbox').select2(select2Config(supplierUrl, supplierData));
 
+
+    //Select Quote From quotes
+    $('#quotebox').change(function() {
+        const name = $('#quotebox option:selected').text().split(' : ')[0];
+        const [id, quote_no] = $(this).val().split('-');
+        $('#quoteid').val(quoteid);
+        //$('#quoteid').val(id);
+        $('#quote').val(name);
+        purchaseorderChange();
+    });
+     // load suppliers
+     const quoteUrl = "{{ route('biller.queuerequisitions.select_queuerequisition') }}";
+    function quoteData(data) {
+        return {results: data.map(v => ({id: v.id+'-'+v.quote_no, text: 'Qt-'+v.quote_no+' : '+v.client_branch}))};
+    }
+    $('#quotebox').select2(select2Config2(quoteUrl, quoteData));
+
+    const config = {
+        ajaxSetup: {headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"}},
+        date: {format: "{{ config('core.user_date_format')}}", autoHide: true},
+        select2: {
+            allowClear: true,
+        },
+        fetchLpoGoods: (queuerequisition_id, pricelist) => {
+            return $.ajax({
+                url: "{{ route('biller.queuerequisitions.goods') }}",
+                type: 'POST',
+                quietMillis: 50,
+                data: {queuerequisition_id, pricelist},
+            });
+        }
+    };
+
+    $('#quoteselect').change(function () { 
+        const name = $('#quoteselect option:selected').val();
+        const pricelist = $('#pricegroup_id').val();
+        //console.log(pricelist);
+        purchaseorderChange(name, pricelist);
+    });
+
+    function purchaseorderChange(value, pricelist) {
+        //const [value1, value2] = $('#quotebox option:selected').val().split('-');
+            const el = value;
+            $('#stockTbl tbody').html('');
+            if (!value) return;
+            config.fetchLpoGoods(value, pricelist).done(data => {
+                data.forEach((v,i) => $('#stockTbl tbody').append(this.productRow(v,i)));
+                if(data.length > 0){
+                    $('#stockTbl tbody').append(this.addRow());
+                }
+            });
+    }
+
+    function productRow(v,i) {
+            return `
+            <tr>
+                <td><input type="text" class="form-control stockname" value="${v.queuerequisition_supplier.descr}" name="name[]" placeholder="Product Name" id='stockname-0'></td>
+                <td><input type="text" class="form-control qty" name="qty[]" id="qty-0" value="${v.qty_balance}"></td>  
+                <td><input type="text" name="uom[]" id="uom-0" value="${v.uom}" class="form-control uom" required></td> 
+                <td><input type="text" value="${v.queuerequisition_supplier.rate}" class="form-control  price" name="rate[]" id="price-0"></td>
+                <td>
+                    <select class="form-control rowtax" name="itemtax[]" id="rowtax-0">
+                        @foreach ($additionals as $tax)
+                            <option value="{{ (int) $tax->value }}" {{ $tax->is_default ? 'selected' : ''}}>
+                                {{ $tax->name }}
+                            </option>
+                        @endforeach                                                    
+                    </select>
+                </td>
+                <td><input type="text" class="form-control taxable" value="0"></td>
+                <td class="text-center">{{config('currency.symbol')}} <b><span class='amount' id="result-0">0</span></b></td> 
+                <td><button type="button" class="btn btn-danger remove"><i class="fa fa-minus-square" aria-hidden="true"></i></button></td>
+                <input type="hidden" id="stockitemid-0" value="${v.id}" name="item_id[]">
+                <input type="hidden" class="stocktaxr" name="taxrate[]">
+                <input type="hidden" class="stockamountr" name="amount[]">
+                <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="0">
+                <input type="hidden" name="type[]" value="Requisit">
+                <input type="hidden" name="id[]" value="0">
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="text" id="stockdescr-0" value="${v.system_name}" class="form-control descr" name="description[]" placeholder="Product Description">
+                </td>
+                <td><input type="text" class="form-control product_code" value="${v.product_code}" name="product_code[]" id="product_code-0" readonly></td>
+                <td>
+                    <select name="warehouse_id[]" class="form-control warehouse" id="warehouseid">
+                        <option value="">-- Warehouse --</option>
+                        @foreach ($warehouses as $row)
+                            <option value="{{ $row->id }}">{{ $row->title }}</option>
+                        @endforeach
+                    </select>
+                </td>
+                <td colspan="3">
+                    <input type="text" class="form-control projectstock" value="${v.quote_no}" id="projectstocktext-0" placeholder="Search Project By Name">
+                    {{-- <input type="hidden" name="itemproject_id[]" id="projectstockval-0"> --}}
+                </td>
+                <td colspan="6"></td>
+            </tr>
+            `;
+    }
+    function addRow(){
+        return `
+            <tr class="bg-white">
+                <td>
+                    <button type="button" class="btn btn-success" aria-label="Left Align" id="addstock">
+                        <i class="fa fa-plus-square"></i> {{trans('general.add_row')}}
+                    </button>
+                </td>
+                <td colspan="7"></td>
+            </tr>
+            <tr class="bg-white">
+                <td colspan="6" align="right"><b>{{trans('general.total_tax')}}</b></td>                   
+                <td align="left" colspan="2">
+                    {{config('currency.symbol')}} <span id="invtax" class="lightMode">0</span>
+                </td>
+            </tr>
+            <tr class="bg-white">
+                <td colspan="6" align="right">
+                    <b>Inventory Total ({{ config('currency.symbol') }})</b>
+                </td>
+                <td align="left" colspan="2">
+                    <input type="text" class="form-control" name="stock_grandttl" value="0.00" id="stock_grandttl" readonly>
+                    <input type="hidden" name="stock_subttl" value="0.00" id="stock_subttl">
+                    <input type="hidden" name="stock_tax" value="0.00" id="stock_tax">
+                </td>
+            </tr>
+        `;
+    }
+
     // load projects dropdown
     const projectUrl = "{{ route('biller.projects.project_search') }}";
     function projectData(data) {
@@ -64,8 +221,272 @@
         return {results: data};
     }
     $("#project").select2(select2Config(projectUrl, projectData));
-    
-    // On Tax change
+
+
+    function getProjectMilestones(projectId, forItems = false, inputClass = ''){
+
+        //console.log(projectId);
+
+
+        $.ajax({
+            url: "{{ route('biller.getProjectMileStones') }}",
+            method: 'GET',
+            data: { projectId: projectId},
+            dataType: 'json', // Adjust the data type accordingly
+            success: function(data) {
+                // This function will be called when the AJAX request is successful
+
+                var select = null;
+
+                if(forItems === false) select = $('#project_milestone');
+                else if(forItems === true) select = $('.item-milestone');
+                else if(forItems === false && inputClass !== ''){
+
+                    select = $(inputClass);
+                    //console.log("ITEM CLASS ID NI: " + select.id);
+                }
+
+                // Clear any existing options
+                select.empty();
+
+                if(data.length === 0){
+
+                    select.append($('<option>', {
+                        value: null,
+                        text: 'No Milestones Created For This Project'
+                    }));
+
+                } else {
+
+                    select.append($('<option>', {
+                        value: null,
+                        text: 'Select a Budget Line'
+                    }));
+
+                    // Add new options based on the received data
+                    for (var i = 0; i < data.length; i++) {
+
+                        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                        const date = new Date(data[i].due_date);
+
+                        select.append($('<option>', {
+                            value: data[i].id,
+                            text: data[i].name + ' | Balance: ' +  parseFloat(data[i].balance).toFixed(2) + ' | Due on ' + date.toLocaleDateString('en-US', options)
+                        }));
+                    }
+
+                    let selectedOptionValue = "{{ @$purchase->project_milestone }}";
+                    console.table(@json(@$purchase) );
+                    //console.log("MSTONE VALUE IS:  " + selectedOptionValue);
+                    if (selectedOptionValue) {
+                        select.val(selectedOptionValue);
+                    }
+
+                    checkMilestoneBudget(select.find('option:selected').text());
+
+                }
+
+            },
+            error: function() {
+                // Handle errors here
+                //console.log('Error loading data');
+            }
+        });
+
+    }
+
+    //Load Milestones
+    $('#project').change(function() {
+
+        getProjectMilestones($(this).val())
+        getProjectMilestones($(this).val(), true);
+
+    });
+
+    // $('.item-purchase-class').on('input', function() {
+    //
+    //
+    //     var elementId = this.id;
+    //     //console.log("INPUT ID IS : " + elementId);
+    //
+    // });
+
+
+    // $(document).ready(function () {
+    //
+    //     if($(#tax).val() != 0){
+    //
+    //         $('#cu_invoice_no').prop('required', true);
+    //         $('#taxid').prop('required', true);
+    //         $('#reference_no').prop('required', false);
+    //     }
+    //     else{
+    //
+    //         $('#cu_invoice_no').prop('required', false);
+    //         $('#taxid').prop('required', false);
+    //         $('#reference_no').prop('required', true);
+    //
+    //     }
+    //
+    // });
+
+
+    $('#tax').change(function() {
+
+       if($(this).val() != 0){
+
+           $('#cu_invoice_no').prop('required', true);
+           $('#cu_invoice_no').prop('readonly', false);
+
+           $('#taxid').prop('required', true);
+           $('#ref_type').prop('required', false);
+           $('#reference_no').prop('required', false);
+       }
+       else{
+
+           $('#cu_invoice_no').prop('required', false);
+           $('#cu_invoice_no').prop('readonly', true);
+
+           $('#taxid').prop('required', false);
+           $('#ref_type').prop('required', true);
+           $('#reference_no').prop('required', true);
+
+       }
+
+        // console.table({
+        //     TaxValue : $(this).val(),
+        //     CU_req : $('#cu_invoice_no').prop('required'),
+        //     CU_readonly : $('#cu_invoice_no').prop('readonly'),
+        //     TaxId_req : $('#taxid').prop('required'),
+        //     refType_req : $('#ref_type').prop('required'),
+        // })
+    });
+
+
+    $('#active2').on('input', '[id^="item_purchase_class-"]', function() {
+        // Get the ID of the current input element when its value changes
+        var inputId = this.id;
+        //console.log("Input ID:", inputId);
+
+        // Extract the number at the end of the ID
+        var numberAtEnd = inputId.match(/\d+$/);
+
+        let rowId = null
+        // Check if a number was found
+        if (numberAtEnd) rowId = parseInt(numberAtEnd[0]);
+
+        $('#projectexptext-' + rowId).val(''); //prop('readonly', true);
+        $('#item_milestone-' + rowId).val(''); //prop('readonly', true);
+    });
+
+    $('#active2').on('input', '[id^="projectexptext-"]', function() {
+        // Get the ID of the current input element when its value changes
+        var inputId = this.id;
+        //console.log("Input ID:", inputId);
+
+        // Extract the number at the end of the ID
+        var numberAtEnd = inputId.match(/\d+$/);
+
+        let rowId = null
+        // Check if a number was found
+        if (numberAtEnd) rowId = parseInt(numberAtEnd[0]);
+
+        $('#item_purchase_class-' + rowId).val(''); //prop('readonly', true);
+
+        // getProjectMilestones($(this).val(), false, 'item-milestone-' + rowId)
+    });
+
+
+        $('#projectexptext-0').change(function() {
+
+
+            // getProjectMilestones($(this).val(), false, '.item-milestone-' + this.id);
+            console.log("ID is " + 'item-milestone-' + this.id.split('-').pop());
+
+        });
+
+
+
+    $('#active2').on('input', '[id^="item_milestone-"]', function() {
+        // Get the ID of the current input element when its value changes
+        var inputId = this.id;
+        //console.log("Input ID:", inputId);
+
+        // Extract the number at the end of the ID
+        var numberAtEnd = inputId.match(/\d+$/);
+
+        let rowId = null
+        // Check if a number was found
+        if (numberAtEnd) rowId = parseInt(numberAtEnd[0]);
+
+        $('#item_purchase_class-' + rowId).val(''); //prop('readonly', true);
+    });
+
+
+    $('#active3').on('input', '[id^="asset_purchase_class-"]', function() {
+
+        var inputId = this.id;
+        var numberAtEnd = inputId.match(/\d+$/);
+
+        let rowId = null
+        if (numberAtEnd) rowId = parseInt(numberAtEnd[0]);
+
+        $('#projectassettext-' + rowId).val('');
+    });
+
+    $('#active3').on('input', '[id^="projectassettext-"]', function() {
+
+        var inputId = this.id;
+        var numberAtEnd = inputId.match(/\d+$/);
+
+        let rowId = null
+        if (numberAtEnd) rowId = parseInt(numberAtEnd[0]);
+
+        $('#asset_purchase_class-' + rowId).val('');
+    });
+
+
+
+    function checkMilestoneBudget(milestoneString){
+
+        // Get the value of the input field
+        let selectedMilestone = milestoneString;
+
+        // Specify the start and end strings
+        let startString = 'Balance: ';
+        let endString = ' | Due on';
+
+        // Find the index of the start and end strings
+        let startIndex = selectedMilestone.indexOf(startString);
+        let endIndex = selectedMilestone.indexOf(endString, startIndex + startString.length);
+
+        // Extract the string between start and end
+        let milestoneBudget = parseFloat(selectedMilestone.substring(startIndex + startString.length, endIndex)).toFixed(2);
+
+        // //console.log("Milestone Budget is " + milestoneBudget + " and purchase total is " + purchaseGrandTotal);
+
+        if(purchaseGrandTotal > milestoneBudget){
+
+            // //console.log( "Milestone Budget is " + milestoneBudget );
+            // //console.log( "Milestone Budget Exceeded" );
+            $("#milestone_warning").text("Milestone Budget of " + milestoneBudget + " Exceeded!");
+        }
+        else {
+            $("#milestone_warning").text("");
+        }
+
+
+    }
+
+    $('#project_milestone').change(function() {
+
+        checkMilestoneBudget($(this).find('option:selected').text());
+
+    });
+
+
+
+        // On Tax change
     let taxChangeCount = 0;
     $('#tax').change(function() {
         if (taxChangeCount > 0) return;
@@ -107,10 +528,11 @@
 
     // edit mode
     let countPurchaseItems = @json(@$purchase->products? $purchase->products->count() : 0);    
-</script>
 
-<!-- post transaction totals table-->
-<script>
+
+    let purchaseGrandTotal = 0;
+
+        <!-- post transaction totals table-->
     const sumLine = (...values) => values.reduce((prev, curr) => prev + curr.replace(/,/g, '')*1, 0);
     function transxnCalc() {
         $('#transxnTbl tbody tr').each(function() {
@@ -121,6 +543,7 @@
                     $(this).find('td:eq(2)').text($('#exp_subttl').val());
                     $(this).find('td:eq(3)').text($('#asset_subttl').val());
                     total = sumLine($('#stock_subttl').val(), $('#exp_subttl').val(), $('#asset_subttl').val());
+                    purchaseGrandTotal = total;
                     $('#paidttl').val(total.toLocaleString());
                     $(this).find('td:eq(4)').text($('#paidttl').val());
                     break;
@@ -129,6 +552,7 @@
                     $(this).find('td:eq(2)').text($('#exp_tax').val());
                     $(this).find('td:eq(3)').text($('#asset_tax').val());
                     total = sumLine($('#stock_tax').val(), $('#exp_tax').val(), $('#asset_tax').val());
+                    purchaseGrandTotal = total;
                     $('#grandtax').val(total.toLocaleString());
                     $(this).find('td:eq(4)').text($('#grandtax').val());
                     break;
@@ -137,12 +561,16 @@
                     $(this).find('td:eq(2)').text($('#exp_grandttl').val());
                     $(this).find('td:eq(3)').text($('#asset_grandttl').val());
                     total = sumLine($('#stock_grandttl').val(), $('#exp_grandttl').val(), $('#asset_grandttl').val());
+                    purchaseGrandTotal = total;
                     $('#grandttl').val(total.toLocaleString());
                     $(this).find('td:eq(4)').text($('#grandttl').val());
                     break;
             }
+
+            checkMilestoneBudget($('#project_milestone').find('option:selected').text());
+
         });
-    }    
+    }
 </script>
 
 <!-- autocomplete method -->
@@ -220,6 +648,7 @@
             $('#stockTbl tbody tr:eq(-3)').before(html);
             $('.stockname').autocomplete(predict(stockUrl, stockSelect));
             $('.projectstock').autocomplete(predict(projectUrl, projectStockSelect));
+            $('#increment-'+i).val(i+1);
             const projectText = $("#project option:selected").text().replace(/\s+/g, ' ');
             $('#projectstocktext-'+i).val(projectText);
             $('#projectstockval-'+i).val($("#project option:selected").val());
@@ -366,10 +795,14 @@
             $('#expTbl tbody tr:eq(-3)').before(html);
             $('.accountname').autocomplete(predict(expUrl, expSelect));
             $('.projectexp').autocomplete(predict(projectUrl, projectExpSelect));
+            $('#expenseinc-'+i).val(i+1);
             const projectText = $("#project option:selected").text().replace(/\s+/g, ' ');
             $('#projectexptext-'+i).val(projectText);
             $('#projectexpval-'+i).val($("#project option:selected").val());
             taxRule('expvat-'+i, $('#tax').val());
+
+            getProjectMilestones($('#project').val(), true);
+
         }
         if ($(this).is('.remove')) {
             const $tr = $(this).parents('tr:first');
@@ -478,6 +911,7 @@
 
             $('#assetTbl tbody tr:eq(-3)').before(html);
             $('.assetname').autocomplete(predict(assetUrl, assetSelect));
+            $('#assetinc-'+i).val(i+1);
             $('.projectasset').autocomplete(predict(projectUrl, projectAssetSelect));
             const projectText = $("#project option:selected").text().replace(/\s+/g, ' ');
             $('#projectassettext-'+i).val(projectText);

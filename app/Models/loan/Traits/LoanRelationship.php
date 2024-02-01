@@ -6,6 +6,7 @@ use App\Models\Access\User\User;
 use App\Models\account\Account;
 use App\Models\lender\Lender;
 use App\Models\transaction\Transaction;
+use App\Models\loan\LoanItem;
 
 trait LoanRelationship
 {
@@ -16,7 +17,7 @@ trait LoanRelationship
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class, 'loan_id');
+        return $this->hasMany(Transaction::class, 'tr_ref')->where('tr_type', 'loan');
     }
 
     public function lender()
@@ -27,5 +28,10 @@ trait LoanRelationship
     public function bank()
     {
         return $this->belongsTo(Account::class, 'bank_id');
+    }
+
+    public function loan_items()
+    {
+        return $this->hasMany(LoanItem::class);
     }
 }

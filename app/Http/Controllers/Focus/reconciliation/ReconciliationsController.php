@@ -45,11 +45,11 @@ class ReconciliationsController extends Controller
      */
     public function create()
     {
-        $last_tid = Reconciliation::max('tid');
+        $last_tid = Reconciliation::where('ins', auth()->user()->ins)->max('tid');
         // banks
-        $accounts = Account::where('account_type_id', 6)
-        ->whereHas('transactions', fn ($q) => $q->where('reconciliation_id', 0))
-        ->get();
+        $accounts = Account::where(['account_type_id' => 6])->whereHas('transactions', function ($q) {
+            $q->where('reconciliation_id', 0);
+        })->get();
         
         return new ViewResponse('focus.reconciliations.create', compact('accounts', 'last_tid'));
     }
@@ -70,11 +70,7 @@ class ReconciliationsController extends Controller
         $data['user_id'] = auth()->user()->id;
         $data_items = modify_array($data_items);
 
-        try {
-            $this->repository->create(compact('data', 'data_items'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Bank reconcilliaton', $th);
-        }
+        $this->repository->create(compact('data', 'data_items'));
 
         return new RedirectResponse(route('biller.reconciliations.index'), ['flash_success' => 'Bank reconcilliaton successfully completed']);
     }
@@ -98,11 +94,7 @@ class ReconciliationsController extends Controller
      */
     public function destroy(Reconciliation $reconciliation)
     {
-        try {
-            $this->repository->delete($reconciliation);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Reconciliation', $th);
-        }
+        $this->repository->delete($reconciliation);
 
         return new RedirectResponse(route('biller.reconciliations.index'), ['flash_sucess' => 'Reconciliation deleted successfully']);
     }
@@ -114,8 +106,10 @@ class ReconciliationsController extends Controller
     {
         // all transaction types except deposit (opening balance) 
         $transactions = Transaction::where('account_id', request('id'))
-            ->where('reconciliation_id', 0)->get();
-            
+            ->where('reconciliation_id', 0)
+            ->orderBy('tr_date', 'desc')
+            ->get();
+
         return response()->json($transactions);
     }
 

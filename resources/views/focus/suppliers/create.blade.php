@@ -22,10 +22,10 @@
                 <div class="card">
                     <div class="card-content">
                         <div class="card-body">
-                            {{ Form::open(['route' => 'biller.suppliers.store', 'method' => 'post', 'files' => true, 'id' => 'create-supplier']) }}
+                            {{ Form::open(['route' => 'biller.suppliers.store', 'method' => 'post', 'id' => 'create-supplier']) }}
                             <div class="form-group">
                                 @include("focus.suppliers.form")
-                                <div class="edit-form-btn ml-5">
+                                <div class="edit-form-btn">
                                     {{ link_to_route('biller.suppliers.index', trans('buttons.general.cancel'), [], ['class' => 'btn btn-danger btn-md']) }}
                                     {{ Form::submit(trans('buttons.general.crud.create'), ['class' => 'btn btn-primary btn-md']) }}
                                 </div>

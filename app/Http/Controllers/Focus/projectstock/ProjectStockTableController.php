@@ -47,43 +47,24 @@ class ProjectStockTableController extends Controller
      */
     public function __invoke(Request $request)
     {
-        $query = $this->repository->getForDataTable();
-        $ins = auth()->user()->ins;
-        $prefixes = prefixesArray(['quote','proforma_invoice','stock_issuance'], $ins);
+        $core = $this->repository->getForDataTable();
 
-        return Datatables::of($query)
+        return Datatables::of($core)
             ->escapeColumns(['id'])
             ->addIndexColumn()   
-            ->editColumn('tid', function ($projectstock) use ($prefixes) {
-                return gen4tid("{$prefixes[2]}-", $projectstock->tid);
+            ->addColumn('tid', function ($projectstock) {
+                return gen4tid('ISS-', $projectstock->tid);
             }) 
-            ->filterColumn('tid', function($query, $tid) use($prefixes) {
-                $arr = explode('-', $tid);
-                if (strtolower($arr[0]) == strtolower($prefixes[2]) && isset($arr[1])) {
-                    $query->where('tid', floatval($arr[1]));
-                } elseif (floatval($tid)) {
-                    $query->where('tid', floatval($tid));
-                }
-            })
-            ->addColumn('quote', function ($projectstock) use ($prefixes) {
+            ->addColumn('quote', function ($projectstock) {
                 $quote = $projectstock->quote;
                 if ($quote) {
-                    $tid = gen4tid($quote->bank_id? "{$prefixes[1]}-" : "{$prefixes[0]}-", $quote->tid);
+                    $tid = gen4tid($quote->bank_id? 'PI-' : 'Qt-', $quote->tid);
                     return $tid . ' - ' . $quote->notes;
                 }                
-            })
-            ->filterColumn('quote', function($query, $quote) use($prefixes) {
-                $arr = explode('-', $quote);
-                if (strtolower($arr[0]) == strtolower($prefixes[0]) && isset($arr[1])) {
-                    $query->whereHas('quote', fn($q) => $q->where('tid', floatval($arr[1])));
-                } elseif (floatval($quote)) {
-                    $query->whereHas('quote', fn($q) => $q->where('tid', floatval($tid)));
-                }
-            })                   
-            ->editColumn('date', function ($projectstock) {
+            })                    
+            ->addColumn('date', function ($projectstock) {
                 return dateFormat($projectstock->date);
             })
-            ->orderColumn('date', '-date $1')
             ->addColumn('actions', function ($projectstock) {
                 return $projectstock->action_buttons;
             })

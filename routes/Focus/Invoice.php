@@ -4,12 +4,19 @@
  * invoices
  *
  */
-Route::group(['namespace' => 'standard_invoice'], function () {
-    Route::post('standard_invoices/customer/create', 'StandardInvoicesController@create_customer')->name('invoices.create_customer');
-    Route::resource('standard_invoices', 'StandardInvoicesController');
+
+use Illuminate\Support\Facades\Route;
+
+Route::prefix('cu-invoice-number')->namespace('cuInvoiceNumber')->group(function () {
+    Route::get('set', 'CuInvoiceNumberController@set');
 });
 
-// payment
+ Route::group(['namespace' => 'standard_invoice'], function () {
+    Route::post('standard_invoices/customer/create', 'StandardInvoicesController@create_customer')->name('invoices.create_customer');
+    Route::resource('standard_invoices', 'StandardInvoicesController');
+ });
+ 
+ // payment
 Route::group(['namespace' => 'invoice_payment'], function () {
     Route::resource('invoice_payments', 'InvoicePaymentsController');
     // datatable
@@ -52,7 +59,7 @@ Route::group(['namespace' => 'invoice'], function () {
     //For Datatable
     Route::post('quotes/get_uninvoiced_quote', 'UninvoicedQuoteTableController')->name('invoices.get_uninvoiced_quote');
     Route::post('invoices/get', 'InvoicesTableController')->name('invoices.get');
-    // Route::post('invoices/get_payments', 'InvoicePaymentsTableController')->name('invoices.get_payments');
+    Route::post('invoices/get_payments', 'InvoicePaymentsTableController')->name('invoices.get_payments');
 });
 
 Route::group(['namespace' => 'printer'], function () {

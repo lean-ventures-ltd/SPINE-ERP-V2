@@ -1,4 +1,5 @@
 {{ Html::script(mix('js/dataTable.js')) }}
+{{ Html::script('focus/js/select2.min.js') }}
 <script>    
     config = {
         ajax: {headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"}},
@@ -6,21 +7,28 @@
     };
 
     $.ajaxSetup(config.ajax);
-
+    
     // Intialize datepicker
     $('.datepicker').datepicker(config.date);
-    $('#reference-date').datepicker('setDate', new Date("{{ $quote->reference_date }}"));
-    $('#date').datepicker('setDate', new Date("{{ $quote->date }}"));
     $('#date-0').datepicker('setDate', new Date());
-
-    // set general remark
-    $('#gen_remark').val(@json($quote->gen_remark));
-
-    // reset Quote Verification 
+    $('#project_closure_date').datepicker('setDate', new Date());
+    $('#project_closure_date').val('');
+    $('#reference-date').val('');
+    
+    const quote = @json($quote);
+    if (quote.id) {
+        if (quote.reference_date) $('#reference-date').datepicker('setDate', new Date(quote.reference_date));
+        if (quote.date) $('#date').datepicker('setDate', new Date(quote.date));
+        if (quote.project_closure_date) $('#project_closure_date').datepicker('setDate', new Date(quote.project_closure_date));
+        $('#gen_remark').val(quote.gen_remark);
+    }
+    
+    // Undo verification 
     $('#reset-items').click(function() {
         swal({
-            title: 'Are you sure to reset all previously verified items ?',
-            icon: "warning",
+            title: 'Are you sure ?',
+            text: 'Undo previous verification',
+            type: 'warning',
             buttons: true,
             dangerMode: true,
             showCancelButton: true,
@@ -28,11 +36,11 @@
             $.ajax({
                 url: baseurl + 'quotes/reset_verified/' + "{{ $quote->id }}",
                 success: () => location.reload(),
-            })
+            });
         });
     });
 
-    // check if quote_total not equal to verified_amount
+    // set general remark required if quote total not equal to verified total
     $(function() {
         const total = accounting.unformat($('#total').val());
         const quoteTotal = accounting.unformat($('#quote_total').val());
@@ -46,50 +54,42 @@
         else $('#gen_remark').attr('required', false);
     });
 
-    // job card row
+    // Job card row template
+    const jobCardRowNodeMain = $('#jobcardTbl tbody tr').clone();
+    $('#jobcardTbl tbody tr').remove();
+    jobCardRowNodeMain.removeClass('d-none');
     function jobCardRow(n) {
-        return `
-            <tr>
-                <td>
-                    <select class="custom-select type" name="type[]" id="type-${n}">
-                        <option value="1" selected>Jobcard</option>
-                        <option value="2">DNote</option> 
-                    </select>
-                </td>
-                <td><input type="text" class="form-control" name="reference[]" id="reference-${n}" required></td>
-                <td><input type="text" class="form-control datepicker" name="date[]" id="date-${n}" required></td>
-                <td><input type="text" class="form-control" name="technician[]" id="technician-${n}" required></td>
-                <td><textarea class="form-control equip" name="equipment[]" id="equip-${n}"></textarea>
-                <td><input type="text location" class="form-control" name="location[]" id="location-${n}"></td>
-                <td>
-                    <select class="custom-select fault" name="fault[]" id="fault-${n}">
-                        <option value="none">None</option>
-                        <option value="faulty_compressor">Faulty Compressor</option>
-                        <option value="faulty_pcb">Faulty PCB</option>
-                        <option value="leakage_arrest">Leakage Arrest</option>
-                        <option value="electrical_fault">Electrical Fault</option>
-                        <option value="drainage">Drainage</option>
-                        <option value="other">Other</option>
-                    </select>
-                </td>
-                <td><a href="javascript:" class="btn btn-primary btn-md removeJc" type="button">Remove</a></td>
-                <input type="hidden" name="jcitem_id[]" value="0" id="jcitemid-${n}">
-                <input type="hidden" name="equipment_id[]" value="0" id="equipmentid-${n}">
-            </tr>
-        `;
+        const jobCardRowNode = jobCardRowNodeMain.clone();
+        jobCardRowNode.find('input').each(function() {
+            $(this).attr('id', $(this).attr('id') + '-' + n);
+        });
+        jobCardRowNode.find('select').each(function() {
+            $(this).attr('id', $(this).attr('id') + '-' + n);
+        });
+        jobCardRowNode.find('textarea').each(function() {
+            $(this).attr('id', $(this).attr('id') + '-' + n);
+        });
+        jobCardRowNode.find('span').each(function() {
+            $(this).attr('id', $(this).attr('id') + '-' + n);
+        });
+        const html = jobCardRowNode.html();
+        return '<tr>' + html + '</tr>';
     }
-
-    // on change type
+    
+    // on change jobcard row type
     $('#jobcardTbl').on('change', '.type', function() {
         let i = $(this).attr('id').split('-')[1];
+        // type 2 is dnote
         if ($(this).val() == 2) {
             $('#fault-'+i).addClass('invisible');
             $('#equip-'+i).addClass('invisible');
             $('#location-'+i).addClass('invisible');
+            $('#jobhrs-'+i).addClass('invisible');
         } else {
             $('#fault-'+i).removeClass('invisible');
             $('#equip-'+i).removeClass('invisible');
             $('#location-'+i).removeClass('invisible');
+            $('#jobhrs-'+i).removeClass('invisible');
         }
     });
     
@@ -105,19 +105,19 @@
     });
 
     // remove job card row
-    $('#jobcardTbl').on('click', '.removeJc', function() {
+    $('#jobcardTbl').on('click', '.del', function() {
         const row = $(this).parents('tr:first');
         if (confirm('Are you sure ?')) row.remove();
     });
 
-    // jobcards
+    // load presaved jobcards
     const jobcards = @json($jobcards);
     jobcards.forEach((v, i) => {
         jcIndex++;
         $('#jobcardTbl tbody').append(jobCardRow(i));                    
         $('#jcitemid-'+i).val(v.id);
         $('#reference-'+i).val(v.reference);
-        $('#type-'+i).val(v.type);
+        $('#type-'+i).val(v.type).change();
         $('#technician-'+i).val(v.technician);
         $('#equip-'+i).autocomplete(autocompleteEquip(i)).val(v.equipment?.make_type);
         $('#equipmentid-'+i).val(v.equipment_id);
@@ -132,7 +132,62 @@
             $('#fault-'+i).addClass('invisible');
         }
     });
-
+    
+    // Add Job Labour Hours
+    let activeRow = '';
+    $('#job_date').datepicker('setDate', new Date());
+    $("#employee").select2({allowClear: true, dropdownParent: $('#attachLabourModal .modal-body')});
+    $('#jobcardTbl').on('click', '.add_labour', function() {
+        const tr = $(this).parents('tr');
+        activeRow = tr;
+        $('#job_date').val(tr.find('.date').val());
+        $('#job_ref_type').val(tr.find('.job_ref_type').val());
+        $('#job_card').val(tr.find('.ref').val());
+        $('#job_type').val(tr.find('.job_type').val());
+        $('#hrs').val(tr.find('.job_hrs').val());
+        $('#is_payable').val(tr.find('.job_is_payable').val());
+        $('#note').val(tr.find('.job_note').val());
+        
+        // set selected employees
+        let employee_ids = tr.find('.job_employee').val() || '';
+        employee_ids = employee_ids.split(',');
+        $('#employee').val(employee_ids).change();
+        
+        // fetch expected labour hours
+        $('#expectedHrs').html(`(Rem: ${0})`);
+        $.get("{{ route('biller.labour_allocations.expected_hours') }}?quote_id=" + quote.id, function(data) {
+            $('#expectedHrs').html(`(Rem: ${data.hours})`);
+            $('#project_name').html(`${data.project_tid}: <span class="text-primary">${data.quote_tid}</span>`);
+        });
+    });
+    // job type change
+    $('#job_type').change(function() {
+        if (this.value == 'diagnosis') $('#is_payable').val(0);
+        else $('#is_payable').val(1);
+    });
+    // on submit labour hours
+    $('#attachLabourForm').submit(function(e) {
+        event.preventDefault();
+        $('#attachLabourModal').modal('toggle');
+        const data = {};
+        const employee_ids = [];
+        $.each($('#attachLabourForm').serializeArray(), function(i, field) {
+            data[field.name] = field.value;
+            if (field.name == 'mdl_employee') employee_ids.push(field.value);
+        });
+        const tr = activeRow;
+        tr.find('.job_date').val(data.mdl_date);
+        tr.find('.job_type').val(data.mdl_job_type);
+        tr.find('.job_employee').val(employee_ids.join(','));
+        tr.find('.job_ref_type').val(data.mdl_ref_type);
+        tr.find('.job_jobcard_no').val(data.mdl_jobcard);
+        tr.find('.job_hrs').val(data.mdl_hrs);
+        tr.find('.jobhrs').text(data.mdl_hrs? data.mdl_hrs : '_');
+        tr.find('.job_is_payable').val(data.mdl_is_payable);
+        tr.find('.job_note').val(data.mdl_note);
+    });
+    
+    
     // row dropdown menu
     function dropDown() {
         return `
@@ -156,17 +211,16 @@
                 <td><input type="text" class="form-control" name="numbering[]" id="numbering-${val}" autocomplete="off"></td>
                 <td><input type="text" class="form-control" name="product_name[]" placeholder="{{trans('general.enter_product')}}" id='itemname-${val}'></td>
                 <td><input type="text" class="form-control" name="unit[]" id="unit-${val}" value=""></td>                
-                <td><input type="text" class="form-control qty" name="product_qty[]" id="qty-${val}" autocomplete="off"></td>
-                <td><input type="text" class="form-control rate" name="product_subtotal[]" id="rate-${val}" autocomplete="off"></td>
-                <td><input type="text" class="form-control price" name="product_price[]" id="price-${val}" autocomplete="off" readonly></td>
-                <td><strong><span class="amount" id="amount-${val}">0</span></strong></td>
-                <td><textarea class="form-control remark" name="remark[]" id="remark-${val}"></textarea></td>
+                <td><input type="text" class="form-control req amount" name="product_qty[]" id="amount-${val}" onchange="qtyChange(event)" autocomplete="off"></td>
+                <td><input type="text" class="form-control req price" name="product_subtotal[]" id="price-${val}" onchange="priceChange(event)" autocomplete="off"></td>
+                <td><input type="text" class="form-control req prcrate" name="product_price[]" id="rateinclusive-${val}" autocomplete="off" readonly></td>
+                <td><strong><span class='ttlText' id="result-${val}">0</span></strong></td>
+                <td><textarea class="form-control" name="remark[]" id="remark-${val}"></textarea></td>
                 <td class="text-center">${dropDown()}</td>
                 <input type="hidden" name="item_id[]" value="0" id="itemid-${val}">
                 <input type="hidden" name="product_id[]" value=0 id="productid-${val}">
-                <input type="hidden" class="rowindx" name="row_index[]" value="0" id="rowindex-${val}">
+                <input type="hidden" name="row_index[]" value="0" id="rowindex-${val}">
                 <input type="hidden" name="a_type[]" value="1" id="atype-${val}">
-                <input type="hidden" class="taxrate" name="tax_rate[]" value="0" id="taxrate-${val}">
             </tr>
         `;
     }
@@ -185,26 +239,16 @@
                 <input type="hidden" name="product_qty[]" value="0">
                 <input type="hidden" name="product_price[]" value="0">
                 <input type="hidden" name="product_subtotal[]" value="0">
-                <input type="hidden" class="rowindx" name="row_index[]" value="0" id="rowindex-${val}">
+                <input type="hidden" name="row_index[]" value="0" id="rowindex-${val}">
                 <input type="hidden" name="a_type[]" value="2" id="atype-${val}">
-                <input type="hidden" class="taxrate" name="tax_rate[]" value="0" id="taxrate-${val}">
             </tr>
         `;
     }
 
-    // on change qty, rate
-    $('#productsTbl').on('change', '.qty, .rate', function() {
-        const row = $(this).parents('tr');
-        const qty = accounting.unformat(row.find('.qty').val());
-        const rate = accounting.unformat(row.find('.rate').val());
-
-        const tax = @json($quote->tax_id);
-        const price = rate * (tax/100 + 1);
-        const amount = price * qty;
-
-        row.find('.price').val(accounting.formatNumber(price, 4));
-        row.find('.amount').text(accounting.formatNumber(amount, 4));
-        calcTotals();
+    // On product amount or price change condition
+    $('#quotation').on('change', '.amount, .price', function() {
+        const i = $(this).attr('id').split('-')[1];
+        $('#remark-'+i).attr('required', true);
     });
 
     // set default product rows
@@ -222,7 +266,7 @@
         }
         // check if item type is product
         if (item.a_type == 1) {
-            $('#productsTbl tbody').append(productRow(rowIndx));
+            $('#quotation tbody').append(productRow(rowIndx));
             $('#itemname-'+rowIndx).autocomplete(autocompleteProp(rowIndx));
             // set default values
             $('#itemid-'+i).val(item.id);
@@ -231,39 +275,38 @@
             $('#itemname-'+i).val(item.product_name);
             $('#unit-'+i).val(item.unit); 
             $('#remark-'+i).val(item.remark);
-            $('#taxrate-'+i).val(item.tax_rate);
-            $('#qty-'+i).val(accounting.formatNumber(item.product_qty));
-            $('#rate-'+i).val(accounting.formatNumber(item.product_subtotal, 4)).attr('readonly', true);
-            $('#price-'+i).val(accounting.formatNumber(item.product_price, 4));                
-            $('#amount-'+i).text(accounting.formatNumber(item.product_qty * item.product_price, 4));
+            $('#amount-'+i).val(accounting.formatNumber(item.product_qty));
+            $('#price-'+i).val(accounting.formatNumber(item.product_subtotal)).attr('readonly', false);
+            $('#rateinclusive-'+i).val(accounting.formatNumber(item.product_price));                
+            $('#result-'+i).text(accounting.formatNumber(item.product_qty * item.product_price));
         } else {
-            $('#productsTbl tbody').append(productTitleRow(rowIndx));
+            $('#quotation tbody').append(productTitleRow(rowIndx));
             // set default values
             $('#itemid-'+i).val(item.id);
             $('#productid-'+i).val(item.product_id);
             $('#numbering-'+i).val(item.numbering);
             $('#itemname-'+i).val(item.product_name);
         }
-        rowIndx++;        
+        rowIndx++;
+        calcTotals();
     });    
-    calcTotals();
 
     // On click Add Product
     $('#add-product').click(function() {
-        $('#productsTbl tbody').append(productRow(rowIndx));
+        $('#quotation tbody').append(productRow(rowIndx));
         $('#itemname-'+rowIndx).autocomplete(autocompleteProp(rowIndx));
         rowIndx++;
         calcTotals();
     });
     // on click Add Title button
     $('#add-title').click(function() {
-        $('#productsTbl tbody').append(productTitleRow(rowIndx));
+        $('#quotation tbody').append(productTitleRow(rowIndx));
         rowIndx++;
         calcTotals();
     });
 
     // on clicking Product row drop down menu
-    $("#productsTbl").on("click", ".up, .down, .removeProd", function() {
+    $("#quotation").on("click", ".up, .down, .removeProd", function() {
         const row = $(this).parents("tr:first");
         if ($(this).is('.up')) row.insertBefore(row.prev());
         if ($(this).is('.down')) row.insertAfter(row.next());
@@ -273,25 +316,61 @@
         calcTotals();
     });
 
+    // default tax
+    const tax = @json($quote->tax_id);
+    let taxRate = parseFloat(tax/100 + 1);
+
+    // on quantity input change
+    function qtyChange(e) {
+        const id = e.target.id;
+        const indx = id.split('-')[1];
+        const productQty = $('#'+id).val();
+        let productPrice = $('#price-'+indx).val();
+        productPrice = parseFloat(productPrice.replace(/,/g, ''));
+
+        const rateInclusive = taxRate * productPrice;
+        $('#rateinclusive-'+indx).val(rateInclusive.toFixed(2));
+        const rowAmount = productQty * parseFloat(rateInclusive);
+        $('#result-'+indx).text(rowAmount.toFixed(2));
+        calcTotals();
+    }
+    // on price input change
+    function priceChange(e) {
+        // change value to float
+        e.target.value = Number(e.target.value).toFixed(2);
+        const id = e.target.id;
+        indx = id.split('-')[1];
+
+        const qty = accounting.unformat($('#amount-'+indx).val());
+        const price = accounting.unformat($('#'+id).val());
+        const rateInclusive = taxRate * price;
+
+        $('#rateinclusive-'+indx).val(rateInclusive.toFixed(2));
+        $('#result-'+indx).text(accounting.formatNumber(qty * rateInclusive));
+        calcTotals();
+    }
+
     // totals
     function calcTotals() {
-        let taxable = 0;
-        let subtotal = 0;
-        let total = 0;
-        $('#productsTbl tbody tr').each(function(i) {
-            $(this).find('.rowindx').val(i);
-            const qty = accounting.unformat($(this).find('.qty').val());
-            const rate = accounting.unformat($(this).find('.rate').val());
-            const amount = accounting.unformat($(this).find('.amount').text());
-            const taxRate = accounting.unformat($(this).find('.taxrate').val());
-            if (taxRate > 0) taxable += qty * rate;
-            subtotal += qty * rate;
-            total += amount;
+        let subTotal = 0;
+        let grandTotal = 0;
+        $('#quotation tr').each(function(i) {
+            if (i == 0) return;
+            const qty = $(this).find('td').eq(3).children().val()
+            if (qty) {
+                let price = $(this).find('td').eq(4).children().val();
+                let rate = $(this).find('td').eq(5).children().val();
+                price = accounting.unformat(price);
+                rate = accounting.unformat(rate);
+                subTotal += qty * price;
+                grandTotal += qty * rate;
+            }
+            // update row_index
+            $(this).find('input[name="row_index[]"]').val($(this).index());
         });
-        $('#taxable').val(accounting.formatNumber(taxable));
-        $('#subtotal').val(accounting.formatNumber(subtotal));
-        $('#tax').val(accounting.formatNumber(total - subtotal));        
-        $('#total').val(accounting.formatNumber(total)).change();
+        $('#subtotal').val(accounting.formatNumber(subTotal));
+        $('#tax').val(accounting.formatNumber(grandTotal - subTotal));        
+        $('#total').val(accounting.formatNumber(grandTotal)).change();
     }
 
     // product autocomplete
@@ -318,20 +397,13 @@
                 $('#productid-'+i).val(data.id);
                 $('#itemname-'+i).val(data.name);
                 $('#unit-'+i).val(data.unit);                
-                $('#qty-'+i).val(1);
+                $('#amount-'+i).val(1);
 
-                const currency = @json($quote->currency);
-                if (currency && parseFloat(currency['rate']) > 1) {
-                    data.price = parseFloat(data.price) / parseFloat(currency['rate']);
-                }
-
-                const rate = accounting.unformat(data.price);
-                const taxRate = @json($quote->tax_id);
-                const amount = rate * (taxRate/100 + 1);
-                $('#taxrate-'+i).val(taxRate);
-                $('#rate-'+i).val(accounting.formatNumber(rate, 4)).attr('readonly', true);
-                $('#price-'+i).val(accounting.formatNumber(amount, 4));                
-                $('#amount-'+i).text(accounting.formatNumber(amount, 4));
+                const price = accounting.unformat(data.price);
+                const amount = price * taxRate;
+                $('#price-'+i).val(accounting.formatNumber(price)).attr('readonly', true);
+                $('#rateinclusive-'+i).val(accounting.formatNumber(amount));                
+                $('#result-'+i).text(accounting.formatNumber(amount));
                 calcTotals();
             }
         };

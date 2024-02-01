@@ -48,8 +48,6 @@ class AssetequipmentRepository extends BaseRepository
 
         $result = Assetequipment::create($input);        
         if ($result) return $result;
-
-        throw new GeneralException('Error Creating Assetequipment');
     }
 
     /**

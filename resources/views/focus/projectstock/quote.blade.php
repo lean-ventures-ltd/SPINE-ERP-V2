@@ -19,9 +19,9 @@
         <div class="card">
             <div class="card-body">
                 <div class="form-group row">
-                    <div class="col-5">
-                        <label for="customer">Customer</label>
+                    <div class="col-md-5">
                         <select name="customer_id" id="customer" class="form-control" data-placeholder="Choose Customer">
+                            <option value=""></option>
                         </select>
                     </div>
                 </div>
@@ -53,14 +53,14 @@
                             </tr>
                         </tbody>
                     </table>
-                    {{-- Form Redirect to Create Stock Issuance --}}
-                    <form action="{{ route('biller.projectstock.create') }}">
-                        <input type="hidden" name="quote_id" id="quote">
-                    </form>  
                 </div>
             </div>
         </div>             
     </div>
+
+    {{ Form::open(['route' => 'biller.projectstock.create', 'method' => 'GET']) }}
+        {{ Form::hidden('quote_id', null, ['id' => 'quote']) }}
+    {{ Form::close() }}
 </div>
 @endsection
 
@@ -82,7 +82,7 @@
     const Index = {
         customers: @json($customers),
 
-        init(config) {
+        init() {
             $('.datepicker').datepicker(config.datepicker).datepicker('setDate', new Date());
             $('#quotesTbl').on('change', '.select-row', this.selectRow);
             $('#customer').select2(config.customerSelect(this.customers)).val('').trigger('change').change(this.customerChange);
@@ -114,8 +114,9 @@
             }
             if ($('#quote').val()) {
                 swal({
-                    title: 'Proceed to Issue Stock?',
-                    icon: "warning",
+                    title: 'Are you sure?',
+                    text: 'Issue Stock from the inventory',
+                    type: "warning",
                     buttons: true,
                     dangerMode: true,
                     showCancelButton: true,
@@ -132,7 +133,7 @@
                 ajax: {
                     url: "{{ route('biller.projectstock.get_quote') }}",
                     type: 'POST',
-                    data: {customer_id}
+                    data: {customer_id, is_project_stock: 1}
                 },
                 columns: [
                     {data: 'checkbox',  searchable: false,  sortable: false},
@@ -143,7 +144,7 @@
                     {data: 'item_count', name: 'item_count'},    
                     {data: 'approved_qty', name: 'approved_qty' },
                     {data: 'issued_qty',name: 'issued_qty' },  
-                    { data: 'issue_status', name: 'issue_status' },  
+                    {data: 'issue_status', name: 'issue_status' },  
                 ],
                 columnDefs: [
                     { type: "custom-date-sort", targets: 1 }
@@ -156,6 +157,6 @@
         }
     };
 
-    $(() => Index.init(config));
+    $(() => Index.init());
 </script>
 @endsection

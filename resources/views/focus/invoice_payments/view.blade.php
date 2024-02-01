@@ -22,17 +22,15 @@
                     <table id="payment-table" class="table table-sm table-bordered zero-configuration" cellspacing="0" width="100%">
                         <tbody>   
                             @php
-                                $pmt = $invoice_payment;
                                 $payment_details = [
-                                    'Payment No' => $pmt->tid,
-                                    'Customer' => @$pmt->customer->company,
-                                    'Date' => dateFormat($pmt->date),
-                                    'Amount' => numberFormat($pmt->amount),
-                                    'Allocated Amount' => numberFormat($pmt->allocate_ttl),
-                                    'Payment Mode' => $pmt->payment_mode,
-                                    'Reference' => $pmt->reference,
-                                    'Payment Account' => @$pmt->account->holder,
-                                    'Payment Type' =>  ucfirst(str_replace('_', ' ', $pmt->payment_type)),
+                                    'Payment No' => $invoice_payment->tid,
+                                    'Customer' => $invoice_payment->customer ? $invoice_payment->customer->company : '',
+                                    'Date' => dateFormat($invoice_payment->date),
+                                    'Amount' => numberFormat($invoice_payment->amount),
+                                    'Allocated Amount' => numberFormat($invoice_payment->allocate_ttl),
+                                    'Payment Mode' => $invoice_payment->payment_mode,
+                                    'Reference' => $invoice_payment->reference,
+                                    'Payment Account' => $invoice_payment->account? $invoice_payment->account->holder : '',
                                 ];
                             @endphp   
                             @foreach ($payment_details as $key => $val)
@@ -65,7 +63,7 @@
                                             <td>{{ $i+1 }}</td>
                                             <td>{{ dateFormat($item->invoice->invoiceduedate) }}</td>
                                             <td>{{ gen4tid('Inv-', $item->invoice->tid) }}</td>
-                                            <td>{{ $item->invoice->notes }}</td>
+                                            <td style="text-align: left;">{{ $item->invoice->notes }}</td>
                                             <td>{{ $item->invoice->status }}</td>
                                             <td>{{ numberFormat($item->invoice->total) }}</td>
                                             <td>{{ numberFormat($item->invoice->amountpaid) }}</td>

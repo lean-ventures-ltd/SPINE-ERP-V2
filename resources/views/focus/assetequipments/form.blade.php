@@ -129,6 +129,48 @@
             </div>
         </div>
     </div>
+
+    <div class="col-md-4">
+        <div class='form-group'>
+            {{ Form::label('item_tag', 'Item Tag',['class' => 'col control-label']) }}
+            <div class='col'>
+                {{ Form::text('item_tag', null, ['class' => 'form-control box-size', 'placeholder' => 'Item Tag']) }}
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-md-4">
+        <div class='form-group'>
+            {{ Form::label('quantity', 'Quantity',['class' => 'col control-label']) }}
+            <div class='col'>
+                {{ Form::number('quantity', null, ['class' => 'form-control box-size', 'placeholder' => 'Quantity', 'step' => '0.01']) }}
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-md-4">
+        <div class='form-group'>
+            {{ Form::label('unit_price', 'Unit Price',['class' => 'col control-label']) }}
+            <div class='col'>
+                {{ Form::number('unit_price', null, ['class' => 'form-control box-size', 'placeholder' => 'Unit Price', 'step' => '0.01']) }}
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-md-4">
+        <div class='form-group'>
+            {{ Form::label('total_price', 'Total Price',['class' => 'col control-label']) }}
+            <div class='col'>
+                {{ Form::number('total_price', null, ['class' => 'form-control box-size', 'placeholder' => 'Total Price', 'step' => '0.01', 'readonly']) }}
+            </div>
+        </div>
+    </div>
+
+
+
 </div>
 
 @section("after-scripts")
@@ -154,5 +196,26 @@
     $("#account_type").on('change', function() {
         $("#account_id").val('').change();
     });
+
+
+    function calculateTotalPrice() {
+        const quantity = parseFloat($('#quantity').val());
+        const unitPrice = parseFloat($('#unit_price').val());
+
+        if (!isNaN(quantity) && !isNaN(unitPrice)) {
+            const totalPrice = quantity * unitPrice;
+            $('#total_price').val(totalPrice.toFixed(2)); // Display with two decimal places
+        } else {
+            $('#total_price').val('');
+        }
+    }
+
+    // Listen for changes in the quantity and unit price fields
+    $('#quantity, #unit_price').on('input', calculateTotalPrice);
+
+    // Initialize the total price when the page loads
+    calculateTotalPrice();
+
+
 </script>
 @endsection

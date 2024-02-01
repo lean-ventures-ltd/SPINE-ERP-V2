@@ -80,12 +80,8 @@ class CustomfieldsController extends Controller
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
         $input['ins'] = auth()->user()->ins;
-        try {
-            //Create the model using repository create method
-            $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Custom Fields', $th);
-        }
+        //Create the model using repository create method
+        $this->repository->create($input);
         //return with successfull message
         return new RedirectResponse(route('biller.customfields.index'), ['flash_success' => trans('alerts.backend.customfields.created')]);
     }
@@ -113,12 +109,8 @@ class CustomfieldsController extends Controller
     {
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
-        try {
-            //Update the model using repository update method
-            $this->repository->update($customfield, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Custom Fields', $th);
-        }
+        //Update the model using repository update method
+        $this->repository->update($customfield, $input);
         //return with successfull message
         return new RedirectResponse(route('biller.customfields.index'), ['flash_success' => trans('alerts.backend.customfields.updated')]);
     }
@@ -132,12 +124,8 @@ class CustomfieldsController extends Controller
      */
     public function destroy(Customfield $customfield, ManageCompanyRequest $request)
     {
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($customfield);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Custom Fields', $th);
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($customfield);
         //returning with successfull message
         return new RedirectResponse(route('biller.customfields.index'), ['flash_success' => trans('alerts.backend.customfields.deleted')]);
     }

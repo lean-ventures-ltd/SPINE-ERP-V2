@@ -27,7 +27,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-4">
+                            <div class="col-md-4">
                                 <select class="form-control select2" id="customerFilter" data-placeholder="Search Customer">
                                     <option value=""></option>
                                     @foreach ($customers as $customer)
@@ -35,27 +35,49 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-3">
+                            <div class="col-md-3">
                                 <select class="form-control select2" id="branchFilter" data-placeholder="Search Branch">
                                     <option value=""></option>
-                                    @foreach ([] as $branch)
-                                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="custom-select" id="projectStatus">
+                                    <option value="">-- Select Status --</option>
+                                    @foreach ($mics as $row)
+                                        @if ($row->section == 2)
+                                            <option value="{{ $row->id }}">{{ $row->name }}</option>
+                                        @endif
                                     @endforeach
                                 </select>
                             </div>
                         </div> 
+                        <br>
+                        <div class="row">
+                            <div class="ml-2">{{ trans('general.search_date')}} </div>
+                            <div class="col-md-2">
+                                <input type="text" name="start_date" id="start_date" class="form-control datepicker date30  form-control-sm" autocomplete="off" />
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" name="end_date" id="end_date" class="form-control datepicker form-control-sm" autocomplete="off" />
+                            </div>
+                            <div class="col-md-2">
+                                <input type="button" name="search" id="search" value="Search" class="btn btn-info btn-sm" />
+                            </div>
+                        </div>  
                         <hr>
                         <table id="projectsTbl" class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Project No.</th>
+                                    <th>#Project No.</th>
+                                    <th>#Quote/PI</th>
                                     <th>Name</th>
+                                    <th>Exp G.P(%)</th>
                                     <th>Priority</th>
                                     <th>Status</th>
+                                    <th>Job Hrs</th>
                                     <th>Start</th>
                                     <th>Deadline</th>
-                                    <th>Quotes/PI</th>
                                     <th>{{ trans('general.action') }}</th>
                                 </tr>
                             </thead>
@@ -78,6 +100,7 @@
     <div class="drag-target"></div>
     {{-- <input type="hidden" id="loader_url" value="{{route('biller.projects.load')}}"> --}}
     @include('focus.projects.modal.project_new')
+    @include('focus.projects.modal.status_modal')
     @include('focus.projects.modal.project_view')
 @endsection
 @section('after-styles')
@@ -97,7 +120,7 @@
 <script>
     const config = {
         ajax: {headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"}},
-        date: {autoHide: true, format: "{{ date(config('core.user_date_format')) }}"},
+        date: {format: "{{ config('core.user_date_format') }}", autoHide: true},
         branchSelect: {
             allowClear: true,
             ajax: {
@@ -131,15 +154,35 @@
     }
 
     const Index = {
-        customerBrances: [],
-
+        startDate: '',
+        endDate: '',
+        
         init() {
             $.ajaxSetup(config.ajax);
+            $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
+            
+            
             $("#submit-data_project").on("click", Index.onSubmitProject);
+            $("#projectStatus").change(Index.onChangeStatus);
             $("#customerFilter").select2({allowClear: true}).change(Index.onChangeCustomer);
             $("#branchFilter").select2(config.branchSelect).change(Index.onChangeBranch);
             $('#AddProjectModal').on('shown.bs.modal', Index.onShownModal);
+            $(document).on('click', '.status', Index.onStatusClick);
+            $('#search').click(Index.onClickSearch);
             Index.drawDataTable();
+        },
+        
+        onClickSearch() {
+            Index.startDate = $('#start_date').val();
+            Index.endDate = $('#end_date').val();
+            $('#projectsTbl').DataTable().destroy();
+            Index.drawDataTable(); 
+        },
+
+        onStatusClick() {
+            $('#status_project_id').val($(this).attr('project-id'));
+            $('#status').val($(this).attr('data-id'));
+            $('#end_note').val($(this).attr('end-note'));
         },
         
         onSubmitProject() {
@@ -158,6 +201,11 @@
         },
 
         onChangeBranch() {
+            $('#projectsTbl').DataTable().destroy();
+            Index.drawDataTable(); 
+        },
+        
+        onChangeStatus() {
             $('#projectsTbl').DataTable().destroy();
             Index.drawDataTable(); 
         },
@@ -206,12 +254,19 @@
                     data: {
                         customer_id: $("#customerFilter").val(),
                         branch_id: $("#branchFilter").val(),
+                        status: $("#projectStatus").val(),
+                        start_date: Index.startDate,
+                        end_date: Index.endDate,
                     }
                 },
                 columns: [
                     {data: 'DT_Row_Index', name: 'id'},
-                    ...['tid', 'name', 'priority', 'status', 'start_date', 'end_date', 'main_quote_id'].map(v => ({data: v, name: v})),
+                    ...['tid', 'main_quote_id', 'name', 'exp_profit_margin', 'priority', 'status', 'job_hrs', 'start_date', 'end_date'].map(v => ({data: v, name: v})),
                     {data: 'actions', name: 'actions', searchable: false, sortable: false}
+                ],
+                columnDefs: [
+                    { type: "custom-number-sort", targets: [4] },
+                    // { type: "custom-date-sort", targets: [1,6] }
                 ],
                 order: [[0, "desc"]],
                 searchDelay: 500,

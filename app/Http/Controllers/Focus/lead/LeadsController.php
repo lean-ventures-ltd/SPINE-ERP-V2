@@ -86,7 +86,6 @@ class LeadsController extends Controller
      */
     public function store(ManageLeadRequest $request)
     {
-        //dd($request->all());
         $request->validate([
             'reference' => 'required',
             'date_of_request' => 'required',
@@ -101,12 +100,9 @@ class LeadsController extends Controller
         $data['ins'] = auth()->user()->ins;
         $data['user_id'] = auth()->user()->id;
 
-        try {
-            $this->repository->create($data);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Craeting Ticket!', $th);
-        }
-        
+        //Create the model using repository create method
+        $this->repository->create($data);
+
         return new RedirectResponse(route('biller.leads.index'), ['flash_success' => 'Ticket Successfully Created']);
     }
 
@@ -149,13 +145,9 @@ class LeadsController extends Controller
         $data = $request->except(['_token', 'ins', 'files']);
         $data['date_of_request'] = date_for_database($data['date_of_request']);
 
-        //Update the model using repository update method  
-        try {
-            $this->repository->update($lead, $data);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Ticket!', $th);
-        } 
-        
+        //Update the model using repository update method
+        $this->repository->update($lead, $data);
+
         return new RedirectResponse(route('biller.leads.index'), ['flash_success' => 'Ticket Successfully Updated']);
     }
 
@@ -167,12 +159,8 @@ class LeadsController extends Controller
      */
     public function destroy(Lead $lead)
     {
-        try {
-            $this->repository->delete($lead);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Ticket!', $th);
-        } 
-
+        $this->repository->delete($lead);
+            
         return new RedirectResponse(route('biller.leads.index'), ['flash_success' => 'Ticket Successfully Deleted']);
     }
 

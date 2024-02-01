@@ -4,8 +4,10 @@ namespace App\Http\Responses\Focus\purchaseorder;
 
 use App\Models\additional\Additional;
 use App\Models\pricegroup\Pricegroup;
+use App\Models\PurchaseClass\PurchaseClass;
 use App\Models\supplier\Supplier;
 use App\Models\term\Term;
+use App\Models\warehouse\Warehouse;
 use Illuminate\Contracts\Support\Responsable;
 
 class EditResponse implements Responsable
@@ -37,11 +39,28 @@ class EditResponse implements Responsable
 
         $additionals = Additional::all();
         $pricegroups = Pricegroup::all();
+        $warehouses = Warehouse::all();
         $supplier = Supplier::where('name', 'Walk-in')->first(['id', 'name']);
         $price_supplier = Supplier::whereHas('products')->get(['id', 'name']);
+        $purchaseClasses = PurchaseClass::all();
+
         // Purchase order
         $terms = Term::where('type', 4)->get();
+        
+        // assign project name
+        foreach ($po->products as $po_items) {
+            if ($po_items->project){
+                $quote_tid = !$po_items->project->quote ?: gen4tid('QT-', $po_items->project->quote->tid);
+                $customer = !$po_items->project->customer ?: $po_items->project->customer->company;
+                $branch = !$po_items->project->branch ?: $po_items->project->branch->name;
+                $project_tid = gen4tid('PRJ-', $po_items->project->tid);
+                $project = $po_items->project->name;
+                $customer_branch = "{$customer}" .'-'. "{$branch}";
+                // 
+                $po_items['project_name'] = "[" . $quote_tid ."]"." - " . $customer_branch. " - ".$project_tid." - ".$project;
+            }
+        }
 
-        return view('focus.purchaseorders.edit', compact('po', 'additionals', 'pricegroups','price_supplier', 'terms', 'prefixes'));
+        return view('focus.purchaseorders.edit', compact('po', 'additionals','warehouses', 'pricegroups','price_supplier', 'terms', 'prefixes', 'purchaseClasses'));
     }
 }

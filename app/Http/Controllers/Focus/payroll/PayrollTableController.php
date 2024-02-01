@@ -57,8 +57,8 @@ class PayrollTableController extends Controller
             ->escapeColumns(['id'])
             ->addIndexColumn()
             ->addColumn('tid', function ($payroll) {
-               return '<a href="'.route('biller.payroll.show', $payroll->id).'">'.gen4tid('PYRLL-', $payroll->tid).'</a> ';
-               
+                return '<a href="'.route('biller.payroll.show', $payroll->id).'">'.gen4tid('PYRLL-', $payroll->tid).'</a> ';
+
             })
             ->addColumn('processing_date', function ($payroll) {
                 return dateFormat($payroll->processing_date);
@@ -81,8 +81,8 @@ class PayrollTableController extends Controller
             ->addColumn('total_other_deductions', function ($payroll) {
                 return amountFormat($payroll->total_other_deductions);
             })
-            ->addColumn('total_netpay', function ($payroll) {
-                return amountFormat($payroll->total_netpay);
+            ->addColumn('total_salary_after_bnd', function ($payroll) {
+                return amountFormat($payroll->total_salary_after_bnd);
             })
             ->addColumn('paye_total', function ($payroll) {
                 return amountFormat($payroll->paye_total);
@@ -97,7 +97,10 @@ class PayrollTableController extends Controller
                 return ucfirst($payroll->status);
             })
             ->addColumn('actions', function ($payroll) {
-                return '<a href="'.route('biller.payroll.reports', $payroll->id).'" class="btn btn-purple round" data-toggle="tooltip" data-placement="top" title="Reports"><i class="fa fa-list"></i></a> ' . $payroll->action_buttons;
+                return '<a href="'.route('biller.payroll.reports', $payroll->id).'" class="btn btn-purple round" data-toggle="tooltip" data-placement="top" title="Reports"><i class="fa fa-list"></i></a> '
+                    . $payroll->action_buttons
+                    . '<a href="'.route('biller.payroll-delete', $payroll->id).'" class="btn btn-purple round" data-toggle="tooltip" data-placement="top" title="Reports"><i class="fa fa-trash"></i></a> ';
+
                 //return $payroll->action_buttons;
             })
             ->make(true);

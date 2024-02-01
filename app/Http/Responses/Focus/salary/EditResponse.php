@@ -2,8 +2,10 @@
 
 namespace App\Http\Responses\Focus\salary;
 
+use App\Models\Access\User\User;
 use Illuminate\Contracts\Support\Responsable;
 use App\Models\workshift\Workshift;
+use Illuminate\Support\Facades\DB;
 
 class EditResponse implements Responsable
 {
@@ -30,7 +32,16 @@ class EditResponse implements Responsable
     public function toResponse($request)
     {
         $workshifts = Workshift::all(['id','name']);
+
+        $employees = User::select(
+            'id',
+            DB::raw('CONCAT(first_name, " ", last_name) as full_name')
+        )
+            ->get()->toArray();
+
+
         return view('focus.salary.edit')->with([
+            'employees' => $employees,
             'salary' => $this->salary,
             'workshifts' => $workshifts
         ]);

@@ -22,7 +22,7 @@
                 <div class="card round">
                     <div class="card-content">
                         <div class="card-body ">
-                            {{ Form::open(['route' => 'biller.standard_invoices.store', 'method' => 'POST']) }}
+                            {{ Form::open(['route' => 'biller.standard_invoices.store', 'method' => 'POST', 'id' => 'standardInvoiceForm']) }}
                                 @include("focus.standard_invoices.form")
                             {{ Form::close() }}
                             @include('focus.standard_invoices.partials.add_customer_modal')
@@ -33,4 +33,12 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('extra-scripts')
+    <script>
+
+
+
+    </script>
 @endsection

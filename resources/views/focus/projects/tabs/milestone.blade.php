@@ -1,7 +1,7 @@
 <div class="tab-pane" id="tab_data2" aria-labelledby="tab2" role="tabpanel">
     {{-- @if(project_access($project->id)) --}}
         <button type="button" class="btn btn-info" id="addMilestone" data-toggle="modal" data-target="#AddMileStoneModal">
-            <i class="fa fa-plus-circle"></i> Milestone
+            <i class="fa fa-plus-circle"></i> Add Budget Line
         </button>
     {{-- @endif --}}
     <ul class="timeline">
@@ -26,7 +26,8 @@
                     {{-- @if (project_access($project->id)) --}}
                         <div class="timeline-body mb-1">
                             <p>{{$row['note']}}</p>
-                            <p>Milestone Amount: <b>{{ amountFormat($row['amount']) }}</b></p>
+                            <p>Amount: <b>{{ amountFormat($row['amount']) }}</b></p>
+                            <p>Balance: <b>{{ amountFormat($row['balance']) }}</b></p>
                         </div>
                     {{-- @endif --}}
                     <small class="text-muted"><i class="fa fa-user"></i>

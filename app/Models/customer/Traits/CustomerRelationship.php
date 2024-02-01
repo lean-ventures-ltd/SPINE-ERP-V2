@@ -2,11 +2,9 @@
 
 namespace App\Models\customer\Traits;
 
-use App\Models\Access\User\User;
 use App\Models\branch\Branch;
 use App\Models\client_product\ClientProduct;
 use App\Models\lead\Lead;
-use App\Models\manualjournal\Journal;
 use App\Models\transaction\Transaction;
 use App\Models\project\Project;
 use App\Models\quote\Quote;
@@ -16,20 +14,6 @@ use App\Models\quote\Quote;
  */
 trait CustomerRelationship
 {
-    public function journal()
-    {
-        return $this->hasOne(Journal::class, 'customer_id');
-    }
-
-    public function user()
-    {
-        return $this->hasOne(User::class, 'customer_id');
-    }
-    
-    function projects() {
-        return $this->hasMany(Project::class);
-    }
-
     function quotes() {
         return $this->hasMany(Quote::class);
     }
@@ -77,5 +61,10 @@ trait CustomerRelationship
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+    
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
     }
 }

@@ -35,36 +35,35 @@
         
         <div class="content-body">
             <section class="card">
-                <div id="invoice-template" class="card-body">    
-                    {{-- show menu if not customer login --}}
-                    @if (!auth()->user()->customer_id)
-                        @include('focus.quotes.partials.view_menu')
-                    @endif
-
-                    @if ($quote->status == 'approved' && $quote->verified == "Yes")
+                <div id="invoice-template" class="card-body">                    
+                    @include('focus.quotes.partials.view_menu')
+                    @if ($quote->verified == "Yes" || $quote->status == 'approved')
+                        @php
+                            $text = "{$quote_type} is approved";
+                            if ($quote->verified == 'Yes') $text .= ' and verified';
+                            $approved_verified = ($quote->verified == "Yes" && $quote->status == 'approved');
+                        @endphp
                         <div class="badge text-center white d-block m-1">
-                            <span class="bg-primary round p-1"><b>{{ $quote_type }} is Approved & Verified</b></span>
+                            <span class="{{ $approved_verified ? 'bg-primary' : 'bg-success' }} round p-1">
+                                <b>{{ $text }}</b>
+                            </span>
                         </div>
-                    @elseif ($quote->status == 'approved')
-                        <div class="badge text-center white d-block m-1">
-                            <span class="bg-success round p-1"><b>{{ $quote_type }} is Approved</b></span>
-                        </div>
-                    @endif  
+                    @endif                    
 
                     <div id="invoice-customer-details" class="row pt-2">                        
                         <div class="col-6 text-center text-md-left">
                             @php
-                                $clientname = @$quote->lead->client_name ?: '';
+                                $clientname = $quote->lead? $quote->lead->client_name : '';
                                 $branch = '';
-                                $address = @$quote->lead->client_address ?: '';
-                                $email = @$quote->lead->client_email ?: '';
-                                $cell = @$quote->lead->client_contact ?: '';
+                                $address = $quote->lead? $quote->lead->client_address : '';
+                                $email = $quote->lead? $quote->lead->client_email : '';
+                                $cell = $quote->lead? $quote->lead->client_contact : '';
                                 if ($quote->customer) {
                                     $clientname = $quote->customer->company;						
                                     $address = $quote->customer->address;
                                     $email = $quote->customer->email;
                                     $cell = $quote->customer->phone;
-                                    $branch = @$quote->branch->name ?: '';
+                                    $branch = $quote->branch? $quote->branch->name : '';
                                 }					
                             @endphp
                             <span class="text-muted"><b>{{ trans('invoices.bill_to') }}</b></span>
@@ -186,8 +185,8 @@
                                                     <td class="text-right">{{amountFormat($quote['tax'], $quote->currency->id)}}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td class="font-weight-bold">{{trans('general.total')}}</td>
-                                                    <td class="font-weight-bold text-right">{{amountFormat($quote['total'], $quote->currency->id)}}</td>
+                                                    <td class="text-bold-800">{{trans('general.total')}}</td>
+                                                    <td class="text-bold-800 text-right">{{amountFormat($quote['total'], $quote->currency->id)}}</td>
                                                 </tr>
                                             @else
                                                 <tr>
@@ -199,8 +198,8 @@
                                                     <td class="text-right">{{numberFormat($quote['tax'])}}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td class="font-weight-bold">{{trans('general.total')}}</td>
-                                                    <td class="font-weight-bold text-right">{{numberFormat($quote['total'])}}</td>
+                                                    <td class="text-bold-800">{{trans('general.total')}}</td>
+                                                    <td class="text-bold-800 text-right">{{numberFormat($quote['total'])}}</td>
                                                 </tr>
                                             @endif
                                         </tbody>
@@ -209,7 +208,7 @@
                                 <div class="text-center">
                                     <p>{{trans('general.authorized_person')}}</p>
                                     <img src="{{ Storage::disk('public')->url('app/public/img/signs/' . $quote->user->signature) }}" alt="signature" class="height-100 m-2" />
-                                    <h6 class="font-weight-bold">{{$quote->user->first_name}} {{$quote->user->last_name}}</h6>
+                                    <h6>{{$quote->user->first_name}} {{$quote->user->last_name}}</h6>
                                 </div>
                             </div>
                         </div>
@@ -230,38 +229,32 @@
                                     <p>LPO Remark : <span class="text-danger">{{ $quote->lpo->remark }}</span></p>
                                @endisset
                             </div>
-                            @if (!auth()->user()->customer_id)
-                                <div class="col-md-5 col-sm-12 text-center">
-                                    @if ($quote->status !== 'cancelled') 
-                                        <a href="#sendEmail" data-toggle="modal" data-remote="false" data-type="6" data-type1="proposal" class="btn btn-primary btn-lg my-1 send_bill">
-                                            <i class="fa fa-paper-plane-o"></i> {{trans('general.send')}}
-                                        </a>
-                                    @endif
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    @if (!auth()->user()->customer_id)
-                        <div class="row mt-2">
-                            <div class="col-12">
-                                <p class="lead">{{trans('general.attachment')}}</p>
-                                <pre>{{trans('general.allowed')}}: {{$features['value1']}} </pre>
-                                <!-- The fileinput-button span is used to style the file input field as button -->
-                                <div class="btn btn-success fileinput-button display-block col-2">
-                                    <i class="glyphicon glyphicon-plus"></i>
-                                    <span>Select files...</span>
-                                    <!-- The file input field used as target for the file upload widget -->
-                                    <input id="fileupload" type="file" name="files">
-                                </div>
+                            <div class="col-md-5 col-sm-12 text-center">
+                                @if ($quote->status !== 'cancelled') 
+                                    <a href="#sendEmail" data-toggle="modal" data-remote="false" data-type="6" data-type1="proposal" class="btn btn-primary btn-lg my-1 send_bill">
+                                        <i class="fa fa-paper-plane-o"></i> {{trans('general.send')}}
+                                    </a>
+                                @endif
                             </div>
                         </div>
-                        <!-- The global progress bar -->
-                        <div id="progress" class="progress progress-sm mt-1 mb-0 col-md-3">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <p class="lead">{{trans('general.attachment')}}</p>
+                            <pre>{{trans('general.allowed')}}: {{$features['value1']}} </pre>
+                            <!-- The fileinput-button span is used to style the file input field as button -->
+                            <div class="btn btn-success fileinput-button display-block col-2">
+                                <i class="glyphicon glyphicon-plus"></i>
+                                <span>Select files...</span>
+                                <!-- The file input field used as target for the file upload widget -->
+                                <input id="fileupload" type="file" name="files">
+                            </div>
                         </div>
-                    @endif
-
+                    </div>
+                    <!-- The global progress bar -->
+                    <div id="progress" class="progress progress-sm mt-1 mb-0 col-md-3">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
                     <!-- The container for the uploaded files -->
                     <table id="files" class="files table table-striped mt-2">
                         @foreach ($quote->attachment as $row)

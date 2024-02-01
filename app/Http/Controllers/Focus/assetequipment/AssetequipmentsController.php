@@ -132,7 +132,6 @@ class AssetequipmentsController extends Controller
         // extract request input
         $input = $request->except(['_token', 'ins']);
 
-        
         try {
             $this->repository->update($assetequipment, $input);
         } catch (\Throwable $th) {

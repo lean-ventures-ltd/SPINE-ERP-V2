@@ -102,8 +102,11 @@
     const rowHtml = $("#productRow").html();
     $('#addMisc').click(function() {
         $('#productsTbl tbody tr.invisible').remove();
+
         const i = 'p' + rowId;
+        //const newRowHtml = `<tr class="misc"> ${rowHtml.replace(/p0/g, i)} </tr>`;
         $('#productsTbl tbody').append(productRow(i));
+        // $('#name-'+i).autocomplete(autoComp(i));
         $('#itemname-'+i).autocomplete(autocompleteProp(i));
         $('#misc-'+i).val(1);
         $('#qty-'+i).val(1);
@@ -111,6 +114,8 @@
             $(`#${v}-${i}`).addClass('invisible');
         });
         rowId++;
+        // calcTotal();
+        // adjustTbodyHeight();
     });
 
     // On skill-item update

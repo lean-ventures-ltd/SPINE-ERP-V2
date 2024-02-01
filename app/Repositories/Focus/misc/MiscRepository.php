@@ -2,9 +2,12 @@
 
 namespace App\Repositories\Focus\misc;
 
+use DB;
+use Carbon\Carbon;
 use App\Models\misc\Misc;
 use App\Exceptions\GeneralException;
 use App\Repositories\BaseRepository;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class MiscRepository.
@@ -31,7 +34,7 @@ class MiscRepository extends BaseRepository
             $q->where('section', '=', 1);
         }
         return
-            $q->get(['id', 'name', 'color', 'section']);
+            $q->get(['id','name','color','section']);
     }
 
     /**
@@ -43,7 +46,7 @@ class MiscRepository extends BaseRepository
      */
     public function create(array $input)
     {
-        $input = array_map('strip_tags', $input);
+         $input = array_map( 'strip_tags', $input);
         if (Misc::create($input)) {
             return true;
         }
@@ -60,8 +63,8 @@ class MiscRepository extends BaseRepository
      */
     public function update(Misc $misc, array $input)
     {
-        $input = array_map('strip_tags', $input);
-        if ($misc->update($input))
+        $input = array_map( 'strip_tags', $input);
+    	if ($misc->update($input))
             return true;
 
         throw new GeneralException(trans('exceptions.backend.miscs.update_error'));

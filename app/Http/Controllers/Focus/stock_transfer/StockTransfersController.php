@@ -60,6 +60,7 @@ class StockTransfersController extends Controller
     public function create()
     {
         $tid = StockTransfer::max('tid');
+
         $warehouses = Warehouse::get(['id', 'title', 'extra']);
         
         return view('focus.stock_transfers.create', compact('tid', 'warehouses'));
@@ -72,11 +73,7 @@ class StockTransfersController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $this->repository->create($request->except('_token'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Stock Transfer', $th);
-        }
+        $this->repository->create($request->except('_token'));
 
         return new RedirectResponse(route('biller.stock_transfers.index'), ['flash_success' => 'Stock Transfer Created Successfully']);
     }
@@ -89,9 +86,7 @@ class StockTransfersController extends Controller
      */
     public function edit(StockTransfer $stock_transfer)
     {
-        $warehouses = Warehouse::get(['id', 'title', 'extra']);
-
-        return view('focus.stock_transfers.edit', compact('stock_transfer', 'warehouses'));
+        return view('focus.stock_transfers.edit', compact('stock_transfer', 'leave_categories', 'users'));
     }
 
     /**
@@ -103,11 +98,7 @@ class StockTransfersController extends Controller
      */
     public function update(Request $request, StockTransfer $stock_transfer)
     {
-        try {
-            $this->repository->update($stock_transfer, $request->except('_token'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating StockTransfer', $th);
-        }
+        $this->repository->update($stock_transfer, $request->except('_token'));
 
         return new RedirectResponse(route('biller.stock_transfers.index'), ['flash_success' => 'StockTransfer Updated Successfully']);
     }
@@ -120,11 +111,7 @@ class StockTransfersController extends Controller
      */
     public function destroy(StockTransfer $stock_transfer)
     {
-        try {
-            $this->repository->delete($stock_transfer);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting StockTransfer', $th);
-        }
+        $this->repository->delete($stock_transfer);
 
         return new RedirectResponse(route('biller.stock_transfers.index'), ['flash_success' => 'StockTransfer Deleted Successfully']);
     }

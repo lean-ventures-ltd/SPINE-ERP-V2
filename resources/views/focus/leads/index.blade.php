@@ -44,10 +44,11 @@
                                         <th>Ticket No</th>
                                         <th>Client & Branch</th>
                                         <th>Title</th>
-                                        <th>Client Type</th>
+                                        <th>New/Existing</th>
                                         <th>Source</th>
-                                        <th>Status</th>
-                                        <th>Created At</th>
+                                        <th>{{ trans('general.createdat') }}</th>
+                                        <th>Client Ref</th>
+                                        <th>Days to Event</th>
                                         <th>{{ trans('labels.general.actions') }}</th>
                                     </tr>
                                 </thead>
@@ -86,10 +87,42 @@
                 type: 'post',
             },
             columns: [
-                {data: 'DT_Row_Index', name: 'id'},
-                ...[
-                    'reference', 'client_name', 'title', 'client_status', 'source', 'status', 'created_at'
-                ].map(v => ({data:v, name: v})),
+                {
+                    data: 'DT_Row_Index',
+                    name: 'id'
+                },
+                {
+                    data: 'reference',
+                    name: 'reference'
+                },
+                {
+                    data: 'client_name',
+                    name: 'client_name'
+                },
+                {
+                    data: 'title',
+                    name: 'title'
+                },
+                {
+                    data: 'client_status',
+                    name: 'client_status'
+                },
+                {
+                    data: 'source',
+                    name: 'source'
+                },
+                {
+                    data: 'created_at',
+                    name: 'created_at',
+                },
+                {
+                    data: 'client_ref',
+                    name: 'client_ref'
+                },
+                {
+                    data: 'exact_date',
+                    name: 'exact_date'
+                },
                 {
                     data: 'actions',
                     name: 'actions',

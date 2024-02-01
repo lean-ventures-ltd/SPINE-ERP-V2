@@ -51,11 +51,7 @@ class LpoController extends Controller
 
         $data['date'] = date_for_database($data['date']);
         $data['amount'] = numberClean($data['amount']);
-        try {
-            Lpo::create($data);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating LPO', $th);
-        }
+        Lpo::create($data);
 
         return new RedirectResponse(route('biller.lpo.index'), ['flash_success' => 'LPO created successfully']);
     }
@@ -106,11 +102,7 @@ class LpoController extends Controller
 
         $data['date'] = date_for_database($data['date']);
         $data['amount'] = numberClean($data['amount']);
-        try {
-            Lpo::find($lpo_id)->update($data);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating LPO', $th);
-        }
+        Lpo::find($lpo_id)->update($data);
 
         return new RedirectResponse(route('biller.lpo.index'), ['flash_success' => 'LPO updated successfully']);
     }
@@ -138,11 +130,7 @@ class LpoController extends Controller
         if (count($lpo->quotes))
             return response()->json(['status' => 'Error', 'message' => ' LPO attached to Quote / Proforma Invoice'], 403);
         
-        try {
-            $lpo->delete(); 
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting LPO', $th);
-        }       
+        $lpo->delete();        
         return response()->noContent();
     }
 

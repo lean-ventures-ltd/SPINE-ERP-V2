@@ -82,12 +82,8 @@ class AllowancesController extends Controller
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
         $input['ins'] = auth()->user()->ins;
-        try {
-            //Create the model using repository create method
-            $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler($th, 'Error Creating Allowances!');
-        }
+        //Create the model using repository create method
+        $this->repository->create($input);
         //return with successfull message
         return new RedirectResponse(route('biller.allowances.index'), ['flash_success' => trans('alerts.backend.allowance.created')]);
     }
@@ -115,13 +111,8 @@ class AllowancesController extends Controller
     {
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
-        
-        try {
-           //Update the model using repository update method
-            $this->repository->update($allowance, $input);
-        } catch (\Throwable $th) {
-            return errorHandler($th, 'Error Updating Allowances!');
-        }
+        //Update the model using repository update method
+        $this->repository->update($allowance, $input);
         //return with successfull message
         return new RedirectResponse(route('biller.allowances.index'), ['flash_success' => trans('alerts.backend.departments.updated')]);
     }
@@ -135,13 +126,8 @@ class AllowancesController extends Controller
      */
     public function destroy(Allowance $allowance, StoreAllowanceRequest $request)
     {
-        
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($allowance);
-        } catch (\Throwable $th) {
-            return errorHandler($th, 'Error Deleting Allowances!');
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($allowance);
         //returning with successfull message
         return new RedirectResponse(route('biller.allowances.index'), ['flash_success' => trans('alerts.backend.allowance.deleted')]);
     }

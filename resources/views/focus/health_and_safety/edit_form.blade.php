@@ -48,17 +48,25 @@
         </div>
     </div>
     <div class="col-4">
-        <label for="ticket">Project</label>
-        <div class="input-group">
-            <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
-            <select class="custom-select project_id" name="project_id" id="project_id">
-                @isset($data->project)
-                    <option value="{{ $data->project->id }}" selected>
-                        {{ $data->project->name }}
-                    </option>
-                @endisset
+{{--        <label for="ticket">Project</label>--}}
+{{--        <div class="input-group">--}}
+{{--            <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>--}}
+{{--            <select class="custom-select project_id" name="project_id" id="project_id">--}}
+{{--                @isset($data->project)--}}
+{{--                    <option value="{{ $data->project->id }}" selected>--}}
+{{--                        {{ $data->project->name }}--}}
+{{--                    </option>--}}
+{{--                @endisset--}}
+{{--            </select>--}}
+{{--        </div>--}}
+
+        <div class="form-group">
+            <label for="project" class="caption">Project</label>
+            <select class="form-control" name="project" id="project" data-placeholder="Search Project by Name, Customer, Branch">
             </select>
         </div>
+
+
     </div>
 </div>
 
@@ -70,7 +78,7 @@
             <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
             <select class="custom-select employee" name="employee[]" id="employee" multiple required>
                 @foreach ($employees as $employee)
-                    <option value="{{ +$employee->id }}">
+                    <option value="{{ +$employee->id }}" {{ in_array($employee->id, json_decode($data->employee)) ? 'selected' : '' }}>
                         {{ $employee->first_name }} {{ $employee->last_name }}
                     </option>
                 @endforeach
@@ -155,7 +163,8 @@
         <label for="ticket">Comments</label>
         <div class="input-group">
             <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
-            <textarea name="comments" id="comments-p0" cols="35" rows="2" class="form-control" placeholder="Coments"></textarea>
+            <label for="comments-p0"></label>
+            <textarea name="comments" id="comments-p0" cols="35" rows="2" class="form-control" placeholder="Comments">{{$data->comments}}</textarea>
         </div>
     </div>
 

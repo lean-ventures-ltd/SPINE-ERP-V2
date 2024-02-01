@@ -69,7 +69,7 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Date</th>
+                                        <th width="10%">Date</th>
                                         <th># Quote / PI</th>
                                         <th>{{ trans('customers.customer') }}</th>
                                         <th>Title</th>                                            

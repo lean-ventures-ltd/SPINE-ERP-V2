@@ -69,6 +69,27 @@
 
 
 
+        function select2Config(url, callback) {
+            return {
+                ajax: {
+                    url,
+                    dataType: 'json',
+                    type: 'POST',
+                    quietMillis: 50,
+                    data: ({term}) => ({q: term, keyword: term}),
+                    processResults: callback
+                }
+            }
+        }
+
+        // load projects dropdown
+        const projectUrl = "{{ route('biller.projects.project_search') }}";
+        function projectData(data) {
+
+            return {results: data.map(v => ({id: v.id, text: v.name}))};
+        }
+        $("#project").select2(select2Config(projectUrl, projectData));
+
 
         $("#employee").select2();
         $("#customer_id").select2({});

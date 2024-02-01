@@ -49,7 +49,19 @@
     <div class="col-2">
         <label for="amount">Amount</label>
         {{ Form::text('amount', null, ['class' => 'form-control', 'id' => 'amount']) }}
-    </div>  
+    </div>
+    <div class="col-2">
+        <label for="cu_invoice_no">CU Invoice Number</label>
+        <input type="text" id="cu_invoice_no" name="cu_invoice_no" required class="form-control box-size mb-2"
+               @if(!empty($newCuInvoiceNo))
+                   value="{{substr_replace($newCuInvoiceNo, 'XXX', -3)}}"
+               @else
+                   value="{{$creditnote->cu_invoice_no}}"
+               @endif
+               readonly
+        >
+    </div>
+
 </div>
 <div class="form-group row">
     <div class="col-12">
@@ -75,6 +87,18 @@
         {{ Form::text('total', null, ['class' => 'form-control', 'id' => 'total', 'readonly']) }}
     </div> 
 </div>
+
+@if(empty($creditnote))
+    <div class="row mb-1">
+
+        <div class="col-3 ml-auto">
+            <label for="cuConfirmation" style="color: red;">Confirm Last 3 Digits Of CU Invoice No:</label>
+            <input type="number" id="cuConfirmation" class="form-control">
+        </div>
+
+    </div>
+@endif
+
 <div class="form-group row">
     <div class="col-3 ml-auto">
         {{ Form::submit('Generate', ['class' => 'btn btn-primary btn-lg']) }}

@@ -73,11 +73,7 @@ class EventsController extends Controller
         $input['ins'] = auth()->user()->ins;
         $input['user_id'] = auth()->user()->id;
         //Create the model using repository create method
-        
-        try {
-            $r = $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Events', $th);}
+        $r = $this->repository->create($input);
         //return with successfull message
         return trans('alerts.backend.events.created');
         //  return new RedirectResponse(route('biller.events.index'), ['flash_success' => trans('alerts.backend.events.created')]);
@@ -109,29 +105,21 @@ class EventsController extends Controller
 
     public function update_event(EditEventRequest $request)
     {
-        try {
-            $event = Event::find($request->id);
-            if ($request->title) $event->title = $request->title;
-            if ($request->description) $event->description = $request->description;
-            if ($request->color) $event->color = $request->color;
-            $event->start = datetime_for_database($request->start, false);
-            $event->end = datetime_for_database($request->end, false);
-            $event->save();
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Events', $th);
-        }
+        $event = Event::find($request->id);
+        if ($request->title) $event->title = $request->title;
+        if ($request->description) $event->description = $request->description;
+        if ($request->color) $event->color = $request->color;
+        $event->start = datetime_for_database($request->start, false);
+        $event->end = datetime_for_database($request->end, false);
+        $event->save();
         return trans('alerts.backend.events.updated');
 
     }
 
     public function delete_event(DeleteEventRequest $request)
     {
-        try {
-            $event = Event::find($request->id);
-            $event->delete();
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Events', $th);
-        }
+        $event = Event::find($request->id);
+        $event->delete();
         return trans('alerts.backend.events.deleted');
 
     }

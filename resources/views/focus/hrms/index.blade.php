@@ -29,14 +29,15 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Employee No.</th>
+                                         <th>Employee No.</th>
                                         <th>Name</th>
+                                        <th>Department</th>
                                         <th>{{ trans('hrms.role') }}</th>
                                         <th>{{ trans('hrms.email') }}</th>
                                         <th>{{ trans('hrms.picture') }}</th>
                                         @if($flag)
                                             <th>{{ trans('hrms.status') }}</th>
-                                            <th>{{ trans('labels.backend.hrms.table.createdat') }}</th>
+                                            <th> D.O.B </th>
                                             <th>{{ trans('labels.general.actions') }}</th>
                                         @endif
                                     </tr>
@@ -101,12 +102,13 @@
             {data: 'DT_Row_Index', name: 'id'},
             {data: 'employee_no', name: 'employee_no'},
             {data: 'name', name: 'name'},
+            {data: 'department', name: 'department'},
             {data: 'role', name: 'role'},
             {data: 'email', name: 'email'},
             {data: 'picture', name: 'picture'},
             @if($flag)             
                 {data: 'active', name: 'active'},
-                {data: 'created_at', name: 'created_at'},
+                {data: 'dob', name: 'dob'},
                 {data: 'actions', name: 'actions', searchable: false, sortable: false}
             @endif
         ],

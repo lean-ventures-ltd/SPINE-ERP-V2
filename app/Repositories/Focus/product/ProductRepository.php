@@ -2,18 +2,20 @@
 
 namespace App\Repositories\Focus\product;
 
+use App\Models\items\PurchaseorderItem;
 use App\Models\product\ProductVariation;
 use DB;
 use App\Models\product\Product;
 use App\Exceptions\GeneralException;
 use App\Models\items\PurchaseItem;
-use App\Models\productcategory\Productcategory;
 use App\Repositories\BaseRepository;
 use DateTime;
 use Error;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use App\Models\supplier_product\SupplierProduct;
+use App\Models\productcategory\Productcategory;
 
 /**
  * Class ProductRepository.
@@ -77,7 +79,7 @@ class ProductRepository extends BaseRepository
 
         $q->with('standard');
 
-        return $q;
+        return $q->get();
     }
 
     /**
@@ -91,7 +93,7 @@ class ProductRepository extends BaseRepository
     {
         // dd($input);
         DB::beginTransaction();
-
+        $code_exists = ProductVariation::where('code', $input['code'])->count();
         // validate stock keeping unit
         $sku_exists = Product::where('sku', $input['sku'])->count();
         if (empty($input['sku']) || $sku_exists) {
@@ -108,7 +110,7 @@ class ProductRepository extends BaseRepository
         // product variations
         $variations = [];
         $data_items = Arr::only($input, [
-            'price', 'purchase_price', 'qty', 'code', 'barcode', 'disrate', 'alert', 'expiry', 
+            'price', 'purchase_price','selling_price', 'qty', 'code', 'barcode', 'disrate', 'alert', 'expiry', 
             'warehouse_id', 'variation_name', 'image'
         ]);
         $data_items = modify_array($data_items);
@@ -119,42 +121,48 @@ class ProductRepository extends BaseRepository
 
             foreach ($item as $key => $val) {
                 if ($key == 'image' && $val != 'example.png') $item[$key] = $this->uploadFile($val);
-                if (in_array($key, ['price', 'purchase_price', 'disrate', 'qty', 'alert'])) {
+                if (in_array($key, ['price', 'purchase_price','selling_price', 'disrate', 'qty', 'alert'])) {
                     if ($key != 'disrate' && !$val) 
                         throw ValidationException::withMessages([$key . ' is required!']);
                     $item[$key] = numberClean($val);
                 }
                 if ($key == 'barcode' && !$val)
                     $item[$key] =  rand(100, 999) . rand(0, 9) . rand(1000000, 9999999) . rand(0, 9);
+                if ($key == 'code' && !$val){
+                    $productcategory = Productcategory::where('id',$input['productcategory_id'])->first();
+                    $strArray = explode(' ',$productcategory->title);
+                    $lastElement = end($strArray);
+                    $firstparent = $strArray[0][0].$lastElement[0];
+                    $count = ProductVariation::where('productcategory_id', $input['productcategory_id'])->count();
+                    $count = $count + 1;
+                    $count_updated = sprintf("%04d", $count);
+                    $code = $firstparent.$count_updated;
+                    $item[$key] =  $code;
+                }
+                   
+
                 if ($key == 'expiry') {
                     $expiry = new DateTime(date_for_database($val));
                     $now = new DateTime(date('Y-m-d'));
                     if ($expiry > $now) $item[$key] = date_for_database($val);
                     else $item[$key] = null;
                 }
-                if ($key == 'code' && !$val){
-                    $productcategory = Productcategory::where('id', @$input['productcategory_id'])->first();
-                    if ($productcategory) {
-                        $title_arr = explode(' ', $productcategory->title);
-                        if (count($title_arr) > 1) {
-                            $init = current($title_arr)[0];
-                            $end = end($title_arr)[0];
-                            $count = ProductVariation::whereHas('product', function($q) use($input) {
-                                $q->where('productcategory_id', $input['productcategory_id']);
-                            })->count();
-                            $item[$key] = $init . $end . sprintf("%04d", $count+1);
-                        }
-                    }
-                }
             }
-            $variations[] =  array_replace($item, ['parent_id' => $result->id, 'ins' => auth()->user()->ins]);
+
+            $variations[] =  array_replace($item, [
+                'parent_id' => $result->id,
+                'productcategory_id' => $input['productcategory_id'],
+                'ins' => auth()->user()->ins
+            ]);
+            //dd($variations);
         }
+        //dd($variations);
         ProductVariation::insert($variations);   
         
-        if ($result) {
-            DB::commit();
-            return $result;
-        }
+        DB::commit();
+        if ($result) return $result;
+
+        throw new GeneralException(trans('exceptions.backend.products.create_error'));
     }
 
     /**
@@ -167,9 +175,8 @@ class ProductRepository extends BaseRepository
      */
     public function update($product, array $input)
     {
-        // dd($input);
         DB::beginTransaction();
-
+        $code_exists = ProductVariation::where('code', $input['code'])->count();
         // validate stock keeping unit
         $sku_exists = Product::where('sku', $input['sku'])->where('id', '!=', $product->id)->count();
         if (empty($input['sku']) || $sku_exists) {
@@ -185,7 +192,7 @@ class ProductRepository extends BaseRepository
 
         // variations data
         $data_items = Arr::only($input, [
-            'v_id', 'price', 'purchase_price', 'qty', 'code', 'barcode', 'disrate', 'alert', 'expiry', 
+            'v_id', 'price', 'purchase_price','selling_price', 'qty', 'code', 'barcode', 'disrate', 'alert', 'expiry', 
             'warehouse_id', 'variation_name', 'image'
         ]);
         $data_items = modify_array($data_items);
@@ -193,7 +200,7 @@ class ProductRepository extends BaseRepository
         // delete omitted product variations
         $variation_ids = array_map(function ($v) { return $v['v_id']; }, $data_items);
         $product->variations()->whereNotIn('id', $variation_ids)->delete();
-
+        
         // create or update product variation
         foreach ($data_items as $item) {
             if (empty($item['image'])) $item['image'] = 'example.png';
@@ -201,43 +208,77 @@ class ProductRepository extends BaseRepository
             unset($item['variation_name']);
 
             foreach ($item as $key => $val) {
+                
                 if ($key == 'image' && $val != 'example.png') $item[$key] = $this->uploadFile($val);
-                if (in_array($key, ['price', 'purchase_price', 'disrate', 'qty', 'alert'])) {
+                if (in_array($key, ['price', 'purchase_price','selling_price', 'disrate', 'qty', 'alert'])) {
                     if ($key != 'disrate' && !$val) 
                         throw ValidationException::withMessages([$key . ' is required!']);
                     $item[$key] = numberClean($val);
                 }
                 if ($key == 'barcode' && !$val)
                     $item[$key] =  rand(100, 999) . rand(0, 9) . rand(1000000, 9999999) . rand(0, 9);
+                if ($key == 'code')
+                    {
+                        if (empty($item[$key])) {
+                            $productcategory = Productcategory::where('id',$input['productcategory_id'])->first();
+                            $strArray = explode(' ',$productcategory->title);
+                            $lastElement = end($strArray);
+                            $firstparent = $strArray[0][0].$lastElement[0];
+                            $count = ProductVariation::where('productcategory_id', $input['productcategory_id'])->count();
+                            $count = $count + 1;
+                            $count_updated = sprintf("%04d", $count);
+                            $code = $firstparent.$count_updated;
+                            $item[$key] =  $code;
+                        }
+                        elseif ($item[$key]) {
+                           // dd($item[$key]);
+                            $code_ext = ProductVariation::where('code', $item[$key])->first();
+                            if ($code_ext) {
+                                $productcategory = Productcategory::where('id',$input['productcategory_id'])->first();
+                                $strArray = explode(' ',$productcategory->title);
+                                $lastElement = end($strArray);
+                                $firstparent = $strArray[0][0].$lastElement[0];
+                                $code_substr = substr($item[$key], 0, 2);
+                                if ($code_substr == $firstparent) {
+                                    $item[$key] = $item[$key];
+                                }
+                                else {
+                                    $count = ProductVariation::where('productcategory_id', $input['productcategory_id'])->count();
+                                    $count = $count + 1;
+                                    $count_updated = sprintf("%04d", $count);
+                                    $code = $firstparent.$count_updated;
+                                    $item[$key] =  $code;
+                                }
+                            }
+                        }
+                    }
                 if ($key == 'expiry') {
                     $expiry = new DateTime(date_for_database($val));
                     $now = new DateTime(date('Y-m-d'));
                     if ($expiry > $now) $item[$key] = date_for_database($val);
                     else $item[$key] = null;
                 }
-                if ($key == 'code' && !$val){
-                    $productcategory = Productcategory::where('id', @$input['productcategory_id'])->first();
-                    if ($productcategory) {
-                        $title_arr = explode(' ', $productcategory->title);
-                        if (count($title_arr) > 1) {
-                            $init = current($title_arr)[0];
-                            $end = end($title_arr)[0];
-                            $count = ProductVariation::whereHas('product', function($q) use($input) {
-                                $q->where('productcategory_id', $input['productcategory_id']);
-                            })->count();
-                            $item[$key] = $init . $end . sprintf("%04d", $count+1);
-                        }
-                    }
-                }
             }
 
             $item = array_replace($item, [
                 'parent_id' => $product->id,
+                'productcategory_id' => $input['productcategory_id'],
             ]);
             $new_item = ProductVariation::firstOrNew(['id' => $item['v_id']]);
+           if ( SupplierProduct::where('product_code', $new_item['code'])->exists()) {
+                $supplier_product = SupplierProduct::where('product_code', $new_item['code'])->get();
+                foreach ($supplier_product as $supplier_products) {
+                    $supplier_products->product_code = $item['code'];
+                    $supplier_products->update();
+                }
+                
+                
+           }
+           
             $new_item->fill($item);
             if (!$new_item->id) unset($new_item->id);
             unset($new_item->v_id);
+            $new_item['productcategory_id'] = $input['productcategory_id'];
             $new_item->save();
         }
 
@@ -270,6 +311,11 @@ class ProductRepository extends BaseRepository
                 $purchase = $product_variation->purchase_item->purchase;
                 if ($purchase) $error_msg = 'Product is attached to Purchase number {$purchase->tid} !';
                 break;
+            }
+            if (isset($product_variation->product_supplier->product)) {
+                $product = $product_variation->product_supplier->product;
+                if ($product)
+                throw ValidationException::withMessages(['Product is attached to Product Code {$product->code} !']);
             }
             if (isset($product_variation->purchase_order_item->purchaseorder)) {
                 $purchaseorder = $product_variation->purchase_order_item->purchaseorder;
@@ -337,13 +383,19 @@ class ProductRepository extends BaseRepository
      * 
      * @return float
      */
-    public function eval_purchase_price(int $id, float $qty, float $rate)
+    public function eval_purchase_price(int $id, float $qty, float $rate): float
     {
         if ($qty == 0) return $rate;
-        
+
+        /** Using Purchase Items */
         $price_cluster = PurchaseItem::select(DB::raw('rate, COUNT(*) as count'))
             ->where(['type' => 'Stock', 'item_id' => $id])
             ->groupBy('rate')->orderBy('updated_at', 'asc')->get();
+
+        /** Using Purchase Order Items */
+//        $price_cluster = PurchaseorderItem::select(DB::raw('rate, COUNT(*) as count'))
+//            ->where(['type' => 'Stock', 'item_id' => $id])
+//            ->groupBy('rate')->orderBy('updated_at', 'asc')->get();
 
         $qty_range = range(1, $qty);
         foreach ($price_cluster as $cluster) {

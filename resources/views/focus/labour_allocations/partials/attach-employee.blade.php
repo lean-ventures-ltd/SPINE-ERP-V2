@@ -37,7 +37,23 @@
                             </select>
                         </div>
                     </div>
-                    
+
+
+                <div class="form-group row">
+
+                    <div class="col-md-12">
+
+                        <label for="project_milestone" class="caption" style="display: inline-block;">Project Budget Line</label>
+
+                        {{--                    <p id="milestone_warning" class="text-red ml-2" style="display: inline-block; color: red; font-size: 16px; "> </p>--}}
+                        <select id="project_milestone" name="project_milestone" class="form-control">
+                            <option value="">Select a Budget Line</option>
+                        </select>
+{{--                        <p id="milestone_warning" class="text-red ml-2" style="display: inline-block; color: red; font-size: 16px; "> </p>--}}
+                    </div>
+
+                </div>
+
                     <div class="form-group row">
                         <div class="col-md-12">
                             <label for="assigns">Employees</label>

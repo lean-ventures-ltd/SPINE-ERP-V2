@@ -22,6 +22,7 @@ use App\Models\product\Product;
 use App\Models\product\ProductVariation;
 use App\Models\productcategory\Productcategory;
 use App\Models\warehouse\Warehouse;
+use Exception;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
@@ -36,6 +37,7 @@ use App\Http\Requests\Focus\product\EditProductRequest;
 use App\Models\client_product\ClientProduct;
 use App\Models\supplier_product\SupplierProduct;
 use App\Models\product\ProductMeta;
+use Illuminate\Support\Facades\DB;
 
 /**
  * ProductsController
@@ -90,11 +92,7 @@ class ProductsController extends Controller
      */
     public function store(CreateProductRequest $request)
     {
-        try {
-            $this->repository->create($request->except(['_token']));
-        } catch (\Throwable $th) {
-            return errorHandler($th, 'Error Creating Product');
-        }
+        $this->repository->create($request->except(['_token']));
 
         return new RedirectResponse(route('biller.products.index'), ['flash_success' => trans('alerts.backend.products.created')]);
     }
@@ -120,11 +118,7 @@ class ProductsController extends Controller
      */
     public function update(EditProductRequest $request, Product $product)
     {
-        try {
-            $this->repository->update($product, $request->except(['_token']));
-        } catch (\Throwable $th) {
-            return errorHandler($th, 'Error Updating Product');
-        }
+        $this->repository->update($product, $request->except(['_token']));
         
         return new RedirectResponse(route('biller.products.index'), ['flash_success' => trans('alerts.backend.products.updated')]);
     }
@@ -137,13 +131,9 @@ class ProductsController extends Controller
      */
     public function destroy(Product $product)
     {
-        try {
-            $this->repository->delete($product);
-        } catch (\Throwable $th) {
-            return errorHandler($th, 'Error Deleting Product');
-        }
-        
-        return json_encode(['status' => 'Success', 'message' => trans('alerts.backend.products.deleted')]);
+        $this->repository->delete($product);
+
+        return json_encode(array('status' => 'Success', 'message' => trans('alerts.backend.products.deleted')));
     }
 
     /**
@@ -175,7 +165,7 @@ class ProductsController extends Controller
                         'name' => "{$v->descr} {$value}",
                         'unit' => $v->uom,
                         'price' => $v->rate,
-                        'purchase_price' => 0,
+                        'purchase_price' => $v->variation ? $v->variation->purchase_price : 0,
                     ]);
                 });
 
@@ -185,7 +175,7 @@ class ProductsController extends Controller
         // fetch inventory products
         $productvariations = ProductVariation::where(function ($q) {
             $q->whereHas('product', function ($q) {
-                $q->where('name', 'LIKE', '%' . request('keyword') . '%');
+                $q->where('name', 'LIKE', '%' . request('keyword') . '%')->orWhere('code', 'LIKE', '%' . request('keyword') . '%');
             })->orWhere('name', 'LIKE', '%' . request('keyword') . '%');
         })
         ->with(['warehouse' => fn($q) => $q->select(['id', 'title'])])
@@ -193,26 +183,26 @@ class ProductsController extends Controller
         
         $products = [];
         foreach ($productvariations as $row) {
-            $product = [];
-            foreach ($row->toArray() as $key => $value) {
-                $keys = ['id', 'parent_id', 'name', 'code', 'qty', 'image', 'purchase_price', 'price', 'alert'];
-                if (in_array($key, $keys)) $product[$key] = $value;
-            }
+            $product = array_intersect_key($row->toArray(), array_flip([
+                'id', 'product_id', 'name', 'code', 'qty', 'image', 'purchase_price', 'price', 'alert'
+            ]));
             $product = array_replace($product, [
                 'taxrate' => @$row->product->taxrate,
                 'product_des' => @$row->product->product_des,
-                'units' => @$row->product->units? $row->product->units->toArray() : [],
+                'units' => $row->product? $row->product->units->toArray(): [],
                 'warehouse' => $row->warehouse? $row->warehouse->toArray() : [],
             ]);
             // set purchase price using inventory valuation (LIFO) method
             $product['purchase_price'] = $this->repository->eval_purchase_price($row->id, $row->qty, $row->purchase_price);
             $products[] =  $product;
         }
-
+        
         return response()->json($products);
     }
+
     public function purchase_search(Request $request)
     {
+       // return 'dd';
         if (!access()->allow('product_search')) return false;
 
         // fetch pricelist customer products
@@ -220,8 +210,12 @@ class ProductsController extends Controller
             $products = SupplierProduct::where('supplier_id', request('pricegroup_id'))
                 ->where('descr', 'LIKE', '%'. request('keyword') .'%')->limit(6)->get()
                 ->map(function ($v) {
+                    $item = '';
+                    if ($v->row_num) {
+                        $item = "({$v->row_num})";
+                    }
                     return $v->fill([
-                        'name' => $v->row_num > 0? "{$v->descr} {$v->row_num}" : "{$v->descr}",
+                        'name' => "{$v->descr} {$item}",
                         'unit' => $v->uom,
                         'price' => $v->rate,
                         'purchase_price' => $v->rate,
@@ -345,4 +339,97 @@ class ProductsController extends Controller
         
         return view('focus.products.partials.pos')->withDetails($output);
     }
+    public function view($code)
+    {
+        $supplier_pricelist = SupplierProduct::where('product_code', $code)->get();
+        return view('focus.products.view_pricelist', compact('supplier_pricelist'));
+    }
+
+    public function deleteMultipleProducts()
+    {
+
+        $toDelete = [
+            1839, 1853, 1911, 1988, 1989, 1990, 2188, 2270, //DP SWITCHES
+            2586, 2354, 2300, 2219, 1794, 1691, //COPPER PIPES 1/4
+            2545, 2220, 2206, 2152, 2063, 2062, 1950, 1791, 1728, //COPPER PIPES 3/8
+            2544, 2543, 1932, 2451, 2224, 1432, //ARMAFLEX 3/8
+            2678, 2588, 2322, 1838, 1787, //ARMAFLEX 1/4
+            ];
+
+        $missingProdVarEntries = [];
+        $missingProdEntries = [];
+
+//        $recoveredProducts = [];
+
+        try{
+            DB::beginTransaction();
+
+            ProductVariation::withTrashed()->restore();
+            Product::withTrashed()->restore();
+
+//            foreach ($toDelete as $id) {
+//
+//                $model = ProductVariation::where('id', $id)->first();
+//
+//                !empty($model) ?
+//                    $model->delete()
+//                    : array_push($missingProdVarEntries, "Missing ProdVar ID " . $id);
+//
+//
+//                $model2 = Product::where('id', $id)->first();
+//
+//                !empty($model2) ?
+//                    $model2->delete()
+//                    : array_push($missingProdEntries, "Missing Product ID " . $id);
+//
+//
+//            }
+
+//            $recProducts = $this->recs();
+//
+//            foreach ($recProducts as $rec){
+//                $prod = new Product();
+//
+//                $prod->fill($rec);
+//
+//                $prod->save();
+//
+//                array_push($recoveredProducts, "Product " . $rec['id'] . " recovered successfully!");
+//
+//            }
+
+            DB::commit();
+
+        }catch(Exception $exception){
+
+            DB::rollBack();
+            return
+                ['message' => $exception->getMessage()];
+        }
+
+
+        return [
+            'success' => "BULK DELETE SUCCESS!!!",
+            'Missing Product variations' => $missingProdVarEntries,
+            'Missing Products' => $missingProdEntries,
+        ];
+    }
+
+    public function clearNegativeQuantities(){
+
+        $negProducts = ProductVariation::where('qty', '<' , 0)->get();
+
+        foreach ($negProducts as $np){
+
+            $np->qty = 0;
+            $np->save();
+        }
+
+
+        return ProductVariation::all();
+    }
+
+
+
+
 }

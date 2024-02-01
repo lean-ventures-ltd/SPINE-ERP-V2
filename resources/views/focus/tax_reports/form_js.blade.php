@@ -150,6 +150,7 @@
                     <td>${v.invoice_date.split('-').reverse().join('-')}</td>
                     <td>${v.customer}</td>
                     <td>${v.invoice_tid}</td>
+                    <td>${v.cu_invoice_no}</td>
                     <td>${v.note}</td>
                     <td class="subtotal">${accounting.formatNumber(v.subtotal)}</td>
                     <td>

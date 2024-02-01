@@ -312,36 +312,32 @@ function datetime_for_database($input, $c = true)
     $date = $date->format('Y-m-d H:i:s');
     return $date;
 }
-
 function amountFormat($number = 0, $currency = null)
 {
-    if ($currency) {
-        $result = \App\Models\currency\Currency::where('id', $currency)->first();
-        if ($result) {
-            $precision_point = $result->precision_point;
-            $decimal_sep = $result->decimal_sep;
-            $thousand_sep = $result->thousand_sep;
-            $symbol_position = $result->symbol_position;
-            $symbol = $result->symbol;
-            if (config('currency.id') != $result->id) {
-                $number = $number / config('currency.rate');
-            }
-        }
-    }
-
-    if (!$currency || !$result) {
+    if (!$currency) {
         $precision_point = config('currency.precision_point');
         $decimal_sep = config('currency.decimal_sep');
         $thousand_sep = config('currency.thousand_sep');
         $symbol_position = config('currency.symbol_position');
         $symbol = config('currency.symbol');
+    } else {
+        $result = \App\Models\currency\Currency::withoutGlobalScopes()->where('id', '=', $currency)->first();
+        $precision_point = $result->precision_point;
+        $decimal_sep = $result->decimal_sep;
+        $thousand_sep = $result->thousand_sep;
+        $symbol_position = $result->symbol_position;
+        $symbol = $result->symbol;
+        if (config('currency.id') != $result->id) {
+            $number = $number / config('currency.rate');
+        }
     }
-
     $number = number_format($number, $precision_point, $decimal_sep, $thousand_sep);
-    if ($symbol_position) return $symbol . ' ' . $number;
-    return $number . ' ' . $symbol;
+    if ($symbol_position) {
+        return $symbol . ' ' . $number;
+    } else {
+        return $number . ' ' . $symbol;
+    }
 }
-
 function numberFormat($number = 0, $currency = null, $precision_point_off = false)
 {
     if (!$currency) {
@@ -802,9 +798,20 @@ function aggregate_account_transactions()
 {
     $tr_totals = \App\Models\transaction\Transaction::selectRaw('account_id AS id, SUM(debit) AS debit, SUM(credit) AS credit')
         ->groupBy('account_id')
-        ->get()
-        ->toArray();
-    return $tr_totals;
+        ->get()->toArray();
+
+    $model = new \App\Models\account\Account;
+    \Mavinoo\LaravelBatch\LaravelBatchFacade::update($model, $tr_totals, 'id');
+
+    // reset accounts without transactions
+    $account_ids = array_map(function ($v) {
+        return $v['id'];
+    }, $tr_totals);
+
+    \App\Models\account\Account::whereNotIn('id', $account_ids)
+        ->where(function ($q) {
+            $q->where('debit', '>', 0)->orWhere('credit', '>', 0);
+        })->update(['debit' => 0, 'credit' => 0]);
 }
 // auto-generate a 4 digit number prefixed with a string e.g ID-0001 
 function gen4tid($prefix = '', $num = 0, $count = 4)
@@ -828,7 +835,55 @@ function accounts_numbering($account)
             return 300;
     }
 }
-
+// transaction double entry (debit, credit)
+function double_entry(
+    $tid,
+    $pr_account_id,
+    $sec_account_id,
+    $opening_balance,
+    $entry_type,
+    $trans_category_id,
+    $user_type,
+    $user_id,
+    $tr_date,
+    $duedate,
+    $tr_type,
+    $note,
+    $ins
+) {
+    $data = [
+        'tid' => $tid,
+        'trans_category_id' => $trans_category_id,
+        'tr_date' => $tr_date,
+        'due_date' => $duedate,
+        'user_type' => $user_type,
+        'user_id' => $user_id,
+        'tr_type' => $tr_type,
+        'note' => $note,
+        'ins' => $ins,
+    ];
+    $dr_data = $data + [
+        'account_id' => $pr_account_id,
+        'debit' => $opening_balance,
+        'tr_ref' => $pr_account_id,
+        'is_primary' => 1,
+    ];
+    $cr_data = $data + [
+        'account_id' => $sec_account_id,
+        'credit' => $opening_balance,
+        'tr_ref' => $sec_account_id,
+        'is_primary' => 0,
+    ];
+    if ($entry_type == 'cr') {
+        unset($dr_data['debit'], $cr_data['credit']);
+        $dr_data['credit'] = $opening_balance;
+        $cr_data['debit'] = $opening_balance;
+    }
+    \App\Models\transaction\Transaction::create($dr_data);
+    \App\Models\transaction\Transaction::create($cr_data);
+    aggregate_account_transactions();
+    return true;
+}
 // handle division by zero
 function div_num($numerator, $denominator)
 {

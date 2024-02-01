@@ -2,6 +2,7 @@
     <table class="table-responsive tfr my_stripe" id="expTbl">
         <thead>
             <tr class="item_header bg-gradient-directional-danger white">
+                <th width="10%">#</th>
                 <th width="30%" class="text-center">Ledger Name</th>
                 <th width="7%" class="text-center">{{trans('general.quantity')}}</th>
                 <th width="7%" class="text-center">UoM</th>
@@ -15,6 +16,7 @@
         <tbody>
             <!-- layout -->
             <tr>
+                <td><input type="text" class="form-control" value="1" id="expenseinc-0" disabled></td>
                 <td><input type="text" class="form-control accountname" name="name[]" placeholder="Enter Ledger" id="accountname-0"></td>
                 <td><input type="text" class="form-control exp_qty" name="qty[]" id="expqty-0" value="1"></td>
                 <td><input type="text" class="form-control uom" name="uom[]" id="uom-0"></td>                    
@@ -38,10 +40,21 @@
                 <input type="hidden" name="id[]" value="0">
             </tr>
             <tr>
-                <td colspan="3">
+                <td colspan="2">
                     <textarea id="expdescr-0" class="form-control descr" name="description[]" placeholder="Enter Description"></textarea>
                 </td>
-                <td colspan="5">
+                <td colspan="3">
+                    <select id="item_purchase_class-0" name="item_purchase_class[]" class="custom-select item-purchase-class">
+                        <option value="">-- Select Purchase Class --</option>
+                        @foreach ($purchaseClasses as $pc)
+                            <option value="{{ $pc->id }}" @if(@$purchase->purchase_class == $pc->id) selected @endif>
+                                {{ $pc->name }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                </td>
+                <td colspan="4">
                     <input type="text" class="form-control projectexp" id="projectexptext-0" placeholder="Search Project by Name, Customer, Branch">
                     <input type="hidden" name="itemproject_id[]" id="projectexpval-0">
                 </td>
@@ -54,6 +67,7 @@
                 @foreach ($po->products as $item)
                     @if ($item->type == 'Expense')
                         <tr>
+                            <td><input type="text" class="form-control" value="{{$i+1}}" id="expenseinc-{{$i}}" disabled></td>
                             <td><input type="text" class="form-control accountname" name="name[]" value="{{ @$item->account->holder }}" placeholder="Enter Ledger" id="accountname-{{$i}}"></td>
                             <td><input type="text" class="form-control exp_qty" name="qty[]" value="{{ number_format($item->qty, 1) }}" id="expqty-{{$i}}"></td>
                             <td><input type="text" class="form-control uom" name="uom[]" value="{{ $item->uom }}" id="uom-0"></td>                    
@@ -80,7 +94,18 @@
                             <td colspan="3">
                                 <textarea id="expdescr-{{$i}}" class="form-control descr" name="description[]" placeholder="Enter Description">{{ $item->description }}</textarea>
                             </td>
-                            <td colspan="5">
+                            <td colspan="3">
+                                <select id="item_purchase_class-{{$i}}" name="item_purchase_class[]" class="custom-select item-purchase-class">
+                                    <option value="">-- Select Purchase Class --</option>
+                                    @foreach ($purchaseClasses as $pc)
+                                        <option value="{{ $pc->id }}" @if(@$purchase->purchase_class == $pc->id) selected @endif>
+                                            {{ $pc->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                            </td>
+                            <td colspan="4">
                                 <input type="text" class="form-control projectexp" value="{{ $item->project ? $item->project->name : '' }}" id="projectexptext-{{$i}}" placeholder="Enter Project">
                                 <input type="hidden" name="itemproject_id[]" value="{{ $item->itemproject_id }}" id="projectexpval-{{$i}}">
                             </td>

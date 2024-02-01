@@ -13,7 +13,7 @@
         unallocatedPmts: @json(@$unallocated_pmts),
 
         init() {
-            $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
+            $('.datepicker').datepicker(config.date);
             $('.select2').select2({allowClear: true});
 
             $('#amount')
@@ -79,7 +79,7 @@
                 $('#note').prop('readonly', true).val(data.note);
 
                 const outstanding = (data.amount*1) - (data.allocate_ttl*1);
-                $('#amount').val(accounting.formatNumber(outstanding)).keyup();
+                $('#amount').prop('readonly', true).val(accounting.formatNumber(outstanding)).keyup();
 
                 $('#payment_type').prop('disabled', true)
                     .after(`<input type="hidden" name="payment_type" value="per_invoice" class="pmt-type" />`);

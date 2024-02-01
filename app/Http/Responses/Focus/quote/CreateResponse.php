@@ -2,12 +2,16 @@
 
 namespace App\Http\Responses\Focus\quote;
 
+use App\Models\Access\User\User;
 use App\Models\additional\Additional;
 use App\Models\bank\Bank;
 use App\Models\customer\Customer;
 use App\Models\quote\Quote;
 use Illuminate\Contracts\Support\Responsable;
 use App\Models\lead\Lead;
+use App\Models\fault\Fault;
+use App\Models\hrm\Hrm;
+use App\Models\template_quote\TemplateQuote;
 
 class CreateResponse implements Responsable
 {
@@ -31,8 +35,12 @@ class CreateResponse implements Responsable
         $leads = Lead::where('status', 0)->orderBy('id', 'desc')->get();
         $additionals = Additional::all();
         $price_customers = Customer::whereHas('products')->get(['id', 'company']);
-        
-        $common_params = ['lastquote','leads', 'words', 'additionals', 'price_customers', 'prefixes'];
+        $faults = Fault::all(['name']);
+        $employees = Hrm::all();
+
+        $templateQuotes = TemplateQuote::all();
+
+        $common_params = ['templateQuotes','lastquote','leads', 'words', 'additionals', 'price_customers', 'prefixes','faults', 'employees'];
 
         // create proforma invoice
         if (request('page') == 'pi') {

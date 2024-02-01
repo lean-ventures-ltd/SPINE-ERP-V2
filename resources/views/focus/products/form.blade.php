@@ -40,12 +40,15 @@
     
     <div class="col-2">
         {{ Form::label('unit', trans('products.stock_type'),['class' => 'control-label']) }}
-        <select class="custom-select" name="stock_type" required>
-            @foreach (['general', 'consumable', 'service', ] as $i => $val)
-                <option value="{{ $val }}" {{ @$product->stock_type == $val? 'selected' : '' }}>
+        <select class="custom-select" name="stock_type">
+            {{-- @foreach (['general', 'consumable', 'service' ] as $i => $val)
+                <option value="{{ $i }}" {{ @$product->stock_type == $val ? 'selected' : '' }}>
                     {{ ucfirst($val) }}
                 </option>
-            @endforeach
+            @endforeach --}}
+            <option value="1" {{ @$product->stock_type == 'general' ? 'selected' : '' }}>General</option>
+            <option value="2" {{ @$product->stock_type == 'consumable' ? 'selected' : '' }}>Consumable</option>
+            <option value="3" {{ @$product->stock_type == 'service' ? 'selected' : '' }}>Service</option>
         </select>
     </div> 
 
@@ -90,6 +93,7 @@
 <h4>Standard Product Variation Details</h4>
 <div id="main_product">
     <div class="product round">
+        
         <div class="row">
             <div class="col-md-4">
                 <div class='form-group'>
@@ -99,6 +103,8 @@
                     </div>
                 </div>
             </div>
+            
+            
             <div class="col-md-4">
                 <div class='form-group'>
                     {{ Form::label( 'selling_price', 'Minimum Selling Price',['class' => 'col control-label']) }}
@@ -115,6 +121,7 @@
                     </div>
                 </div>
             </div>
+           
             <div class="col-md-4">
                 <div class='form-group'>
                     {{-- {{ Form::label( 'qty', trans('products.qty'),['class' => 'col control-label']) }} --}}
@@ -187,9 +194,9 @@
         <div class="row mt-1 mb-1">
             <div class="col-md-12">
                 <div class='form-group'>
-                    {{ Form::label('variation_name', 'Standard Product Description',['class' => 'col control-label']) }}
+                    {{ Form::label( 'variation_name', 'Variation Description',['class' => 'col control-label']) }}
                     <div class='col-6'>
-                        {{ Form::text('variation_name[]', @$product->standard['name'], ['class' => 'form-control box-size', 'placeholder' => 'Variation Description', 'required']) }}
+                        {{ Form::text('variation_name[]',@$product->standard['name'], ['class' => 'form-control box-size', 'placeholder' => 'Variation Description']) }}
                     </div>
                 </div>
             </div>
@@ -374,11 +381,13 @@
    
     const Form = {
         units: @json($productvariables),
+
         init() {
             $('.datepicker').datepicker(config.datepicker);
             $('#compound_unit').select2();
 
             $('#unit').change(this.unitChange);
+
             const events = [".add_more", ".add_serial", ".v_delete", ".v_delete_temp", ".v_delete_serial"];
             const handlers = [this.addMore, this.addSerial, this.delVariableProduct, this.delProduct, this.delSerial];
             events.forEach((v,i) => $(document).on('click', v, handlers[i]));
@@ -388,6 +397,7 @@
             const el = $(this);
             const compoundUnits = Form.units.filter(v => v.base_unit_id == el.val())
             .map(v => ({id: v.id, text: `${v.code} (${parseFloat(v.base_ratio)} units)`}));
+
             $('#compound_unit option').remove();
             $('#compound_unit').select2({data: compoundUnits});
         },

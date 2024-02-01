@@ -1,15 +1,24 @@
 {{ Html::script('focus/js/select2.min.js') }}
-<script>    
+<script>
     // initialize html editor
     editor();
 
     // ajax config
-    $.ajaxSetup({headers: { 'X-CSRF-TOKEN': "{{ csrf_token() }}" }});
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+        }
+    });
 
-    $('#lead_id').select2({allowClear: true});
-    
+    $('#lead_id').select2({
+        allowClear: true
+    });
+
     // initialize datepicker
-    $('.datepicker').datepicker({format: "{{ config('core.user_date_format') }}", autoHide: true})
+    $('.datepicker').datepicker({
+        format: "{{ config('core.user_date_format') }}",
+        autoHide: true
+    })
     $('#referencedate').datepicker('setDate', new Date());
     $('#date').datepicker('setDate', new Date());
 
@@ -20,7 +29,10 @@
     });
 
     // On change lead and djc
-    const subject = {title: '', djc: ''};
+    const subject = {
+        title: '',
+        djc: ''
+    };
     $('form').on('change', '#lead_id, #reference', function() {
         if ($(this).is('#lead_id')) {
             const opt = $('#lead_id option:selected');
@@ -33,12 +45,12 @@
 
             // update price customer based on selected lead
             let priceCustomer = '';
-            $('#price_customer option').each(function () {
+            $('#price_customer option').each(function() {
                 if (opt.attr('customer_id') == $(this).val())
-                priceCustomer = $(this).val();
+                    priceCustomer = $(this).val();
             });
             $('#price_customer').val(priceCustomer);
-            
+
         } else subject.djc = $(this).val();
         // subject
         if (subject.title && subject.djc) $('#subject').val(subject.title + ' ; Djc-' + subject.djc);
@@ -46,14 +58,24 @@
     });
 
     // calculate profit
-    const profitState = {sp_total: 0, bp_subtotal: 0, skill_total: 0, bp_total: 0};
+    const profitState = {
+        sp_total: 0,
+        bp_subtotal: 0,
+        skill_total: 0,
+        bp_total: 0
+    };
+
     function calcProfit() {
-        const {sp_total, bp_total, skill_total} = profitState;
+        const {
+            sp_total,
+            bp_total,
+            skill_total
+        } = profitState;
         const profit = sp_total - (bp_total + skill_total);
-        let pcent_profit = profit/(bp_total + skill_total) * 100;
+        let pcent_profit = profit / (bp_total + skill_total) * 100;
         pcent_profit = isFinite(pcent_profit) ? Math.round(pcent_profit) : 0;
 
-        const profitText = bp_total > 0 ? 
+        const profitText = bp_total > 0 ?
             `${accounting.formatNumber(profit)} : ${pcent_profit}%` : accounting.formatNumber(profit);
         $('.profit').text(profitText);
 
@@ -91,7 +113,7 @@
     $('#addTitle').click(function() {
         $('#quoteTbl tbody tr.invisible').remove();
 
-        const i = 't'+titleId;
+        const i = 't' + titleId;
         const newTitleHtml = '<tr>' + titleHtml.replace(/t1/g, i) + '</tr>';
         $("#quoteTbl tbody").append(newTitleHtml);
         titleId++;
@@ -108,12 +130,12 @@
         const i = 'p' + rowId;
         const newRowHtml = '<tr>' + rowHtml.replace(/p0/g, i) + '</tr>';
         $("#quoteTbl tbody").append(newRowHtml);
-        $('#name-'+i).autocomplete(autoComp(i));
+        $('#name-' + i).autocomplete(autoComp(i));
         let row = $("#quoteTbl tbody tr:last");
         updateLineTax(row.find('.tax_rate'));
 
         // trigger lead change to reset client pricelist 
-        $('#lead_id').change(); 
+        $('#lead_id').change();
         adjustTbodyHeight();
         calcTotal();
         rowId++;
@@ -136,12 +158,13 @@
         $('#quoteTbl tbody tr.invisible').remove();
 
         const i = 'p' + rowId;
-        const newRowHtml = `<tr class="misc"> ${rowHtml.replace(/p0/g, i)} </tr>`;
+        const newRowHtml =
+            `<tr class="misc" style="background-color:#ffffff; opacity:0.3;"> ${rowHtml.replace(/p0/g, i)} </tr>`;
         $("#quoteTbl tbody").append(newRowHtml);
-        $('#name-'+i).autocomplete(autoComp(i));
-        $('#misc-'+i).val(1);
-        $('#qty-'+i).val(1);
-        ['qty', 'rate', 'price', 'amount', 'lineprofit'].forEach(v => {
+        $('#name-' + i).autocomplete(autoComp(i));
+        $('#misc-' + i).val(1);
+        $('#qty-' + i).val(1);
+        ['qty', 'price', 'rate', 'lineprofit'].forEach(v => {
             $(`#${v}-${i}`).addClass('invisible');
         });
         rowId++;
@@ -153,7 +176,7 @@
     $("#quoteTbl").on("click", ".up, .down, .delete, .add-title, .add-product, .add-misc", function() {
         const menu = $(this);
         const row = $(this).parents("tr:first");
-        
+
         if (menu.is('.up')) row.insertBefore(row.prev());
         if (menu.is('.down')) row.insertAfter(row.next());
         if (menu.is('.delete') && confirm('Are you sure?')) {
@@ -182,7 +205,7 @@
             const miscRow = $("#quoteTbl tbody tr:last");
             $("#quoteTbl tbody tr:last").remove();
             row.after(miscRow);
-            
+
         }
 
         calcTotal();
@@ -191,25 +214,61 @@
     // on change qty and rate
     $("#quoteTbl").on("change", ".qty, .rate, .buyprice, .estqty, .tax_rate", function() {
         const id = $(this).attr('id').split('-')[1];
+        const row = $(this).parents("tr:first");
+        if (row.hasClass('misc')) {
+            // const taxrate = accounting.unformat($('#taxrate-' + id).val());
+            // let buyprice = accounting.unformat($('#buyprice-' + id).val());
+            // let estqty = accounting.unformat($('#estqty-' + id).val() || '1');
+            const taxrate = accounting.unformat(row.find('.tax_rate').val());
+            let buyprice = accounting.unformat(row.find('.buyprice').val());
+            let estqty = accounting.unformat(row.find('.estqty').val() || '1');
+            price = 0;
 
-        const qty = accounting.unformat($('#qty-'+id).val());
-        const taxrate = accounting.unformat($('#taxrate-'+id).val());
-        let buyprice = accounting.unformat($('#buyprice-'+id).val());
-        let estqty = accounting.unformat($('#estqty-'+id).val() || '1');
-        let rate = accounting.unformat($('#rate-'+id).val());
 
-        // row item % profit
-        let price = rate * (taxrate/100 + 1);
-        let profit = (qty * rate) - (estqty * buyprice);
-        let pcent_profit = profit / (estqty * buyprice) * 100;
-        pcent_profit = isFinite(pcent_profit)? Math.round(pcent_profit) : 0;
+            if (taxrate === 0) {
+                price = buyprice;
+            } else {
+                price = buyprice * (taxrate / 100 + 1);
+            }
 
-        $('#buyprice-'+id).val(accounting.formatNumber(buyprice, 4));
-        $('#rate-'+id).val(accounting.formatNumber(rate, 4));
-        $('#price-'+id).val(accounting.formatNumber(price, 4));
-        $('#amount-'+id).text(accounting.formatNumber(qty * price, 4));
-        $('#lineprofit-'+id).text(pcent_profit + '%');
-        calcTotal();
+            // $('#amount-' + id).text(accounting.formatNumber(estqty * price, 4));
+            row.find('.amount').text(accounting.formatNumber(estqty * price, 4));
+            calcTotal();
+        } else {
+
+            // const qty = accounting.unformat($('#qty-' + id).val());
+            // const taxrate = accounting.unformat($('#taxrate-' + id).val());
+            // let buyprice = accounting.unformat($('#buyprice-' + id).val());
+            // let estqty = accounting.unformat($('#estqty-' + id).val() || '1');
+            // let rate = accounting.unformat($('#rate-' + id).val());
+
+            // const qty = accounting.unformat($('#qty-' + id).val());
+            const qty = accounting.unformat(row.find('.qty').val());
+            const taxrate = accounting.unformat(row.find('.tax_rate').val());
+            let buyprice = accounting.unformat(row.find('.buyprice').val());
+            let estqty = accounting.unformat(row.find('.estqty').val() || '1');
+            let rate = accounting.unformat(row.find('.rate').val());
+
+            // row item % profit
+            let price = rate * (taxrate / 100 + 1);
+            let profit = (qty * rate) - (estqty * buyprice);
+            let pcent_profit = profit / (estqty * buyprice) * 100;
+            pcent_profit = isFinite(pcent_profit) ? Math.round(pcent_profit) : 0;
+
+            row.find('.buyprice').val(accounting.formatNumber(buyprice, 4));
+            row.find('.rate').val(accounting.formatNumber(rate, 4));
+            row.find('.price').val(accounting.formatNumber(price, 4));
+            row.find('.amount').text(accounting.formatNumber(qty * price, 4));
+            row.find('.lineprofit').text(pcent_profit + '%');
+
+
+            // $('#buyprice-' + id).val(accounting.formatNumber(buyprice, 4));
+            // $('#rate-' + id).val(accounting.formatNumber(rate, 4));
+            // $('#price-' + id).val(accounting.formatNumber(price, 4));
+            // $('#amount-' + id).text(accounting.formatNumber(qty * price, 4));
+            // $('#lineprofit-' + id).text(pcent_profit + '%');
+            calcTotal();
+        }
     });
 
     // on tax change
@@ -217,21 +276,21 @@
         const mainTax = $(this).val();
         $('#quoteTbl tbody tr').each(function() {
             updateLineTax($(this).find('.tax_rate'));
-            if ($(this).find('.qty').val()*1) {
+            if ($(this).find('.qty').val() * 1) {
                 const itemRate = accounting.unformat($(this).find('.rate').val());
-                $(this).find('.price').val(accounting.formatNumber(itemRate * (mainTax/100 + 1), 4));
+                $(this).find('.price').val(accounting.formatNumber(itemRate * (mainTax / 100 + 1), 4));
                 $(this).find('.rate').change();
             }
         });
-    }).change();    
+    }).change();
 
     // on currency change
-    let initRate = $('#currency option:selected').attr('currency_rate')*1;
+    let initRate = $('#currency option:selected').attr('currency_rate') * 1;
     $('#currency').change(function() {
-        const currentRate = $(this).find(':selected').attr('currency_rate')*1;
+        const currentRate = $(this).find(':selected').attr('currency_rate') * 1;
         if (currentRate > initRate) {
             $('#quoteTbl tbody tr').each(function() {
-                let purchasePrice = accounting.unformat($(this).find('.buyprice').val())  * initRate;
+                let purchasePrice = accounting.unformat($(this).find('.buyprice').val()) * initRate;
                 let itemRate = accounting.unformat($(this).find('.rate').val()) * initRate;
                 purchasePrice = purchasePrice / currentRate;
                 itemRate = itemRate / currentRate;
@@ -240,7 +299,7 @@
             });
         } else {
             $('#quoteTbl tbody tr').each(function() {
-                let purchasePrice = accounting.unformat($(this).find('.buyprice').val())  / currentRate;
+                let purchasePrice = accounting.unformat($(this).find('.buyprice').val()) / currentRate;
                 let itemRate = accounting.unformat($(this).find('.rate').val()) / currentRate;
                 purchasePrice = purchasePrice * initRate;
                 itemRate = itemRate * initRate;
@@ -249,8 +308,8 @@
             });
         }
         initRate = currentRate;
-    }); 
-    
+    });
+
     // compute totals
     function calcTotal() {
         let taxable = 0;
@@ -269,22 +328,185 @@
                     total += amount;
                     subtotal += qty * rate;
                 }
+                if (isMisc) {
+                    const buyprice = accounting.unformat($(this).find('.buyprice').val());
+                    const estqty = $(this).find('.estqty').val();
+                    const taxrate = accounting.unformat($(this).find('.tax_rate').val());
+                    v = 0;
+                    if (taxrate === 0) {
+                        v = buyprice;
+                    } else {
+                        v = buyprice * (taxrate / 100 + 1);
+                    }
+                    bp_subtotal += v * estqty;
+
+                } else {
+                    const buyprice = accounting.unformat($(this).find('.buyprice').val());
+                    const estqty = $(this).find('.estqty').val();
+                    bp_subtotal += estqty * buyprice;
+                }
+                // const amount = accounting.unformat($(this).find('.amount').text());
+
+                // }
                 // profit variables
-                const buyprice = accounting.unformat($(this).find('.buyprice').val());
-                const estqty = $(this).find('.estqty').val();
-                bp_subtotal += estqty * buyprice;
+                // const buyprice = accounting.unformat($(this).find('.buyprice').val());
+                // const estqty = $(this).find('.estqty').val();
+                // bp_subtotal += estqty * buyprice;
+
+                // bp_subtotal += estqty * v;
             }
             $(this).find('.index').val(i);
         });
         $('#taxable').val(accounting.formatNumber(taxable));
+        $('#vatable').val(accounting.formatNumber(taxable));
         $('#total').val(accounting.formatNumber(total));
         $('#subtotal').val(accounting.formatNumber(subtotal));
         $('#tax').val(accounting.formatNumber((total - subtotal)));
         profitState.bp_total = bp_subtotal;
         profitState.sp_total = subtotal;
-        calcProfit();   
+        calcProfit();
     }
 
+    // product row
+    function productRow(n) {
+        return `
+            <tr>
+                <td><input type="text" class="form-control unique-id" name="unique_id[]" placeholder="Search Equipment" id="uniqueid-${n}" required></td>
+                <td><input type="text" class="form-control eq-tid-row" name="equipment_tid[]" id="eq-tid-${n}" required></td>
+                <td><input type="text" class="form-control equip-serial" name="equip_serial[]" id="equipserial-${n}"></td>
+                <td><input type="text" class="form-control make-type" name="make_type[]" id="maketype-${n}" required></td>
+                <td><input type="text" class="form-control capacity" name="capacity[]" id="capacity-${n}" required></td>
+                <td><input type="text" class="form-control location" name="location[]" id="location-${n}" required></td>
+                <td>
+                    <select class="custom-select fault" name="fault[]" id="fault-${n}">
+                        @foreach ($faults as $fault)
+                        <option value="{{ $fault->name }}" selected>{{ $fault->name }}</option>
+                        @endforeach
+                    </select>
+                </td>
+                <td class="text-center">
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Action
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item delete" href="javascript:" data-rowid="${n}" >Remove</a>
+                            <a class="dropdown-item up" href="javascript:">Up</a>
+                            <a class="dropdown-item down" href="javascript:">Down</a>
+                        </div>
+                    </div>
+                </td>
+                <input type="hidden" name="row_index_id[]" value="0" class="row-index" id="rowindex-${n}">
+                <input type="hidden" name="item_id[]" value="0" class="item-id" id="itemid-${n}">
+            </tr>
+        `;
+    }
+
+
+    $('#attach-djc').prop("checked", true);
+    $('#attach-djc').change(function() {
+        if ($(this).is(":checked")) {
+            $('#reference').attr('disabled', false);
+            $('#referencedate').attr('disabled', false);
+        } else {
+            $('#reference').attr('disabled', true);
+            $('#referencedate').attr('disabled', true);
+
+        }
+    });
+    $('#add-check').prop("checked", true);
+    $('#addqproduct').removeClass('d-none');
+    $('#add-check').change(function() {
+        if ($(this).is(":checked")) {
+            $('#addqproduct').removeClass('d-none');
+            $('#equipmentsTbl tbody').find('input').attr('disabled', false);
+            $('#equipmentsTbl tbody').find('select').attr('disabled', false);
+        } else {
+            $('#addqproduct').addClass('d-none');
+            $('#equipmentsTbl tbody').find('input').attr('disabled', true);
+            $('#equipmentsTbl tbody').find('select').attr('disabled', true);
+
+        }
+    });
+
+    // equipment row counter;
+    let rowIds = 0;
+    $('#equipmentsTbl tbody').append(productRow(0));
+    $('#uniqueid-0').autocomplete(autocompleteProp(0));
+
+    // on clicking addproduct
+    $('#addqproduct').on('click', function() {
+        rowIds++;
+        const i = rowIds;
+        $('#equipmentsTbl tbody').append(productRow(i));
+        $('#uniqueid-' + i).autocomplete(autocompleteProp(i));
+        assignIndex();
+    });
+
+    // on clicking equipment drop down options
+    $("#equipmentsTbl").on("click", ".up, .down, .delete", function() {
+        var row = $(this).parents("tr:first");
+        if ($(this).is('.up')) row.insertBefore(row.prev());
+        if ($(this).is('.down')) row.insertAfter(row.next());
+        if ($(this).is('.delete')) $(this).closest('tr').remove();
+        assignIndex();
+    });
+
+    // assign row index
+    function assignIndex() {
+        $('#equipmentsTbl tr').each(function(i) {
+            if (i > 0) $(this).find('.row-index').val(i);
+        });
+    }
+
+    // autocompleteProp returns autocomplete object properties
+    function autocompleteProp(i) {
+        return {
+            source: function(request, response) {
+                $.ajax({
+                    url: baseurl + 'equipments/search/' + $("#customer_id").val(),
+                    dataType: "json",
+                    method: 'post',
+                    data: {
+                        keyword: request.term,
+                        customer_id: $('#lead_id option:selected').attr('customer_id'),
+                        branch_id: $('#lead_id option:selected').attr('branch_id')
+                    },
+                    success: data => {
+                        data = data.map(v => {
+                            for (const key in v) {
+                                if (!v[key]) v[key] = '';
+                            }
+                            const label = `${v.unique_id} ${v.tid} ${v.id} ${v.equip_serial} ${v.make_type} ${v.model} ${v.machine_gas}
+                                ${v.capacity} ${v.location} ${v.building} ${v.floor}`;
+                            const value = v.unique_id;
+                            const data = v;
+                            return {
+                                label,
+                                value,
+                                data
+                            };
+                        })
+                        response(data);
+                    }
+                });
+            },
+            autoFocus: true,
+            minLength: 0,
+            select: function(event, ui) {
+                const {
+                    data
+                } = ui.item;
+                $('#uniqueid-' + i).val(data.unique_id);
+                $('#eq-tid-' + i).val(data.tid);
+                $('#itemid-' + i).val(data.id);
+                $('#equipserial-' + i).val(data.equip_serial);
+                $('#maketype-' + i).val(data.make_type);
+                $('#capacity-' + i).val(data.capacity);
+                $('#location-' + i).val(data.location);
+            }
+        };
+    }
 
     /**
      * Skillset modal logic
@@ -302,10 +524,18 @@
 
         // labour type charges
         switch (row.find('.type').val()) {
-            case 'casual': chrg.val(250).attr('readonly', true); break;
-            case 'contract': chrg.val(250).attr('readonly', true); break;
-            case 'attachee': chrg.val(150).attr('readonly', true); break;
-            case 'outsourced': chrg.val(chrg.val()).attr('readonly', false); break;
+            case 'casual':
+                chrg.val(250).attr('readonly', true);
+                break;
+            case 'contract':
+                chrg.val(250).attr('readonly', true);
+                break;
+            case 'attachee':
+                chrg.val(150).attr('readonly', true);
+                break;
+            case 'outsourced':
+                chrg.val(chrg.val()).attr('readonly', false);
+                break;
         }
         skillTotal();
     });
@@ -316,8 +546,8 @@
     $('#skillTbl tbody tr:first').remove();
     $('#addRow').click(function() {
         skillId++;
-        const html = skillHtml.replace(/-0/g, '-'+skillId).replace('d-none', '');
-        $('#skillTbl tbody').append('<tr>'+html+'</tr>');
+        const html = skillHtml.replace(/-0/g, '-' + skillId).replace('d-none', '');
+        $('#skillTbl tbody').append('<tr>' + html + '</tr>');
     });
 
     function skillTotal() {
@@ -343,52 +573,225 @@
                 let term = request.term;
                 let url = "{{ route('biller.products.quote_product_search') }}";
                 let data = {
-                    keyword: term, 
+                    keyword: term,
                     price_customer_id: $('#price_customer').val(),
                 };
                 // maintenance service product 
                 const docType = @json(request('doc_type'));
                 if (docType == 'maintenance') {
-                    const schedule_url = "{{ route('biller.taskschedules.quote_product_search') }}";
+                    url = "{{ route('biller.taskschedules.quote_product_search') }}";
                     data.customer_id = $('#lead_id option:selected').attr('customer_id');
-                    if ($('#price_customer').val()) url = schedule_url;
-                } 
+                }
                 $.ajax({
-                    url, data,
+                    url,
+                    data,
                     method: 'POST',
-                    success: result => response(result.map(v => ({label: v.name, value: v.name, data: v}))),
+                    success: result => response(result.map(v => ({
+                        label: v.name,
+                        value: v.name,
+                        data: v
+                    }))),
                 });
             },
             autoFocus: true,
             minLength: 0,
             select: function(event, ui) {
-                const {data} = ui.item;
-                
-                $('#productid-'+i).val(data.id);
-                $('#name-'+i).val(data.name);
-                $('#unit-'+i).val(data.unit);                
-                $('#qty-'+i).val(1); 
-                
-                const currencyRate = $('#currency option:selected').attr('currency_rate');
-                if (currencyRate > 1) {
-                    data.purchase_price = parseFloat(data.purchase_price) / currencyRate;
-                    data.price = parseFloat(data.price) / currencyRate;
+                const {
+                    data
+                } = ui.item;
+
+
+                const row = $(this).parents("tr:first");
+
+                if (row.hasClass('misc')) {
+                    $('#productid-' + i).val(data.id);
+                    $('#name-' + i).val(data.name);
+                    $('#unit-' + i).val(data.unit);
+                    $('#qty-' + i).val(1);
+                    $('#estqty-' + i).val(1);
+                    $('#taxrate-' + i).val(0);
+
+                    const currencyRate = $('#currency option:selected').attr('currency_rate');
+                    if (currencyRate > 1) {
+                        data.purchase_price = parseFloat(data.purchase_price) / currencyRate;
+                        data.price = parseFloat(data.price) / currencyRate;
+                    }
+
+                    $('#buyprice-' + i).val(accounting.formatNumber(data.purchase_price));
+                    // $('#estqty-' + i).val(1);
+
+                    // const rate = parseFloat(data.price);
+                    // let price = rate * ($('#tax_id').val() / 100 + 1);
+                    // $('#price-' + i).val(accounting.formatNumber(price));
+                    $('#price-' + i).val(accounting.formatNumber(data.purchase_price));
+                    $('#amount-' + i).text(accounting.formatNumber(data.purchase_price));
+                    // $('#rate-' + i).val(accounting.formatNumber(rate)).change();
+                    $('#rate-' + i).val(accounting.formatNumber(data.purchase_price)).change();
+
+
+
+
+                    if (data.units) {
+                        let units = data.units.filter(v => v.unit_type == 'base');
+                        if (units.length) $('#unit-' + i).val(units[0].code);
+                    }
+                } else {
+                    $('#productid-' + i).val(data.id);
+                    $('#name-' + i).val(data.name);
+                    $('#unit-' + i).val(data.unit);
+                    $('#qty-' + i).val(1);
+
+                    const currencyRate = $('#currency option:selected').attr('currency_rate');
+                    if (currencyRate > 1) {
+                        data.purchase_price = parseFloat(data.purchase_price) / currencyRate;
+                        data.price = parseFloat(data.price) / currencyRate;
+                    }
+
+                    $('#buyprice-' + i).val(accounting.formatNumber(data.purchase_price));
+                    $('#estqty-' + i).val(1);
+
+                    const rate = parseFloat(data.price);
+                    let price = rate * ($('#tax_id').val() / 100 + 1);
+                    $('#price-' + i).val(accounting.formatNumber(price));
+                    $('#amount-' + i).text(accounting.formatNumber(price));
+                    $('#rate-' + i).val(accounting.formatNumber(rate)).change();
+
+                    if (data.units) {
+                        let units = data.units.filter(v => v.unit_type == 'base');
+                        if (units.length) $('#unit-' + i).val(units[0].code);
+                    }
                 }
 
-                $('#buyprice-'+i).val(accounting.formatNumber(data.purchase_price)); 
-                $('#estqty-'+i).val(1);
-
-                const rate = parseFloat(data.price);
-                let price = rate * ($('#tax_id').val()/100 + 1);
-                $('#price-'+i).val(accounting.formatNumber(price));                
-                $('#amount-'+i).text(accounting.formatNumber(price));
-                $('#rate-'+i).val(accounting.formatNumber(rate)).change();
-
-                if (data.units) {
-                    let units = data.units.filter(v => v.unit_type == 'base');
-                    if (units.length) $('#unit-'+i).val(units[0].code);
-                }
             }
         };
-    }    
+    }
+
+    $('#template_quote_id').change(function() {
+        const template_quote_id = $(this).val();
+
+        $.ajax({
+            url: "{{ route('biller.template-quote-details') }}",
+            dataType: "json",
+            method: 'post',
+            data: {
+                template_quote_id: template_quote_id,
+            },
+            success: function(data) {
+                $('#taxable').val(accounting.formatNumber(data[0].taxable));
+                $('#vatable').val(accounting.formatNumber(data[0].taxable));
+                $('#total').val(accounting.formatNumber(data[0].total));
+                $('#subtotal').val(accounting.formatNumber(data[0].subtotal));
+                $('#tax').val(accounting.formatNumber((data[0].total - data[0].subtotal)));
+                
+                $('#subject').val(data[0].notes);
+                $('#quoteTbl tbody').html('');
+                data[0].products.forEach(function(v, i) {
+                    if (v.a_type === 1 && v.misc === 0) {
+                        $('#quoteTbl tbody').append(
+                            `<tr id="productRow">
+                            <td><input type="text" class="form-control" name="numbering[]" id="numbering-p0" value=""></td>
+                            <td>
+                                <textarea name="product_name[]" id="name-p0" cols="35" rows="2" class="form-control" placeholder="{{ trans('general.enter_product') }}" required>${v.product_name}</textarea>
+                            </td>
+                            <td><input type="text" name="unit[]" id="unit-p0" class="form-control" value="${v.unit}"></td>
+                            <td ><input type="number" class="form-control estqty" name="estimate_qty[]" value="${v.estimate_qty}" id="estqty-p0" step="0.1" style="border:solid #f5a8a2;" required></td>  
+                            <td ><input type="text" class="form-control buyprice" name="buy_price[]" value="${v.buy_price}" id="buyprice-p0"  style="border:solid #f5a8a2;" readonly></td>  
+                            <td><input type="number" class="form-control qty" name="product_qty[]" value="${v.product_qty}" id="qty-p0" step="0.1" required></td>
+                            <td><input type="text" class="form-control rate" name="product_subtotal[]" value="${v.product_subtotal}" id="rate-p0" required></td>
+                            <td>
+                                <div class="row no-gutters">
+                                    <div class="col-6">
+                                        <input type="text" class="form-control price" value="${v.product_price}" name="product_price[]" id="price-p0" readonly>
+                                    </div>
+                                    <div class="col-6">
+                                        <select class="custom-select tax_rate" name="tax_rate[]" id="taxrate-p0">
+                                            @foreach ($additionals as $item)
+                                                <option value="{{ +$item->value }}">{{ $item->value == 0 ? 'OFF' : +$item->value . '%' }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class='text-center'>
+                                <span class="amount" id="amount-p0">${v.product_amount}</span>&nbsp;&nbsp;
+                                <span class="lineprofit text-info" id="lineprofit-p0">0%</span>
+                            </td>
+                            <td class="text-center">
+                                @include('focus.quotes.partials.action-dropdown')
+                            </td>
+                            <input type="hidden" name="misc[]" value="0" id="misc-p0">
+                            <input type="hidden" name="product_id[]" value="${v.product_id}" id="productid-p0">
+                            <input type="hidden" class="index" name="row_index[]" value="${v.row_index}" id="rowindex-p0">
+                            <input type="hidden" name="a_type[]" value="1" id="atype-p0">
+                            <input type="hidden" name="id[]" value="0">
+                        </tr>`
+                        );
+                    } else if (v.a_type === 1 && v.misc === 1) {
+                        $('#quoteTbl tbody').append(
+                            `<tr id="productRow" class="misc" style="background-color:rgba(229, 241, 101, 0.4);">
+                            <td><input type="text" class="form-control" name="numbering[]" id="numbering-p0" value=""></td>
+                            <td>
+                                <textarea name="product_name[]" id="name-p0" cols="35" rows="2" class="form-control" placeholder="{{ trans('general.enter_product') }}" required>${v.product_name}</textarea>
+                            </td>
+                            <td><input type="text" name="unit[]" id="unit-p0" class="form-control" value="${v.unit}"></td>
+                            <td ><input type="number" class="form-control estqty" name="estimate_qty[]" value="${v.estimate_qty}" id="estqty-p0" step="0.1" style="border:solid #f5a8a2;" required></td>  
+                            <td ><input type="text" class="form-control buyprice" name="buy_price[]" value="${v.buy_price}" id="buyprice-p0"  style="border:solid #f5a8a2;" readonly></td>  
+                            <td><input type="number" class="form-control qty invisible" name="product_qty[]" value="${v.product_qty}" id="qty-p0" step="0.1" required ></td>
+                            <td><input type="text" class="form-control rate invisible" name="product_subtotal[]" value="${v.product_subtotal}" id="rate-p0" required></td>
+                            <td>
+                                <div class="row no-gutters">
+                                    <div class="col-6">
+                                        <input type="text" class="form-control price" value="${v.product_price}" name="product_price[]" id="price-p0" readonly>
+                                    </div>
+                                    <div class="col-6">
+                                        <select class="custom-select tax_rate" name="tax_rate[]" id="taxrate-p0">
+                                            @foreach ($additionals as $item)
+                                                <option value="{{ +$item->value }}">{{ $item->value == 0 ? 'OFF' : +$item->value . '%' }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class='text-center'>
+                                <span class="amount" id="amount-p0">${v.product_amount}</span>&nbsp;&nbsp;
+                                <span class="lineprofit text-info" id="lineprofit-p0">0%</span>
+                            </td>
+                            <td class="text-center">
+                                @include('focus.quotes.partials.action-dropdown')
+                            </td>
+                            <input type="hidden" name="misc[]" value="0" id="misc-p0">
+                            <input type="hidden" name="product_id[]" value="${v.product_id}" id="productid-p0">
+                            <input type="hidden" class="index" name="row_index[]" value="${v.row_index}" id="rowindex-p0">
+                            <input type="hidden" name="a_type[]" value="1" id="atype-p0">
+                            <input type="hidden" name="id[]" value="0">
+                        </tr>`);
+                    } else if (v.a_type === 2) {
+                        $('#quoteTbl tbody').append(`
+                        <tr id="titleRow">
+                            <td><input type="text" class="form-control" name="numbering[]" id="numbering-t1" value="" style="font-weight: bold;"></td>
+                            <td colspan="8">
+                                <input type="text"  class="form-control" name="product_name[]" value="${v.product_name}" id="name-t1" style="font-weight: bold;" required>
+                            </td>
+                            <td class="text-center">
+                                @include('focus.quotes.partials.action-dropdown')
+                            </td>
+                            <input type="hidden" name="misc[]" value="0" id="misc-t1">
+                            <input type="hidden" name="product_id[]" value="0" id="productid-t1">
+                            <input type="hidden" name="unit[]">
+                            <input type="hidden" name="product_qty[]" value="0">
+                            <input type="hidden" name="product_price[]" value="0">
+                            <input type="hidden" name="tax_rate[]" value="0">
+                            <input type="hidden" name="product_subtotal[]" value="0">
+                            <input type="hidden" name="estimate_qty[]" value="0">
+                            <input type="hidden" name="buy_price[]" value="0">
+                            <input type="hidden" class="index" name="row_index[]" value="0" id="rowindex-t1">
+                            <input type="hidden" name="a_type[]" value="2" id="atype-t1">
+                            <input type="hidden" name="id[]" value="0">
+                        </tr>
+                        `);
+                    }
+                });
+            }
+        });
+    });
 </script>

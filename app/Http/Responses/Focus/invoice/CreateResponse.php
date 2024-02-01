@@ -26,5 +26,6 @@ class CreateResponse implements Responsable
         }
          $last_id=Purchase::orderBy('id', 'desc')->first();
         return view('focus.invoices.create')->with(array('last_id' => $last_id,'sub'=>$input['sub'],'p'=>$request->p))->with(bill_helper(1, 2));
+
     }
 }

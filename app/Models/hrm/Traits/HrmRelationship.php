@@ -13,6 +13,10 @@ use App\Models\employeesalary\EmployeeSalary;
 use App\Models\hrm\HrmMeta;
 use App\Models\quote\Quote;
 use App\Models\transaction\Transaction;
+use App\Models\salary\Salary;
+use App\Models\hrm\Attendance;
+use App\Models\loan\Loan;
+use App\Models\loan\LoanItem;
 
 /**
  * Class HrmRelationship
@@ -90,6 +94,21 @@ trait HrmRelationship
     {
         return $this->belongsTo(EmployeeSalary::class, 'id','user_id')->where('status','Active');
     }
+    
+    public function employees_salary() {
+     
+        return $this->hasOne(Salary::class, 'employee_id')->withoutGlobalScopes();
+    }
 
+
+    public function loan()
+    {
+        return $this->hasOne(Loan::class, 'employee_id');
+    }
+
+    public function loan_items()
+    {
+        return $this->hasManyThrough(LoanItem::class, Loan::class, 'employee_id', 'loan_id', 'id', 'id')->withoutGlobalScopes();
+    }
 
 }

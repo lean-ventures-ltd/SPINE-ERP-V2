@@ -154,25 +154,14 @@
 		<tr>
 			<td width="50%">
 				<span class="customer-dt-title">CUSTOMER DETAILS:</span><br><br>
-				@if ($resource->customer)
-					<b>Client Name :</b> {{ $resource->customer->company }}<br>
-					@if ($resource->branch)
-						<b>Branch :</b> {{ $resource->branch->name }}<br>
-					@endif
-					<b>Address :</b> {{ $resource->customer->address }}<br>
-					<b>Email :</b> {{ $resource->customer->email }}<br>
-					<b>Cell :</b> {{ $resource->customer->phone }}<br>
-					<b>Attention :</b> {{ $resource->attention }}<br>
-				@elseif ($resource->lead)
-					<b>Client Name :</b> {{ $resource->lead->client_name }}<br>
-					@if ($resource->branch)
-						<b>Branch :</b> {{ $resource->branch->name }}<br>
-					@endif
-					<b>Address :</b> {{ $resource->lead->client_address }}<br>
-					<b>Email :</b> {{ $resource->lead->client_email }}<br>
-					<b>Cell :</b> {{ $resource->lead->client_contact }}<br>
-					<b>Attention :</b> {{ $resource->client_ref }}<br>
+				<b>Client Name :</b> {{ $resource->client->company }}<br>
+				@if ($resource->branch)
+					<b>Branch :</b> {{ $resource->branch->name }}<br>
 				@endif
+				<b>Address :</b> {{ $resource->client->address }}<br>
+				<b>Email :</b> {{ $resource->client->email }}<br>
+				<b>Cell :</b> {{ $resource->client->phone }}<br>
+				<b>Attention :</b> {{ $resource->attention }}<br>
 			</td>
 			<td width="5%">&nbsp;</td>
 			<td width="45%">
@@ -225,13 +214,20 @@
 						<td>{{ $product->product_name }}</td>
 						<td class="align-c">{{ +$product->product_qty }}</td>
 						<td class="align-c">{{ $product->unit }}</td>
-						@if ($resource->print_type == 'inclusive')
-							<td class="align-r">{{ numberFormat($product->product_price) }}</td>
-							<td class="align-r">{{ numberFormat($product->product_qty * $product->product_price) }}</td>
-						@else
-							<td class="align-r">{{ numberFormat($product->product_subtotal) }}</td>
-							<td class="align-r">{{ numberFormat($product->product_qty * $product->product_subtotal) }}</td>
-						@endif
+                        <td class="align-r">
+                            @if ($resource->print_type == 'inclusive')
+                                {{ numberFormat($product->product_subtotal) }}
+                            @else
+                                {{ numberFormat($product->product_price) }}
+                            @endif
+                        </td>
+                        <td class="align-r">
+                            @if ($resource->print_type == 'inclusive')
+                                {{ numberFormat($product->product_qty * $product->product_subtotal) }}
+                            @else
+                                {{ numberFormat($product->product_qty * $product->product_price) }}
+                            @endif
+                        </td>						
                         <td>{{ $product->remark }}</td>
 					</tr>
 				@else

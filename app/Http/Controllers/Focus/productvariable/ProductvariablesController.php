@@ -76,11 +76,7 @@ class ProductvariablesController extends Controller
      */
     public function store(ManageCompanyRequest $request)
     {
-        try {
-            $this->repository->create($request->except(['_token']));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Product Unit Variable', $th);
-        }
+        $this->repository->create($request->except(['_token']));
 
         return new RedirectResponse(route('biller.productvariables.index'), ['flash_success' => 'Product Unit Variable Successfully Created']);
     }
@@ -106,11 +102,7 @@ class ProductvariablesController extends Controller
      */
     public function update(ManageCompanyRequest $request, Productvariable $productvariable)
     {
-        try {
-            $this->repository->update($productvariable, $request->except(['_token']));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Product Unit Variable', $th);
-        }
+        $this->repository->update($productvariable, $request->except(['_token']));
 
         return new RedirectResponse(route('biller.productvariables.index'), ['flash_success' => 'Product Unit Variable Successfully Updated']);
     }
@@ -124,11 +116,7 @@ class ProductvariablesController extends Controller
      */
     public function destroy(Productvariable $productvariable)
     {
-        try {
-            $this->repository->delete($productvariable);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Product Unit Variable', $th);
-        }
+        $this->repository->delete($productvariable);
         
         return new RedirectResponse(route('biller.productvariables.index'), ['flash_success' => 'Product Unit Variable Successfully Deleted']);
     }

@@ -13,8 +13,7 @@
                 <label for="ticket">Ticket</label>
                 <div class="input-group">
                     <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
-                    <select class="form-control" name="lead_id" id="lead_id" data-placeholder="Search by Ticket No, Subject, Client, Branch" required> 
-                        <option value=""></option>                                                
+                    <select class="form-control" name="lead_id" id="lead_id" required>                                                 
                         @foreach ($leads as $lead)
                             @php
                                 $customer_name = '';
@@ -47,7 +46,7 @@
         </div>
 
         <div class="form-group row">
-            <div class='col-6'>
+            <div class='col-4'>
                 <label for="print_type" >Print Type</label>
                 <div>                    
                     <div class="d-inline-block custom-control custom-checkbox mr-1">
@@ -61,31 +60,37 @@
                 </div>
             </div>
             
-            <div class="col-3">
+            <div class="col-4">
                 <label for="customer">Pre-agreed Pricing</label>
                 <div class="input-group">
                     <div class="input-group-addon"><span class="icon-bookmark-o" aria-hidden="true"></span></div>
                     <select id="price_customer" name="price_customer_id" class="custom-select">
-                        <option value="">Default </option>
+                        <option value="">Default</option>
+                        <option value="0">Maintenace Schedule</option>
                         @foreach($price_customers as $row)
                         <option value="{{ $row->id }}">{{ $row->company }}</option>
                     @endforeach
                     </select>
                 </div>
             </div>
-
-            <div class="col-3">
-                <label for="serial_no" >{{ trans('general.serial_no') }}.</label>
-                <div class="input-group">
-                    <div class="input-group-text"><span class="fa fa-list" aria-hidden="true"></span></div>
-                    @php
-                        $tid = isset($words['edit_mode'])? $quote->tid : $lastquote->tid+1;
-                        $tid_prefix = !isset($words['edit_mode'])? $prefixes[0] : ($quote->bank_id? $prefixes[1] : $prefixes[0]);
-                    @endphp
-                    {{ Form::text('tid', gen4tid("{$tid_prefix}-", $tid), ['class' => 'form-control round', 'id' => 'tid', 'disabled']) }}
-                    <input type="hidden" name="tid" value="{{ $tid }}">
-                </div>
+            <div class="col-4">
+                <label for="income_category" class="caption">Income Category</label>
+                <select class="custom-select" name="account_id">
+                    <option value="">-- Select Category --</option>                                        
+                    @foreach ($income_accounts as $row)
+                        @php
+                            $account_type = $row->accountType;
+                            if ($account_type->name != 'Income') continue;
+                        @endphp
+                        <optgroup label="{{ $account_type->name }}">
+                            <option value="{{ $row->id }}"  @if($row->id == @$quote->account_id) selected @endif>
+                                {{ $row->holder }}
+                            </option>                    
+                        </optgroup>
+                    @endforeach                                        
+                </select>
             </div>
+
         </div>
 
         <div class="form-group row">
@@ -98,10 +103,27 @@
             </div>
             <div class="col-4">                
                 <label for="prepared_by">Prepared By</label>
-                <div class="input-group">
-                    <div class="input-group-addon"><span class="icon-bookmark-o" aria-hidden="true"></span></div>
-                    {{ Form::text('prepared_by', null, ['class' => 'form-control round', 'placeholder' => 'Prepaired By', 'id' => 'prepared_by']) }}
-                </div>
+                <select name="prepared_by_user" id="prepared_by_user" class="form-control">
+                @foreach($employees as $employee)
+                        
+                            <option value="{{ $employee['id'] }}" {{$employee['id'] == @$quote->prepared_by_user ? 'selected' : '' }}>
+                                {{ $employee->fullname }}
+                            </option>
+                        
+                    @endforeach
+                </select>
+                {{-- <div class="input-group"> --}}
+                    {{-- <div class="input-group-addon"><span class="icon-bookmark-o" aria-hidden="true"></span></div> --}}
+                    {{-- users --}}
+                    {{-- {{ Form::text('prepared_by', null, ['class' => 'form-control round', 'placeholder' => 'Prepaired By', 'id' => 'prepared_by']) }} --}}
+                    {{-- @foreach($employees as $employee)
+                        <select name="prepared_by" id="prepared_by" class="form-control">
+                            <option value="{{ $employee['id'] }}">
+                                {{ $employee->fullname }}
+                            </option>
+                        </select>
+                    @endforeach --}}
+                {{-- </div> --}}
             </div>
             <div class="col-4">
                 <label for="quote_type">{{ $is_pi? 'Proforma Invoice' : 'Quote' }} Type</label>
@@ -125,20 +147,18 @@
 
     <!-- Properties -->
     <div class="col-6">
-        <h3 class="form-group">{{ $is_pi ? 'PI Properties' : trans('quotes.properties')}}</h3>
-        <div class="form-group row">
+        <h3 class="form-group">{{ $is_pi ? 'Proforma Invoice Properties' : trans('quotes.properties')}}</h3>
+         <div class="form-group row">
             <div class="col-4">
-                <label for="reference" >Djc Reference</label>
+                <label for="serial_no" >Quote/Proforma Invoice No.</label>
                 <div class="input-group">
-                    <div class="input-group-addon"><span class="icon-bookmark-o" aria-hidden="true"></span></div>
-                    {{ Form::text('reference', null, ['class' => 'form-control round', 'placeholder' => 'Djc Reference', 'id' => 'reference']) }}
-                </div>
-            </div>
-            <div class="col-4">
-                <label for="reference_date" >Djc Reference Date</label>
-                <div class="input-group">
-                    <div class="input-group-addon"><span class="icon-calendar4" aria-hidden="true"></span></div>
-                    {{ Form::text('reference_date', null, ['class' => 'form-control round datepicker', 'id' => 'referencedate']) }}
+                    <div class="input-group-text"><span class="fa fa-list" aria-hidden="true"></span></div>
+                    @php
+                        $tid = isset($words['edit_mode'])? $quote->tid : $lastquote->tid+1;
+                        $tid_prefix = !isset($words['edit_mode'])? $prefixes[0] : ($quote->bank_id? $prefixes[1] : $prefixes[0]);
+                    @endphp
+                    {{ Form::text('tid', gen4tid("{$tid_prefix}-", $tid), ['class' => 'form-control round', 'id' => 'tid', 'disabled']) }}
+                    <input type="hidden" name="tid" value="{{ $tid }}">
                 </div>
             </div>
             <div class="col-4">
@@ -147,10 +167,7 @@
                     <div class="input-group-addon"><span class="icon-calendar4" aria-hidden="true"></span></div>
                     {{ Form::text('date', null, ['class' => 'form-control round datepicker', 'id' => 'date']) }}
                 </div>
-            </div>                                    
-        </div>
-
-        <div class="form-group row">
+            </div> 
             <div class="col-4"><label for="validity" >Validity Period</label>
                 <div class="input-group">
                     <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
@@ -170,6 +187,10 @@
                     </select>
                 </div>
             </div>
+            </div>
+
+        <div class="form-group row">
+
             <div class="col-4">
                 <label for="currency" >Currency</label>
                 <div class="input-group">
@@ -198,7 +219,18 @@
                     <div class="input-group-addon"><span class="icon-calendar4" aria-hidden="true"></span></div>
                     {{ Form::text('client_ref', null, ['class' => 'form-control round', 'id' => 'client_ref']) }}
                 </div>
-            </div>                                                                          
+            </div>      
+            <div class="col-4">
+                <label for="template-quotes" >Template Quote</label>
+                <select class="custom-select" name='template_quote_id' id="template_quote_id">
+                    <option value="">-- Select Template Quote --</option>
+                    @foreach ($templateQuotes as $templateQuote)
+                    <option value="{{ $templateQuote->id }}" {{ $templateQuote->id == @$quote->templateQuote ? 'selected' : '' }}>
+                        {{ $templateQuote->notes }}
+                    </option>
+                    @endforeach                                            
+                </select>
+            </div>                                                                    
         </div>
         <div class="form-group row">
             <div class="col-4">
@@ -223,6 +255,7 @@
                 </select>
                 <input type="hidden" name="tax_format" value="exclusive" id="tax_format">
             </div>
+
             @if (isset($banks))
                 <div class="col-4">
                     <label for="bank" >Bank</label>
@@ -230,7 +263,7 @@
                         <option value="">-- Select Bank --</option>
                         @foreach ($banks as $bank)
                         <option value="{{ $bank->id }}" {{ $bank->id == @$quote->bank_id ? 'selected' : '' }}>
-                            {{ $bank->bank }} {{ $bank->note? "- {$bank->note}" : '' }}
+                            {{ $bank->bank }} - {{ $bank->note }}
                         </option>
                         @endforeach                                            
                     </select>
@@ -264,6 +297,7 @@
     @endif
 </div>
 <!-- quotes item table -->
+{{-- @include('focus.quotes.partials.quote-items-table') --}}
 @include('focus.quotes.partials.quote_items')
 <!-- footer -->
 <div class="form-group row">
@@ -277,33 +311,62 @@
         <a href="javascript:" class="btn btn-purple ml-1" data-toggle="modal" data-target="#extrasModal" id="addExtras">
             <i class="fa fa-plus"></i> Header & Footer
         </a>
+        <div class="form-group row mt-2">
+            <div class='col-md-12'>
+                <div class='col m-1'>
+                                            
+                    <input type="checkbox" id="attach-djc" value="checked">
+                    <label for="client-type" class="font-weight-bold">Attach Site Survey Report Details</label>
+                </div>
+            </div>
+            <div class="col-4">
+                <label for="reference" >Site Survey Report Reference</label>
+                <div class="input-group">
+                    <div class="input-group-addon"><span class="icon-bookmark-o" aria-hidden="true"></span></div>
+                    {{ Form::text('reference', null, ['class' => 'form-control round', 'placeholder' => 'Site Survey Report Reference', 'id' => 'reference', 'required']) }}
+                </div>
+            </div>
+            <div class="col-4">
+                <label for="reference_date" >Site Survey Report Reference Date</label>
+                <div class="input-group">
+                    <div class="input-group-addon"><span class="icon-calendar4" aria-hidden="true"></span></div>
+                    {{ Form::text('reference_date', null, ['class' => 'form-control round datepicker', 'id' => 'referencedate']) }}
+                </div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class='col-md-12'>
+                <div class='col'>
+                                            
+                    <input type="checkbox" id="add-check" value="checked">
+                    <label for="client-type" class="font-weight-bold">Attach Repair Equipment</label>
+                </div>
+            </div>
+        </div>
+        @include('focus.quotes.partials.equipments')
     </div>
     <div class="col-3">
         <div>
-            <label><span class="text-primary">(Estimated Cost: <span class="estimate-cost font-weight-bold text-dark">0.00</span>)</span></label>
+            <label><span class="text-primary">(Total Estimated Cost: <span class="estimate-cost font-weight-bold text-dark">0.00</span>)</span></label>
         </div>
-        <div>
-            <label class="m-0">Taxable Amount</label>
-            <input type="text" name="taxable" id="taxable" class="form-control" readonly>    
-        </div>
-        <div>
-            <label class="m-0">SubTotal</label>
-            <input type="text" name="subtotal" id="subtotal" class="form-control" readonly>    
-        </div>
-        <div>
-            <label id="tax-label" class="m-0">
-                {{ trans('general.total_tax') }}
-                <span id="vatText" class="text-primary">(Print VAT-Exc)</span>
-            </label>
-            <input type="text" name="tax" id="tax" class="form-control" readonly>
-        </div>
-        <div>
-            <label class="m-0">
-                {{trans('general.grand_total')}}
-                <b class="text-primary">(E.P: &nbsp;<span class="text-dark profit">0</span>)</b>
-            </label>
-            <input type="text" name="total" class="form-control" id="total" readonly>
-        </div>
+        <label>SubTotal</label>
+        <input type="text" name="subtotal" id="subtotal" class="form-control" readonly>
+        <label>Taxable</label>
+        <input type="text" name="vatable" id="vatable" class="form-control" readonly>
+        <label id="tax-label">{{ trans('general.total_tax') }}
+            {{-- <span id="vatText" class="text-primary">(VAT-Exc)</span> --}}
+        </label>
+        <label id="tax-label" class="float-right">Print Type:
+            <span id="vatText" class="text-primary"></span>
+        </label>
+        <input type="text" name="tax" id="tax" class="form-control" readonly>
+        <label>
+            {{trans('general.grand_total')}}
+            <b class="text-primary">
+                (E.P: &nbsp;<span class="text-dark profit">0</span>)
+            </b>
+        </label>
+        <input type="text" name="total" class="form-control" id="total" readonly>
         {{ Form::submit('Generate', ['class' => 'btn btn-success btn-lg mt-1']) }}
     </div>
 </div>

@@ -31,9 +31,9 @@ class PriceListRepository extends BaseRepository
             $q->where(['supplier_id' => request('supplier_id'), 'contract' => request('contract')]);
         })->when(request('supplier_id'), function ($q) {
             $q->where(['supplier_id' => request('supplier_id')]);
-        });
+        })->whereNotNull('descr');
 
-        return $q;
+        return $q->get();
     }
 
     /**
@@ -46,6 +46,7 @@ class PriceListRepository extends BaseRepository
     public function create(array $input)
     {
         // dd($input);
+        unset($input['description']);
         $input['rate'] = numberClean($input['rate']);
         $result = SupplierProduct::create($input);
         if ($result) return $result;

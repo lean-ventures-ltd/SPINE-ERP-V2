@@ -19,6 +19,9 @@
 namespace App\Http\Controllers\Focus\project;
 
 use App\Models\Company\ConfigMeta;
+use App\Models\items\GoodsreceivenoteItem;
+use App\Models\items\PurchaseItem;
+use App\Models\labour_allocation\LabourAllocation;
 use App\Models\note\Note;
 use App\Models\account\Account;
 use App\Models\project\ProjectLog;
@@ -42,8 +45,8 @@ use App\Models\project\ProjectQuote;
 use App\Models\project\ProjectRelations;
 use App\Models\quote\Quote;
 use App\Models\supplier\Supplier;
-use DB;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Log;
 use Yajra\DataTables\Facades\DataTables;
@@ -76,9 +79,7 @@ class ProjectsController extends Controller
      */
     public function index(ManageProjectRequest $request)
     {
-        $customer_id = auth()->user()->customer_id;
-        $customers = Customer::when($customer_id, fn($q) => $q->where('id', $customer_id))
-            ->whereHas('quotes')->get(['id', 'company']);
+        $customers = Customer::whereHas('quotes')->get(['id', 'company']);
         $accounts = Account::where('account_type', 'Income')->get(['id', 'holder', 'number']);
         $last_tid = Project::where('ins', auth()->user()->ins)->max('tid');
 
@@ -134,7 +135,7 @@ class ProjectsController extends Controller
     {   
         try {
             $this->repository->update($project, $request->except('_token'));
-        } catch (\Throwable $th) {
+        } catch (\Throwable $th) { 
             if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Updating Project', $th);
         }
@@ -180,8 +181,9 @@ class ProjectsController extends Controller
 
         $mics = Misc::all();
         $employees = User::all();
+        $expensesByMilestone = $this->getExpensesByMilestone($project->id);
 
-        return new ViewResponse('focus.projects.view', compact('project', 'accounts', 'exp_accounts', 'suppliers', 'last_tid', 'mics', 'employees'));
+        return new ViewResponse('focus.projects.view', compact('project', 'accounts', 'exp_accounts', 'suppliers', 'last_tid', 'mics', 'employees', 'expensesByMilestone' ));
     }
 
     /**
@@ -206,22 +208,25 @@ class ProjectsController extends Controller
         if (!access()->allow('product_search')) return false;
 
         $k = $request->post('keyword');
-
-        $projects = Project::whereHas('quote', function ($q) use ($k) {
-            $q->where('tid', $k);
-        })->orWhereHas('branch', function ($q) use ($k) {
-            $q->where('name', 'LIKE', '%' . $k . '%');
-        })->orWhereHas('customer_project', function ($q) use ($k) {
-            $q->where('company', 'LIKE', '%' . $k . '%');
-        })->orwhere('name', 'LIKE', '%' . $k . '%')
+        
+        $projects = Project::whereHas('misc', fn($q) => $q->where('name', '!=', 'Completed'))
+        ->where(function($q) use($k) {
+            $q->whereHas('quote', function ($q) use ($k) {
+                $q->whereHas('budget')->where('tid', 'LIKE', '%' . $k . '%');
+            })
             ->orWhere('tid', $k)
-            ->limit(6)->get();
+            ->orWhere('name', 'LIKE', '%' . $k . '%')
+            ->orWhereHas('branch', function ($q) use ($k) {
+                $q->where('name', 'LIKE', '%' . $k . '%');
+            })->orWhereHas('customer_project', function ($q) use ($k) {
+                $q->where('company', 'LIKE', '%' . $k . '%');
+            });
+        }) 
+        ->limit(6)->get();
 
-        // response format
-        $output = array();
+        $output = [];
         foreach ($projects as $project) {
-            // if ($project->status == 'closed') continue;
-            $quote_tids = array();
+            $quote_tids = [];
             foreach ($project->quotes as $quote) {
                 if ($quote->bank_id) $quote_tids[] = gen4tid('PI-', $quote->tid);
                 else $quote_tids[] = gen4tid('QT-', $quote->tid);
@@ -230,7 +235,7 @@ class ProjectsController extends Controller
             $quote_tids = "[{$quote_tids}]";
 
             $customer = @$project->customer_project->company;
-            $branch = @$project->branch->name;
+            $branch = @$project->branch_id;
             $project_tid = gen4tid('Prj-', $project->tid);
             $output[] = [
                 'id' => $project->id,
@@ -241,6 +246,13 @@ class ProjectsController extends Controller
         }
 
         return response()->json($output);
+    }
+
+    public function getProjectMileStones(Request $request){
+
+        $milestones = ProjectMileStone::where('project_id', $request->projectId)->select('id', 'name', 'amount', 'balance', 'due_date')->get();
+
+        return json_encode($milestones);
     }
 
     public function search(Request $request)
@@ -325,28 +337,31 @@ class ProjectsController extends Controller
     public function store_meta(ManageProjectRequest $request)
     {
         $input = $request->except(['_token', 'ins']);
-        $response = ['status' => 'Error', 'message' => 'Something Went Wrong. Try again later'];
+        $response = ['status' => 'Error', 'message' => $input['obj_type'] === '2' ? "IKWOO" : "NOT IKWOO" . " TYPE NI: " . gettype($input['obj_type'])];
 
         DB::beginTransaction();
 
         try {
-            switch ($input['obj_type']) {
-                case 2: // milestone
-                    $data = Arr::only($input, ['project_id','amount', 'name', 'description', 'color', 'duedate', 'time_to']);
-                    $data = array_replace($data, [
-                        'due_date' => date_for_database("{$data['duedate']} {$data['time_to']}:00"),
-                        'note' => $data['description'],
-                        'amount' => numberClean($data['amount']),
-                    ]);
-                    unset($data['duedate'], $data['time_to'], $data['description']);
-                    $milestone = ProjectMileStone::create($data);
-                    ProjectRelations::create(['project_id' => $milestone->project_id, 'milestone_id' => $milestone->id]);
 
-                    // log
-                    $data = ['project_id' => $milestone->project_id, 'value' => '['. trans('projects.milestone') .']' .'['. trans('general.new') .'] '. $input['name'], 'user_id' => auth()->user()->id];
-                    ProjectLog::create($data);                    
-    
-                    $result = '
+            if ($input['obj_type'] == 2){
+
+                $data = Arr::only($input, ['project_id','amount', 'name', 'description', 'color', 'duedate', 'time_to']);
+                $data = array_replace($data, [
+                    'due_date' => date_for_database("{$data['duedate']} {$data['time_to']}:00"),
+                    'note' => $data['description'],
+                    'amount' => numberClean($data['amount']),
+                    'balance' => numberClean($data['amount']),
+                ]);
+                unset($data['duedate'], $data['time_to'], $data['description']);
+                $milestone =( new ProjectMileStone)->fill($data);
+                $milestone->save();
+                ProjectRelations::create(['project_id' => $milestone->project_id, 'milestone_id' => $milestone->id]);
+
+                // log
+                $data = ['project_id' => $milestone->project_id, 'value' => '['. trans('projects.milestone') .']' .'['. trans('general.new') .'] '. $input['name'], 'user_id' => auth()->user()->id];
+                ProjectLog::create($data);
+
+                $result = '
                         <li id="m_'. $milestone->id .'">
                             <div class="timeline-badge" style="background-color:'. $milestone->color .';">*</div>
                             <div class="timeline-panel">
@@ -373,57 +388,66 @@ class ProjectsController extends Controller
                             </div>
                         </li>
                     ';
-                    $response = array_replace($response, ['status' => 'Success', 't_type' => 2, 'meta' => $result]);
-                    break;
-                case 5: // project activity log 
-                    $data = ['project_id' => $request->project_id, 'value' => $request->name];
-                    $project_log = ProjectLog::create($data);
-    
-                    $log_text = '<tr><td>*</td><td>'. dateTimeFormat($project_log->created_at) .'</td><td>' 
-                        .auth()->user()->first_name .'</td><td>'. $project_log->value .'</td></tr>';
-    
-                    $response = array_replace($response, ['status' => 'Success', 't_type' => 5, 'meta' => $log_text]);
-                    break;
-                case 6: // project note
-                    $data = Arr::only($input, ['title', 'content']);
-                    $data['section'] = 1;
-                    $note = Note::create($data);
 
-                    ProjectLog::create(['project_id' => $input['project_id'], 'value' => '[Project Note][New]' . $note->title]);
+                $response = array_replace($response, ['status' => 'Success', 't_type' => 2, 'meta' => $result]);
+            }
+            else if ($input['obj_type'] == 5){
 
-                    ProjectRelations::create(['project_id' => $input['project_id'], 'note_id' => $note->id]);
-    
-                    $log_text = '<tr>
+                $data = ['project_id' => $request->project_id, 'value' => $request->name];
+                $project_log = ProjectLog::create($data);
+
+                $log_text = '<tr><td>*</td><td>'. dateTimeFormat($project_log->created_at) .'</td><td>'
+                    .auth()->user()->first_name .'</td><td>'. $project_log->value .'</td></tr>';
+
+                $response = array_replace($response, ['status' => 'Success', 't_type' => 5, 'meta' => $log_text]);
+            }
+            else if ($input['obj_type'] == 6) {
+
+                $data = Arr::only($input, ['title', 'content']);
+                $data['section'] = 1;
+                $note = Note::create($data);
+                $note->project_id = $request->project_id;
+                $note->ins = auth()->user()->ins;
+                $note->creator_id = auth()->user()->id;
+                $note->save();
+
+                ProjectLog::create(['project_id' => $input['project_id'], 'value' => '[Project Note][New]' . $note->title]);
+
+                ProjectRelations::create(['project_id' => $input['project_id'], 'note_id' => $note->id]);
+
+                $log_text = '<tr>
                         <td>*</td>
                         <td>'. $note->title .'</td>
                         <td>'. $note->content .'</td>
                         <td>'. auth()->user()->first_name . '</td>
                         <td>'. dateTimeFormat($note->created_at) .'</td>
                         <td>
-                            <a href="'. route('biller.notes.edit', [$note->id]) .'" class="btn btn-warning round" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fa fa-pencil "></i> </a> 
+                            <a href="'. route('biller.notes.edit', [$note->id]) .'" class="btn btn-warning round" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fa fa-pencil "></i> </a>
                             <a class="btn btn-danger round" table-method="delete" data-trans-button-cancel="Cancel" data-trans-button-confirm="Delete" data-trans-title="Are you sure you want to do this?" data-toggle="tooltip" data-placement="top" title="Delete" style="cursor:pointer;" onclick="$(this).find(&quot;form&quot;).submit();">
                             <i class="fa fa-trash"></i> <form action="' . route('biller.notes.show', [$note->id]) . '" method="POST" name="delete_table_item" style="display:none"></form></a>
                         </td>
                     </tr>';
-                    
-                    $response = array_replace($response, ['status' => 'Success', 't_type' => 6, 'meta' => $log_text]);
-                    break;
-                case 7: // attach project quote
-                    $project = Project::find($input['project_id']);
-                    if (!$project->main_quote_id) 
-                        $project->update(['main_quote_id' => @$input['quote_ids'][0]]);
-    
-                    foreach($input['quote_ids'] as $val) {
-                        $item = ProjectQuote::firstOrCreate(
-                            ['project_id' => $project->id, 'quote_id' => $val],
-                            ['project_id' => $project->id, 'quote_id' => $val]
-                        );
-                        $item->quote->update(['project_quote_id' => $item->id]);
-                    }
-    
-                    $response = array_replace($response, ['status' => 'Success', 't_type' => 7, 'meta' => '', 'refresh' => 1]);
-                    break;
+
+                $response = array_replace($response, ['status' => 'Success', 't_type' => 6, 'meta' => $log_text]);
             }
+            else if ($input['obj_type'] == 7){
+
+                $project = Project::find($input['project_id']);
+                if (!$project->main_quote_id)
+                    $project->update(['main_quote_id' => @$input['quote_ids'][0]]);
+
+                foreach($input['quote_ids'] as $val) {
+                    $item = ProjectQuote::firstOrCreate(
+                        ['project_id' => $project->id, 'quote_id' => $val],
+                        ['project_id' => $project->id, 'quote_id' => $val]
+                    );
+                    $item->quote->update(['project_quote_id' => $item->id]);
+                }
+
+                $response = array_replace($response, ['status' => 'Success', 't_type' => 7, 'meta' => '', 'refresh' => 1]);
+            }
+
+
         } catch (\Throwable $th) {
             \Log::error($th->getMessage() . ' ' . $th->getFile() . ' : ' . $th->getLine());
         }
@@ -444,13 +468,14 @@ class ProjectsController extends Controller
     {
         $input = $request->except(['_token', 'ins']);
 
-        switch ($input['obj_type']) {
-            case 2 :
-                $milestone = ProjectMileStone::find($input['object_id']);
-                $project = $milestone->project;
-                return view('focus.projects.modal.milestone_new', compact('milestone', 'project'));
+        if ($input['obj_type'] == 2) {
+
+            $milestone = ProjectMileStone::where('id', intval($input['object_id']))->first();
+            $project = $milestone->project;
+
+            return view('focus.projects.modal.milestone_new', compact('milestone', 'project'));
         }
-        
+
         return response()->json();
     }    
 
@@ -461,20 +486,24 @@ class ProjectsController extends Controller
     {
         $input = $request->except(['_token', 'ins']);
 
-        DB::beginTransaction();
+
+        $data = ['status' => 'Error', 'message' => json_encode($request)];
+
 
         try {
-            switch ($input['obj_type']) {
-                case 2: //milestone
-                    $milestone = ProjectMileStone::find($input['object_id']);
-                    
-                    $data = ['project_id' => $milestone->project_id, 'value' => '['. trans('projects.milestone') .']' .'['. trans('general.deleted') .'] '. $milestone['name'], 'user_id' => auth()->user()->id];
-                    ProjectLog::create($data); 
+            DB::beginTransaction();
 
-                    $milestone->delete();
-                    $data = ['status' => 'Success', 'message' => trans('general.delete'), 't_type' => 1, 'meta' => $input['object_id']];
-                    break;
+            if ($input['obj_type'] == 2) {
+
+                $milestone = ProjectMileStone::find($input['object_id']);
+
+                $data = ['project_id' => $milestone->project_id, 'value' => '['. trans('projects.milestone') .']' .'['. trans('general.deleted') .'] '. $milestone['name'], 'user_id' => auth()->user()->id];
+                ProjectLog::create($data);
+
+                $milestone->delete();
+                $data = ['status' => 'Success', 'message' => trans('general.delete'), 't_type' => 1, 'meta' => $input['object_id']];
             }
+
             DB::commit();
         } catch (\Throwable $th) {
             Log::error($th->getMessage());
@@ -614,4 +643,90 @@ class ProjectsController extends Controller
 
         return response()->json(['status' => 'Success', 'data' => compact('project_budget', 'milestone_budget')]);
     }
+
+    /**
+     * Project Status tag update
+     */
+    public function status_tag_update(Request $request)
+    {
+        
+        try {
+            $project = Project::findOrFail($request->project_id);
+            $project->update(['status' => $request->status, 'end_note' => $request->end_note]);
+        } catch (\Throwable $th) {
+            return errorHandler('Error updating project status tag', $th);
+        }
+        
+        return new RedirectResponse(route('biller.projects.index'), ['flash_success' => 'Status tag successfully updated']);
+    }
+
+
+    public function getExpensesByMilestone(int $projectId): array {
+
+       $mStone = ProjectMileStone::where('project_id', $projectId)->get();
+
+//       return !empty($mStone->toArray()) ? 'TRUE' : 'FALSE';
+
+        if (!empty($mStone->toArray())) {
+
+            $milestones = $mStone->pluck('name');
+
+            $mstoneArray = $milestones->toArray();
+            array_push($mstoneArray, 'No Budget Line Selected');
+
+            $totals = array_fill(0, count($mstoneArray), 0);
+            $milestoneTotals = array_combine($mstoneArray, $totals);
+
+            /** Getting Direct Purchase Totals */
+            $dir_purchase_items = PurchaseItem::whereHas('project', fn($q) => $q->where('projects.id', $projectId))
+                ->with('purchase', 'account')
+                ->get();
+
+            foreach ($dir_purchase_items as $dpi) {
+
+                if ($dpi->purchase->project_milestone !== 0) {
+
+                    $projectMilestone = ProjectMileStone::where('id', $dpi->purchase->project_milestone)->first();
+                    $milestoneTotals[$projectMilestone->name] += $dpi->amount;
+                } else {
+
+                    $milestoneTotals['No Budget Line Selected'] += $dpi->amount;
+                }
+            }
+
+            /** Getting Purchase Order totals */
+            $goods_receive_items = GoodsreceivenoteItem::whereHas('project', fn($q) => $q->where('itemproject_id', $projectId))->get();
+
+            foreach ($goods_receive_items as $grnItem) {
+
+                if ($grnItem->purchaseorder_item->purchaseorder->project_milestone !== 0) {
+
+                    $projectMilestone = ProjectMileStone::where('id', $grnItem->purchaseorder_item->purchaseorder->project_milestone)->first();
+                    $milestoneTotals[$projectMilestone->name] += $grnItem->rate * $grnItem->qty;
+                } else {
+
+                    $milestoneTotals['No Budget Line Selected'] += $grnItem->rate * $grnItem->qty;
+                }
+            }
+
+            /** Getting Labour Totals */
+            $labour = LabourAllocation::whereHas('project', fn($q) => $q->where('project_id', $projectId))->get();
+            foreach ($labour as $lab) {
+
+                if ($lab->project_milestone !== 0) {
+
+                    $projectMilestone = ProjectMileStone::where('id', $lab->project_milestone)->first();
+                    $milestoneTotals[$projectMilestone->name] += $lab->hrs * 500;
+                } else {
+
+                    $milestoneTotals['No Budget Line Selected'] += $lab->hrs * 500;
+                }
+            }
+
+            return $milestoneTotals;
+        }
+
+        return [];
+    }
+
 }

@@ -44,11 +44,9 @@ class QuoteTableController extends Controller
      */
     public function __invoke()
     {
-        $query = $this->repository->getForVerifyDataTable();
-        $ins = auth()->user()->ins;
-        $prefixes = prefixesArray(['quote','proforma_invoice'], $ins);
+        $core = $this->repository->getForVerifyDataTable();
     
-        return Datatables::of($query)
+        return Datatables::of($core)
             ->escapeColumns(['id'])
             ->addIndexColumn()
             ->addColumn('checkbox', function ($quote) {
@@ -57,8 +55,8 @@ class QuoteTableController extends Controller
             ->addColumn('date', function ($quote) {
                 return dateFormat($quote->date);
             })
-            ->addColumn('tid', function ($quote) use ($prefixes) {
-                $tid = gen4tid($quote->bank_id? "{$prefixes[1]}-" : "{$prefixes[0]}-", $quote->tid);
+            ->addColumn('tid', function ($quote) {
+                $tid = gen4tid($quote->bank_id? 'PI-' : 'QT-', $quote->tid);
                 if ($quote->revision) $tid .= $quote->revision; 
 
                 $url = route('biller.quotes.show', [$quote->id]);

@@ -27,6 +27,7 @@ use App\Models\Company\ConfigMeta;
 use App\Models\employee\RoleUser;
 use App\Models\hrm\Attendance;
 use App\Models\hrm\Hrm;
+use App\Models\hrm\HrmMeta;
 use App\Models\transactioncategory\Transactioncategory;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
@@ -35,6 +36,8 @@ use App\Http\Responses\Focus\hrm\CreateResponse;
 use App\Http\Responses\Focus\hrm\EditResponse;
 use App\Repositories\Focus\hrm\HrmRepository;
 use App\Http\Requests\Focus\hrm\ManageHrmRequest;
+use DateTime;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -72,17 +75,6 @@ class HrmsController extends Controller
             $flag = false;
         }
 
-        // $users = \App\Models\hrm\Hrm::where('id', '!=', 1)->get();
-        // foreach ($users as $user) {
-        //     if ($user->email) {
-        //         $init = explode('@', $user->email);
-        //         if (@$init[0]) {
-        //             $user->password = $init[0];
-        //             $user->save();
-        //         }               
-        //     }
-        // }
-
         return new ViewResponse('focus.hrms.index', compact('title', 'flag'));
     }
 
@@ -102,11 +94,40 @@ class HrmsController extends Controller
      *
      * @param StoreHrmRequestNamespace $request
      * @return \App\Http\Responses\RedirectResponse
+     * @throws ValidationException
      */
     public function store(ManageHrmRequest $request)
     {
-        $input['employee'] = $request->only(['first_name', 'last_name', 'email', 'picture', 'signature', 'role']);
-        $input['meta'] = $request->except(['_token', 'first_name', 'last_name', 'email', 'picture', 'signature', 'role', 'permission', 'check_all']);
+
+        $validated = $request->validate([
+            'id_number' => ['required', 'numeric', 'digits_between:6,8'],
+            'primary_contact' => ['required', 'regex:/^[\d\s\-()+]+$/', 'min:10', 'max:15'],
+            'secondary_contact' => ['required', 'regex:/^[\d\s\-()+]+$/', 'min:10', 'max:15'],
+        ]);
+        if (strlen($request['kra_pin']) != 11)
+            throw ValidationException::withMessages(['KRA PIN should contain 11 characters']);
+        if (!in_array($request['kra_pin'][0], ['P', 'A']))
+            throw ValidationException::withMessages(['First character of KRA PIN must be letter "P" or "A"']);
+        $pattern = "/^[0-9]+$/i";
+        if (!preg_match($pattern, substr($request['kra_pin'],1,9)))
+            throw ValidationException::withMessages(['Characters between 2nd and 10th letters must be numbers']);
+        $letter_pattern = "/^[a-zA-Z]+$/i";
+        if (!preg_match($letter_pattern, $request['kra_pin'][-1]))
+            throw ValidationException::withMessages(['Last character of KRA PIN must be a letter!']);
+
+
+        $latestEmployeeNo = HrmMeta::latest()->first()->employee_no;
+        $empYear =  (new DateTime('now'))->format('y');
+        $employeeID =substr($latestEmployeeNo, 0, -2);
+
+        $request['employee_no'] = intval($employeeID) + 1 . $empYear;
+
+        $validated = $request->validate([
+            'employee_no' => ['unique:hrm_metas,employee_no'],
+        ]);
+
+        $input['employee'] = $request->only(['first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role']);
+        $input['meta'] = $request->except(['_token', 'first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role', 'permission', 'check_all']);
         $input = array_merge($input, $request->only(['permission']));
 
         // validate
@@ -114,19 +135,19 @@ class HrmsController extends Controller
             if ($key == 'employee') {
                 if (isset($val['picture'])) $request->validate(['picture' => 'required|mimes:jpeg,png']);
                 if (isset($val['signature'])) $request->validate(['signature' => 'required|mimes:jpeg,png']);
+                if (isset($val['cv'])) $request->validate(['cv' => 'required|mimes:jpeg,png,pdf']);
             }
             if ($key == 'meta') {
                 if (isset($val['id_front'])) $request->validate(['id_front' => 'required|mimes:jpeg,png']);
                 if (isset($val['id_back'])) $request->validate(['id_front' => 'required|mimes:jpeg,png']);
             }
         }
-
+       
         $input['employee']['ins'] = auth()->user()->ins;
 
         try {
             $this->repository->create($input);
-        } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
+        } catch (\Throwable $th) {dd($th);
             return errorHandler('Error Creating Employee', $th);
         }
 
@@ -154,8 +175,26 @@ class HrmsController extends Controller
      */
     public function update(ManageHrmRequest $request, Hrm $hrm)
     {
-        $input['employee'] = $request->only(['first_name', 'last_name', 'email', 'picture', 'signature', 'role']);
-        $input['meta'] = $request->except(['_token', '_method', 'first_name', 'last_name', 'email', 'picture', 'signature', 'role', 'permission', 'check_all']);
+
+        $validated = $request->validate([
+            'id_number' => ['required', 'numeric', 'digits_between:6,8'],
+            'primary_contact' => ['required', 'regex:/^[\d\s\-()+]+$/', 'min:10', 'max:15'],
+            'secondary_contact' => ['required', 'regex:/^[\d\s\-()+]+$/', 'min:10', 'max:15'],
+        ]);
+        if (strlen($request['kra_pin']) != 11)
+            throw ValidationException::withMessages(['KRA PIN should contain 11 characters']);
+        if (!in_array($request['kra_pin'][0], ['P', 'A']))
+            throw ValidationException::withMessages(['First character of KRA PIN must be letter "P" or "A"']);
+        $pattern = "/^[0-9]+$/i";
+        if (!preg_match($pattern, substr($request['kra_pin'],1,9)))
+            throw ValidationException::withMessages(['Characters between 2nd and 10th letters must be numbers']);
+        $letter_pattern = "/^[a-zA-Z]+$/i";
+        if (!preg_match($letter_pattern, $request['kra_pin'][-1]))
+            throw ValidationException::withMessages(['Last character of KRA PIN must be a letter!']);
+
+
+        $input['employee'] = $request->only(['first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role']);
+        $input['meta'] = $request->except(['_token', '_method', 'first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role', 'permission', 'check_all']);
         $input = array_merge($input, $request->only(['permission']));
 
         // validate
@@ -174,8 +213,7 @@ class HrmsController extends Controller
 
         try {
             $this->repository->update($hrm, $input);
-        } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
+        } catch (\Throwable $th) {dd($th);
             return errorHandler('Error Updating Employee', $th);
         }
 

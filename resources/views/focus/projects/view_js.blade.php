@@ -59,9 +59,13 @@
                 case '#tab_data9': expenses(); break;
             }
         });
+        const redirectToTab = "{{ request('tab') }}";
+        if (redirectToTab == 'expense') localStorage.project_tab = '#tab_data9';
+        // set active tab
         const projectTab = localStorage.project_tab;
         if (projectTab) $('a[href="' + projectTab + '"]').tab('show');
-
+        
+    
         // project progress slider
         $('#prog').text($('#progress').val() + '%');
         $(document).on('change', '#progress', function (e) {
@@ -306,6 +310,7 @@
                 type: 'POST',
                 data: {project_id: "{{ $project->id }}"},
                 dataSrc: ({data}) => {
+                    
                     data = data.map(v => {
                         if (v.budget_status.includes('budgeted')) {
                             v.actions = '';
@@ -414,7 +419,8 @@
                                 case 1: row.text(accounting.formatNumber(groupTotals['labour_service'])); break;
                                 case 2: row.text(accounting.formatNumber(groupTotals['dir_purchase_stock'])); break;
                                 case 3: row.text(accounting.formatNumber(groupTotals['dir_purchase_service'])); break;
-                                case 4: row.text(accounting.formatNumber(groupTotals['grand_total'])); break;
+                                case 4: row.text(accounting.formatNumber(groupTotals['purchase_order_stock'])); break;
+                                case 5: row.text(accounting.formatNumber(groupTotals['grand_total'])); break;
                             }
                         });
                     } 
@@ -423,7 +429,7 @@
             },
             columns: [
                 {data: 'DT_Row_Index', name: 'id'},
-                ...['exp_category', 'supplier', 'product_name', 'uom', 'qty', 'rate', 'amount']
+                ...['exp_category', 'milestone', 'supplier', 'product_name','date', 'uom', 'qty', 'rate', 'amount']
                 .map(v => ({data: v, name: v})),
             ],
             order:[[0, 'desc']],

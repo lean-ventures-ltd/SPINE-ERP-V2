@@ -141,11 +141,7 @@ class OrdersController extends Controller
         if ($invoice['type_bill'] == 3 and !access()->allow('stockreturn-data')) exit();
         if ($invoice['type_bill'] == 2 and !access()->allow('data-creditnote')) exit();
 
-        try {
-            $result = $this->repository->create(compact('invoice', 'invoice_items', 'data2'));
-        } catch (\Throwable $th) {
-            echo errorHandler('Error Creating Orders', $th);
-        }
+        $result = $this->repository->create(compact('invoice', 'invoice_items', 'data2'));
         //return with successfull message
 
         echo json_encode(array('status' => 'Success', 'message' => trans('alerts.backend.orders.created') . ' <a href="' . route('biller.orders.show', [$result->id]) . '" class="btn btn-primary btn-md"><span class="fa fa-eye" aria-hidden="true"></span> ' . trans('general.view') . '  </a> &nbsp; &nbsp;'));
@@ -190,11 +186,7 @@ class OrdersController extends Controller
         if ($order->i_class == 2 and !access()->allow('data-creditnote')) exit();
 
 
-        try {
-            $result = $this->repository->update($order, compact('invoice', 'invoice_items', 'data2'));
-        } catch (\Throwable $th) {
-            echo errorHandler('Error Updating Orders', $th);
-        }
+        $result = $this->repository->update($order, compact('invoice', 'invoice_items', 'data2'));
 
         //return with successfull message
 
@@ -210,12 +202,8 @@ class OrdersController extends Controller
      */
     public function destroy(Order $order, StoreOrderRequest $request)
     {
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($order);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Orders', $th);
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($order);
         //returning with successfull message
         return json_encode(array('status' => 'Success', 'message' => trans('alerts.backend.orders.deleted')));
 

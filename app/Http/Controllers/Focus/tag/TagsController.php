@@ -96,12 +96,8 @@ class TagsController extends Controller
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
         $input['ins'] = auth()->user()->ins;
-        try {
-            //Create the model using repository create method
-            $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Tags', $th);
-        }
+        //Create the model using repository create method
+        $this->repository->create($input);
         //return with successfull message
         return new RedirectResponse(route('biller.tags.index'), ['flash_success' => trans('alerts.backend.tags.created')]);
     }
@@ -129,12 +125,8 @@ class TagsController extends Controller
     {
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
-        try {
-            //Update the model using repository update method
-            $this->repository->update($tag, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updated Tags', $th);
-        }
+        //Update the model using repository update method
+        $this->repository->update($tag, $input);
         //return with successfull message
         return new RedirectResponse(route('biller.tags.index'), ['flash_success' => trans('alerts.backend.tags.updated')]);
     }
@@ -148,12 +140,8 @@ class TagsController extends Controller
      */
     public function destroy(Tag $tag, ManageTagRequest $request)
     {
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($tag);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleted Tags', $th);
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($tag);
         //returning with successfull message
         return new RedirectResponse(route('biller.tags.index'), ['flash_success' => trans('alerts.backend.tags.deleted')]);
     }

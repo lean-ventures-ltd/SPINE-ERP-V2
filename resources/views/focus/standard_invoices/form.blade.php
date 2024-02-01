@@ -26,7 +26,7 @@
 
     <div class="col-2">
         <label for="invoicedate" class="caption">Invoice Date</label>
-        {{ Form::text('invoicedate', null, ['class' => 'form-control round datepicker', 'id' => 'invoicedate']) }}
+        {{ Form::text('invoicedate', null, ['class' => 'form-control round datepicker', 'id' => 'invoicedate', 'required' => 'required', 'readonly' => 'readonly']) }}
     </div>
 
     <div class="col-2">
@@ -49,7 +49,7 @@
             <option value="">-- Select Bank --</option>
             @foreach ($banks as $bank)
                 <option value="{{ $bank->id }}" {{ $bank->id == @$invoice->bank_id ? 'selected' : '' }}>
-                    {{ $bank->bank }} {{ $bank->note? "- {$bank->note}" : '' }}
+                    {{ $bank->bank }} - {{ $bank->note }}
                 </option>
             @endforeach
         </select>                               
@@ -119,9 +119,15 @@
 </div>
 
 <div class="row mb-1">
-    <div class="col-12">
+    <div class="col-md-10">
         <div class="input-group"><label for="title" class="caption">Note</label></div>
         {{ Form::text('notes', null, ['class' => 'form-control']) }}
+    </div>
+    <div class="col-md-2">
+        <label for="cu_invoice_no">CU Invoice No.</label>
+{{--        {{ Form::text('cu_invoice_no', null, ['class' => 'form-control']) }}--}}
+        <input type="text" id="cu_invoice_no" name="cu_invoice_no" required readonly class="form-control box-size" @if(!empty($newCuInvoiceNo)) value="{{substr_replace($newCuInvoiceNo, 'XXX', -3)}}" @endif>
+
     </div>
 </div>
 
@@ -199,7 +205,13 @@
 
     <!-- submit buttons -->                             
     <div class="row form-group">
-        <div class="col-sm-3 ml-auto mr-auto">
+        <div class="col-6 col-sm-3 ml-auto mr-auto">
+
+            <div class="d-flex flex-row">
+                <label for="cuConfirmation" style="color: red;">Confirm Last 3 Digits Of CU Invoice No:</label>
+                <input type="number" id="cuConfirmation" class="form-control w-50 ml-2 mb-1">
+            </div>
+
             <div class="input-group">
                 <div class="col-sm-6">
                     <a href="{{ route('biller.invoices.index') }}" class="btn btn-danger block">Cancel</a>    
@@ -361,6 +373,24 @@
                 }
             }
         };
-    } 
+    }
+
+
+    let canSubmit = false;
+
+    $("#standardInvoiceForm").submit(function(event) {
+
+        canSubmit = $("#cuConfirmation").val() === "{{ $newCuInvoiceNo }}".slice(-3);
+
+        // Check if the condition is true
+        if (!canSubmit) {
+            // If the condition is not true, prevent form submission
+            event.preventDefault();
+            alert("Please confirm whether the auto-generated CU Invoice No '" + $("#cu_invoice_no").val() + "' matches with the ETR generated CU Invoice Number.\nEnter the Last 3 Digits in the Box Above the Submit Button.");
+            // You can add more logic or UI updates here based on your requirements
+        }
+        // If the condition is true, the form will be submitted
+    });
+
 </script>
 @stop

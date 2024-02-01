@@ -86,7 +86,7 @@
                 <td><span id="rate-0" class="rate"></span></td>	
                 <td>
                     <select name="status[]" class="custom-select" id="status-0">
-                        @foreach (['working', 'faulty', 'cannibalised', 'decommissioned'] as $val)
+                        @foreach (['working', 'faulty', 'cannibalised', 'decommissioned', 'under warranty'] as $val)
                             <option value="{{ $val }}">{{ ucfirst($val) }}</option>
                         @endforeach
                     </select>                                                   
@@ -120,7 +120,7 @@
                         <td><span id="rate-{{$i}}" class="rate">{{ numberFormat($row->equipment->service_rate) }}</span></td>	
                         <td>
                             <select name="status[]" class="custom-select" id="status-{{$i}}">
-                                @foreach (['working', 'faulty', 'cannibalised', 'decommissioned'] as $val)
+                                @foreach (['working', 'faulty', 'cannibalised', 'decommissioned', 'under warranty'] as $val)
                                     <option value="{{ $val }}" {{ $val == $row->status? 'selected' : ''  }}>
                                         {{ ucfirst($val) }}
                                     </option>

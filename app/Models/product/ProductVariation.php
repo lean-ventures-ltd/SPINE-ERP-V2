@@ -4,10 +4,11 @@ namespace App\Models\product;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\product\Traits\ProductVariationRelationship;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductVariation extends Model
 {
-    use ProductVariationRelationship;
+    use ProductVariationRelationship, SoftDeletes;
     
     protected $table = 'product_variations';
 
@@ -16,7 +17,7 @@ class ProductVariation extends Model
      * @var array
      */
     protected $fillable = [
-        'parent_id', 'name', 'warehouse_id', 'code', 'price', 'purchase_price', 'disrate', 'qty',
+        'parent_id', 'name', 'warehouse_id', 'code', 'price','selling_price', 'purchase_price', 'disrate', 'qty',
         'alert', 'image', 'barcode', 'expiry', 'ins'
     ];
 

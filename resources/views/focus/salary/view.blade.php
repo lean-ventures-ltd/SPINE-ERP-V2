@@ -51,7 +51,7 @@
                                                     <p>Employee Name</p>
                                                 </div>
                                                 <div class="col border-blue-grey border-lighten-5  p-1 font-weight-bold">
-                                                    <p>{{$salary['employee_name']}}</p>
+                                                    <p>{{$user['first_name'] . ' ' . $user['last_name']}}</p>
                                                     <input type="hidden" id="salary_employee" data-name="{{$salary['employee_name']}}"  value="{{$salary['employee_name']}}">
                                                 </div>
                                             </div>
@@ -60,57 +60,20 @@
                                                     <p>Basic Pay</p>
                                                 </div>
                                                 <div class="col border-blue-grey border-lighten-5  p-1 font-weight-bold">
-                                                    <p>{{amountFormat($salary['basic_pay'])}}</p>
+                                                    <p>{{amountFormat($salary['basic_salary'])}}</p>
                                                 </div>
                                             </div>
                                             <div class="row">
                                                 <div class="col-3 border-blue-grey border-lighten-5  p-1">
-                                                    <p>Contract Type</p>
+                                                    <p>Max Hourly Salary</p>
                                                 </div>
                                                 <div class="col border-blue-grey border-lighten-5  p-1 font-weight-bold">
-                                                    <p>{{$salary['contract_type']}}</p>
+                                                    <p>{{amountFormat(bcmul($salary['basic_salary'], $salary['hourly_salary']))}}</p>
                                                 </div>
                                             </div>
-                                            <div class="row">
-                                                <div class="col-3 border-blue-grey border-lighten-5  p-1">
-                                                    <p>House Allowance</p>
-                                                </div>
-                                                <div class="col border-blue-grey border-lighten-5  p-1 font-weight-bold">
-                                                    <p>{{amountFormat($salary['house_allowance'])}}</p>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-3 border-blue-grey border-lighten-5  p-1">
-                                                    <p>Transport Allowance</p>
-                                                </div>
-                                                <div class="col border-blue-grey border-lighten-5  p-1 font-weight-bold">
-                                                    <p>{{amountFormat($salary['transport_allowance'])}}</p>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-3 border-blue-grey border-lighten-5  p-1">
-                                                    <p>Directors Fee</p>
-                                                </div>
-                                                <div class="col border-blue-grey border-lighten-5  p-1 font-weight-bold">
-                                                    <p>{{amountFormat($salary['directors_fee'])}}</p>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-3 border-blue-grey border-lighten-5  p-1">
-                                                    <p>Start Date</p>
-                                                </div>
-                                                <div class="col border-blue-grey border-lighten-5  p-1 font-weight-bold">
-                                                    <p>{{dateFormat($salary['start_date'])}}</p>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-3 border-blue-grey border-lighten-5  p-1">
-                                                    <p>Duration (In Months)</p>
-                                                </div>
-                                                <div class="col border-blue-grey border-lighten-5  p-1 font-weight-bold">
-                                                    <p>{{$salary['duration']}}</p>
-                                                </div>
-                                            </div>
+
+
+
                                         </div>
                                     </div>
                                 </div>

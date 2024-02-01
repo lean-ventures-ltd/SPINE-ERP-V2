@@ -74,13 +74,14 @@
                             <table id="productsTbl" class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
-                                        <th>Item Name</th>
-                                        <th>Code</th>
-                                        <th>Qty</th>
-                                        <th>UoM</th>
-                                        <th>Unit Cost</th>
-                                        <th>Total Cost</th>
+                                        <th>{{ trans('labels.backend.products.table.id') }}</th>
+                                        <th>Description</th>
+                                        <th>Category Name</th>
+                                        <th>product_code</th>
+                                        <th>UOM</th>
+                                        <th>Unit (Qty)</th>
+                                        <th>Purchase Price</th>
+                                        <th>Expiry Date</th>
                                         <th>{{ trans('labels.general.actions') }}</th>
                                     </tr>
                                 </thead>
@@ -168,11 +169,12 @@
                 columns: [
                     {data: 'DT_Row_Index', name: 'id'},
                     {data: 'name', name: 'name'},
-                    {data: 'code', name: 'code'},                    
+                    {data: 'productcategory_id', name: 'productcategory_id'},
+                    {data: 'code', name: 'code'}, 
+                    {data: 'unit', name: 'unit'},                   
                     {data: 'qty', name: 'qty'},
-                    {data: 'unit', name: 'unit'},
                     {data: 'purchase_price', name: 'purchase_price'},
-                    {data: 'total', name: 'total'},
+                    {data: 'expiry', name: 'expiry'},
                     {data: 'actions', name: 'actions', searchable: false, sortable: false}
                 ],
                 order: [[0, "desc"]],

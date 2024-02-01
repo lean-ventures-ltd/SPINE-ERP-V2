@@ -34,9 +34,7 @@ class ClientProductsController extends Controller
      */
     public function index()
     {
-        $customer_id = auth()->user()->customer_id;
-        $customers = Customer::when($customer_id, fn($q) => $q->where('id', $customer_id))
-        ->whereHas('client_products')->get(['id', 'company']);
+        $customers = Customer::whereHas('client_products')->get(['id', 'company']);
         $contracts = ClientProduct::get(['contract', 'customer_id'])->unique('contract');
         $contracts = [...$contracts];
 
@@ -51,8 +49,10 @@ class ClientProductsController extends Controller
     public function create()
     {
         $customers = Customer::get(['id', 'company']);
+        $contracts = ClientProduct::get(['contract', 'customer_id'])->unique('contract');
+        $contracts = [...$contracts];
 
-        return new ViewResponse('focus.client_products.create', compact('customers'));
+        return new ViewResponse('focus.client_products.create', compact('customers','contracts'));
     }
 
     /**
@@ -63,11 +63,7 @@ class ClientProductsController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $this->repository->create($request->except('_token'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Client PriceList', $th);
-        }
+        $this->repository->create($request->except('_token'));
 
         return new RedirectResponse(route('biller.client_products.index'), ['flash_success' => 'Pricelist Item Created Successfully']);
     }
@@ -107,12 +103,8 @@ class ClientProductsController extends Controller
      */
     public function update($id, Request $request)
     {
-        try {
-            $client_product = ClientProduct::find($id);
-            $this->repository->update($client_product, $request->except('_token'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Client PriceList', $th);
-        }
+        $client_product = ClientProduct::find($id);
+        $this->repository->update($client_product, $request->except('_token'));
 
         return new RedirectResponse(route('biller.client_products.index'), ['flash_success' => 'Pricelist Item Updated Successfully']);
     }
@@ -125,18 +117,23 @@ class ClientProductsController extends Controller
      */
     public function destroy($id, Request $request)
     {
-       try {
-            if ($id == 0) {
-                $request->validate(['customer_id' => 'required']);
-                $this->repository->mass_delete($request->except('_token'));
-            } else {
-                $client_product = ClientProduct::find($id);
-                $this->repository->delete($client_product);    
-            }
-       } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Client PriceList', $th);
-       }
+        if ($id == 0) {
+            $request->validate(['customer_id' => 'required']);
+            $this->repository->mass_delete($request->except('_token'));
+        } else {
+            $client_product = ClientProduct::find($id);
+            $this->repository->delete($client_product);    
+        }
             
         return new RedirectResponse(route('biller.client_products.index'), ['flash_success' => 'Pricelist Item Deleted Successfully']);
+    }
+    
+    public function store_code(Request $request){
+        //dd($request->all());
+        $client_product = ClientProduct::find($request->id);
+        $client_product->product_code = $request->product_code;
+        $client_product->item_id = $request->item_id;
+        $client_product->update();
+        return new RedirectResponse(route('biller.client_products.index'), ['flash_success' => 'ClientProduct Code Added!!']);
     }
 }

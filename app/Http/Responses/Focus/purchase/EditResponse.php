@@ -4,6 +4,7 @@ namespace App\Http\Responses\Focus\purchase;
 
 use App\Models\additional\Additional;
 use App\Models\pricegroup\Pricegroup;
+use App\Models\PurchaseClass\PurchaseClass;
 use App\Models\supplier\Supplier;
 use App\Models\warehouse\Warehouse;
 use Illuminate\Contracts\Support\Responsable;
@@ -38,7 +39,8 @@ class EditResponse implements Responsable
         $warehouses = Warehouse::all();
         $supplier = Supplier::where('name', 'Walk-in')->first(['id', 'name']);
         $price_supplier = Supplier::all();
+        $purchaseClasses = PurchaseClass::all();
 
-        return view('focus.purchases.edit', compact('purchase', 'additionals', 'pricegroups','price_supplier', 'warehouses'));
+        return view('focus.purchases.edit', compact('purchase', 'additionals', 'pricegroups','price_supplier', 'warehouses', 'purchaseClasses'));
     }
 }

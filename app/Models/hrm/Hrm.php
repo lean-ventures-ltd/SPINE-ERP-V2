@@ -67,7 +67,7 @@ class Hrm extends Model
     {
         parent::boot();
         static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', '=', auth()->user()->ins);
+            $builder->where('users.ins', '=', auth()->user()->ins);
         });
     }
     /**
@@ -77,7 +77,9 @@ class Hrm extends Model
      */
     public function setPasswordAttribute($password)
     {
-        if ($password) $this->attributes['password'] = bcrypt($password);
+        if (!empty($password)) {
+            $this->attributes['password'] = bcrypt($password);
+        }
     }
 
     /**

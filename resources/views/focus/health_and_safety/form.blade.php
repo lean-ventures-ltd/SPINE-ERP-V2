@@ -31,15 +31,23 @@
         </div>
     </div>
     <div class="col-4">
-        <label for="ticket">Project</label>
-        <div class="input-group">
-            <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
-            <select class="custom-select project_id" name="project_id" id="project_id">
-                {{-- @foreach ($clients as $client)
-                    <option value="{{ +$client->id }}">{{ $client->name }}</option>
-                @endforeach --}}
+{{--        <label for="ticket">Project</label>--}}
+{{--        <div class="input-group">--}}
+{{--            <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>--}}
+{{--            <select class="custom-select project_id" name="project_id" id="project_id">--}}
+{{--                --}}{{-- @foreach ($clients as $client)--}}
+{{--                    <option value="{{ +$client->id }}">{{ $client->name }}</option>--}}
+{{--                @endforeach --}}
+{{--            </select>--}}
+{{--        </div>--}}
+
+        <div class="form-group">
+            <label for="project" class="caption">Project</label>
+            <select class="form-control" name="project" id="project" data-placeholder="Search Project by Name, Customer, Branch">
             </select>
         </div>
+
+
     </div>
 </div>
 

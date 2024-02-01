@@ -1,8 +1,12 @@
 <div class="form-group row">
     <div class="col-6">
-        <label for="return_month">Return Month*</label>
+        <label for="return_month"><b>Return Month</b></label>
         {{ Form::text('return_month', @$prev_month, ['class' => 'form-control', 'id' => 'return_month', 'required']) }}
     </div>
+</div>
+
+
+<div class="form-group row">
     <div class="col-3">
         <label for="period_from">Return Period From</label>
         {{ Form::text('period_from', dateFormat(@$dates[0]), ['class' => 'form-control datepicker', 'id' => 'period_from', 'required']) }}
@@ -11,9 +15,7 @@
         <label for="period_to">Return Period To</label>
         {{ Form::text('period_to', dateFormat(@$dates[1]), ['class' => 'form-control datepicker', 'id' => 'period_to', 'required']) }}
     </div> 
-</div>
-<div class="form-group row">
-    <div class="col-2">
+     <div class="col-2">
         <label for="ackn_date">Acknowledgement Date</label>
         {{ Form::text('ackn_date', dateFormat(), ['class' => 'form-control datepicker', 'id' => 'ackn_date', 'required']) }}
     </div> 
@@ -25,6 +27,9 @@
         <label for="search_code">Search Code</label>
         {{ Form::text('search_code', null, ['class' => 'form-control', 'id' => 'search_code', 'required']) }}
     </div> 
+</div>
+
+<div class="form-group row">
     <div class="col-3">
         <label for="prn_no">PRN Number</label>
         {{ Form::text('prn_no', null, ['class' => 'form-control', 'id' => 'prn_no', 'required']) }}
@@ -33,8 +38,6 @@
         <label for="date">PRN Date</label>
         {{ Form::text('prn_date', null, ['class' => 'form-control datepicker', 'id' => 'prn_date', 'required']) }}
     </div> 
-</div>
-<div class="form-group row">
     <div class="col-2">
         <label for="mode">Payment Mode</label>
         <select name="payment_mode" id="payment_mode" class="custom-select">
@@ -51,11 +54,14 @@
         <label for="amount">Payment Amount</label>
         {{ Form::text('amount', null, ['class' => 'form-control', 'id' => 'amount']) }}
     </div> 
-    <div class="col-6">
+</div>
+<div class="form-group row">
+    <div class="col-12">
         <label for="note">Remark</label>
         {{ Form::text('note', null, ['class' => 'form-control', 'id' => 'note']) }}
     </div> 
 </div>
+
 <div class="form-group row no-gutters">
     <div class="col-1 ml-auto">
         <a href="{{ route('biller.tax_prns.index') }}" class="btn btn-danger block">Cancel</a>    

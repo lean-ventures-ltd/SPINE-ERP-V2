@@ -36,12 +36,10 @@
                                         <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>{{ 'Employee Name' }}</th>
-                                            <th>{{ 'Basic Salary' }}</th>
-                                            <th>{{ 'Contract Type' }}</th>
-                                            <th>{{ 'Duration' }}</th>
-                                            <th>Status</th>
-                                            <th>Pay Rate/Hr</th>
+                                            <th> Employee Name </th>
+                                            <th> Basic Salary </th>
+                                            <th> Max Hourly Salary </th>
+                                            <th> NHIF Status </th>
                                             <th>{{ trans('labels.general.actions') }}</th>
                                         </tr>
                                         </thead>
@@ -97,11 +95,9 @@
                 columns: [
                     {data: 'DT_Row_Index', name: 'id'},
                     {data: 'employee_name', name: 'employee_name'},
-                    {data: 'basic_pay', name: 'basic_pay'},
-                    {data: 'contract_type', name: 'contract_type'},
-                    {data: 'duration', name: 'duration'},
-                    {data: 'status', name: 'status'},
-                    {data: 'pay_per_hr', name: 'pay_per_hr'},
+                    {data: 'basic_salary', name: 'basic_salary'},
+                    {data: 'max_hourly_salary', name: 'max_hourly_salary'},
+                    {data: 'nhif', name: 'nhif'},
                     {data: 'actions', name: 'actions', searchable: false, sortable: false}
                 ],
                 order: [[0, "asc"]],

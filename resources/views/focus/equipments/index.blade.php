@@ -60,7 +60,8 @@
                                         <th>Gas</th>  
                                         <th>Serial</th>                               
                                         <th>Model</th> 
-                                        <th>Rate</th>   
+                                        <th>PM Duration</th>
+                                        <th>Status</th>   
                                         <th>{{ trans('labels.general.actions') }}</th>
                                     </tr>
                                 </thead>
@@ -148,7 +149,8 @@
                     {data: 'machine_gas', name: 'machine_gas'},
                     {data: 'equip_serial', name: 'equip_serial'},
                     {data: 'model', name: 'model'},
-                    {data: 'service_rate', name: 'service_rate'},
+                    {data: 'pm_duration', name: 'pm_duration'},
+                    {data: 'status', name: 'status'},
                     {data: 'actions', name: 'actions', searchable: false, sortable: false}
                 ],
                 order: [[0, "desc"]],

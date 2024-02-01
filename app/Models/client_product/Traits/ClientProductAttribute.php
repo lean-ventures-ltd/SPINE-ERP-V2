@@ -10,8 +10,8 @@ trait ClientProductAttribute
      */
     public function getActionButtonsAttribute()
     {
-        return $this->getViewButtonAttribute("manage-customer", "biller.client_products.show")
-        .' '. $this->getEditButtonAttribute("edit-customer", "biller.client_products.edit")
-        .' '.$this->getDeleteButtonAttribute("delete-customer", "biller.client_products.destroy");     
+        return $this->getViewButtonAttribute("manage-client", "biller.client_products.show")
+        .' '. $this->getEditButtonAttribute("edit-client", "biller.client_products.edit")
+        .' '.$this->getDeleteButtonAttribute("delete-client", "biller.client_products.destroy");     
     }
 }

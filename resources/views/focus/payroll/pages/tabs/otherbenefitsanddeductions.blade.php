@@ -4,16 +4,18 @@
         <input type="hidden" name="payroll_id" value="{{ $payroll->id }}" id="">
 
         <div class="card-body">
-            <table id="otherBenefitsTbl" class="table table-striped table-bordered zero-configuration" cellspacing="0"
-                width="100%">
+            <table id="otherBenefitsTbl" class="table table-striped table-responsive table-bordered zero-configuration" cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th>Employee Id</th>
                         <th>Employee Name</th>
+                        <th>Pay After NHIF & Housing Levy</th>
                         <th>Other Allowances Totals</th>
                         <th>Benefits Totals</th>
+                        <th>Loan</th>
+                        <th>Advance</th>
                         <th>Deductions</th>
-                        <th>Other Deductions Totals</th>
+                        <th>Pay</th>
 
                     </tr>
                 </thead>
@@ -21,55 +23,37 @@
                     @php
                         $i = 1;
                     @endphp
-                    @foreach ($payroll->payroll_items as $item)
-                        @if ($item)
+                    @foreach ($payrollItems as $item)
+{{--                        @if ($item)--}}
                             <tr>
                                 <td>{{ gen4tid('EMP-', $item->employee_id) }}</td>
-                                <td>{{ $item->employee_name }}</td>
+                                <td>{{ $item->name }}</td>
+                                <td>{{ $item->netpay }}</td>
                                 <input type="hidden" name="id[]" value="{{ $item->id }}">
                                 <input type="hidden" name="payroll_id" value="{{ $item->payroll_id }}">
-                                <td><input type="text" name="total_other_allowances[]" class="form-control other-allow"
-                                        id="total_other_allowances-{{ $i }}">
-                                </td>
-                                <td><input type="text" name="total_benefits[]" class="form-control benefits"
-                                        id="total_benefits-{{ $i }}">
-                                </td>
-
-
+                                <input type="hidden" id="netpay" value="{{ $item->netpay }}">
                                 <td>
-                                    <table class="table" style="width: 100%;">
-                                        <thead>
-                                            <tr>
-                                                <th>Loan</th>
-                                                <th>Advance</th>
-                                            </tr>
-
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <input type="text" name="loan[]" class="form-control loan"
-                                                        id="loan-{{ $i }}">
-                                                </td>
-                                                <td>
-                                                    <input type="text" name="advance[]" class="form-control advance"
-                                                        id="advance-{{ $i }}">
-                                                </td>
-                                            </tr>
-                                        </tbody>
-
-
-                                    </table>
+                                    <input type="text" id="total_other_allowances-{{ $i }}" name="other_allowances[]" class="form-control other-allow">
                                 </td>
-
-                                <td><input type="text" name="total_other_deduction[]"
-                                        class="form-control other-deductions"
-                                        id="total_other_deduction-{{ $i }}">
+                                <td>
+                                    <input type="text" id="total_benefits-{{ $i }}" name="benefits[]" class="form-control benefits">
+                                </td>
+                                <td>
+                                    <input type="text" id="loan-{{ $i }}" name="loan[]" class="form-control loan">
+                                </td>
+                                <td>
+                                    <input type="text" id="advance-{{ $i }}" name="advance[]" class="form-control advance">
+                                </td>
+                                <td>
+                                    <input type="text" id="total_other_deduction-{{ $i }}" name="other_deductions[]" class="form-control other-deductions">
+                                </td>
+                                <td>
+                                    <input type="text" id="net_after_bnd-{{ $i }}" class="form-control net_after_bnd" readonly style="min-width: 400px">
                                 </td>
 
 
                             </tr>
-                        @endif
+{{--                        @endif--}}
                     @endforeach
 
                 </tbody>

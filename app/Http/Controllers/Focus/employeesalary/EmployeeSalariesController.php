@@ -87,12 +87,8 @@ class EmployeeSalariesController extends Controller
 
         $input_salary['ins'] = auth()->user()->ins;
         $input_salary['created_by'] = auth()->user()->id;
-        try {
-            //Create the model using repository create method
-            $this->repository->create(compact('input_salary', 'input_allowance'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Employee Salary', $th);
-        }
+        //Create the model using repository create method
+        $this->repository->create(compact('input_salary', 'input_allowance'));
         //return with successfull message
         return new RedirectResponse(route('biller.employeesalaries.index'), ['flash_success' => trans('alerts.backend.allowance.created')]);
     }
@@ -120,12 +116,8 @@ class EmployeeSalariesController extends Controller
     {
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
-        try {
-            //Update the model using repository update method
-            $this->repository->update($employeesalary, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Employee Salary', $th);
-        }
+        //Update the model using repository update method
+        $this->repository->update($employeesalary, $input);
         //return with successfull message
         return new RedirectResponse(route('biller.employeesalary.index'), ['flash_success' => trans('alerts.backend.departments.updated')]);
     }
@@ -139,12 +131,8 @@ class EmployeeSalariesController extends Controller
      */
     public function destroy(EmployeeSalary $employeesalary, StoreEmployeeSalaryRequest $request)
     {
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($employeesalary);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Employee Salary', $th);
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($employeesalary);
         //returning with successfull message
         return new RedirectResponse(route('biller.employeesalary.index'), ['flash_success' => trans('alerts.backend.allowance.deleted')]);
     }

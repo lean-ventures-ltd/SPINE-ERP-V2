@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\client_product\ClientProduct;
+use Error;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
@@ -15,7 +16,7 @@ class ClientPricelistImport implements ToCollection, WithBatchInserts, WithValid
      *
      * @var int $row_count
      */
-    private $rows = 0;
+    private $row_count = 0;
 
     /**
      *
@@ -34,43 +35,49 @@ class ClientPricelistImport implements ToCollection, WithBatchInserts, WithValid
      * @return void
      */
     public function collection(Collection $rows)
-    {   
-        // dd($rows);
-        if (empty($this->data['customer_id']) || empty($this->data['contract']))
-            trigger_error('Customer or Contract is required!');
-        
-        $product_data = [];
-        foreach ($rows as $key => $row) {
-            $row_num = $key+1;
-            if ($row_num == 1 && $row->count() < 4) {
-                trigger_error('Missing columns! Use latest CSV file template.');
-            } elseif ($row_num > 1) {
-                if (empty($row[1])) trigger_error('Product Name is required on row no. $row_num');
-                if (empty($row[2])) trigger_error('Unit is required on row no. $row_num');
-                if (empty($row[3])) trigger_error('Price is required on row no. $row_num');
+    {        
+        $columns = [
+            'row_num','description','uom','rate'
+        ];
 
-                $product_data[] = [
-                    'customer_id' => $this->data['customer_id'],
-                    'contract' => $this->data['contract'],
-                    'row_num' => $row[0],
-                    'descr' => $row[1],
-                    'uom' => $row[2],
-                    'rate' => numberClean($row[3]),
-                    'ins' => $this->data['ins'],
-                    'user_id' => auth()->user()->id,
-                ];
-                ++$this->rows;
-            }            
+        $row_count = 0;
+        $label_count = count($columns);
+        foreach ($rows as $i => $row) {
+            $row = array_slice($row->toArray(), 0, $label_count);
+            
+            if ($i == 0) {
+                $omitted_cols = array_diff($columns, $row);
+                if ($omitted_cols) throw new Error('Column label mismatch: ' . implode(', ',$omitted_cols));
+                continue;
+            }
+
+            $row_data = array_combine($columns, $row);
+            $row_data = array_replace($row_data, [
+                'descr' => $row_data['description'],
+                'contract' => $this->data['contract'],
+                'customer_id' => $this->data['customer_id'],
+                'ins' => auth()->user()->ins,
+                'user_id' => auth()->user()->id
+            ]);
+            unset($row_data['description']);
+            foreach ($row_data as $key => $val) {
+                if ($key == 'rate') $row_data[$key] = numberClean($row_data['rate']);
+                if (strcasecmp($val, 'null') == 0) $row_data[$key] = null;
+            }
+            
+            $result = ClientProduct::create($row_data);
+            if ($result) $row_count++;
         }
-        ClientProduct::insert($product_data);
+
+        if (!$row_count) throw new Error('Please fill template with required data');
+        $this->row_count = $row_count;
     }
 
     public function rules(): array
     {
         return [
-            '1' => 'required|string',
-            '2' => 'required|string',
-            '3' => 'required',
+            '0' => 'required|string',
+            '1' => 'required',
         ];
     }
 
@@ -81,11 +88,11 @@ class ClientPricelistImport implements ToCollection, WithBatchInserts, WithValid
 
     public function getRowCount(): int
     {
-        return $this->rows;
+        return $this->row_count;
     }
 
     public function startRow(): int
     {
-        return 1;
+        return 2;
     }
 }

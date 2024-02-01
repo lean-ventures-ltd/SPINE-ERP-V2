@@ -47,24 +47,16 @@ class DjcsTableController extends Controller
      */
     public function __invoke()
     {
-        $query = $this->djc->getForDataTable();
+        $core = $this->djc->getForDataTable();
 
         $ins = auth()->user()->ins;
         $prefixes = prefixesArray(['djc_report', 'lead'], $ins);
 
-        return Datatables::of($query)
+        return Datatables::of($core)
             ->escapeColumns(['id'])
             ->addIndexColumn()
-            ->editColumn('tid', function($djc) use($prefixes) {
+            ->addColumn('tid', function($djc) use($prefixes) {
                 return gen4tid("{$prefixes[0]}-", $djc->tid);
-            })
-            ->filterColumn('tid', function($query, $tid) use($prefixes) {
-                $arr = explode('-', $tid);
-                if (strtolower($arr[0]) == strtolower($prefixes[0]) && isset($arr[1])) {
-                    $query->where('tid', floatval($arr[1]));
-                } elseif (floatval($tid)) {
-                    $query->where('tid', floatval($tid));
-                }
             })
             ->addColumn('customer', function ($djc) {
                 $link = '';
@@ -73,24 +65,17 @@ class DjcsTableController extends Controller
                     if ($djc->branch) $customer .= " - {$djc->branch->name}";
                     $link = $customer . ' <a class="font-weight-bold" href="'. route('biller.customers.show', $djc->client) .'"><i class="ft-eye"></i></a>';
                 }
-                if ($djc->lead && !$link) $link = $djc->lead->client_name;
-            
+                if ($djc->lead && !$link) {
+                    $link = $djc->lead->client_name;
+                }
                 return $link;
             })
-            ->editColumn('report_date', function ($djc) {
-                return dateFormat($djc->report_date);
+            ->addColumn('created_at', function ($djc) {
+                return dateFormat($djc->created_at);
             })
-            ->orderColumn('report_date', '-report_date $1')
-            ->editColumn('lead_id', function($djc) use($prefixes) {
-                return $djc->lead? gen4tid("{$prefixes[1]}-", $djc->lead->reference) : '';
-            })
-            ->filterColumn('lead_id', function($query, $tid) use($prefixes) {
-                $arr = explode('-', $tid);
-                if (strtolower($arr[0]) == strtolower($prefixes[1]) && isset($arr[1])) {
-                    $query->whereHas('lead', fn($q) => $q->where('reference', floatval($arr[1])));
-                } elseif (floatval($tid)) {
-                    $query->whereHas('lead', fn($q) => $q->where('reference', floatval($tid)));
-                }
+            ->addColumn('lead_tid', function($djc) use($prefixes) {
+                if ($djc->lead)
+                return gen4tid("{$prefixes[1]}-", $djc->lead->reference);
             })
             ->addColumn('actions', function ($djc) {
                 return '<a href="' . route('biller.print_djc', [$djc->id, 10, token_validator('', "d{$djc->id}", true), 1]) . '" target="_blank"  class="btn btn-purple round"><i class="fa fa-print"></i></a> '

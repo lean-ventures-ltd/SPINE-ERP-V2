@@ -154,9 +154,13 @@
 		</div>
 	</htmlpagefooter>
 	<sethtmlpagefooter name="myfooter" value="on" />
+		@php
+			$dir_sep = DIRECTORY_SEPARATOR;
+		@endphp
 	<table class="header-table">
 		<tr>
 			<td>
+				{{-- {{ Storage::path("public{$dir_sep}img{$dir_sep}company{$dir_sep}{$company->logo}") }} --}}
 				<img src="{{ Storage::disk('public')->url('app/public/img/company/' . $company->logo) }}" style="object-fit:contain" width="100%" />
 			</td>
 		</tr>
@@ -205,11 +209,18 @@
 			</td>
 			<td width="5%">&nbsp;</td>
 			<td width="45%">
-				<span class="customer-dt-title">REFERENCE DETAILS:</span><br><br>				
+				<span class="customer-dt-title">REFERENCE DETAILS:</span><br><br>
+				@if (@$resource->cu_invoice_no)
+    				<b>CU Invoice No :</b> {{ $resource->cu_invoice_no }}<br>
+				@endif
 				<b>Invoice No :</b> {{ gen4tid('', $resource->tid) }}<br>
 				<b>Date :</b> {{ dateFormat($resource->invoicedate, 'd-M-Y') }}<br>
 				<b>Overdue after :</b> {{ $resource->validity ? $resource->validity . ' days' : 'On Receipt' }}<br>
 				<b>KRA Pin :</b> {{ $company->taxid }}<br>
+				@php
+					$currencyName = \App\Models\currency\Currency::where('id', $resource->currency_id)->first()->code;
+				@endphp
+				<b>Currency :</b> {{ $currencyName }}<br>
 				@php
 					if ($resource->etr_url) {
 						parse_str(parse_url($resource->etr_url, PHP_URL_QUERY), $params);
@@ -229,21 +240,19 @@
 		<thead>
 			<tr>
 				<td width="6%">No.</td>
-
-				@if (
-					(@$resource['products'][0]['reference'] == @$resource['products'][1]['reference']) ||
-					(!@$resource->products->first()->reference)
-				)
-					<td colspan="2">DESCRIPTION</td>
-				@else
+				@php
+					$product = $resource->products->first();
+				@endphp
+				@if ($product && $product->reference)
 					<td width="24%">REFERENCE</td>
 					<td width="24%">DESCRIPTION</td>
+				@else
+					<td colspan="2">DESCRIPTION</td>
 				@endif
-
+				
 				<td width="8%">QTY</td>
 				<td width="8%">UoM</td>
 				<td width="14%">RATE</td>
-
 				@php
 					$code = '';
 					$inv_product = 	$resource->products->first();
@@ -255,66 +264,27 @@
 			</tr>
 		</thead>
 		<tbody>
-			@php $n=0; @endphp
-			<!-- Product rows -->
-			@foreach($resource->products as $i => $item)
-				@if ($item->product_price > 0 || $item->product_subtotal > 0)
-					@php $n++; @endphp
-					<!-- Item Row -->
-					<tr>
-						<td>{{ $item->numbering ?: $n }}</td>
+			@foreach($resource->products as $k => $val)
+				<tr>
+					<td>{{ $val->numbering ?: $k+1 }}</td>
 
-
-						@if (
-							(@$resource['products'][0]['reference'] == @$resource['products'][1]['reference']) ||
-							(!@$resource->products->first()->reference)
-						)
-							<td colspan="2">{{ $item->description }}</td>
-						@else
-							<td>{{ $item->reference }}</td>
-							<td>{{ $item->description }}</td>
-						@endif
-				
-						<td class="align-c">{{ $item->product_qty > 0? +$item->product_qty : '' }}</td>
-						<td class="align-c">{{ $item->unit }}</td>
-
-						@if ($item->product_price > 0 && $item->product_subtotal == 0)
-							<td class="align-r">{{ $item->product_price > 0? numberFormat($item->product_price) : '' }}</td>
-							<td class="align-r">{{ $item->product_qty > 0? numberFormat($item->product_qty * $item->product_price) : '' }}</td>
-						@elseif ($item->product_price > 0 && $item->product_subtotal > 0)
-							<td class="align-r">{{ $item->product_subtotal > 0? numberFormat($item->product_subtotal) : '' }}</td>
-							<td class="align-r">{{ $item->product_qty > 0? numberFormat($item->product_qty * $item->product_subtotal) : '' }}</td>
-						@endif
-					</tr>
-				@else
-					<!-- Title Row -->
-					@php $n=0; @endphp
-					<tr>
-						<td>{{ $item->numbering }}</td>
-						@if (
-							(@$resource['products'][0]['reference'] == @$resource['products'][1]['reference']) ||
-							(!@$resource->products->first()->reference)
-						)
-							<td colspan="2">{{ $item->description }}</td>
-						@else
-							<td></td>
-							<td></td>
-						@endif
-						@foreach (range(1,4) as $j)
-							<td></td>
-						@endforeach
-					</tr>
-				@endif
+					@if ($product && $product->reference)
+						<td>{{ $val->reference }}</td>
+						<td>{{ $val->description }}</td>
+					@else
+						<td colspan="2">{{ $val->description }}</td>
+					@endif
+			
+					<td class="align-c">{{ $val->product_qty > 0? +$val->product_qty : '' }}</td>
+					<td class="align-c">{{ $val->unit }}</td>
+					<td class="align-r">{{ $val->product_price > 0? numberFormat($val->product_price) : '' }}</td>
+					<td class="align-r">{{ $val->product_qty > 0? numberFormat($val->product_qty * $val->product_price) : '' }}</td>
+				</tr>
 			@endforeach
-			<!-- End Product rows -->
-
-			<!-- Empty rows -->
+			<!-- 20 dynamic empty rows -->
 			@for ($i = count($resource->products); $i < 5; $i++)
 				<tr>
-					@if (
-						(@$resource['products'][0]['reference'] == @$resource['products'][1]['reference']) ||
-						(!@$resource->products->first()->reference)
-					)
+					@if ($product && !$product->reference)
 						@for($j = 0; $j < 6; $j++)
 							@if ($j == 1)
 								<td colspan="2"></td>
@@ -329,8 +299,7 @@
 					@endif
 				</tr>
 			@endfor
-			<!-- End Empty rows -->
-
+			<!--  -->
 			<tr>
 				<td colspan="3" class="bd-t" rowspan="3">
 					@if ($resource->bank)
@@ -343,9 +312,8 @@
 					@endif
 					<b>Terms: </b> {{ $resource->term? $resource->term->title : '' }}<br>
 				</td>
-				{{-- ETR QR-code --}}
 				<td colspan="2" class="bd-t" rowspan="3" style="border-left: hidden; padding-top: 1em;">
-					{{-- Storage::path("public/qr/{$resource->etr_qrcode}") --}}
+					{{-- Storage::path("public{$dir_sep}qr{$dir_sep}{$resource->etr_qrcode}") --}}
 					{{-- <img src="{{ '' }}" style="object-fit:contain" width="10%"/> --}}
 				</td>
 				<td class="bd align-r">Sub Total:</td>

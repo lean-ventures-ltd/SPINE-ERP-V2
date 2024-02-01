@@ -39,11 +39,11 @@
                                     <div class="form-group">
                                         {{-- Including Form blade file --}}
                                         @include("focus.salary.form")
-                                        <div class="edit-form-btn float-right">
-                                            {{ link_to_route('biller.salary.index', trans('buttons.general.cancel'), [], ['class' => 'btn btn-danger btn-md']) }}
-                                            {{ Form::submit(trans('buttons.general.crud.update'), ['class' => 'btn btn-primary btn-md']) }}
-                                           
-                                        </div><!--edit-form-btn-->
+{{--                                        <div class="edit-form-btn float-right">--}}
+{{--                                            {{ link_to_route('biller.salary.index', trans('buttons.general.cancel'), [], ['class' => 'btn btn-danger btn-md']) }}--}}
+{{--                                            {{ Form::submit(trans('buttons.general.crud.update'), ['class' => 'btn btn-primary btn-md']) }}--}}
+{{--                                           --}}
+{{--                                        </div><!--edit-form-btn-->--}}
                                     </div><!--form-group-->
 
                                     {{ Form::close() }}
@@ -66,7 +66,6 @@
 @section('extra-scripts')
 {{ Html::script('focus/js/select2.min.js') }}
  <script>
-    $('.datepicker').datepicker('setDate', new Date());
     // On searching supplier
     $('#employeebox').change(function() {
         const name = $('#employeebox option:selected').text().split(' : ')[0];

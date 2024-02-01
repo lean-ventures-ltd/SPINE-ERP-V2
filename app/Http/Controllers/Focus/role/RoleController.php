@@ -22,6 +22,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Focus\hrm\ManageHrmRequest;
 use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
+use App\Models\Access\Permission\Permission;
 use App\Models\Access\Role\Role;
 use App\Repositories\Focus\role\PermissionRepository;
 use App\Repositories\Focus\role\RoleRepository;
@@ -102,10 +103,20 @@ class RoleController extends Controller
     {
         if (auth()->user()->ins == $role->ins) {
 
+            $permissionDisplayNames = Permission::all()->pluck('display_name');
+
+            $permissionClassNames = [];
+            foreach ($permissionDisplayNames as $name){
+                array_push($permissionClassNames, strtolower(explode(' ', $name)[0]));
+            }
+
+            $permissionClassNames = array_values(array_unique($permissionClassNames));
+
             return view('focus.hrms.roles.edit')
+                ->with(compact('permissionClassNames'))
                 ->withRole($role)
                 ->withRolePermissions($role->permissions->pluck('id')->all())
-                ->withPermissions($this->permissions->getAll());
+                ->withPermissions($this->permissions->getAll()->sortBy('display_name'));
         }
     }
 

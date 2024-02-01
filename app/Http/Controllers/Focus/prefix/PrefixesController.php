@@ -82,12 +82,8 @@ class PrefixesController extends Controller
     {
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
-        try {
-            //Update the model using repository update method
-            $this->repository->update($prefix, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Prefixes', $th);
-        }
+        //Update the model using repository update method
+        $this->repository->update($prefix, $input);
         //return with successfull message
         return new RedirectResponse(route('biller.prefixes.index'), ['flash_success' => trans('alerts.backend.prefixes.updated')]);
     }

@@ -82,12 +82,8 @@ class DepartmentsController extends Controller
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
         $input['ins'] = auth()->user()->ins;
-        try {
-            //Create the model using repository create method
-            $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Departments', $th);
-        }
+        //Create the model using repository create method
+        $this->repository->create($input);
         //return with successfull message
         return new RedirectResponse(route('biller.departments.index'), ['flash_success' => trans('alerts.backend.departments.created')]);
     }
@@ -115,12 +111,8 @@ class DepartmentsController extends Controller
     {
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
-        try {
-            //Update the model using repository update method
-            $this->repository->update($department, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Departments', $th);
-        }
+        //Update the model using repository update method
+        $this->repository->update($department, $input);
         //return with successfull message
         return new RedirectResponse(route('biller.departments.index'), ['flash_success' => trans('alerts.backend.departments.updated')]);
     }
@@ -134,12 +126,8 @@ class DepartmentsController extends Controller
      */
     public function destroy(Department $department, StoreDepartmentRequest $request)
     {
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($department);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Departments', $th);
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($department);
         //returning with successfull message
         return new RedirectResponse(route('biller.departments.index'), ['flash_success' => trans('alerts.backend.departments.deleted')]);
     }

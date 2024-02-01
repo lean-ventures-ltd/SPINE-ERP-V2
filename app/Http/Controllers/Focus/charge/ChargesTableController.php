@@ -59,7 +59,7 @@ class ChargesTableController extends Controller
                 return $charge->bank->holder;
             })
              ->addColumn('date', function ($charge) {
-                return dateFormat($charge->transaction_date);
+                return dateFormat($charge->date);
             })
             ->addColumn('amount', function ($charge) {
                 return amountFormat($charge->amount);

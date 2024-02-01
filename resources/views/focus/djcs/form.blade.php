@@ -3,7 +3,7 @@
         <div>
             <div class="form-group row">
                 <div class="col-12">
-                    <h3>Djc Details</h3>
+                    <h3>Site Survey Details</h3>
                 </div>
             </div>
 
@@ -167,19 +167,19 @@
             <div class="form-group row">
                 <div class="col-sm-12">
                     <label for="toAddInfo" class="root_cause">Findings and Root Cause</label>
-                    {{ Form::textarea('root_cause', null, ['class' => 'form-control round html_editor', 'placeholder' => 'Root Cause','rows'=>'4']) }}
+                    {{ Form::textarea('root_cause', null, ['id' => 'root_cause', 'class' => 'form-control round tinyinput', 'placeholder' => 'Root Cause','rows'=>'4']) }}
                 </div>
             </div>
             <div class="form-group row">
                 <div class="col-sm-12">
                     <label for="toAddInfo" class="action_taken">Action Taken</label>
-                    {{ Form::textarea('action_taken', null, ['class' => 'form-control round html_editor', 'placeholder' => 'Action Taken','rows'=>'4']) }}
+                    {{ Form::textarea('action_taken', null, ['id' => 'action_taken', 'class' => 'form-control round tinyinput', 'placeholder' => 'Action Taken','rows'=>'4']) }}
                 </div>
             </div>
             <div class="form-group row">
                 <div class="col-sm-12">
                     <label for="toAddInfo" class="recommendations">Recommendations</label>
-                    {{ Form::textarea('recommendations', null, ['class' => 'form-control round html_editor', 'placeholder' => 'Recommendations','rows'=>'4']) }}
+                    {{ Form::textarea('recommendations', null, ['id' => 'recommendations', 'class' => 'form-control round tinyinput', 'placeholder' => 'Recommendations','rows'=>'4']) }}
                 </div>
             </div>
         </div>

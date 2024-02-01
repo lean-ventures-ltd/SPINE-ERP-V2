@@ -52,17 +52,14 @@
         <label for="note">Note</label>    
         {{ Form::text('note', null, ['class' => 'form-control', 'id' => 'note', 'required']) }}
     </div>   
-   
     <div class="col-2">
-        <label for="tax" class="caption">TAX %</label>
+        <label for="tax_rate">TAX %</label>
         <select name="tax_rate" id="tax_rate" class="custom-select">
-            @foreach ($additionals as $row)
-                <option value="{{ +$row->value }}" {{ @$utility_bill && $utility_bill->tax_rate == $row->value? 'selected' : '' }}>
-                    {{ $row->name }}
-                </option>
+            @foreach ([0, 8, 16] as $val)
+                <option value="{{ $val }}">{{ $val? $val . '% VAT' : 'OFF' }}</option>
             @endforeach
         </select>
-    </div>                      
+    </div>                        
 </div>
 
 <div class="table-responsive">

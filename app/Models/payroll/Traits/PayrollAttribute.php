@@ -20,7 +20,6 @@ trait PayrollAttribute
         return '
          '.$this->getViewButtonAttribute("manage-payroll", "biller.payroll.show").'
                 '.$this->getEditButtonAttribute("edit-payroll", "biller.payroll.edit").'
-                '.$this->getDeleteButtonAttribute("delete-payroll", "biller.payroll.destroy").'
                 ';
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models\health_and_safety;
 
 use App\Models\branch\Branch;
 use App\Models\customer\Customer;
+use App\Models\health_and_safety_objectives\HealthAndSafetyObjective;
 use App\Models\hrm\Hrm;
 use App\Models\ModelTrait;
 use App\Models\project\Project;
@@ -15,7 +16,23 @@ class HealthAndSafetyTracking extends Model
 
     protected $table = 'health_and_safety_tracking';
 
-    protected $fillable = [];
+    protected $fillable = [
+
+        'date',
+        'customer_id',
+        'branch_id',
+        'project_id',
+        'employee',
+        'incident_desc',
+        'route_course',
+        'status',
+        'pdca_cycle',
+        'responsibility',
+        'timing',
+        'comments',
+        'ins',
+        'user_id'
+    ];
 
     protected $attributes = [];
 
@@ -48,6 +65,9 @@ class HealthAndSafetyTracking extends Model
     }
     public function res(){
         return $this->belongsTo(Hrm::class, 'responsibility');  
+    }
+    public function healthAndSafetyObjective(){
+        return $this->belongsTo(HealthAndSafetyObjective::class, 'objective');  
     }
     public function getActionButtonsAttribute()
     {

@@ -67,12 +67,7 @@ class HolidayListController extends Controller
      */
     public function store(Request $request)
     {
-        
-        try {
-            $this->repository->create($request->except('_token'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Holiday List', $th);
-        }
+        $this->repository->create($request->except('_token'));
 
         return new RedirectResponse(route('biller.holiday_list.index'), ['flash_success' => 'Holiday List Created Successfully']);
     }
@@ -97,12 +92,7 @@ class HolidayListController extends Controller
      */
     public function update(Request $request, HolidayList $holiday_list)
     {
-        
-        try {
-            $this->repository->update($holiday_list, $request->except('_token'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Holiday List', $th);
-        }
+        $this->repository->update($holiday_list, $request->except('_token'));
 
         return new RedirectResponse(route('biller.holiday_list.index'), ['flash_success' => 'Holiday List Updated Successfully']);
     }
@@ -115,11 +105,7 @@ class HolidayListController extends Controller
      */
     public function destroy(HolidayList $holiday_list)
     {
-        try {
-            $this->repository->delete($holiday_list);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Holiday List', $th);
-        }
+        $this->repository->delete($holiday_list);
 
         return new RedirectResponse(route('biller.holiday_list.index'), ['flash_success' => 'Holiday List Deleted Successfully']);
     }

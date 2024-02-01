@@ -59,6 +59,10 @@ class UtilityBillTableController extends Controller
             'balance_total' => numberFormat(@$res['balance']),
         ];   
         
+        // if no filters, limit viewable records
+        $params = request()->only('start_date', 'end_date', 'supplier_id', 'bill_type', 'bill_status', 'payment_status');
+        if (!array_filter($params)) $core->latest()->limit(2000);
+            
         return Datatables::of($core)
             ->escapeColumns(['id'])
             ->addIndexColumn()    

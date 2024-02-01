@@ -14,9 +14,7 @@
         <select name="leave_category_id" id="leave_category" class="custom-select">
             <option value="">-- select leave category --</option>
             @isset($leave)
-                <option value="{{ $leave->leave_category_id }}" selected>
-                    {{ $leave->leave_category->title }}
-                </option>
+                <option value="{{ $leave->leave_category_id }}" selected>{{ $leave->leave_category->title }}</option>
             @endisset
         </select>
     </div>

@@ -1,7 +1,7 @@
 <div class="form-group row">
     <div class="col-2">
         <label for="tid">Transfer No.</label>
-        {{ Form::text('tid', @$stock_transfer->tid ?: @$tid+1,['class' => 'form-control round', 'id' => 'tid', 'readonly']) }}
+        {{ Form::text('tid', @$tid+1,['class' => 'form-control round', 'id' => 'tid', 'readonly']) }}
     </div>
 
     <div class="col-4">
@@ -9,7 +9,7 @@
         <select name="source_id" id="source" class="form-control round" required>
             <option value="">-- select source --</option>
             @foreach ($warehouses as $warehouse)
-                <option value="{{ $warehouse->id }}" {{ @$stock_transfer->source_id == $warehouse->id? 'selected' : '' }}>
+                <option value="{{ $warehouse->id }}">
                     {{ $warehouse->title }} {{ $warehouse->extra }}
                 </option>
             @endforeach
@@ -20,7 +20,7 @@
         <select name="destination_id" id="destination" class="form-control round" required>
             <option value="">-- select destination --</option>
             @foreach ($warehouses as $warehouse)
-                <option value="{{ $warehouse->id }}" {{ @$stock_transfer->destination_id == $warehouse->id? 'selected' : '' }}>
+                <option value="{{ $warehouse->id }}">
                     {{ $warehouse->title }} {{ $warehouse->extra }}
                 </option>
             @endforeach
@@ -82,15 +82,9 @@
 
         init() {
             $.ajaxSetup(config.ajax);
-
-            if (this.stockTransfer) {
-                const data = this.stockTransfer;
-                
-            } else {
-                $('#source').change(this.sourceLocationChange).change();
-                $('#destination').change(this.destinationLocationChange);
-                $('#productsTbl').on('change', '.qty, .unit_price', this.qtyPriceChange);
-            }
+            $('#source').change(this.sourceLocationChange).change();
+            $('#destination').change(this.destinationLocationChange);
+            $('#productsTbl').on('change', '.qty, .unit_price', this.qtyPriceChange);
         },
 
         qtyPriceChange() {

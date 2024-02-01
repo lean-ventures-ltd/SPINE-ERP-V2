@@ -43,6 +43,24 @@ Route::group(['namespace' => 'budget'], function () {
   Route::post('budgets/get', 'BudgetsTableController')->name('budgets.get');
 });
 
+Route::group(['namespace' => 'labour_allocation'], function () {
+  Route::get('labour_allocations/employee_hourly_rate', 'LabourAllocationController@employee_hourly_rate')->name('labour_allocations.employee_hourly_rate');
+  Route::get('labour_allocations/expected_hours', 'LabourAllocationController@expected_hours')->name('labour_allocations.expected_hours');
+  Route::get('labour_allocations/employee_summary', 'LabourAllocationController@employee_summary')->name('labour_allocations.employee_summary');
+  Route::get('labour_allocations/delete_item/{id}', 'LabourAllocationController@delete_item')->name('labour_allocations.delete_item');
+  Route::get('labour_allocations/delete_labour/{id}', 'LabourAllocationController@delete_labour')->name('labour_allocations.delete_labour');
+  Route::get('labour_allocations/edit_item/{id}', 'LabourAllocationController@edit_item')->name('labour_allocations.edit_item');
+  Route::patch('labour_allocations/update_item/{id}', 'LabourAllocationController@update_item')->name('labour_allocations.update_item');
+  Route::post('labour_allocations/store_labour_items', 'LabourAllocationController@store_labour_items')->name('labour_allocations.store_labour_items');
+  Route::post('labour_allocations/get_employee_items', 'LabourAllocationController@get_employee_items')->name('labour_allocations.get_employee_items');
+  Route::get('labour_allocations/attach_employee/{id}/{employee_id}', 'LabourAllocationController@attach_employee')->name('labour_allocations.attach_employee');
+  Route::resource('labour_allocations', 'LabourAllocationController');
+  // data table
+  Route::post('labour_allocations/get', 'LabourAllocationTableController')->name('labour_allocations.get');
+  Route::post('labour_allocations/get_summary', 'EmployeeSummaryTableController')->name('labour_allocations.get_summary');
+  Route::post('labour_allocations/get_labour', 'LabourProjectTableController')->name('labour_allocations.get_labour');
+});
+
 // project task schedules
 Route::group(['namespace' => 'taskschedule'], function () {
   Route::post('taskschedules/quote_product_search', 'TaskSchedulesController@quote_product_search')->name('taskschedules.quote_product_search');
@@ -77,11 +95,14 @@ Route::group(['namespace' => 'contract'], function () {
 
 // project
 Route::group(['namespace' => 'project'], function () {
-  
+  Route::post('projects/status_tag_update', 'ProjectsController@status_tag_update')->name('projects.status_tag_update');
   Route::post('projects/search', 'ProjectsController@search')->name('projects.search');
   Route::resource('projects', 'ProjectsController');
   // data table
   Route::post('projects/get', 'ProjectsTableController')->name('projects.get');
   Route::post('projects/project_load_select', 'ProjectsController@project_load_select')->name('projects.project_load_select');
   Route::post('projects/search', 'ProjectsController@project_search')->name('projects.project_search');
+
+  Route::get('projects/milestones/get', 'ProjectsController@getProjectMileStones')->name('getProjectMileStones');
+  Route::get('/jaribu', 'ProjectsController@getExpensesByMilestone');
 });

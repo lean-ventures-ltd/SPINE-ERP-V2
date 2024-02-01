@@ -21,6 +21,7 @@ namespace App\Http\Controllers\Focus\project;
 use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 use App\Repositories\Focus\project\ProjectRepository;
+use DB;
 
 /**
  * Class ProjectsTableController.
@@ -64,7 +65,7 @@ class ProjectsTableController extends Controller
                 return $name;
             })
             ->editColumn('tid', function($project) use ($prefixes) {
-                return '<a href="'.route('biller.projects.show', $project).'">'. gen4tid("{$prefixes[1]}-", $project->tid) .'</a>';;
+                return '<a href="'.route('biller.projects.show', $project).'"><b>'. gen4tid("{$prefixes[1]}-", $project->tid) .'</b></a>';;
             })
             ->filterColumn('tid', function($query, $tid) use($prefixes) {
                 $arr = explode('-', $tid);
@@ -84,14 +85,15 @@ class ProjectsTableController extends Controller
             })
             ->orderColumn('end_date', '-end_date $1')
             ->addColumn('status', function ($project) {
-                if ($project->misc)
-                return ucfirst($project->misc->name);
+                return '<span  data-id="'. $project->misc->id .'" project-id="'. $project->id .'" end-note="'. $project->end_note .'" class="badge badge-secondary status" style="background-color:'. $project->misc->color .';cursor:pointer;" data-toggle="modal" data-target="#statusModal">'
+                    . $project->misc->name .' <i class="fa fa-caret-down" aria-hidden="true"></i></span>';
             })
             ->editColumn('main_quote_id', function($project) {
                 $tids = [];
                 foreach ($project->quotes as $quote) {
                     $tid = gen4tid($quote->bank_id? 'PI-' : 'QT-', $quote->tid);
-                    $tids[] = '<a href="'. route('biller.quotes.show', $quote) .'"><b>'. $tid .'</b></a>';
+                    // $tids[] = '<a href="'. route('biller.quotes.show', $quote) .'"><b>'. $tid .'</b></a>';
+                    $tids[] = $tid;
                 }
                 return implode(', ', $tids);
             })
@@ -102,6 +104,35 @@ class ProjectsTableController extends Controller
                 } elseif (floatval($tid)) {
                     $query->whereHas('quotes', fn($q) => $q->where('tid', floatval($tid)));
                 } 
+            })
+            // ->editColumn('exp_profit_margin', function ($project) {
+            //     return $project->exp_profit_margin;
+            // })
+            // ->orderColumn('exp_profit_margin', '-exp_profit_margin $1')
+            
+            ->addColumn('exp_profit_margin', function ($project) {
+                $total_estimate = 0;
+                $total_balance = 0;
+                foreach ($project->quotes as $quote) {
+                    $actual_amount = $quote->subtotal;
+
+                    $dir_purchase_amount = $project->purchase_items->sum('amount') / $project->quotes->count();
+                    $proj_grn_amount = $project->grn_items()->sum(DB::raw('round(rate*qty)')) / $project->quotes->count();
+                    $labour_amount = $project->labour_allocations()->sum(DB::raw('hrs * 500')) / $project->quotes->count();
+                    $expense_amount = $dir_purchase_amount + $proj_grn_amount + $labour_amount;
+                    if ($quote->projectstock) $expense_amount += $quote->projectstock->sum('total');
+
+                    $balance = $actual_amount - $expense_amount;
+                    // aggregate
+                    // $total_actual += $actual_amount;
+                    $total_estimate += $expense_amount;
+                    $total_balance += $balance;
+                }
+                $exp_profit_margin = round(div_num($total_balance, $total_estimate) * 100);
+                return '<span key="'. $exp_profit_margin .'">'. $exp_profit_margin .'</span>';
+            })
+            ->addColumn('job_hrs', function ($project) {
+                return +$project->labour_allocations()->sum('hrs');
             })
             ->addColumn('actions', function ($project) {
                 return $project->action_buttons;

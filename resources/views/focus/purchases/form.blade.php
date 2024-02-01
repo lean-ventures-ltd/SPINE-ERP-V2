@@ -32,10 +32,10 @@
                         {{ Form::text('suppliername', null, ['class' => 'form-control round', 'placeholder' => 'Supplier Name', 'id' => 'supplier', 'required']) }}
                     </div>
                 </div>
-                <div class="col-sm-4"><label for="taxid" class="caption">Tax PIN</label>
+                <div class="col-sm-4"><label for="taxid" class="caption">Tax ID</label>
                     <div class="input-group">
                         <div class="input-group-addon"><span class="icon-bookmark-o" aria-hidden="true"></span></div>
-                        {{ Form::text('supplier_taxid', null, ['class' => 'form-control round', 'placeholder' => 'e.g PO515725965', 'id'=>'taxid']) }}
+                        {{ Form::text('supplier_taxid', null, ['class' => 'form-control round', 'placeholder' => 'Tax Id', 'id'=>'taxid']) }}
                     </div>
                 </div>
             </div>
@@ -51,7 +51,7 @@
                     </select>                    
                 </div>
                 <div class="col-3">
-                    <label for="taxFormat" class="caption">Tax</label>
+                    <label for="taxFormat" class="caption">Tax</label>F
                     <select class="form-control" name="tax" id="tax">
                         @foreach ($additionals as $tax)
                             <option value="{{ (int) $tax->value }}" {{ $tax->is_default ? 'selected' : ''}}>
@@ -101,6 +101,13 @@
                                 <td class="text-center">0.00</td>
                             @endfor                                                                                                      
                         </tr>
+
+                        <tr class="sub_c" style="display: table-row;">
+                            <td align="right" colspan="4">
+                                <p id="milestone_warning" class="text-red ml-2" style="display: inline-block; color: red; font-size: 16px; "> </p>
+                            </td>
+                        </tr>
+
                         <tr class="sub_c" style="display: table-row;">
                             <td align="right" colspan="3">
                                 @foreach (['paidttl', 'grandtax', 'grandttl'] as $val)
@@ -143,8 +150,8 @@
                     <div class="input-group">                                            
                         <select class="form-control" name="doc_ref_type" id="ref_type" required>
                             <option value="">-- Select Type --</option>
-                            @foreach (['Invoice', 'Receipt', 'DNote', 'Voucher'] as $val)
-                                <option value="{{ $val }}">{{ $val == 'Invoice'? 'Invoice/ETR Receipt' : $val }}</option>
+                            @foreach (['Receipt', 'DNote', 'Voucher'] as $val)
+                                <option value="{{ $val }}">{{ $val }}</option>
                             @endforeach                                                        
                         </select>
                     </div>
@@ -153,7 +160,17 @@
                     <label for="refer_no" class="caption">{{trans('general.reference')}} No.</label>
                     <div class="input-group">
                         <div class="input-group-addon"><span class="icon-bookmark-o" aria-hidden="true"></span></div>                                            
-                        {{ Form::text('doc_ref', null, ['class' => 'form-control round', 'placeholder' => trans('general.reference'), 'required']) }}
+                        <input id="reference_no" type="text" name="doc_ref" class="form-control round" placeholder="{{ trans('general.reference') }}" value="{{ @$purchase->doc_ref_backup }}" required>
+
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                        <label for="refer_no" class="caption"> CU Invoice no. </label>
+                    <div class="input-group">
+                        <div class="input-group-addon"><span class="icon-bookmark-o" aria-hidden="true"></span></div>
+                        <input type="text" id="cu_invoice_no" name="cu_invoice_no" class="form-control round" placeholder="CU Invoice No." value="{{ @$purchase->cu_invoice_no }}" @if(empty(@$purchase->cu_invoice_no))  readonly @endif>
+
+
                     </div>
                 </div>
             </div>
@@ -165,28 +182,69 @@
                 </div>
             </div>
             <div class="form-group row">
-                <div class="col-12">
+                <div class="col-6">
                     <div class="form-group">
                         <label for="project" class="caption">Project</label>
                         <select class="form-control" name="project_id" id="project" data-placeholder="Search Project by Name, Customer, Branch">
                         </select>
                     </div>
                 </div>
+
+
+
+                <div class="col-6">
+                    <label for="project_milestone" class="caption" style="display: inline-block;">Project Budget Line</label>
+
+{{--                    <p id="milestone_warning" class="text-red ml-2" style="display: inline-block; color: red; font-size: 16px; "> </p>--}}
+                    <select id="project_milestone" name="project_milestone" class="form-control">
+                        <option value="">Select a Budget Line</option>
+                    </select>
+                </div>
+
+                <div class="col-6">
+                    <label for="purchase_class" class="caption" style="display: inline-block;">Purchase Class</label>
+                    <select id="purchase_class" name="purchase_class" class="custom-select round" >
+                        <option value="">-- Select Purchase Class --</option>
+                        @foreach ($purchaseClasses as $pc)
+                            <option value="{{ $pc->id }}" @if(@$purchase->purchase_class == $pc->id) selected @endif>
+                                {{ $pc->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+
+                <div class="col-6">
+                    <label for="payer" class="caption">Requisition Items</label>
+                    <select class="form-control" id="quoteselect" data-placeholder="Search Quote">
+                        <option value="">-----Select Requisition Items-----</option>
+                        <option value="all">All Items</option>
+                    </select>
+                    <input type="hidden" name="quote_id" value="0" id="quoteid">
+                </div>
+
+
             </div>
         </div>
     </div>
 </div>
 
 <!-- Tab Menus -->
-<ul class="nav nav-tabs nav-top-border no-hover-bg nav-justified" role="tablist">
-    <li class="nav-item bg-gradient-directional-blue">
-        <a class="nav-link" id="active-tab1" data-toggle="tab" href="#active1" aria-controls="active1" role="tab" aria-selected="true">Inventory / Stock</a>
+<ul class="nav nav-tabs nav-top-border nav-justified mt-3" role="tablist">
+    <li class="nav-item bg-blue">
+        <a class="nav-link text-black" id="active-tab1" data-toggle="tab" href="#active1" aria-controls="active1" role="tab" aria-selected="true">
+            <h4 class="mt-1" style="color: #0b0b0b">Inventory / Stock</h4>
+        </a>
     </li>
     <li class="nav-item bg-danger">
-        <a class="nav-link active" id="active-tab2" data-toggle="tab" href="#active2" aria-controls="active2" role="tab">Expense</a>
+        <a class="nav-link active text-black" id="active-tab2" data-toggle="tab" href="#active2" aria-controls="active2" role="tab">
+            <h4 class="mt-1" style="color: #0b0b0b">Expense</h4>
+        </a>
     </li>
     <li class="nav-item bg-success">
-        <a class="nav-link " id="active-tab3" data-toggle="tab" href="#active3" aria-controls="active3" role="tab">Assets & Equipment</a>
+        <a class="nav-link text-black" id="active-tab3" data-toggle="tab" href="#active3" aria-controls="active3" role="tab">
+            <h4 class="mt-1" style="color: #0b0b0b">Assets & Equipment</h4>
+        </a>
     </li>
 </ul>
 <div class="tab-content px-1 pt-1">

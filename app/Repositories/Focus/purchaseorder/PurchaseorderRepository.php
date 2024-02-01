@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Focus\purchaseorder;
 
+use App\Models\project\ProjectMileStone;
 use App\Models\purchaseorder\Purchaseorder;
 use App\Exceptions\GeneralException;
 use App\Models\account\Account;
@@ -10,6 +11,7 @@ use App\Models\items\PurchaseorderItem;
 use App\Models\transaction\Transaction;
 use App\Models\transactioncategory\Transactioncategory;
 use App\Repositories\BaseRepository;
+use App\Models\queuerequisition\QueueRequisition;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -38,10 +40,10 @@ class PurchaseorderRepository extends BaseRepository
             $q->where('supplier_id', request('supplier_id'));
         })->when(request('status'), function ($q) {
             if (request('status') == 'Closed') $q->where('closure_status', 1);   
-            else $q->where('status', request('status'))->where('closure_status', 0);     
+            else $q->where('status', request('status'))->where('closure_status', 0);         
         });
 
-        return $q;
+        return $q->get();
     }
 
     /**
@@ -53,9 +55,9 @@ class PurchaseorderRepository extends BaseRepository
      */
     public function create(array $input)
     {
-        // dd($input);
+         
         DB::beginTransaction();
-
+       // dd($input);
         $order = $input['order'];
         foreach ($order as $key => $val) {
             $rate_keys = [
@@ -67,7 +69,6 @@ class PurchaseorderRepository extends BaseRepository
             if (in_array($key, $rate_keys, 1)) 
                 $order[$key] = numberClean($val);
         }
-        
         $tid = Purchaseorder::where('ins', $order['ins'])->max('tid');
         if ($order['tid'] <= $tid) $order['tid'] = $tid+1;
         $result = Purchaseorder::create($order);
@@ -87,8 +88,26 @@ class PurchaseorderRepository extends BaseRepository
                 'amount' => numberClean($v['amount'])
             ]);
         }, $order_items);
-        PurchaseorderItem::insert($order_items);
         
+        foreach ($order_items as $order_item) {
+            
+            if ($order_item['type'] == 'Requisit') {
+                $queuerequisition = QueueRequisition::where('product_code', $order_item['product_code'])->where('status', '1')->update(['status'=>$order['tid']]);
+                $order_item['type'] = 'Stock';
+            }
+            //dd($order_item['type']);
+            PurchaseorderItem::insert($order_item);
+        }
+
+
+        /** Updating Budget Line Balance **/
+        $budgetLine = ProjectMileStone::find($input['order']['project_milestone']);
+
+        if(!empty($budgetLine)){
+            $budgetLine->balance -= floatval(str_replace(',', '', $input['order']['grandttl']));
+            $budgetLine->save();
+        }
+
         if ($result) {
             DB::commit();
             return $result;   
@@ -112,6 +131,58 @@ class PurchaseorderRepository extends BaseRepository
         DB::beginTransaction();
 
         $order = $input['order'];
+
+        /** Handling milestone changes */
+        $budgetLine = ProjectMileStone::find($purchaseorder->project_milestone);
+        $newBudgetLine = ProjectMileStone::find($input['order']['project_milestone']);
+
+        $milestoneChanged = intval($purchaseorder->project_milestone) !== intval($input['order']['project_milestone']);
+        $grandTotalChanged = floatval($purchaseorder->grandttl) !== floatval(str_replace(',', '', $input['order']['grandttl']));
+        $newMilestoneZero = intval($input['order']['project_milestone']) === 0;
+        $oldMilestoneZero = intval($purchaseorder->project_milestone) === 0;
+
+
+        /** If the milestone HAS CHANGED and grand total HAS CHANGED  */
+        if($milestoneChanged && $grandTotalChanged){
+
+            if (!$oldMilestoneZero) {
+                $budgetLine->balance = $budgetLine->balance + $purchaseorder->grandttl;
+                $budgetLine->save();
+            }
+
+            if (!$newMilestoneZero){
+
+                $newBudgetLine->balance -= floatval(str_replace(',', '', $input['order']['grandttl']));
+                $newBudgetLine->save();
+            }
+        }
+        /** If the milestone has NOT changed but grand total HAS CHANGED */
+        else if (!$milestoneChanged && $grandTotalChanged){
+
+            if (!$oldMilestoneZero) {
+                $budgetLine->balance = ($budgetLine->balance + $purchaseorder->grandttl) - floatval(str_replace(',', '', $input['order']['grandttl']));
+                $budgetLine->save();
+            }
+
+        }
+        /** If the milestone HAS CHANGED but grand total HAS NOT CHANGED */
+        else if($milestoneChanged && !$grandTotalChanged){
+
+            if (!$oldMilestoneZero) {
+                $budgetLine->balance = $budgetLine->balance + $purchaseorder->grandttl;
+                $budgetLine->save();
+            }
+
+            if (!$newMilestoneZero) {
+
+                $newBudgetLine->balance -= $purchaseorder->grandttl;
+                $newBudgetLine->save();
+            }
+        }
+
+
+
+
         foreach ($order as $key => $val) {
             $rate_keys = [
                 'stock_subttl', 'stock_tax', 'stock_grandttl', 'expense_subttl', 'expense_tax', 'expense_grandttl',
@@ -130,8 +201,9 @@ class PurchaseorderRepository extends BaseRepository
             throw ValidationException::withMessages(['Unit of Measure (uom) required for Inventory Items']);
         }
         // delete omitted items
-        $item_ids = array_map(fn($v) => $v['id'], $order_items);
+        $item_ids = array_map(function ($v) { return $v['id']; }, $order_items);
         $purchaseorder->products()->whereNotIn('id', $item_ids)->delete();
+        
         // update or create new items
         foreach ($order_items as $item) {
             $item = array_replace($item, [
@@ -167,7 +239,7 @@ class PurchaseorderRepository extends BaseRepository
     public function delete($purchaseorder)
     {
         if ($purchaseorder->grn_items->count()) 
-            throw ValidationException::withMessages(['Purchase order is attached to a Goods Receive Note!']);
+            throw ValidationException::withMessages(['Purchase order has attached Goods Receive Note']);
 
         DB::beginTransaction();
         try {

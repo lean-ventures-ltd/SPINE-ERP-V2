@@ -25,7 +25,6 @@ use App\Models\Access\User\UserProfile;
 use App\Models\Company\ConfigMeta;
 use Illuminate\Http\Request;
 use App\Http\Responses\ViewResponse;
-use App\Models\Access\Role\Role;
 use App\Models\Company\Company;
 use App\Models\hrm\Attendance;
 use App\Models\hrm\Hrm;
@@ -70,7 +69,6 @@ class UserController extends Controller
             'contact' => $hrm->primary_contact,
             'tax_id' => $hrm->tax_id,
         ]);
-        $hrm->meta = new HrmMeta();
 
         return view('focus.user.profile', compact('hrm'));
     }
@@ -111,10 +109,9 @@ class UserController extends Controller
 
         try {
             $user = Hrm::findOrFail(auth()->user()->id);
-            if (!Hash::check($request['old_password'], $user->password)) {
+            if (!Hash::check($request['old_password'], $user->password)) 
                 return redirect()->back()->with('flash_error', 'Old password is invalid');
-            }
-            $user->update(['password' => $request->password, 'password_updated_at' => now()]);
+            $user->update(['password' => $request->password]);
 
             // email notify
             // auth()->user()->notify(new UserChangedPassword($request['password']));

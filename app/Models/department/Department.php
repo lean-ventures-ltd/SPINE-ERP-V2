@@ -2,10 +2,12 @@
 
 namespace App\Models\department;
 
+use App\Models\employeeDailyLog\EmployeeTaskSubcategories;
 use App\Models\ModelTrait;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\department\Traits\DepartmentAttribute;
 use App\Models\department\Traits\DepartmentRelationship;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Department extends Model
 {
@@ -74,4 +76,10 @@ class Department extends Model
             $builder->where('ins', '=', auth()->user()->ins);
     });
     }
+
+    public function edlTaskSubcategories(): HasMany {
+
+        return $this->hasMany(EmployeeTaskSubcategories::class, 'department', 'id');
+    }
+
 }

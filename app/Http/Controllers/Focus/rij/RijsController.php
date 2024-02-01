@@ -89,12 +89,8 @@ class RijsController extends Controller
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
         $input['ins'] = auth()->user()->ins;
-        try {
-            //Create the model using repository create method
-            $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Rijs', $th);
-        }
+        //Create the model using repository create method
+        $this->repository->create($input);
         //return with successfull message
         return new RedirectResponse(route('biller.accounts.index'), ['flash_success' => trans('alerts.backend.accounts.created')]);
     }
@@ -126,13 +122,8 @@ class RijsController extends Controller
         ]);
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
-        
-        try {
-            //Update the model using repository update method
-            $this->repository->update($account, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Rijs', $th);
-        }
+        //Update the model using repository update method
+        $this->repository->update($account, $input);
         //return with successfull message
         return new RedirectResponse(route('biller.accounts.index'), ['flash_success' => trans('alerts.backend.accounts.updated')]);
     }
@@ -146,12 +137,8 @@ class RijsController extends Controller
      */
     public function destroy(Account $account, StoreAccountRequest $request)
     {
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($account);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Rijs', $th);
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($account);
         //returning with successfull message
         return new RedirectResponse(route('biller.accounts.index'), ['flash_success' => trans('alerts.backend.accounts.deleted')]);
     }

@@ -31,6 +31,9 @@
                     {{ Form::model($quote, ['url' => $link, 'class' => 'form-horizontal', 'method' => 'POST']) }}                   
                         @include('focus.quotesverify.form')
                     {{ Form::close() }}
+                    
+                    <!-- attach labour modal -->
+                    @include('focus.quotesverify.modals.attach_labour_modal')
                 </div>
             </div>   
         </div>

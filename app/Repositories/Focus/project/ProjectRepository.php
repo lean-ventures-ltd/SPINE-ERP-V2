@@ -35,17 +35,26 @@ class ProjectRepository extends BaseRepository
     public function getForDataTable()
     {
         $q = $this->query();
-
-        // customer user filter
-        $customer_id = auth()->user()->customer_id;
-        $q->when($customer_id, fn($q) => $q->where('customer_id', $customer_id));
         
-        // customer filter
+        // date filter
+        if (request('start_date') && request('end_date')) {
+            $q->whereBetween('end_date', [
+                date_for_database(request('start_date')), 
+                date_for_database(request('end_date'))
+            ]);
+        }
+        
+        // status filter
+        $q->when(request('status'), fn($q) => $q->where('status', request('status')));
+        
+        // customer and branch filter
         if(request('customer_id')) {
             $q->where('customer_id', request('customer_id'));
             if (request('branch_id')) $q->where('branch_id', request('branch_id'));
-        } 
-        else $q->limit(500);
+        } else {
+            $q->limit(500);
+        }
+        
         
         return $q;
     }
@@ -85,15 +94,13 @@ class ProjectRepository extends BaseRepository
 
         // attach quotes
         $quotes = @$input['quotes'] ?: [];
-        // if (!$quotes) throw ValidationException::withMessages(['Quote or Proforma Invoice required']);
-        if ($quotes) {
-            $quote_group = array_map(fn($v) => ['quote_id' => $v, 'project_id' => $result->id], $quotes);
-            $result->update(['main_quote_id' => $quotes[0]]);
-            ProjectQuote::insert($quote_group);
-            foreach ($result->quotes as $quote) {
-                if ($quote->project_quote) 
-                    $quote->update(['project_quote_id' => $quote->project_quote->id]);
-            }
+        if (!$quotes) throw ValidationException::withMessages(['Quote or Proforma Invoice required']);
+        $quote_group = array_map(fn($v) => ['quote_id' => $v, 'project_id' => $result->id], $quotes);
+        $result->update(['main_quote_id' => $quotes[0]]);
+        ProjectQuote::insert($quote_group);
+        foreach ($result->quotes as $quote) {
+            if ($quote->project_quote) 
+                $quote->update(['project_quote_id' => $quote->project_quote->id]);
         }
         
         // project users

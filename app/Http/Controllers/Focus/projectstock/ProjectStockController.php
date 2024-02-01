@@ -9,10 +9,10 @@ use App\Models\product\ProductVariation;
 use App\Models\project\BudgetItem;
 use App\Models\projectstock\Projectstock;
 use App\Models\quote\Quote;
+use App\Models\project\Project;
 use App\Repositories\Focus\projectstock\ProjectStockRepository;
 use DB;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class ProjectStockController extends Controller
 {
@@ -50,6 +50,7 @@ class ProjectStockController extends Controller
 
         $tid = Projectstock::where('ins', auth()->user()->ins)->max('tid');
         $quote = Quote::find($quote_id);
+        $project = Project::where('id', $quote->project_quote_id)->first();
         
         $budget_items = BudgetItem::where('a_type', 1)->whereHas('budget', function ($q) use($quote_id) { 
             $q->where('quote_id', $quote_id);
@@ -59,7 +60,7 @@ class ProjectStockController extends Controller
             ->whereIn('id', $budget_items->pluck('product_id')->toArray())
             ->with('warehouse')->get();
         
-        return view('focus.projectstock.create', compact('tid', 'quote', 'budget_items', 'stock'));
+        return view('focus.projectstock.create', compact('tid', 'quote', 'budget_items', 'stock', 'project'));
     }
 
     /**
@@ -70,11 +71,7 @@ class ProjectStockController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $this->respository->create($request->except('_token'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Issuing Stock', $th);
-        }
+        $this->respository->create($request->except('_token'));
 
         return new RedirectResponse(route('biller.projectstock.index'), ['flash_success' => 'Project Stock Created Successfully']);
     }
@@ -99,21 +96,10 @@ class ProjectStockController extends Controller
     public function edit(Projectstock $projectstock)
     {
         return redirect()->route('biller.projectstock.index');
-
-        // to be updated
-        $quote = Quote::find($projectstock->quote_id);
-        if (!$quote) throw ValidationException::withMessages(['Related Quote/PI cannot be found']);
-
-        $tid = Projectstock::where('ins', auth()->user()->ins)->max('tid');
-        $budget_items = $quote->budget? $quote->budget->items()->with('product')->get() : collect();
-
-        $stock = ProductVariation::select(DB::raw('parent_id, warehouse_id, SUM(qty) as qty'))
-            ->groupBy('parent_id', 'warehouse_id')
-            ->whereIn('id', $budget_items->pluck('product_id')->toArray())
-            ->with('warehouse')
-            ->get();
-
-        return view('focus.projectstock.edit', compact('projectstock', 'tid', 'quote', 'budget_items', 'stock'));
+        
+        // add edit logic
+        
+        return view('focus.projectstock.edit', compact('projectstock'));
     }
 
     /**
@@ -125,11 +111,7 @@ class ProjectStockController extends Controller
      */
     public function update(Request $request, Projectstock $projectstock)
     {
-        try {
-            $this->respository->update($projectstock, $request->except('_token'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Project Stock', $th);
-        }
+        $this->respository->update($projectstock, $request->except('_token'));
 
         return new RedirectResponse(route('biller.projectstock.index'), ['flash_success' => 'Project Stock  Updated Successfully']);
     }
@@ -142,11 +124,7 @@ class ProjectStockController extends Controller
      */
     public function destroy(Projectstock $projectstock)
     {
-        try {
-            $this->respository->delete($projectstock);
-        } catch (\Throwable $th) {
-            return errorHandler('Error deleting Project Stock', $th);
-        }
+        $this->respository->delete($projectstock);
 
         return new RedirectResponse(route('biller.projectstock.index'), ['flash_success' => 'Project Stock Deleted Successfully']);
     }

@@ -16,7 +16,7 @@
                     <h4>{{ $data['title'] }}</h4><hr>
                     <p class="alert alert-light mb-2">
                         Imported data format should be as per downloaded template file. 
-                        <a href="{{ asset('storage/app/public/sample/' . $data['type'] . '.csv') }}" download>
+                        <a href="{{ route('biller.import.sample_template', $data['type']) }}" target="_blank" id="download-btn">
                             <b>{{ trans('import.download_template') }}</b> ({{ $data['title'] }}).
                         </a>
                     </p>

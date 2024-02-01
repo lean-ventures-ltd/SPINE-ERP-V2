@@ -17,7 +17,7 @@
     </div>
 </div>
 <div class='form-group'>
-    {{ Form::label( 'code', trans('banks.code'),['class' => 'col-lg-2 control-label']) }}
+    {{ Form::label( 'code', 'Swift Code',['class' => 'col-lg-2 control-label']) }}
     <div class='col-lg-10'>
         {{ Form::text('code', null, ['class' => 'form-control round', 'placeholder' => trans('banks.code')]) }}
     </div>

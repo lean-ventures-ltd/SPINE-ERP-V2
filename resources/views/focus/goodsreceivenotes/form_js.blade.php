@@ -20,27 +20,52 @@
                 quietMillis: 50,
                 data: {purchaseorder_id},
             });
+        },
+        prediction: (url, callback) => {
+            return {
+                source: function(request, response) {
+                    $.ajax({
+                        url,
+                        dataType: "json",
+                        method: "POST",
+                        data: {keyword: request.term, projectstock: $('#projectstock').val()},
+                        success: function(data) {
+                            response(data.map(v => ({
+                                label: v.name,
+                                value: v.name,
+                                data: v
+                            })));
+                        }
+                    });
+                },
+                autoFocus: true,
+                minLength: 0,
+                select: callback
+            };
         }
-    };
+    }
+    
 
     const Form = {
         grn: @json(@$goodsreceivenote),
+        projectStockRowId: 1,
+        projectstockUrl: "{{ route('biller.projects.project_search') }}",
 
         init() {
             $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
             $('#supplier').select2(config.select2);
             $('#purchaseorder').select2(config.select2);
 
-            // edit mode
             if (this.grn) {
                 if (this.grn.date) $('#date').datepicker('setDate', new Date(this.grn.date));
                 if (this.grn.invoice_date) $('#invoice_date').datepicker('setDate', new Date(this.grn.invoice_date));
                 $('#supplier').attr('disabled', true);
                 $('#purchaseorder').attr('disabled', true);
+                $('.projectstock').autocomplete(config.prediction(this.projectstockUrl, Form.projectstockSelect));
                 if (this.grn.invoice_no) {
-                    $('#invoice_status option:eq(0)').remove();
                     $('#invoice_no').attr('disabled', false);
                     $('#invoice_date').attr('disabled', false);
+                    $('#invoice_status option:eq(0)').remove();
                 } else {
                     $('#invoice_status option:eq(1)').remove();
                 }
@@ -51,6 +76,8 @@
             $('#tax_rate').change(() => Form.columnTotals());
             $('#invoice_status').change(this.invoiceStatusChange);
             $('#productTbl').on('change', '.qty', this.onQtyChange);
+            $('#productTbl').on('mouseup', '.projectstock', Form.projectMouse);
+            $('#productTbl').on('change', '.warehouse', this.warehouseChange);
             this.columnTotals();
         },
 
@@ -84,26 +111,70 @@
 
         purchaseorderChange() {
             const el = $(this);
+            const projectstockUrl = "{{ route('biller.projects.project_search') }}"
             $('#productTbl tbody').html('');
             if (!el.val()) return;
             config.fetchLpoGoods(el.val()).done(data => {
-                data.forEach((v,i) => $('#productTbl tbody').append(Form.productRow(v,i)));
+                data.forEach((v,i) => {
+                    $('#productTbl tbody').append(Form.productRow(v,i));
+                    $('#productTbl tbody tr').find(`#warehouseid-${i+1} option`).each(function() {
+                        if ($(this).val() == v.warehouse_id) {
+                        $(this).prop("selected", true);
+                        return false; // break out of the loop
+                        }
+                    });
+                    $('.projectstock').autocomplete(config.prediction(projectstockUrl, Form.projectstockSelect));
+                });
+
             });
         },
 
+        // stock select autocomplete
+    
+        projectstockSelect(event, ui) {
+            const {data} = ui.item;
+            const i = Form.projectStockRowId;
+            const el = $(this);
+            const row = el.parents('tr:first');
+            if(el.is('.projectstock')){
+                row.find('.warehouse').attr('readonly', true);
+                row.find('.warehouse option:selected').val(0);
+                $('#projectstockval-'+i).val(data.id).change();
+            }
+            
+        },
+
+        
+        projectMouse() {
+            const id = $(this).attr('id').split('-')[1];
+            if ($(this).is('.projectstock')) Form.projectStockRowId = id;
+        },
         productRow(v,i) {
-            let received = accounting.formatNumber(v.qty_received);
-            let due = v.qty - v.qty_received;
-            let balance = accounting.formatNumber(due > 0? due : 0);
+            const qty = accounting.formatNumber(v.qty);
+            const received = accounting.formatNumber(v.qty_received);
+            const due = v.qty - v.qty_received;
+            const balance = accounting.formatNumber(due > 0? due : 0);
+            
             return `
                 <tr>
-                    <td>${i+1}</td>    
-                    <td>${v.description}</td>    
-                    <td>${v.uom}</td>    
-                    <td class="qty_ordered">${accounting.formatNumber(v.qty)}</td>    
-                    <td class="qty_received">${received}</td>    
-                    <td class="qty_due">${balance}</td>    
-                    <td><input name="qty[]" id="qty" class="form-control qty"></td>    
+                    <td width="5%">${i+1}</td>    
+                    <td width="20%" class="text-left">${v.description}</td> 
+                    <td width="15%">
+                        <input class="form-control projectstock" value="${v.project_name}" id="projectstocktext-${i+1}" placeholder="Search Project By Name"></input>
+                        <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="${v.itemproject_id}" id="projectstockval-${i+1}" >
+                    </td>  
+                    <td width="10%"><select name="warehouse_id[]" class="form-control warehouse" id="warehouseid-${i+1}">
+                        <option value="">Select Warehouse</option>
+                        @foreach ($warehouses as $row)
+                            <option value="{{ $row->id }}">{{ $row->title }}</option>
+                        @endforeach
+                    </select>
+                    </td>     
+                    <td width="10%">${v.uom}</td>    
+                    <td width="5%" class="qty_ordered">${qty}</td>    
+                    <td width="5%" class="qty_received">${received}</td>    
+                    <td width="5%" class="qty_due">${balance}</td>    
+                    <td width="15%"><input name="qty[]" id="qty" class="form-control qty"></td>    
                     <input type="hidden" name="purchaseorder_item_id[]" value="${v.id}">
                     <input type="hidden" name="rate[]" value="${parseFloat(v.rate)}" class="rate">
                     <input type="hidden" name="item_id[]" value="${v.item_id}">
@@ -111,32 +182,42 @@
             `;
         },
 
+        
+        warehouseChange() {
+            const el = $(this);
+            const row = el.parents('tr:first');
+            if(el.is('.warehouse')){
+                row.find('.projectstock').val('').attr('disabled', true);
+                row.find('.stockitemprojectid').val(0);
+            }
+        },
+        
         onQtyChange() {
             let qty = accounting.unformat(this.value);
-
+            
             // limit qty on goods received
-            // let row = $(this).parents('tr');
-            // let qtyDue = accounting.unformat(row.find('.qty_due').text());
-            // let qtyOrdered = accounting.unformat(row.find('.qty_ordered').text());
-            // let qtyReceived = accounting.unformat(row.find('.qty_received').text());
-            // if (!Form.grn) {
-            //     if (qty > qtyDue) qty = qtyDue;
-            // } else {
-            //     let limit = qty;
-            //     let originQty = accounting.unformat($(this).attr('origin'));
-            //     if (qtyDue && qtyReceived < qtyOrdered) {
-            //         limit = originQty + qtyDue;
-            //     } else {
-            //         if (qtyReceived > qtyOrdered) {
-            //             if (originQty < qtyReceived) limit = originQty - (qtyOrdered - qtyReceived);
-            //             if (originQty == qtyReceived) limit = qtyOrdered;
-            //         } else {
-            //             limit = qtyOrdered;
-            //         }
-            //     }
-            //     if (qty > limit) qty = limit;
-            // }
-
+            let row = $(this).parents('tr');
+            let qtyDue = accounting.unformat(row.find('.qty_due').text());
+            let qtyOrdered = accounting.unformat(row.find('.qty_ordered').text());
+            let qtyReceived = accounting.unformat(row.find('.qty_received').text());
+            if (!Form.grn) {
+                if (qty > qtyDue) qty = qtyDue;
+            } else {
+                let limit = qty;
+                let originQty = accounting.unformat($(this).attr('origin'));
+                if (qtyDue && qtyReceived < qtyOrdered) {
+                    limit = originQty + qtyDue;
+                } else {
+                    if (qtyReceived > qtyOrdered) {
+                        if (originQty < qtyReceived) limit = originQty - (qtyOrdered - qtyReceived);
+                        if (originQty == qtyReceived) limit = qtyOrdered;
+                    } else {
+                        limit = qtyOrdered;
+                    }
+                }
+                if (qty > limit) qty = limit;
+            }
+            
             this.value = accounting.formatNumber(qty);
             Form.columnTotals();
         },
@@ -160,3 +241,4 @@
 
     $(() => Form.init());
 </script>
+

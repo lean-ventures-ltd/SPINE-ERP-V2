@@ -77,7 +77,7 @@ class Payroll extends Model
                 return $instance;
             });
                 static::addGlobalScope('ins', function($builder){
-            $builder->where('ins', '=', auth()->user()->ins);
+            $builder->where('payroll.ins', '=', auth()->user()->ins);
     });
     }
 }

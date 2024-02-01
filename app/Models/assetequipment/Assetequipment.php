@@ -11,9 +11,9 @@ class Assetequipment extends Model
 {
     use ModelTrait,
         AssetequipmentAttribute,
-    	AssetequipmentRelationship {
-            // AssetequipmentAttribute::getEditButtonAttribute insteadof ModelTrait;
-        }
+        AssetequipmentRelationship {
+        // AssetequipmentAttribute::getEditButtonAttribute insteadof ModelTrait;
+    }
 
     /**
      * NOTE : If you want to implement Soft Deletes in this model,
@@ -30,17 +30,13 @@ class Assetequipment extends Model
      * Mass Assignable fields of model
      * @var array
      */
-    protected $fillable = [
-
-    ];
+    protected $fillable = [];
 
     /**
      * Default values for model fields
      * @var array
      */
-    protected $attributes = [
-
-    ];
+    protected $attributes = [];
 
     /**
      * Dates
@@ -69,15 +65,9 @@ class Assetequipment extends Model
     }
     protected static function boot()
     {
-            parent::boot();
-            static::addGlobalScope('ins', function($builder){
+        parent::boot();
+        static::addGlobalScope('ins', function ($builder) {
             $builder->where('ins', '=', auth()->user()->ins);
-    });
+        });
     }
-
-    
-
-     
-
-
 }

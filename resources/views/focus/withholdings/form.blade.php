@@ -25,7 +25,7 @@
 <div class="row form-group">                         
     <div class="col-2">
         <label for="amount" class="caption">Tax Amount Withheld (Ksh.)</label>
-        {{ Form::text('amount', null, ['class' => 'form-control', 'id' => 'amount', 'required']) }}
+        {{ Form::text('amount', null, ['class' => 'form-control cash', 'id' => 'amount', 'required']) }}
     </div>                              
     <div class="col-2">
         <label for="reference" class="caption">Certificate Serial No.</label>

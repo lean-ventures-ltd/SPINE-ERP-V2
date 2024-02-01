@@ -29,7 +29,7 @@ return [
 'city'=>'City',
 'state'=>'Region',
 'country'=>'Country',
-'postal'=>'Post Box',
+'postal'=>'PostBox',
 'phone'=>'Phone',
 'tax_id'=>'TAX ID',
 'company'=>'Company',

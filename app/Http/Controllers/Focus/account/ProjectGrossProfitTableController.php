@@ -21,6 +21,7 @@ namespace App\Http\Controllers\Focus\account;
 use App\Http\Controllers\Controller;
 use App\Repositories\Focus\account\AccountRepository;
 use Yajra\DataTables\Facades\DataTables;
+use DB;
 
 class ProjectGrossProfitTableController extends Controller
 {
@@ -93,17 +94,20 @@ class ProjectGrossProfitTableController extends Controller
                     if ($inv_product) $income += $quote->subtotal;                        
                 }
                 $this->income = $income;
-
                 return numberFormat($income);
             })
             ->addColumn('expense', function($project) {
-                $expense = $project->purchase_items->sum('amount');
+                $total_estimate = 0;
                 foreach ($project->quotes as $quote) {
-                   $expense += $quote->projectstock->sum('total');
+                    $dir_purchase_amount = $project->purchase_items->sum('amount') / $project->quotes->count();
+                    $proj_grn_amount = $project->grn_items()->sum(DB::raw('round(rate*qty)')) / $project->quotes->count();
+                    $labour_amount = $project->labour_allocations()->sum(DB::raw('hrs * 500')) / $project->quotes->count();
+                    $expense_amount = $dir_purchase_amount + $proj_grn_amount + $labour_amount;
+                    if ($quote->projectstock) $expense_amount += $quote->projectstock->sum('total');
+                    $total_estimate += $expense_amount;
                 }
-                $this->expense = $expense;
-
-                return numberFormat($expense);
+                $this->expense = $total_estimate;
+                return numberFormat($total_estimate);
             })
             ->addColumn('gross_profit', function($project) {
                 $profit = 0;
@@ -111,7 +115,6 @@ class ProjectGrossProfitTableController extends Controller
                     $profit = $this->income  - $this->expense;
                 }
                 $this->profit = $profit;
-                
                 return numberFormat($profit);
             })
             ->addColumn('percent_profit', function($project) {                

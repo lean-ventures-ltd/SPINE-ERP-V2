@@ -27,10 +27,6 @@
                                     {{ Form::text('record_month', null, ['class' => 'form-control datepicker', 'id' => 'record_month']) }}
                                 </div>
                                 <div class="col-3">
-                                    <label for="return_month">Return Month</label>
-                                    {{ Form::text('return_month', null, ['class' => 'form-control datepicker', 'id' => 'return_month']) }}
-                                </div>
-                                <div class="col-3">
                                     <label for="tax_group">Tax Group</label>
                                     @php
                                         $options = [
@@ -46,6 +42,10 @@
                                             <option value="{{ intval($key) }}">{{ $val }}</option>
                                         @endforeach
                                     </select>
+                                </div>
+                                <div class="col-3">
+                                    <label for="return_month">Return Month</label>
+                                    {{ Form::text('return_month', null, ['class' => 'form-control datepicker', 'id' => 'return_month']) }}
                                 </div>
                             </div>
                             <hr>

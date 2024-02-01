@@ -5,7 +5,6 @@ namespace App\Http\Responses\Focus\task;
 use App\Models\hrm\Hrm;
 use App\Models\misc\Misc;
 use App\Models\project\Project;
-use App\Models\project\ProjectMileStone;
 use Illuminate\Contracts\Support\Responsable;
 
 class EditResponse implements Responsable
@@ -32,13 +31,14 @@ class EditResponse implements Responsable
      */
     public function toResponse($request)
     {
-        $tasks = $this->tasks;
+        $tasks=$this->tasks;
         $mics = Misc::all();
         $employees = Hrm::all();
+        $user = auth()->user()->id;
+        $project_select = Project::whereHas('users', function ($q) use ($user) {
+            return $q->where('rid', '=', $user);
+        })->get();
+        return view('focus.projects.tasks.edit',compact('tasks','mics', 'employees', 'project_select'));
 
-        $project_id = @$tasks->milestone->project->id;
-        $milestones = ProjectMileStone::where('project_id', $project_id)->get();
-
-        return view('focus.projects.tasks.edit', compact('tasks', 'mics', 'employees', 'milestones'));
     }
 }

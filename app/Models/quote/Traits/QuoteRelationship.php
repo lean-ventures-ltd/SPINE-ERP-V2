@@ -10,7 +10,6 @@ use App\Models\invoice\Invoice;
 use App\Models\items\InvoiceItem;
 use App\Models\items\MetaEntry;
 use App\Models\items\QuoteItem;
-use App\Models\items\VerificationItem;
 use App\Models\items\VerifiedItem;
 use App\Models\lead\Lead;
 use App\Models\lpo\Lpo;
@@ -20,8 +19,8 @@ use App\Models\project\Project;
 use App\Models\project\ProjectQuote;
 use App\Models\projectstock\Projectstock;
 use App\Models\term\Term;
-use App\Models\verification\Verification;
 use App\Models\verifiedjcs\VerifiedJc;
+use App\Models\quote\EquipmentQuote;
 
 /**
  * Class QuoteRelationship
@@ -30,6 +29,7 @@ trait QuoteRelationship
 {
     public function project()
     {
+        // return $this->hasOne(Project::class, 'main_quote_id');
         return $this->hasOneThrough(Project::class, ProjectQuote::class, 'quote_id', 'id', 'id', 'project_id')->withoutGlobalScopes();
     }
 
@@ -63,11 +63,6 @@ trait QuoteRelationship
         return $this->hasOne(Budget::class);
     }
 
-    public function budget_skillsets()
-    {
-        return $this->hasManyThrough(BudgetSkillset::class, Budget::class, 'quote_id', 'budget_id', 'id', 'id');
-    }
-
     public function budgets()
     {
         return $this->hasMany(Budget::class);
@@ -96,16 +91,6 @@ trait QuoteRelationship
     public function verified_products()
     {
         return $this->hasMany(VerifiedItem::class)->orderBy('row_index', 'ASC');
-    }
-
-    public function part_verification_products()
-    {
-        return $this->hasManyThrough(VerificationItem::class, Verification::class, 'quote_id', 'parent_id', 'id', 'id');
-    }
-
-    public function part_verifications()
-    {
-        return $this->hasMany(Verification::class);
     }
 
     public function products()
@@ -146,5 +131,13 @@ trait QuoteRelationship
     public function lead()
     {
         return $this->hasOne(Lead::class, 'id', 'lead_id')->withoutGlobalScopes();
+    }
+    
+    public function equipments()
+    {
+        return $this->hasMany(EquipmentQuote::class, 'quote_id')->withoutGlobalScopes();
+    }
+    public function preparedBy(){
+        return $this->belongsTo(User::class, 'prepared_by_user');
     }
 }

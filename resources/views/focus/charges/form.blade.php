@@ -14,10 +14,10 @@
     </div> 
     <div class='form-group col-5'>
         <div><label for="expense">Expense Category</label></div>
-        <select name="expense_id" class='form-control round' required>
-            <option value="">-- Select Expense --</option>
+        <select name="expense_id" class='form-control round' required readonly>
+{{--            <option value="">-- Select Expense --</option>--}}
             @foreach($accounts as $account)
-                @if ($account->account_type_id == 4)
+                @if ($account->account_type_id == 4 && $account['holder'] === 'Bank Charges')
                     <option value="{{ $account['id'] }}">
                         {{ $account['holder'] }}
                     </option>

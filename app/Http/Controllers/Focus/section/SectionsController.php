@@ -93,11 +93,7 @@ class SectionsController extends Controller
         $input['ins'] = auth()->user()->ins;
         //Create the model using repository create method
          
-        try {
-            $id = $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Section', $th);
-        }
+        $id = $this->repository->create($input);
         //return with successfull message
         return new RedirectResponse(route('biller.sections.index'), ['flash_success' => 'Section  Successfully Created' . ' <a href="' . route('biller.sections.show', [$id]) . '" class="ml-5 btn btn-outline-light round btn-min-width bg-blue"><span class="fa fa-eye" aria-hidden="true"></span> ' . trans('general.view') . '  </a> &nbsp; &nbsp;' . ' <a href="' . route('biller.sections.create') . '" class="btn btn-outline-light round btn-min-width bg-purple"><span class="fa fa-plus-circle" aria-hidden="true"></span> ' . trans('general.create') . '  </a>&nbsp; &nbsp;' . ' <a href="' . route('biller.sections.index') . '" class="btn btn-outline-blue round btn-min-width bg-amber"><span class="fa fa-list blue" aria-hidden="true"></span> <span class="blue">' . trans('general.list') . '</span> </a>']);
     }
@@ -140,11 +136,7 @@ class SectionsController extends Controller
         //Input received from the request
         $input = $request->only(['name', 'rel_id', 'location', 'contact_name', 'contact_phone']);
         //Update the model using repository update method
-        try {
-            $this->repository->update($branch, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Branch', $th);
-        }
+        $this->repository->update($branch, $input);
         //return with successfull message
         return new RedirectResponse(route('biller.branches.index'), ['flash_success' => 'Branch  Successfully Updated'  . ' <a href="' . route('biller.branches.show', [$branch->id]) . '" class="ml-5 btn btn-outline-light round btn-min-width bg-blue"><span class="fa fa-eye" aria-hidden="true"></span> ' . trans('general.view') . '  </a> &nbsp; &nbsp;' . ' <a href="' . route('biller.branches.create') . '" class="btn btn-outline-light round btn-min-width bg-purple"><span class="fa fa-plus-circle" aria-hidden="true"></span> ' . trans('general.create') . '  </a>&nbsp; &nbsp;' . ' <a href="' . route('biller.branches.index') . '" class="btn btn-outline-blue round btn-min-width bg-amber"><span class="fa fa-list blue" aria-hidden="true"></span> <span class="blue">' . trans('general.list') . '</span> </a>']);
 
@@ -161,12 +153,8 @@ class SectionsController extends Controller
     {
 
         //dd($branch);
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($branch);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Section', $th);
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($branch);
         //returning with successfull message
         return new RedirectResponse(route('biller.sections.index'), ['flash_success' => 'Section Successfully Deleted']);
     }

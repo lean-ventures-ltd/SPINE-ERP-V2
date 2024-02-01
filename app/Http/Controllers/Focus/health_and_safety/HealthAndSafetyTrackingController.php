@@ -14,7 +14,9 @@ use Illuminate\Http\Request;
 use App\Http\Responses\RedirectResponse;
 use App\Exceptions\GeneralException;
 use App\Http\Requests\Request as RequestsRequest;
+use App\Models\health_and_safety_objectives\HealthAndSafetyObjective;
 use Illuminate\Support\Facades\DB;
+use League\Flysystem\Exception;
 
 class HealthAndSafetyTrackingController extends Controller
 {
@@ -63,8 +65,9 @@ class HealthAndSafetyTrackingController extends Controller
         $employees = Hrm::all();
 
         $clients = Customer::all();
+        $objectives = HealthAndSafetyObjective::all();
 
-        return view('focus.health_and_safety.create', compact('clients', 'additionals', 'customers', 'accounts', 'projects', 'mics', 'employees', 'statuses', 'tags'));
+        return view('focus.health_and_safety.create', compact('clients','objectives', 'additionals', 'customers', 'accounts', 'projects', 'mics', 'employees', 'statuses', 'tags'));
     }
 
     /**
@@ -76,17 +79,27 @@ class HealthAndSafetyTrackingController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
-        $input = $request->all();
+       $input = $request->all();
 
         $input['employee'] = json_encode($request->employee);;
         $input['ins'] = auth()->user()->ins;
         $input['user_id'] = auth()->user()->id;
 
+//        return $input;
 
         try {
-            $result = HealthAndSafetyTracking::create($input);
-        } catch (\Throwable $th) {
-            throw new GeneralException('Error adding issue.');
+            DB::beginTransaction();
+
+            $hsTracking = new HealthAndSafetyTracking();
+
+            $hsTracking->fill($input);
+            $hsTracking->save();
+
+            DB::commit();
+        } catch (Exception $ex) {
+
+            DB::rollBack();
+            return $ex->getMessage();
         }
 
         return new RedirectResponse(route('biller.health-and-safety.index'), ['flash_success' => 'Issue has been added successfully']);
@@ -134,6 +147,10 @@ class HealthAndSafetyTrackingController extends Controller
         $employees = Hrm::all();
 
         $clients = Customer::all();
+
+        $proId = $data->project->id;
+
+        $data->project = $proId;
 
         return view('focus.health_and_safety.edit', compact('data', 'clients', 'additionals', 'customers', 'accounts', 'projects', 'mics', 'employees', 'statuses', 'tags'));
     }

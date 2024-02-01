@@ -28,7 +28,7 @@ class ContractRepository extends BaseRepository
      */
     public function getForDataTable()
     {
-        return $this->query();
+        return $this->query()->get();
     }
 
     public function getForTaskScheduleDataTable()

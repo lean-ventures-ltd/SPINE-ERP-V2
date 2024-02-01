@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<div class="responsive">
+<div class="table-responsive">
     <table id="saleTbl" class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
         <thead>
             <tr class="bg-gradient-directional-blue white">
@@ -24,6 +24,7 @@
                 <th>Invoice Date</th>
                 <th>Buyer</th>
                 <th>Invoice No.</th>
+                <th>CU Invoice No.</th>
                 <th>Description</th>
                 <th>Taxable Amount</th>
                 <th>Action</th>
@@ -46,6 +47,7 @@
                                 'invoice_date' => $inv->invoicedate,
                                 'customer' => $inv->customer? $inv->customer->company : '',
                                 'invoice_no' => $inv->tid,
+                                'cu_invoice_no' => $inv->cu_invoice_no,
                                 'note' => $inv->notes,
                                 'subtotal' => $inv->subtotal,
                                 'tax' => $inv->tax,
@@ -61,6 +63,7 @@
                                 'invoice_date' => $cnote->date,
                                 'customer' => $cnote->customer? $cnote->customer->company : '',
                                 'invoice_no' => $cnote->tid,
+                                'cu_invoice_no' => $inv->cu_invoice_no,
                                 'note' => 'Credit Note',
                                 'subtotal' => -1 * $cnote->subtotal,
                                 'tax' => -1 * $inv->tax,
@@ -77,6 +80,7 @@
                         <td>{{ dateFormat($data['invoice_date']) }}</td>
                         <td>{{ isset($data['customer']) ? $data['customer'] : '' }}</td>
                         <td>{{ $data['invoice_no'] }}</td>
+                        <td>{{ $data['cu_nvoice_no'] }}</td>
                         <td>{{ $data['note'] }}</td>
                         <td class="subtotal">{{ numberFormat($data['subtotal']) }}</td>
                         <td width="15%">

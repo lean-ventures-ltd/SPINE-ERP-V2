@@ -21,6 +21,8 @@ use App\Models\project\Task;
 use App\Models\quote\Quote;
 use App\Models\rjc\Rjc;
 use App\Models\items\GoodsreceivenoteItem;
+use App\Models\labour_allocation\LabourAllocation;
+
 
 /**
  * Class ProjectRelationship
@@ -31,7 +33,7 @@ trait ProjectRelationship
     {
         return $this->hasMany(GoodsreceivenoteItem::class, 'itemproject_id');
     }
-
+    
     public function misc()
     {
         return $this->belongsTo(Misc::class, 'status');
@@ -41,7 +43,7 @@ trait ProjectRelationship
     {
         return $this->belongsTo(User::class, 'ended_by');
     }
-
+    
     public function purchase_items()
     {
         return $this->hasMany(PurchaseItem::class, 'itemproject_id');
@@ -91,7 +93,7 @@ trait ProjectRelationship
     {
         return $this->hasOneThrough(Hrm::class, ProjectRelations::class, 'project_id', 'id', 'id', 'user_id');
     }
-
+    
     public function branch()
     {
         return $this->belongsTo(Branch::class);
@@ -140,5 +142,10 @@ trait ProjectRelationship
     public function customer_project()
     {
         return $this->belongsTo(Customer::class, 'customer_id');
+    }
+    
+    public function labour_allocations()
+    {
+        return $this->hasmany(LabourAllocation::class, 'project_id');
     }
 }

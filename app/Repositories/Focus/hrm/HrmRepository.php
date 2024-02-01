@@ -31,6 +31,7 @@ class HrmRepository extends BaseRepository
     const MODEL = Hrm::class;
     protected $file_picture_path;
     protected $file_sign_path;
+    protected $file_cv_path;
     protected $storage;
     protected $messageUtil;
 
@@ -41,6 +42,7 @@ class HrmRepository extends BaseRepository
     {
         $this->file_picture_path = 'img' . DIRECTORY_SEPARATOR . 'users' . DIRECTORY_SEPARATOR;
         $this->file_sign_path = 'img' . DIRECTORY_SEPARATOR . 'signs' . DIRECTORY_SEPARATOR;
+        $this->file_cv_path = 'img' . DIRECTORY_SEPARATOR . 'cvs' . DIRECTORY_SEPARATOR;
         $this->storage = Storage::disk('public');
         $this->messageUtil = $messageUtil;
     }
@@ -97,6 +99,8 @@ class HrmRepository extends BaseRepository
                     $input[$key]['picture'] = $this->uploadPicture($val['picture'], $this->file_picture_path);
                 if (isset($val['signature'])) 
                     $input[$key]['signature'] = $this->uploadPicture($val['signature'], $this->file_sign_path);
+                if (isset($val['cv'])) 
+                    $input[$key]['cv'] = $this->uploadPicture($val['cv'], $this->file_cv_path);
             }
             if ($key == 'meta') {
                 if (isset($val['id_front'])) 
@@ -104,11 +108,6 @@ class HrmRepository extends BaseRepository
                 if (isset($val['id_back'])) 
                     $input[$key]['id_back'] = $this->uploadPicture($val['id_back'], $this->file_sign_path);
             }
-        }
-
-        if (@$input['meta']['employee_no']) {
-            $employee_exists = HrmMeta::where('employee_no', 'LIKE', "%{$input['meta']['employee_no']}%")->exists();
-            if ($employee_exists) throw ValidationException::withMessages(['Duplicate Employee No.']);
         }
 
         $username = Str::random(4);
@@ -191,6 +190,12 @@ class HrmRepository extends BaseRepository
                     }
                     $input[$key]['signature'] = $this->uploadPicture($val['signature'], $this->file_sign_path);
                 }
+                if (isset($val['cv'])) {
+                    if ($this->storage->exists($this->file_cv_path . $hrm->cv)) {
+                        $this->storage->delete($this->file_cv_path . $hrm->cv);
+                    }
+                    $input[$key]['cv'] = $this->uploadPicture($val['cv'], $this->file_cv_path);
+                }
             }
             if ($key == 'meta') {
                 if (isset($val['id_front'])) {
@@ -210,11 +215,6 @@ class HrmRepository extends BaseRepository
             }
         }
 
-        if (@$input['meta']['employee_no']) {
-            $employee_exists = HrmMeta::where('user_id', '!=', $hrm->id)->where('employee_no', 'LIKE', "%{$input['meta']['employee_no']}%")->exists();
-            if ($employee_exists) throw ValidationException::withMessages(['Duplicate Employee No.']);
-        }
-        
         $role_id = $input['employee']['role'];
         $role = Role::find($role_id);
         if ($role && $role->status == 1) {
@@ -233,6 +233,10 @@ class HrmRepository extends BaseRepository
             DB::commit();
             return true;
         }
+        
+        
+
+        // throw new GeneralException(trans('exceptions.backend.hrms.update_error'));
     }
 
     /**
@@ -267,6 +271,7 @@ class HrmRepository extends BaseRepository
     */
     public function uploadPicture($logo, $path)
     {
+
         $image_name = time() . $logo->getClientOriginalName();
 
         $this->storage->put($path . $image_name, file_get_contents($logo->getRealPath()));

@@ -9,6 +9,8 @@ use App\Models\supplier_product\SupplierProduct;
 use App\Models\supplier\Supplier;
 use App\Repositories\Focus\pricelistSupplier\PriceListRepository;
 use Illuminate\Http\Request;
+use App\Models\productcategory\Productcategory;
+use App\Models\warehouse\Warehouse;
 
 class PriceListsController extends Controller
 {
@@ -34,9 +36,7 @@ class PriceListsController extends Controller
      */
     public function index()
     {
-        $supplier_id = auth()->user()->supplier_id;
-        $suppliers = Supplier::when($supplier_id, fn ($q) => $q->where('id', $supplier_id))
-        ->whereHas('supplier_products')->get(['id', 'company']);
+        $suppliers = Supplier::whereHas('supplier_products')->get(['id', 'company']);
         $contracts = SupplierProduct::get(['contract', 'supplier_id'])->unique('contract');
         $contracts = [...$contracts];
 
@@ -51,8 +51,10 @@ class PriceListsController extends Controller
     public function create()
     {
         $suppliers = Supplier::get(['id', 'company']);
+        $warehouses = Warehouse::get(['id', 'title']);
+        $categories = Productcategory::get(['id', 'title']);
 
-        return new ViewResponse('focus.pricelistsSupplier.create', compact('suppliers'));
+        return new ViewResponse('focus.pricelistsSupplier.create', compact('suppliers','warehouses','categories'));
     }
 
     /**
@@ -63,11 +65,7 @@ class PriceListsController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $this->repository->create($request->except('_token'));
-        } catch (\Throwable $th) {
-            return errorHandler($th, 'Error creating Supplier Pricelist');
-        }
+        $this->repository->create($request->except('_token'));
 
         return new RedirectResponse(route('biller.pricelistsSupplier.index'), ['flash_success' => 'Pricelist Item Created Successfully']);
     }
@@ -107,12 +105,8 @@ class PriceListsController extends Controller
      */
     public function update($id, Request $request)
     {
-        try {
-            $supplier_product = SupplierProduct::find($id);
-            $this->repository->update($supplier_product, $request->except('_token'));
-        } catch (\Throwable $th) {
-            return errorHandler($th, 'Error Updating Supplier Pricelist');
-        }
+        $supplier_product = SupplierProduct::find($id);
+        $this->repository->update($supplier_product, $request->except('_token'));
 
         return new RedirectResponse(route('biller.pricelistsSupplier.index'), ['flash_success' => 'Pricelist Item Updated Successfully']);
     }
@@ -125,16 +119,12 @@ class PriceListsController extends Controller
      */
     public function destroy($id, Request $request)
     {
-        try {
-            if ($id == 0) {
-                $request->validate(['supplier_id' => 'required']);
-                $this->repository->mass_delete($request->except('_token'));
-            } else {
-                $supplier_product = SupplierProduct::find($id);
-                $this->repository->delete($supplier_product);    
-            }
-        } catch (\Throwable $th) {
-            return errorHandler($th, 'Error Deleting Supplier Pricelist');
+        if ($id == 0) {
+            $request->validate(['supplier_id' => 'required']);
+            $this->repository->mass_delete($request->except('_token'));
+        } else {
+            $supplier_product = SupplierProduct::find($id);
+            $this->repository->delete($supplier_product);    
         }
             
         return new RedirectResponse(route('biller.pricelistsSupplier.index'), ['flash_success' => 'Pricelist Item Deleted Successfully']);

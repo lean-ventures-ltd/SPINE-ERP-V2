@@ -136,11 +136,7 @@ class ProjectstocktransfersController extends Controller
         $invoice_items['ins'] = auth()->user()->ins;
         $invoice_items['user_id'] = auth()->user()->id;
 
-        try {
-            $result = $this->repository->create(compact('invoice', 'invoice_items', 'inventory'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Project Stock Transfer', $th);
-        }
+        $result = $this->repository->create(compact('invoice', 'invoice_items', 'inventory'));
         //return with successfull message
 
             echo json_encode(array('status' => 'Success', 'message' => trans('alerts.backend.transfer.created') . ' <a href="' . route('biller.projectstocktransfers.index') . '" class="btn btn-primary btn-md"><span class="fa fa-eye" aria-hidden="true"></span> ' . trans('general.view') . '  </a> <a href="' . route('biller.projectstocktransfers.create') . '" class="btn btn-outline-light round btn-min-width bg-purple"><span class="fa fa-plus-circle" aria-hidden="true"></span>Add Another Transaction  </a>&nbsp; &nbsp;'));
@@ -189,11 +185,7 @@ class ProjectstocktransfersController extends Controller
         if ($order->i_class == 2 and !access()->allow('data-creditnote')) exit();
 
 
-        try {
-            $result = $this->repository->update($order, compact('invoice', 'invoice_items', 'data2'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Project Stock Transfer', $th);
-        }
+        $result = $this->repository->update($order, compact('invoice', 'invoice_items', 'data2'));
 
         //return with successfull message
 
@@ -209,12 +201,8 @@ class ProjectstocktransfersController extends Controller
      */
     public function destroy(Order $order, StoreProductstocktransferRequest $request)
     {
-        try {
-            //Calling the delete method on repository
-            $this->repository->delete($order);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Project Stock Transfer', $th);
-        }
+        //Calling the delete method on repository
+        $this->repository->delete($order);
         //returning with successfull message
         return json_encode(array('status' => 'Success', 'message' => trans('alerts.backend.orders.deleted')));
 

@@ -6,15 +6,12 @@ use App\Exceptions\GeneralException;
 use App\Models\advance_payment\AdvancePayment;
 use App\Models\items\UtilityBillItem;
 use App\Models\utility_bill\UtilityBill;
-use App\Repositories\Accounting;
 use App\Repositories\BaseRepository;
 use DB;
 use Illuminate\Validation\ValidationException;
 
 class AdvancePaymentRepository extends BaseRepository
 {
-    use Accounting;
-
     /**
      * Associated Repository Model.
      */
@@ -82,10 +79,8 @@ class AdvancePaymentRepository extends BaseRepository
 
         $result = $advance_payment->update($input);
 
-        if ($advance_payment->status == 'approved') {
-            $bill = $this->generate_bill($advance_payment);
-            throw ValidationException::withMessages(['Accounting Module Required!']);
-        }
+        if ($advance_payment->status == 'approved')
+            $this->generate_bill($advance_payment);
         
         if ($result) {
             DB::commit();
@@ -105,14 +100,14 @@ class AdvancePaymentRepository extends BaseRepository
     public function delete(AdvancePayment $advance_payment)
     {
         DB::beginTransaction();
-        $advance_payment->bill->transactions()->delete();
-        aggregate_account_transactions();
-        $advance_payment->bill->items()->delete();
-        $advance_payment->bill->delete();
+
+        UtilityBill::where(['document_type' => 'advance_payment', 'ref_id' => $advance_payment->id])->delete();
         if ($advance_payment->delete()) {
             DB::commit();
             return true;
         }
+            
+        throw new GeneralException(trans('exceptions.backend.advance_payment.delete_error'));
     }
 
     /**
@@ -120,13 +115,6 @@ class AdvancePaymentRepository extends BaseRepository
      */
     public function generate_bill($payment)
     {
-        $bill_items_data = [
-            'ref_id' => $payment->id,
-            'note' => $payment->approve_note,
-            'qty' => 1,
-            'subtotal' => $payment->approve_amount,
-            'total' => $payment->approve_amount, 
-        ];
         $bill_data = [
             'employee_id' => $payment->employee_id,
             'document_type' => 'advance_payment',
@@ -137,7 +125,20 @@ class AdvancePaymentRepository extends BaseRepository
             'total' => $payment->approve_amount,
             'note' => $payment->approve_note,
         ];
-        $bill = UtilityBill::where(['document_type' => 'advance_payment', 'ref_id' => $payment->id,])->first();
+
+        $bill_items_data = [
+            'ref_id' => $payment->id,
+            'note' => $payment->approve_note,
+            'qty' => 1,
+            'subtotal' => $payment->approve_amount,
+            'total' => $payment->approve_amount, 
+        ];
+
+        $bill = UtilityBill::where([
+            'document_type' => $bill_data['document_type'], 
+            'ref_id' => $bill_data['ref_id']
+        ])->first();
+
         if ($bill) {
             // update bill
             $bill->update($bill_data);
@@ -148,7 +149,6 @@ class AdvancePaymentRepository extends BaseRepository
                 ]);
                 $new_item->save();
             }
-            $bill->transactions()->delete();
         } else {
             // create bill
             $bill_data['tid'] = UtilityBill::where('ins', auth()->user()->ins)->max('tid') + 1;
@@ -160,6 +160,5 @@ class AdvancePaymentRepository extends BaseRepository
             }, $bill_items_data);
             UtilityBillItem::insert($bill_items_data);
         }
-        return $bill;
     }
 }

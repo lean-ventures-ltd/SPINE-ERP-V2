@@ -63,20 +63,15 @@ class SalaryTableController extends Controller
                 if ($employee_no) $employee_no .= " - {$salary->user->full_name}";
                 return $employee_no;
              })
-            ->addColumn('basic_pay', function ($salary) {
-                  return amountFormat($salary->basic_pay);
+            ->addColumn('basic_salary', function ($salary) {
+                  return amountFormat($salary->basic_salary);
             })
-            ->addColumn('contract_type', function ($salary) {
-                return $salary->contract_type;
+            ->addColumn('max_hourly_salary', function ($salary) {
+
+                return amountFormat(bcmul($salary->hourly_salary, $salary->basic_salary));
             })
-            ->addColumn('duration', function ($salary) {
-                return $salary->duration;
-            })
-            ->addColumn('status', function ($salary) {
-                return $salary->status;
-            })
-            ->addColumn('pay_per_hr', function ($salary) {
-                return numberFormat($salary->pay_per_hr);
+            ->addColumn('nhif', function ($salary) {
+                return boolval($salary->nhif) ? 'Enrolled' : 'Exempt';
             })
             ->addColumn('actions', function ($salary) {
                 return $salary->action_buttons;

@@ -36,7 +36,7 @@ trait PurchaseorderRelationship
 
     public function project()
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Project::class, 'project_id', 'id');
     }
 
     public function customer()

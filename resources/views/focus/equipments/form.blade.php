@@ -94,7 +94,31 @@
 
 <div class="form-group row">
     <div class='col-md-4'>
+        {{ Form::label('end_of_warranty', 'End of Warranty',['class' => 'col-12 control-label']) }}
+        {{ Form::text('end_of_warranty', null, ['class' => 'col form-control datepicker', 'id' => 'end_of_warranty']) }}
+    </div>
+</div>
+
+<div class="form-group row">
+    <div class='col-md-4'>
         {{ Form::label('note', 'Remark',['class' => 'col-12 control-label']) }}
         {{ Form::text('note', null, ['class' => 'col form-control ', 'placeholder' => 'Remark']) }}
+    </div>
+    <div class='col-md-4'>
+        {{ Form::label('pm_duration', 'PM Duration(mins)',['class' => 'col-12 control-label']) }}
+        {{ Form::number('pm_duration', '30', ['class' => 'col form-control ']) }}
+    </div>
+    <div class='col-md-4'>
+        {{ Form::label('status', 'Equipment Status',['class' => 'col-12 control-label']) }}
+        <select name="status" class="form-control" id="status-0">
+            <option value="">-- Select Status --</option>
+            @foreach (['working', 'faulty', 'cannibalised', 'decommissioned', 'under warranty'] as $val)
+                @if(empty($equipment))
+                    <option value="{{ $val }}" >{{ ucfirst($val) }}</option>
+                @else
+                    <option value="{{ $val }}" @if(@$equipment->status === $val) selected @endif>{{ ucfirst($val) }}</option>
+                @endif
+            @endforeach
+        </select>
     </div>
 </div>

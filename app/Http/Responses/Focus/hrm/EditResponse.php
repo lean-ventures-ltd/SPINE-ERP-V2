@@ -33,23 +33,29 @@ class EditResponse implements Responsable
      */
     public function toResponse($request)
     {
+        $prefixes = prefixesArray(['hrm'], auth()->user()->ins);
+
         $departments = Department::all()->pluck('name','id');
         $roles = Role::where('status', 1)->get();
 
         $hrm_metadata = $this->hrms->meta? $this->hrms->meta->toArray() : [];
 
-        $hrms_mod = $this->hrms->toArray();
-        unset($hrms_mod['meta']);
-        $hrms = $this->hrms->fill(array_merge($hrms_mod, $hrm_metadata));
-        
+        $hrms_mod = collect([$this->hrms->toArray()])->map(function ($v) use($hrm_metadata) {
+            return array_merge(array_diff_key($v, array_flip(['meta'])), $hrm_metadata);
+        })->first();
+        $hrms = $this->hrms->fill($hrms_mod);
         $last_tid = $hrms->employee_no;
 
         $emp_role = $this->hrms->role->id;
-        $permissions_all = Permission::whereHas('roles', fn($q) => $q->where('role_id', $emp_role))->get()->toArray();
-            
+        $permissions_all = Permission::whereHas('roles', function ($q) use ($emp_role) {
+            $q->where('role_id', $emp_role);
+        })->get()->toArray();
+
         $general['create'] = $this->hrms->id;
+
+        $hrms['employee_no'] = $prefixes['0'].$hrms['employee_no'];
         $permissions = PermissionUser::all()->keyBy('id')->where('user_id', $general['create'])->toArray();
 
-        return view('focus.hrms.edit',compact('hrms', 'roles', 'general', 'permissions_all', 'permissions', 'departments', 'last_tid'));
+        return view('focus.hrms.edit',compact('prefixes','hrms', 'roles', 'general', 'permissions_all', 'permissions', 'departments', 'last_tid'));
     }
 }

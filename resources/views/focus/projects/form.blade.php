@@ -49,6 +49,7 @@
         @php
             $statuses = @$statuses ?: [];
         @endphp
+        
         <select class="custom-select required" id="todo-select" name="status">
             <option value="">-- Select Project Status --</option>
             @foreach($statuses as $row)
@@ -108,7 +109,22 @@
         <label class="col-sm-4 col-xs-6  control-label" for="sdate">{{ trans('meta.to_date') }}</label>
         <div class="row no-gutters">
             <div class="col">
-                {{ Form::text('end_date', null, ['class' => 'form-control to_date required', 'data-toggle' => 'datepicker']) }}
+{{--                {{ Form::text('end_date', null, ['class' => 'form-control to_date required', 'data-toggle' => 'datepicker']) }}--}}
+
+                @php
+                    $endDate = (new DateTime('now'))->add(new DateInterval('P2M'))->format('d-m-Y');
+                    $toDateClass = '';
+                    if (!empty($project->end_date)){
+                        $toDateClass = 'to_date';
+                    }
+                @endphp
+                <input type="text" name="end_date"
+                       @if(empty($project->end_date))
+                           value="{{ $endDate }}"
+                       @endif
+                       class="form-control {{$toDateClass}} required"
+                       data-toggle="datepicker">
+
             </div>
             <div class="col">
                 {{ Form::time('time_to', timeFormat(@$project->end_date), ['class' => 'form-control']) }}

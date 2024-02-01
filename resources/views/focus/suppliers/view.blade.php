@@ -8,7 +8,7 @@
 <div class="content-wrapper">
     <div class="content-header row mb-1">
         <div class="content-header-left col-6">
-            <h4 class="content-header-title">Supplier Management</h4>
+            <h4 class="content-header-title">Supplier Management {{$supplier->id}}</h4>
         </div>
         <div class="content-header-right col-6">
             <div class="media width-250 float-right">
@@ -78,6 +78,7 @@
             this.drawAccountStatementDataTable();
             this.drawBillStatementDataTable();
             this.cloneAgingReport();
+            this.drawGrnItemsBySupplierTable()
 
             $('.start_date').change(this.changeStartDate);
             $('.search').click(this.searchClick);
@@ -141,6 +142,10 @@
             } else if (id == 'refresh4') {
                 $('#stmentTbl').DataTable().destroy();
                 View.drawBillStatementDataTable();
+            }
+            else if (id == 'refresh5') {
+                $('#grn-table').DataTable().destroy();
+                View.drawGrnItemsBySupplierTable();
             }
         },
 
@@ -232,6 +237,62 @@
                 ],
             });
         },
+
+
+        drawGrnItemsBySupplierTable() {
+            const tableLan = {@lang('datatable.strings')};
+            var dataTable = $('#grn-table').dataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                language: tableLan,
+                ajax: {
+                    url: '{{ route("biller.grn-items-by-supplier-v2") }}',
+                    type: 'GET',
+                    data: {
+                        supplierId: {{$supplier->id}}
+                    },
+                    // month: $('#month').val(),
+                    // year: $('#year').val(),
+                },
+                columns: [
+                    {
+                        data: 'code',
+                        name: 'code'
+                    },
+                    {
+                        data: 'name',
+                        name: 'name'
+                    },
+                    {
+                        data: 'uom',
+                        name: 'uom'
+                    },
+                    {
+                        data: 'quantity',
+                        name: 'quantity'
+                    },
+                    {
+                        data: 'value',
+                        name: 'value'
+                    },
+                    // {
+                    //     data: 'action',
+                    //     name: 'action',
+                    //     searchable: false,
+                    //     sortable: false
+                    // }
+                ],
+                order: [
+                    [1, "desc"]
+                ],
+                searchDelay: 500,
+                dom: 'Blfrtip',
+                buttons: ['csv', 'excel', 'print'],
+            });
+        }
+
+
     };
 
     $(() => View.init());

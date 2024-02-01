@@ -3,7 +3,6 @@
 namespace App\Models\note\Traits;
 
 use App\Models\hrm\Hrm;
-use App\Models\project\Project;
 use App\Models\project\ProjectRelations;
 
 /**
@@ -13,11 +12,11 @@ trait NoteRelationship
 {
     public function project()
     {
-        return $this->hasOneThrough(Project::class, ProjectRelations::class, 'note_id', 'id', 'id', 'project_id');
+        return $this->hasOne(ProjectRelations::class, 'note_id', 'id');
     }
 
-    public function creator()
+        public function creator()
     {
-        return $this->hasOne(Hrm::class, 'id', 'user_id');
+        return $this->belongsTo(Hrm::class, 'creator_id', 'id');
     }
 }

@@ -8,36 +8,12 @@ use App\Models\leave\Leave;
 use App\Models\System\Session;
 use App\Models\Access\Permission\PermissionUser;
 use App\Models\Access\Permission\Permission;
-use App\Models\client_user\ClientUser;
-use App\Models\client_vendor\ClientVendor;
-use App\Models\customer\Customer;
-use App\Models\tenant\Tenant;
 
 /**
  * Class UserRelationship.
  */
 trait UserRelationship
 {
-    public function client_user()
-    {
-        return $this->belongsTo(ClientUser::class);
-    }
-
-    public function client_vendor()
-    {
-        return $this->belongsTo(ClientVendor::class);
-    }
-
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
-    public function tenant()
-    {
-        return $this->hasOne(Tenant::class, 'id', 'ins');
-    }
-
     public function leaves()
     {
         return $this->hasMany(Leave::class, 'employee_id');

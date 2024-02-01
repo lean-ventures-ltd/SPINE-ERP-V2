@@ -54,79 +54,121 @@
 
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="base-tab1" data-toggle="tab" aria-controls="tab1" href="#tab1"
-                                role="tab" aria-selected="true"><span class="">Basic Salary </span>
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" id="base-tab1" data-toggle="tab" aria-controls="tab1" href="#tab1"--}}
+{{--                                role="tab" aria-selected="true"><span class="">Basic Salary </span>--}}
 
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="base-tab2" data-toggle="tab" aria-controls="tab2" href="#tab2"
-                                role="tab" aria-selected="false"><span>Tx Monthly Allowances</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="base-tab3" data-toggle="tab" aria-controls="tab3" href="#tab3"
-                                role="tab" aria-selected="false">
-                                <span>Tx Monthly Deductions</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="base-tab4" data-toggle="tab" aria-controls="tab4" href="#tab4"
-                                role="tab" aria-selected="false">
-                                <span>PAYE</span>
-                            </a>
-                        </li>
+{{--                            </a>--}}
+{{--                        </li>--}}
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" id="base-tab2" data-toggle="tab" aria-controls="tab2" href="#tab2"--}}
+{{--                                role="tab" aria-selected="false"><span>Taxable Allowances</span>--}}
+{{--                            </a>--}}
+{{--                        </li>--}}
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" id="base-tab3" data-toggle="tab" aria-controls="tab3" href="#tab3"--}}
+{{--                                role="tab" aria-selected="false">--}}
+{{--                                <span>Taxable Deductions</span>--}}
+{{--                            </a>--}}
+{{--                        </li>--}}
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" id="base-tab4" data-toggle="tab" aria-controls="tab4" href="#tab4"--}}
+{{--                                role="tab" aria-selected="false">--}}
+{{--                                <span>PAYE</span>--}}
+{{--                            </a>--}}
+{{--                        </li>--}}
 
-                        <li class="nav-item">
-                            <a class="nav-link" id="base-tab5" data-toggle="tab" aria-controls="tab5" href="#tab5"
-                                role="tab" aria-selected="false">
-                                <span>NHIF</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="base-tab6" data-toggle="tab" aria-controls="tab6" href="#tab6"
-                                role="tab" aria-selected="false">
-                                <span>Other Deductions and Benefits</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="base-tab7" data-toggle="tab" aria-controls="tab7" href="#tab7" role="tab" aria-selected="false">
-                                <span>Summary</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="base-tab8" data-toggle="tab" aria-controls="tab8" href="#tab8" role="tab"
-                               aria-selected="false">
-                               <span>Print Payroll</span>
-                            </a>
-                        </li>
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" id="base-tab5" data-toggle="tab" aria-controls="tab5" href="#tab5"--}}
+{{--                                role="tab" aria-selected="false">--}}
+{{--                                <span>NHIF</span>--}}
+{{--                            </a>--}}
+{{--                        </li>--}}
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" id="base-tab6" data-toggle="tab" aria-controls="tab6" href="#tab6"--}}
+{{--                                role="tab" aria-selected="false">--}}
+{{--                                <span>Other Deductions and Benefits</span>--}}
+{{--                            </a>--}}
+{{--                        </li>--}}
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" id="base-tab7" data-toggle="tab" aria-controls="tab7" href="#tab7" role="tab" aria-selected="false">--}}
+{{--                                <span>Summary</span>--}}
+{{--                            </a>--}}
+{{--                        </li>--}}
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" id="base-tab8" data-toggle="tab" aria-controls="tab8" href="#tab8" role="tab"--}}
+{{--                               aria-selected="false">--}}
+{{--                               <span>Print Payroll</span>--}}
+{{--                            </a>--}}
+{{--                        </li>--}}
                     </ul>
                     <div class="tab-content px-1 pt-1">
                         <div class="tab-pane active" id="tab0" role="tabpanel" aria-labelledby="base-tab0">
                             <div class="card-content">
                                 <div class="card-body">
-                                    <table class="table table-bordered table-sm">
-                                        @php
-                                            $details = [
-                                                'Payroll No' => gen4tid('PYRLL-', $payroll->tid),
-                                                'Processing Date' => dateFormat($payroll->processing_date),
-                                                'Payroll Month' => dateFormat($payroll->payroll_month),
-                                                'Days of Month' => $payroll->total_month_days,
-                                                'Working Days' => $payroll->working_days,
-                                                'Total Salary' => amountFormat($payroll->salary_total),
-                                                'Total Allowances' => amountFormat($payroll->allowance_total),
-                                                'Total Deductions' => amountFormat($payroll->deduction_total),
-                                                'Total Netpay' => amountFormat($payroll->total_netpay),
-                                            ];
-                                        @endphp
-                                        @foreach ($details as $key => $val)
-                                            <tr>
-                                                <th width="50%">{{ $key }}</th>
-                                                <td>{{ $val }}</td>
-                                            </tr>
-                                        @endforeach
-                                    </table>
+
+                                    <div class="row">
+
+                                        <div class="col-12 col-lg-6">
+                                            <h3 class="mb-1">Employees' Pay, Deductions & Taxes</h3>
+                                            <table class="table table-bordered table-sm">
+                                                @php
+                                                    $details = [
+                                                        'Payroll No' => gen4tid('PYRLL-', $payroll->tid),
+                                                        'Processing Date' => (new DateTime($payroll->processing_date))->format('M jS Y'),
+                                                        'Payroll Month' => (new DateTime($payroll->payroll_month))->format('M Y'),
+                                                        'Days of Month' => $payroll->total_month_days,
+                                                        'Working Days' => $payroll->working_days,
+                                                        'Salary' => amountFormat($payroll->salary_total),
+                                                        'Allowances' => amountFormat($payroll->allowance_total),
+                                                        'NSSF' => amountFormat($payrollItems->sum('nssf_tally')),
+                                                        'Taxable Pay Deductions' => amountFormat($payrollItems->sum('taxable_deductions_tally')),
+
+        //                                                'Total Allowances' => amountFormat($payrollItems->sum('allowances_tally')),
+        //                                                'Total Deductions' => amountFormat($payrollItems->sum('deductions_tally')),
+                                                        'Taxable Pay' => amountFormat($payrollItems->sum('taxable_gross_tally')),
+                                                        'PAYE' => amountFormat($payroll->paye_total),
+                                                        'Pay after Tax' => amountFormat( bcsub($payrollItems->sum('taxable_gross_tally'), $payroll->paye_total, 2)),
+                                                        'Housing Levy' => amountFormat($payrollItems->sum('housing_levy_tally')),
+                                                        'NHIF' => amountFormat($payrollItems->sum('nhif_tally')),
+                                                        'Total Netpay' => amountFormat($payroll->total_salary_after_bnd),
+
+        //                                                "Employer's NSSF" => amountFormat($payrollItems->sum('nssf_tally')),
+        //                                                "Employer's Housing Levy" => amountFormat($payrollItems->sum('housing_levy_tally')),
+
+                                                    ];
+                                                @endphp
+                                                @foreach ($details as $key => $val)
+                                                    <tr>
+                                                        <th width="50%">{{ $key }}</th>
+                                                        <td>{{ $val }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </table>
+                                        </div>
+
+                                        <div class="col-12 col-lg-6">
+                                            <h3 class="mb-1">Employer's Contributions</h3>
+                                            <table class="table table-bordered table-sm">
+                                                @php
+                                                    $details = [
+
+                                                        "Employer's NSSF" => amountFormat($payrollItems->sum('nssf_tally')),
+                                                        "Employer's Housing Levy" => amountFormat($payrollItems->sum('housing_levy_tally')),
+
+                                                    ];
+                                                @endphp
+                                                @foreach ($details as $key => $val)
+                                                    <tr>
+                                                        <th width="50%">{{ $key }}</th>
+                                                        <td>{{ $val }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </table>
+                                        </div>
+
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -135,43 +177,51 @@
                                 <div class="card-body">
                                     <div class="card-body">
                                         <table id="employeeTbl"
-                                            class="table table-striped table-bordered zero-configuration" cellspacing="0"
-                                            width="100%">
+                                               class="table table-striped table-responsive table-bordered zero-configuration" cellspacing="0" width="100%"                                            width="100%">
                                             <thead>
                                                 <tr>
                                                     <th>Employee Id</th>
                                                     <th>Employee Name</th>
-                                                    <th>Basic Pay</th>
+                                                    <th>Fixed Salary</th>
+                                                    <th>Max Hourly Salary</th>
+                                                    <th>Hourly Wage</th>
+                                                    <th>Man Hours</th>
+                                                    <th>Basic Hourly Salary</th>
                                                     <th>Absent Days</th>
                                                     {{-- <th>Present Days</th> --}}
-                                                    <th>Rate Per Day</th>
-                                                    <th>Total Basic Pay</th>
-                                                    <th>Action</th>
+                                                    <th>Absent Daily Deduction</th>
+                                                    <th>Absent Total Deduction</th>
+                                                    <th>Total Basic Salary</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @php
                                                     $i = 1;
                                                 @endphp
-                                                @foreach ($payroll->payroll_items as $item)
+                                                @foreach ($payrollItems as $item)
                                                 @php
                                                     $valid_token = token_validator('', 'q'.$item->id, true);
                                                     // dd($valid_token);
                                                 @endphp
                                                     <tr>
                                                         <td>{{ gen4tid('EMP-', $item->employee_id) }}</td>
-                                                        <td>{{ $item->employee_name }}</td>
-                                                        <td>{{ amountFormat($item->basic_pay) }}</td>
+                                                        <td>{{ $item->name }}</td>
+                                                        <td>{{ amountFormat($item->fixed_salary) }}</td>
+                                                        <td>{{ $item->max_hourly_salary }}</td>
+                                                        <td>{{ $item->pay_per_hr }}</td>
+                                                        <td>{{ $item->man_hours }}</td>
+                                                        <td>{{ $item->basic_hourly_salary }}</td>
                                                         <td>{{ $item->absent_days }}</td>
-                                                        {{-- <td>{{ $item->present_days }}</td> --}}
+                                                        <td>{{ $item->absent_daily_deduction }}</td>
+                                                        <td>{{ $item->absent_total_deduction }}</td>
+                                                        <td>{{ $item->basic_salary }}</td>
+
                                                         <td>
-                                                            {{ amountFormat($item->rate_per_day) }}
+{{--                                                            <a href={{ route('biller.print_payroll', [$item->id, 12, $valid_token,1]) }} class="btn btn-purple round"--}}
+{{--                                                                target="_blank" data-toggle="tooltip"--}}
+{{--                                                                data-placement="top" title="Print"><i--}}
+{{--                                                                    class="fa fa-print" aria-hidden="true"></i></a> --}}
                                                         </td>
-                                                        <td>{{ amountFormat($item->basic_pay) }}</td>
-                                                        <td><a href={{ route('biller.print_payroll', [$item->id, 12, $valid_token,1]) }} class="btn btn-purple round"
-                                                                target="_blank" data-toggle="tooltip"
-                                                                data-placement="top" title="Print"><i
-                                                                    class="fa fa-print" aria-hidden="true"></i></a> </td>
                                                                     {{-- <td>{{ route('biller.print_payroll', [$item->id, 12, $valid_token,1]) }}</td> --}}
                                                     </tr>
                                                 @endforeach
@@ -414,7 +464,7 @@
                                                 <th>Total Basic Salary</th>
                                                 <th>Total Tx Allowances</th>
                                                 <th>NSSF</th>
-                                                <th>Total Tx Monthly Deductions</th>
+                                                <th>Total Taxable Deductions</th>
                                                 <th>Taxable Gross</th>
                                                 <th>Total PAYE</th>
                                                 <th>NHIF</th>

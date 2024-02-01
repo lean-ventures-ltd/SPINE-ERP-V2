@@ -18,16 +18,19 @@
 
 namespace App\Http\Controllers\Focus\djc;
 
+use App\Models\customer\Customer;
 use App\Models\djc\Djc;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
 use App\Http\Responses\Focus\djc\CreateResponse;
 use App\Http\Responses\Focus\djc\EditResponse;
+use App\Models\SsrDefaultInput\SsrDefaultInput;
 use App\Repositories\Focus\djc\DjcRepository;
 use App\Http\Requests\Focus\djc\ManageDjcRequest;
 use App\Models\items\DjcItem;
 use App\Models\lead\Lead;
+use Illuminate\Http\Request;
 
 /**
  * DjcsController
@@ -57,8 +60,49 @@ class DjcsController extends Controller
      */
     public function index()
     {
+
+        $clients = Customer::all();
+        foreach($clients as $customer){
+
+            SsrDefaultInput::create([
+                'client' => $customer->id,
+                'findings' => "
+                    <p>During our site visit, we noted the above unit is malfunctioning.<br>Afer thorough diagnosis, it was discovered that:</p>
+                    <ul>
+                    <li>The unit is running at low pressures&nbsp;</li>
+                    <li>The unit's compressor is overheating and running with a humming sound.&nbsp;</li>
+                    <li>The unit has leakages identified along the pipe<br><br></li>
+                    </ul>
+                ",
+                'action' => "
+                    <p><br>Diagnosis was carried out and the unit subsequently switched off to avoid fault escalation to other parts of the unit.<br><br></p>
+                ",
+                'recommendations' => "
+                    <p>After diagnosis and evaluation was done on the unit, the following actions are recommended to restore it to working condition;</p>
+                    <ul>
+                    <li>replacement of the fauty compressor</li>
+                    <li>sealing the leakages along the pipe</li>
+                    <li>replacement of the the power protection equipment</li>
+                    <li>execution of flushing, vacuuming, pressure tests as well as recharging the unit with gas.<br><br></li>
+                    </ul>                
+                ",
+            ]);
+        }
+
+
         return new ViewResponse('focus.djcs.index');
     }
+
+    public function getSsrDefaultInputs(Request $request): \Illuminate\Http\JsonResponse
+    {
+
+        $customerId = Lead::find($request->leadId)->client_id;
+
+        $defaultInputs = SsrDefaultInput::where('client', $customerId)->first();
+
+        return response()->json($defaultInputs->toArray(), 200);
+    }
+
 
     /**
      * Show the form for creating a new resource.
@@ -104,14 +148,12 @@ class DjcsController extends Controller
 
         $data['ins'] = auth()->user()->ins;
         $data_items = modify_array($data_items);
-        try {
-            $result = $this->repository->create(compact('data', 'data_items'));
-            // print preview 
-            $msg = ' <a href="'. route('biller.print_djc', [$result->id, 10, token_validator('', "d{$result->id}", true), 1]) .'" class="invisible" id="printpreview"></a>'; 
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Djcs Report', $th);
-        }
-       
+
+        $result = $this->repository->create(compact('data', 'data_items'));
+
+        // print preview 
+        $msg = ' <a href="'. route('biller.print_djc', [$result->id, 10, token_validator('', $result->id, true), 1]) .'" class="invisible" id="printpreview"></a>'; 
+
         return new RedirectResponse(route('biller.djcs.index', [$result['id']]), ['flash_success' => 'Djc Report Created' . $msg]);
     }
 
@@ -156,15 +198,12 @@ class DjcsController extends Controller
 
         $data_items = modify_array($data_items);
 
-       try {
-            $result = $this->repository->update($djc, compact('data', 'data_items'));
+        $result = $this->repository->update($djc, compact('data', 'data_items'));
 
-            // print preview 
-            $msg = ' <a href="'. route('biller.print_djc', [$result->id, 10, token_validator('', "d{$result->id}", true), 1]) .'" class="invisible" id="printpreview"></a>'; 
+        // print preview 
+        $valid_token = token_validator('', 'd' . $result->id, true);
+        $msg = ' <a href="'. route('biller.print_djc', [$result->id, 10, $valid_token, 1]) .'" class="invisible" id="printpreview"></a>'; 
 
-       } catch (\Throwable $th) {
-        return errorHandler('Error Updating Djcs Report', $th);
-       }
         return new RedirectResponse(route('biller.djcs.index'), ['flash_success' => 'Djc report updated' . $msg]);
     }
 
@@ -177,11 +216,7 @@ class DjcsController extends Controller
      */
     public function destroy(Djc $djc)
     {
-        try {
-            $this->repository->delete($djc);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Djcs Report', $th);
-        }
+        $this->repository->delete($djc);
         
         return new RedirectResponse(route('biller.djcs.index'), ['flash_success' => 'Djc deleted successfully']);
     }

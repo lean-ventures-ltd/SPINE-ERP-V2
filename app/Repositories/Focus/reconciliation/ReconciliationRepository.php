@@ -9,7 +9,7 @@ use App\Repositories\BaseRepository;
 use DB;
 
 /**
- * Class ReconciliationRepository.
+ * Class ProductcategoryRepository.
  */
 class ReconciliationRepository extends BaseRepository
 {
@@ -38,6 +38,7 @@ class ReconciliationRepository extends BaseRepository
      */
     public function create(array $input)
     {
+        // dd($input);
         DB::beginTransaction();
 
         $data = $input['data'];
@@ -48,15 +49,17 @@ class ReconciliationRepository extends BaseRepository
                 $data[$key] = numberClean($val);
         }
         $result = Reconciliation::create($data);
-        // set reconciled transactions
-        $checked_rows = array_filter($input['data_items'], fn($v) => $v['is_reconciled']);
-        $checked_row_ids = array_map(fn($v) => $v['id'], $checked_rows);
-        Transaction::whereIn($checked_row_ids)->update(['reconciliation_id' => $result->id]);
-        
-        if ($result) {
-            DB::commit();
-            return $result;
+        // update reconciled transactions
+        foreach ($input['data_items'] as $tr) {
+            if ($tr['is_reconciled']) {
+                Transaction::find($tr['id'])->update(['reconciliation_id' => $result->id]);
+            }
         }
+        
+        DB::commit();
+        if ($result) return $result;
+
+        throw new GeneralException('Error Creating Reconciliation');
     }
 
     /**
@@ -69,7 +72,7 @@ class ReconciliationRepository extends BaseRepository
      */
     public function update(Reconciliation $reconcilliation, array $data)
     {
-        // 
+        throw new GeneralException(trans('exceptions.backend.productcategories.update_error'));
     }
 
     /**
@@ -82,11 +85,13 @@ class ReconciliationRepository extends BaseRepository
     public function delete(Reconciliation $reconciliation)
     {
         DB::beginTransaction();
-        $reconciliation->transactions()->update(['reconciliation_id' => 0]);
+
+        Transaction::where('reconciliation_id', $reconciliation->id)->update(['reconciliation_id' => 0]);
         $result = $reconciliation->delete();
-        if ($result) {
-            DB::commit();
-            return true;
-        }
+
+        DB::commit();
+        if ($result) return true;
+        
+        throw new GeneralException(trans('exceptions.backend.productcategories.delete_error'));
     }
 }

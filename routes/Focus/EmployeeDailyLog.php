@@ -30,3 +30,24 @@ Route::group(['namespace' => 'health_and_safety'], function () {
     Route::post('health-safety-table/get', 'HealthAndSafetyTrackingTableController')->name('health-safety-table.get');
     Route::post('health-safety-day/get', 'HealthAndSafetyTrackingController@dayIncidents')->name('day.incidents');
 });
+
+Route::group(['namespace' => 'health_and_safety_objectives'], function () {
+    Route::resource('health-and-safety-objectives', 'HealthAndSafetyObjectivesController');
+
+    // //For Datatable
+    Route::post('health-safety-ojectives/get', 'HealthAndSafetyObjectivesTableController')->name('health-safety-objectives.get');
+});
+
+Route::group(['namespace' => 'health_and_safety_targets'], function () {
+    Route::resource('health-and-safety-targets', 'HealthAndSafetyTargetController');
+
+    // //For Datatable
+    // Route::post('quality-objectives/get', 'QualityObjectiveTableController')->name('quality-objectives.get');
+});
+
+Route::group(['namespace' => 'quality_objectives'], function () {
+    Route::resource('quality-objectives', 'QualityObjectiveController');
+
+    // //For Datatable
+    Route::post('quality-objectives/get', 'QualityObjectiveTableController')->name('quality-objectives.get');
+});

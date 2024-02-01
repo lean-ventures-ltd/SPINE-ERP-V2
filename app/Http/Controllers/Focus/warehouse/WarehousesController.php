@@ -87,11 +87,7 @@ class WarehousesController extends Controller
         $input = $request->except(['_token', 'ins']);
         $input['ins'] = auth()->user()->ins;
         //Create the model using repository create method
-        try {
-            $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Product Location', $th);
-        }
+        $this->repository->create($input);
         //return with successfull message
         return new RedirectResponse(route('biller.warehouses.index'), ['flash_success' => 'Product Location Created Successfully']);
     }
@@ -120,11 +116,7 @@ class WarehousesController extends Controller
         //Input received from the request
         $input = $request->except(['_token', 'ins']);
         //Update the model using repository update method
-        try {
-            $this->repository->update($warehouse, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Product Location', $th);
-        }
+        $this->repository->update($warehouse, $input);
         //return with successfull message
         return new RedirectResponse(route('biller.warehouses.index'), ['flash_success' => 'Product Location Updated Successfully']);
     }
@@ -139,11 +131,7 @@ class WarehousesController extends Controller
     public function destroy(Warehouse $warehouse, StoreWarehouseRequest $request)
     {
         //Calling the delete method on repository
-        try {
-            $this->repository->delete($warehouse);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Product Location', $th);
-        }
+        $this->repository->delete($warehouse);
         //returning with successfull message
         return new RedirectResponse(route('biller.warehouses.index'), ['flash_success' => 'Product Location Deleted Successfully']);
     }
@@ -161,22 +149,4 @@ class WarehousesController extends Controller
         //returning with successfull message
         return new ViewResponse('focus.warehouses.view', compact('warehouse'));
     }
-
-    // warehouse products
-    public function warehouse_products()
-    {
-        $products = ProductVariation::where('warehouse_id', request('warehouse_id'))
-            ->where('qty', '>=', 1)
-            ->get()
-            ->map(function($v) {
-                $v->unit = '';
-                if ($v->product && $v->product->unit) {
-                    $v->unit =  $v->product->unit->code;
-                }
-                return $v;
-            });
-
-        return $products->toArray();
-    }
-
 }

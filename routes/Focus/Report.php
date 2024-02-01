@@ -1,5 +1,7 @@
 <?php
 
+
+
 Route::group(['namespace' => 'report'], function () {
     Route::get('reports/statement/{section}', 'StatementController@statement')->name('reports.statements');
     Route::post('reports/statement/generate/{section}', 'StatementController@generate_statement')->name('reports.generate_statement');

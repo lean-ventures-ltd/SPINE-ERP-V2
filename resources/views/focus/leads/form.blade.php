@@ -137,7 +137,7 @@
                         <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
                         <select id="source" name="source" class="custom-select round" required>
                             <option value="">-- Select Source --</option>
-                            @foreach (['Emergency Call', 'RFQ', 'Site Survey', 'Existing SLA', 'Tender', 'Other'] as $val)
+                            @foreach (['Emergency Call', 'RFQ', 'Site Survey', 'Existing SLA', 'Tender', 'Broker', 'Aircon Experts','Other'] as $val)
                                 <option value="{{ $val }}" {{ @$lead->source == $val? 'selected' : '' }}>
                                     {{ $val }}
                                 </option>
@@ -145,7 +145,13 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-sm-6"><label for="employee_id" class="caption">Requested By (Client Rep)<span class="text-danger">*</span></label>
+                <div class="col-sm-6">
+                    <label for="broker" class="caption">Broker<span class="text-danger">*</span></label>
+                    {{ Form::text('broker', null, ['id' => 'broker', 'class' => 'form-control round', 'placeholder' => 'Brokered By', 'required']) }}
+                </div>
+
+                <div class="col-sm-6 mt-1">
+                    <label for="employee_id" class="caption">Requested By (Client Rep)<span class="text-danger">*</span></label>
                     <div class="input-group">
                         <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
                         {{ Form::text('assign_to', null, ['class' => 'form-control round', 'placeholder' => 'Requested By', 'required']) }}

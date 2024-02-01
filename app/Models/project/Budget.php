@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Budget extends Model
 {
-    use ModelTrait, BudgetAttribute,BudgetRelationship;
+    use ModelTrait, BudgetAttribute, BudgetRelationship;
     
      /**
      * The database table used by the model.

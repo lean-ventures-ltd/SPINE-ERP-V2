@@ -15,7 +15,6 @@
  *  * here- http://codecanyon.net/licenses/standard/
  * ***********************************************************************
  */
-
 namespace App\Http\Controllers\Focus\note;
 
 use App\Models\note\Note;
@@ -28,7 +27,7 @@ use App\Repositories\Focus\note\NoteRepository;
 use App\Http\Requests\Focus\note\ManageNoteRequest;
 use App\Http\Requests\Focus\note\CreateNoteRequest;
 use App\Http\Requests\Focus\note\EditNoteRequest;
-use Illuminate\Http\Request;
+
 
 /**
  * NotesController
@@ -84,12 +83,8 @@ class NotesController extends Controller
         $input = $request->only(['title', 'content']);
         $input['ins'] = auth()->user()->ins;
         $input['user_id'] = auth()->user()->id;
-        try {
-            //Create the model using repository create method
-            $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Notes', $th);
-        }
+        //Create the model using repository create method
+        $this->repository->create($input);
         //return with successfull message
         return new RedirectResponse(route('biller.notes.index'), ['flash_success' => trans('alerts.backend.notes.created')]);
     }
@@ -115,18 +110,12 @@ class NotesController extends Controller
      */
     public function update(EditNoteRequest $request, Note $note)
     {
+        //Input received from the request
+
         $input = $request->only(['title', 'content']);
-
-        try {
-            $project = $note->project;
-            $this->repository->update($note, $input);
-            
-            if ($project) 
-            return new RedirectResponse(route('biller.projects.show', $project), ['flash_success' => trans('alerts.backend.notes.updated')]);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Notes', $th);
-        }
-
+        //Update the model using repository update method
+        $this->repository->update($note, $input);
+        //return with successfull message
         return new RedirectResponse(route('biller.notes.index'), ['flash_success' => trans('alerts.backend.notes.updated')]);
     }
 
@@ -137,19 +126,12 @@ class NotesController extends Controller
      * @param App\Models\note\Note $note
      * @return \App\Http\Responses\RedirectResponse
      */
-    public function destroy(Note $note, Request $request)
+    public function destroy(Note $note, EditNoteRequest $request)
     {
-        try {
-            $project = $note->project;
-            $this->repository->delete($note);
-
-            if ($project) 
-            return new RedirectResponse(route('biller.projects.show', $project), ['flash_success' => trans('alerts.backend.notes.deleted')]);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Notes', $th);
-        }
-
-        return new RedirectResponse(route('biller.notes.index'), ['flash_success' => trans('alerts.backend.notes.deleted')]);
+        //Calling the delete method on repository
+        $this->repository->delete($note);
+        //returning with successfull message
+        return json_encode(array('status' => 'Success', 'message' => trans('alerts.backend.notes.deleted')));
     }
 
     /**
@@ -161,6 +143,9 @@ class NotesController extends Controller
      */
     public function show(Note $note, ManageNoteRequest $request)
     {
+
+        //returning with successfull message
         return new ViewResponse('focus.notes.view', compact('note'));
     }
+
 }

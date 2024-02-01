@@ -81,7 +81,7 @@
                     </div>
                 </div>
                 <div class='form-group'>
-                    {{ Form::label( 'primary_contact', trans('hrms.phone'),['class' => 'col-lg-2 control-label']) }}
+                    {{ Form::label( 'primary_contact', trans('hrms.phone') . ' (MPESA)',['class' => 'col-lg-2 control-label']) }}
                     <div class='col-lg-10'>
                         {{ Form::text('primary_contact', null, ['class' => 'form-control round', 'placeholder' => trans('hrms.phone').'*','required'=>'required']) }}
                     </div>

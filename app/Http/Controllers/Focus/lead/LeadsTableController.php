@@ -21,6 +21,7 @@ namespace App\Http\Controllers\Focus\lead;
 use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 use App\Repositories\Focus\lead\LeadRepository;
+use Carbon\Carbon;
 
 /**
  * Class BranchTableController.
@@ -49,24 +50,16 @@ class LeadsTableController extends Controller
      */
     public function __invoke()
     {
-        $query = $this->lead->getForDataTable();
+        $core = $this->lead->getForDataTable();
 
         $ins = auth()->user()->ins;
         $prefixes = prefixesArray(['lead'], $ins);
 
-        return Datatables::of($query)
+        return Datatables::of($core)
             ->escapeColumns(['id'])
             ->addIndexColumn()
-            ->editColumn('reference', function ($lead) use($prefixes) {
+            ->addColumn('reference', function ($lead) use($prefixes) {
                 return gen4tid("{$prefixes[0]}-", $lead->reference);
-            })
-            ->filterColumn('reference', function($query, $reference) use($prefixes) {
-                $arr = explode('-', $reference);
-                if (strtolower($arr[0]) == strtolower($prefixes[0]) && isset($arr[1])) {
-                    $query->where('reference', floatval($arr[1]));
-                } elseif (floatval($reference)) {
-                    $query->where('reference', floatval($reference));
-                }
             })
             ->addColumn('client_name', function ($lead) {
                 $client_name = $lead->client_name;
@@ -74,12 +67,18 @@ class LeadsTableController extends Controller
                 if ($client_name && $lead->branch) $client_name .= " - {$lead->branch->name}";
                 return $client_name;
             })
+            ->addColumn('exact_date', function ($lead) {
+                $days = '';
+                if ($lead->exact_date) {
+                    $exact = Carbon::parse($lead->exact_date);
+                    $difference = $exact->diff(Carbon::now());
+                    $days = $difference->days;
+                    return $days;
+                }
+                return $days;
+            })
             ->addColumn('created_at', function ($lead) {
                 return dateFormat($lead->created_at);
-            })
-            ->orderColumn('created_at', '-created_at $1')
-            ->editColumn('status', function ($lead) {
-                return $lead->status? '<span class="badge badge-success">Closed</span>' : '<span class="badge badge-secondary">Open</span>';
             })
             ->addColumn('actions', function ($lead) {
                 return $lead->action_buttons;

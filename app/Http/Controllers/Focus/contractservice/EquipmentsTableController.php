@@ -20,6 +20,7 @@ namespace App\Http\Controllers\Focus\contractservice;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\Focus\contractservice\ContractServiceRepository;
+use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 
 /**
@@ -32,7 +33,6 @@ class EquipmentsTableController extends Controller
      * @var ContractServiceRepository
      */
     protected $contractservice;
-    protected $sum_total = 0;
 
     /**
      * contructor to initialize repository object
@@ -54,7 +54,12 @@ class EquipmentsTableController extends Controller
         $sum_total = 0;
         foreach ($core as $item) {
             $equipment = $item->equipment;
-            if ($equipment) $sum_total += $equipment->service_rate;
+
+            if ($equipment) {
+                if (boolval($item->is_bill)) {
+                    $sum_total += $equipment->service_rate;
+                }
+            }
         }
         
         return Datatables::of($core)
@@ -103,10 +108,11 @@ class EquipmentsTableController extends Controller
                 return $item->equipment->machine_gas;
             })
             ->addColumn('service_rate', function ($item) {
-                return numberFormat($item->equipment->service_rate);
+
+                return boolval($item->is_bill) ? $item->equipment->service_rate : numberFormat(sprintf('%0.2f', 0.00));
             })
             ->addColumn('status', function ($item) {
-                return $item->status;
+                return Str::title($item->status);
             })
             ->addColumn('note', function ($item) {
                 return $item->note;

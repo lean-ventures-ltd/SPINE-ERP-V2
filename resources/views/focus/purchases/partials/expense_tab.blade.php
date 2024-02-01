@@ -2,19 +2,21 @@
     <table class="table-responsive tfr my_stripe" id="expTbl">
         <thead>
             <tr class="item_header bg-gradient-directional-danger white">
-                <th width="30%" class="text-center">Ledger Name</th>
-                <th width="8%" class="text-center">{{trans('general.quantity')}}</th>
-                <th width="8%" class="text-center">UoM</th>
-                <th width="10%" class="text-center">{{trans('general.rate')}}</th>
-                <th width="10%" class="text-center">{{trans('general.tax_p')}}</th>
-                <th width="8%" class="text-center">Tax</th>
-                <th width="10%" class="text-center">{{trans('general.amount')}} ({{config('currency.symbol')}})</th>
+                <th width="5%">#</th>
+                <th width="15%" class="text-center">Ledger Name</th>
+                <th width="6%" class="text-center">{{trans('general.quantity')}}</th>
+                <th width="6%" class="text-center">UoM</th>
+                <th width="6%" class="text-center">{{trans('general.rate')}}</th>
+                <th width="8%" class="text-center">{{trans('general.tax_p')}}</th>
+                <th width="4%" class="text-center">Tax</th>
+                <th width="8%" class="text-center">{{trans('general.amount')}} ({{config('currency.symbol')}})</th>
                 <th width="5%" class="text-center">{{trans('general.action')}}</th>
             </tr>
         </thead>
         <tbody>
             <!-- layout -->
             <tr>
+                <td><input type="text" class="form-control" value="1" id="expenseinc-0" disabled></td>
                 <td>
                     <input type="text" class="form-control accountname" name="name[]" id="accountname-0" placeholder="Enter Ledger Account" autocomplete="off">
                     <input type="hidden" id="expitemid-0" name="item_id[]">
@@ -41,12 +43,27 @@
                 <input type="hidden" name="warehouse_id[]">
             </tr>
             <tr>
-                <td colspan="4">
+                <td colspan="2">
                     <textarea id="expdescr-0" class="form-control descr" name="description[]" placeholder="Enter Description"></textarea>
                 </td>
-                <td colspan="4">
+                <td colspan="2">
+                    <select id="item_purchase_class-0" name="item_purchase_class[]" class="custom-select item-purchase-class">
+                        <option value="">-- Select Purchase Class --</option>
+                        @foreach ($purchaseClasses as $pc)
+                            <option value="{{ $pc->id }}" @if(@$purchase->purchase_class == $pc->id) selected @endif>
+                                {{ $pc->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </td>
+                <td colspan="3">
                     <input type="text" class="form-control projectexp" id="projectexptext-0" placeholder="Search Project By Name">
                     <input type="hidden" name="itemproject_id[]" id="projectexpval-0">
+                </td>
+                <td colspan="2">
+                    <select id="item_milestone-0" name="item_milestone[]" class="form-control item-milestone item-milestone-0">
+                        <option value="">Select a Budget Line</option>
+                    </select>
                 </td>
             </tr>
             <!-- end layout -->
@@ -57,6 +74,7 @@
                 @foreach ($purchase->products as $item)
                     @if ($item->type == 'Expense')
                         <tr>
+                            <td><input type="text" class="form-control" value="{{$i+1}}" id="expenseinc-{{$i}}" disabled></td>
                             <td><input type="text" class="form-control accountname" name="name[]" value="{{ @$item->account->holder }}" id="accountname-{{$i}}" placeholder="Enter Ledger"></td>
                             <td><input type="text" class="form-control exp_qty" name="qty[]" value="{{ number_format($item->qty, 1) }}" id="expqty-{{$i}}"></td>
                             <td><input type="text" class="form-control exp_uom" name="uom[]" value="{{ $item->uom }}" id="expuom-{{$i}}"></td>
@@ -81,13 +99,29 @@
                             <input type="hidden" name="warehouse_id[]">
                         </tr>
                         <tr>
-                            <td colspan="4">
+                            <td colspan="2">
                                 <textarea id="expdescr-{{$i}}" class="form-control descr" name="description[]" placeholder="Enter Description">{{ $item->description }}</textarea>
                             </td>
-                            <td colspan="4">
+                            <td colspan="2">
+                                <select id="item_purchase_class-0" name="item_purchase_class[]" class="custom-select item-purchase-class">
+                                    <option value="">-- Select Purchase Class --</option>
+                                    @foreach ($purchaseClasses as $pc)
+                                        <option value="{{ $pc->id }}" @if(@$purchase->purchase_class == $pc->id) selected @endif>
+                                            {{ $pc->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </td>
+                            <td colspan="3">
                                 <input type="text" class="form-control projectexp" value="{{ $item->project ? $item->project->name : '' }}" id="projectexptext-{{$i}}" placeholder="Enter Project">
                                 <input type="hidden" name="itemproject_id[]" value="{{ $item->itemproject_id }}" id="projectexpval-{{$i}}">
                             </td>
+                            <td colspan="2">
+                                <select id="item_milestone-0" name="item_milestone[]" class="form-control item-milestone">
+                                    <option value="">Select a Budget Line</option>
+                                </select>
+                            </td>
+
                         </tr>
                         @php ($i++)
                     @endif

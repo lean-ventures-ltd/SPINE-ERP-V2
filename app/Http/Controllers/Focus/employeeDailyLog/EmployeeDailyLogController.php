@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Focus\employeeDailyLog;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Focus\stockIssuance\StockIssuanceRequestController;
 use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
 use App\Models\Access\Permission\Permission;
@@ -396,10 +397,13 @@ class EmployeeDailyLogController extends Controller
 
         $edl = EmployeeDailyLog::where('edl_number', $edlNumber)
             ->join('users', 'employee_daily_logs.employee', '=', 'users.id')
+            ->join('role_user', 'users.id', '=', 'role_user.user_id')
+            ->join('roles', 'role_user.role_id', '=', 'roles.id')
             ->select(
                 'edl_number',
                 'date',
                 DB::raw('CONCAT(first_name, " ", last_name) AS employee'),
+                'roles.name as role',
                 'rating',
                 'remarks',
             )
@@ -419,6 +423,8 @@ class EmployeeDailyLogController extends Controller
             )
             ->get();
 
+        $totalHours = array_sum((new StockIssuanceRequestController())->getValuesByKey($edlTasks->toArray(), 'hours'));
+
         $data = [
             "edl" => $edl,
             "edlTasks" => $edlTasks,
@@ -435,7 +441,7 @@ class EmployeeDailyLogController extends Controller
 
 //        return compact('data');
 
-        return new ViewResponse('focus.employeeDailyLog.logRemark', compact('data', 'edlNumber', 'ratings'));
+        return new ViewResponse('focus.employeeDailyLog.logRemark', compact('data', 'edlNumber', 'ratings', 'totalHours'));
     }
 
 
@@ -491,14 +497,19 @@ class EmployeeDailyLogController extends Controller
         $this->checkRights(Auth::user()->can('create-daily-logs'));
 
         $sql = "
-                SELECT rose_employee_daily_logs.edl_number, rose_employee_daily_logs.date,
+                SELECT rose_employee_daily_logs.edl_number,
+                       rose_employee_daily_logs.date,
                        CONCAT(loggers.first_name, ' ', loggers.last_name) AS employee,
-                       rose_employee_daily_logs.rating, rose_employee_daily_logs.remarks,
+                       rose_roles.name AS role,
+                       rose_employee_daily_logs.rating,
+                       rose_employee_daily_logs.remarks,
                        CONCAT(reviewers.first_name, ' ', reviewers.last_name) AS reviewer,
                        rose_employee_daily_logs.reviewed_at
                 FROM rose_employee_daily_logs
                 JOIN rose_users AS loggers ON rose_employee_daily_logs.employee = loggers.id
                 LEFT JOIN rose_users AS reviewers ON rose_employee_daily_logs.reviewer = reviewers.id
+                JOIN rose_role_user ON loggers.id = rose_role_user.user_id -- Use loggers.id instead of rose_users.id
+                JOIN rose_roles ON rose_role_user.role_id = rose_roles.id
                 WHERE rose_employee_daily_logs.edl_number = :edlNumber
             ";
 
@@ -519,18 +530,9 @@ class EmployeeDailyLogController extends Controller
             )
             ->get();
 
+        $totalHours = array_sum((new StockIssuanceRequestController())->getValuesByKey($edlTasks->toArray(), 'hours'));
 
-////        $data = array_combine(["edl", "edlTasks"], [$edl, $edlTasks]);
-//
-//         $data = [
-//            "edl" => $edl,
-//            "edlTasks" => $edlTasks,
-//        ];
-
-
-//        return compact('edl', 'edlTasks', 'edlNumber');
-
-        return new ViewResponse('focus.employeeDailyLog.show', compact('edl', 'edlTasks', 'edlNumber'));
+        return new ViewResponse('focus.employeeDailyLog.show', compact('edl', 'edlTasks', 'edlNumber', 'totalHours'));
 
     }
 

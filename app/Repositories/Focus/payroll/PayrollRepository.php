@@ -2,10 +2,11 @@
 
 namespace App\Repositories\Focus\payroll;
 
+use DateTime;
 use DB;
 use Carbon\Carbon;
 use App\Models\payroll\Payroll;
-use App\Models\payroll\PayrollItem;
+use App\Models\payroll\PayrollItemV2;
 use App\Exceptions\GeneralException;
 use App\Repositories\BaseRepository;
 use Illuminate\Database\Eloquent\Model;
@@ -46,8 +47,9 @@ class PayrollRepository extends BaseRepository
      * For Creating the respective model in storage
      *
      * @param array $input
-     * @throws GeneralException
      * @return bool
+     * @throws \Exception
+     * @throws GeneralException
      */
     public function create(array $input)
     {
@@ -64,7 +66,7 @@ class PayrollRepository extends BaseRepository
         $input['working_days'] = $working_days;
         $input['total_month_days'] = $total_month_days;
         $input['total_month_days'] = $total_month_days;
-        $input['payroll_month'] = Carbon::createFromFormat('Y-m', $input['payroll_month'])->format('Y-m-d');
+        $input['payroll_month'] = (new DateTime($input['payroll_month']))->format('M Y');
         //dd($input);
         $input = array_map( 'strip_tags', $input);
         $res = Payroll::create($input);
@@ -144,7 +146,7 @@ class PayrollRepository extends BaseRepository
             ]);
         }, $data_items);
         //dd($data_items);
-        PayrollItem::insert($data_items);
+        PayrollItemV2::insert($data_items);
         
         
         if ($result) {
@@ -178,7 +180,7 @@ class PayrollRepository extends BaseRepository
                 'user_id' => $result->id,
             ]);
            // dd($item);
-            $data_item = PayrollItem::firstOrNew(['id'=> $item['id']]);
+            $data_item = PayrollItemV2::firstOrNew(['id'=> $item['id']]);
             $data_item->fill($item);
             if (!$data_item->id) unset($data_item->id);
             $data_item->save();
@@ -219,7 +221,7 @@ class PayrollRepository extends BaseRepository
                 'user_id' => $result->id,
             ]);
            // dd($item);
-            $data_item = PayrollItem::firstOrNew(['id'=> $item['id']]);
+            $data_item = PayrollItemV2::firstOrNew(['id'=> $item['id']]);
             $data_item->fill($item);
             if (!$data_item->id) unset($data_item->id);
             $data_item->save();
@@ -285,7 +287,7 @@ class PayrollRepository extends BaseRepository
                 'user_id' => $result->id,
             ]);
            // dd($item);
-            $data_item = PayrollItem::firstOrNew(['id'=> $item['id']]);
+            $data_item = PayrollItemV2::firstOrNew(['id'=> $item['id']]);
             $data_item->fill($item);
             if (!$data_item->id) unset($data_item->id);
             $data_item->save();
@@ -329,7 +331,7 @@ class PayrollRepository extends BaseRepository
                 'user_id' => $result->id,
             ]);
            // dd($item);
-            $data_item = PayrollItem::firstOrNew(['id'=> $item['id']]);
+            $data_item = PayrollItemV2::firstOrNew(['id'=> $item['id']]);
             $data_item->fill($item);
             if (!$data_item->id) unset($data_item->id);
             $data_item->save();
@@ -370,7 +372,7 @@ class PayrollRepository extends BaseRepository
                 'user_id' => $result->id,
             ]);
            // dd($item);
-            $data_item = PayrollItem::firstOrNew(['id'=> $item['id']]);
+            $data_item = PayrollItemV2::firstOrNew(['id'=> $item['id']]);
             $data_item->fill($item);
             if (!$data_item->id) unset($data_item->id);
             $data_item->save();

@@ -27,7 +27,7 @@
             <a href="#" class="btn btn-danger btn-sm mr-1" data-toggle="modal" data-target="#statusModal">
                 <i class="fa fa-times" aria-hidden="true"></i> Close Order
             </a>
-        </div>            
+        </div>  
         <div class="card-body">            
             <ul class="nav nav-tabs nav-top-border no-hover-bg nav-justified" role="tablist">
                 <li class="nav-item">
@@ -91,8 +91,7 @@
                                     <b>Asset:</b> {{ amountFormat($po->asset_grandttl) }}<br>
                                     <b>Total:</b> {{ amountFormat($po->grandttl) }}<br>
                                 </td>
-                            </tr>  
-                             
+                            </tr>                              
                         </tbody>
                     </table>            
                 </div>
@@ -102,6 +101,7 @@
                     <table class="table table-lg table-bordered zero-configuration" cellspacing="0" width="100%">
                         <tr>
                             <th>Product Description</th>
+                            <th>Product Code</th>
                             <th>Quantity</th>
                             <th>UoM</th>
                             <th>Price</th>
@@ -113,6 +113,7 @@
                                 @if ($item->type == 'Stock')
                                     <tr>
                                         <td>{{ $item->description }}</td>
+                                        <td>{{ $item->product_code }}</td>
                                         <td>{{ number_format($item->qty, 1) }}</td>
                                         <td>{{ $item->uom }}</td>
                                         <td>{{ number_format($item->rate, 2) }}</td>                                        

@@ -26,6 +26,7 @@ class BranchRepository extends BaseRepository
     {
 
         $q = $this->query();
+        $q->whereNotIn('name', ['Head Office', 'All Branches']);
 
         return $q->get();
     }

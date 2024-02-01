@@ -71,7 +71,7 @@
                 responsive: true,
                 language: {@lang('datatable.strings')},
                 ajax: {
-                    url: "{{ route('biller.stock_transfers.get') }}",
+                    url: "{{ route('biller.projectstocktransfers.get') }}",
                     type: 'POST',
                 },
                 columns: [

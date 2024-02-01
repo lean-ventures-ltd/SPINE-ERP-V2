@@ -65,11 +65,7 @@ class JournalsController extends Controller
 
         $data_items = modify_array($data_items);
 
-        try {
-            $this->repository->create(compact('data', 'data_items'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Manual Journal', $th);
-        }
+        $this->repository->create(compact('data', 'data_items'));
 
         return new RedirectResponse(route('biller.journals.index'), ['flash_success' => 'Manual Journal created successfully']);
     }
@@ -93,11 +89,7 @@ class JournalsController extends Controller
      */
     public function destroy(Journal $journal)
     {
-        try {
-            $this->repository->delete($journal);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Manual Journal', $th);
-        }
+        $this->repository->delete($journal);
 
         return new RedirectResponse(route('biller.journals.index'), ['flash_success' => 'Manual Journal deleted successfully']);
     }
