@@ -2,20 +2,18 @@
 
 namespace App\Models\department;
 
-use App\Models\employeeDailyLog\EmployeeTaskSubcategories;
 use App\Models\ModelTrait;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\department\Traits\DepartmentAttribute;
 use App\Models\department\Traits\DepartmentRelationship;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Department extends Model
 {
     use ModelTrait,
         DepartmentAttribute,
-    	DepartmentRelationship {
-            // DepartmentAttribute::getEditButtonAttribute insteadof ModelTrait;
-        }
+        DepartmentRelationship {
+        // DepartmentAttribute::getEditButtonAttribute insteadof ModelTrait;
+    }
 
     /**
      * NOTE : If you want to implement Soft Deletes in this model,
@@ -32,17 +30,13 @@ class Department extends Model
      * Mass Assignable fields of model
      * @var array
      */
-    protected $fillable = [
-
-    ];
+    protected $fillable = [];
 
     /**
      * Default values for model fields
      * @var array
      */
-    protected $attributes = [
-
-    ];
+    protected $attributes = [];
 
     /**
      * Dates
@@ -69,17 +63,19 @@ class Department extends Model
     {
         parent::__construct($attributes);
     }
+    
     protected static function boot()
     {
-            parent::boot();
-            static::addGlobalScope('ins', function($builder){
-            $builder->where('ins', '=', auth()->user()->ins);
-    });
+        parent::boot();
+
+        static::creating(function ($instance) {
+            $instance->user_id = auth()->user()->id;
+            $instance->ins = auth()->user()->ins;
+            return $instance;
+        });
+
+        static::addGlobalScope('ins', function ($builder) {
+            $builder->where('ins', auth()->user()->ins);
+        });
     }
-
-    public function edlTaskSubcategories(): HasMany {
-
-        return $this->hasMany(EmployeeTaskSubcategories::class, 'department', 'id');
-    }
-
 }

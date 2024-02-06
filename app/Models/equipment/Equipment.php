@@ -31,8 +31,7 @@ class Equipment extends Model
      */
     protected $fillable = [
         'tid', 'customer_id', 'branch_id', 'equip_serial', 'unique_id', 'capacity', 'location', 'machine_gas',
-        'make_type', 'model', 'equipment_category_id', 'service_rate', 'building', 'floor', 'install_date', 'note','status','pm_duration',
-        'end_of_warranty'
+        'make_type', 'model', 'equipment_category_id', 'service_rate', 'building', 'floor', 'install_date', 'note'
     ];
 
     /**
@@ -76,12 +75,13 @@ class Equipment extends Model
         parent::boot();
 
         static::creating(function ($instance) {
+            $instance->user_id = auth()->user()->id;
             $instance->ins = auth()->user()->ins;
             return $instance;
         });
 
         static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', '=', auth()->user()->ins);
+            $builder->where('ins', auth()->user()->ins);
         });
     }
 }

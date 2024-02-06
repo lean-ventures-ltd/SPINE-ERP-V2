@@ -6,11 +6,10 @@ use App\Models\ModelTrait;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\product\Traits\ProductAttribute;
 use App\Models\product\Traits\ProductRelationship;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use ModelTrait, ProductAttribute, ProductRelationship, SoftDeletes;
+    use ModelTrait, ProductAttribute, ProductRelationship;
         
     /**
      * NOTE : If you want to implement Soft Deletes in this model,
@@ -73,6 +72,7 @@ class Product extends Model
         parent::boot();
 
         static::creating(function ($instance) {
+            $instance->user_id = auth()->user()->id;
             $instance->ins = auth()->user()->ins;
             return $instance;
         });
