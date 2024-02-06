@@ -21,4 +21,13 @@ class EdlSubcategoryAllocation extends Model
         'allocations',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope('ins', function ($builder) {
+            $builder->where('edl_subcategory_allocations.ins', '=', auth()->user()->ins);
+        });
+    }
+
+
 }

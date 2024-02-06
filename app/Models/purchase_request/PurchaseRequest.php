@@ -75,7 +75,7 @@ class PurchaseRequest extends Model
         });
 
         static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', auth()->user()->ins);
+            $builder->where('purchase_requests.ins', auth()->user()->ins);
         });
     }
 }

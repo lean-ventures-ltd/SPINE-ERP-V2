@@ -31,6 +31,13 @@ class StockIssuanceRequestItems extends Model
         return $this->belongsTo(StockIssuanceRequest::class, 'sir_number', 'sir_number');
     }
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope('ins', function ($builder) {
+            $builder->where('stock_issuance_request_items.ins', '=', auth()->user()->ins);
+        });
+    }
 
 
 }

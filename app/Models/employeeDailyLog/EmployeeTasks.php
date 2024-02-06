@@ -26,4 +26,13 @@ class EmployeeTasks extends Model
         'hours',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope('ins', function ($builder) {
+            $builder->where('employee_tasks.ins', '=', auth()->user()->ins);
+        });
+    }
+
+
 }

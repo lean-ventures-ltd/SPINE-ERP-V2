@@ -15,4 +15,13 @@ class PurchaseClass extends Model
         // Add other fillable fields as needed
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope('ins', function ($builder) {
+            $builder->where('purchase_classes.ins', '=', auth()->user()->ins);
+        });
+    }
+
+
 }

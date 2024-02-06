@@ -35,4 +35,13 @@ class EmployeeDailyLog extends Model
     }
 
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope('ins', function ($builder) {
+            $builder->where('employee_daily_logs.ins', '=', auth()->user()->ins);
+        });
+    }
+
+
 }

@@ -26,5 +26,13 @@ class StockIssuanceApproval extends Model
     ];
 
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope('ins', function ($builder) {
+            $builder->where('stock_issuance_approvals.ins', '=', auth()->user()->ins);
+        });
+    }
+
 
 }
