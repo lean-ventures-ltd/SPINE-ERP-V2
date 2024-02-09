@@ -22,9 +22,9 @@ use App\Http\Requests\Focus\purchaseorder\CreatePurchaseorderRequest;
 use App\Http\Requests\Focus\supplier\ManageSupplierRequest;
 use App\Http\Requests\Focus\supplier\StoreSupplierRequest;
 use App\Http\Responses\Focus\supplier\CreateResponse;
-use App\Http\Responses\Focus\supplier\EditResponse;
 use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
+use App\Models\account\Account;
 use App\Models\supplier\Supplier;
 use App\Models\utility_bill\UtilityBill;
 use App\Repositories\Focus\supplier\SupplierRepository;
@@ -82,7 +82,19 @@ class SuppliersController extends Controller
      */
     public function store(StoreSupplierRequest $request)
     {
-        // extract request input
+        $request->validate([
+            'password' => request('password') ? 'required_with:user_email | min:7' : '',
+            'password_confirmation' => 'required_with:password | same:password'
+        ]);
+        if (request('password')) {
+            if (!preg_match("/[a-z][A-Z]|[A-Z][a-z]/i", $request->password)) 
+                throw ValidationException::withMessages(['password' => 'Password Must Contain Upper and Lowercase letters']);
+            if (!preg_match("/[0-9]/", $request->password)) 
+                throw ValidationException::withMessages(['password' => 'Password Must Contain At Least One Number']);
+            if (!preg_match("/[^A-Za-z 0-9]/", $request->password)) 
+                throw ValidationException::withMessages(['password' => 'Password Must Contain A Symbol']);
+        }
+
         $data = $request->only([
             'name', 'phone', 'email', 'address', 'city', 'region', 'country', 'postbox', 'email', 'picture',
             'company', 'taxid', 'docid', 'custom1', 'employee_id', 'active', 'password', 'role_id', 'remember_token',
@@ -90,14 +102,13 @@ class SuppliersController extends Controller
         ]);
         $account_data = $request->only([
             'account_name', 'account_no', 'open_balance', 'open_balance_date', 'open_balance_note', 
-            'expense_account_id'
         ]);
         $payment_data = $request->only(['bank', 'bank_code', 'payment_terms', 'credit_limit', 'mpesa_payment']);
-
-        $data['ins'] = auth()->user()->ins;
+        $user_data = $request->only('first_name', 'last_name', 'email', 'password', 'picture');
+        $user_data['email'] = $request->user_email;
 
         try {
-            $result = $this->repository->create(compact('data', 'account_data', 'payment_data'));
+            $result = $this->repository->create(compact('data', 'account_data', 'payment_data', 'user_data'));
 
             if ($request->ajax()) {
                 $result['random_password'] = null;
@@ -120,7 +131,9 @@ class SuppliersController extends Controller
      */
     public function edit(Supplier $supplier, StoreSupplierRequest $request)
     {
-        return new EditResponse($supplier);
+        $accounts = Account::where('account_type', 'Expense')->get(['id', 'holder']);
+
+        return view('focus.suppliers.edit', compact('supplier', 'accounts'));
     }
 
     /**
@@ -132,7 +145,19 @@ class SuppliersController extends Controller
      */
     public function update(StoreSupplierRequest $request, Supplier $supplier)
     {
-        // extract request input
+        $request->validate([
+            'password' => request('password') ? 'required_with:user_email | min:7' : '',
+            'password_confirmation' => 'required_with:password | same:password'
+        ]);
+        if (request('password')) {
+            if (!preg_match("/[a-z][A-Z]|[A-Z][a-z]/i", $request->password)) 
+                throw ValidationException::withMessages(['password' => 'Password Must Contain Upper and Lowercase letters']);
+            if (!preg_match("/[0-9]/", $request->password)) 
+                throw ValidationException::withMessages(['password' => 'Password Must Contain At Least One Number']);
+            if (!preg_match("/[^A-Za-z 0-9]/", $request->password)) 
+                throw ValidationException::withMessages(['password' => 'Password Must Contain A Symbol']);
+        }
+
         $data = $request->only([
             'name', 'phone', 'email', 'address', 'city', 'region', 'country', 'postbox', 'email', 'picture',
             'company', 'taxid', 'docid', 'custom1', 'employee_id', 'active', 'password', 'role_id', 'remember_token',
@@ -140,12 +165,13 @@ class SuppliersController extends Controller
         ]);
         $account_data = $request->only([
             'account_name', 'account_no', 'open_balance', 'open_balance_date', 'open_balance_note', 
-            'expense_account_id'
         ]);
         $payment_data = $request->only(['bank', 'bank_code', 'payment_terms', 'credit_limit', 'mpesa_payment']);
+        $user_data = $request->only('first_name', 'last_name', 'password', 'picture');
+        $user_data['email'] = $request->user_email;
 
         try {
-            $result = $this->repository->update($supplier, compact('data', 'account_data', 'payment_data'));
+            $result = $this->repository->update($supplier, compact('data', 'account_data', 'payment_data', 'user_data'));
         } catch (\Throwable $th) {
             if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Updating Supplier', $th);
@@ -206,7 +232,6 @@ class SuppliersController extends Controller
                 }
             }
         }
-        // dd($bills->count());
 
         // aging balance from extracted invoices
         $aging_cluster = array_fill(0, 5, 0);
