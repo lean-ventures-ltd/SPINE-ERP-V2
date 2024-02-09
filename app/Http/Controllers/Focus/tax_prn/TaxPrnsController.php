@@ -106,7 +106,7 @@ class TaxPrnsController extends Controller
     {
         try {
             $this->repository->update($tax_prn, $request->except('_token'));
-        } catch (\Throwable $th) {
+        } catch (\Throwable $th) { 
             if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Updating Tax PRN', $th);
         }

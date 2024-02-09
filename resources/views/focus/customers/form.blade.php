@@ -219,20 +219,7 @@
                     <div class='col-lg-10'>
                         {{ Form::text('open_balance_note', null, ['class' => 'form-control', 'id' => 'open_balance_note']) }}
                     </div>
-                </div>       
-                <div class='form-group'>
-                    {{ Form::label('sale_account', 'Recognise Sale on Account',['class' => 'col-lg-2 control-label']) }}
-                    <div class='col-lg-10'>
-                        <select name="sale_account_id" class="custom-select" id="sale_account">
-                            <option value="">-- Select Sale Account --</option>
-                            @foreach ($accounts as $row) 
-                                <option value="{{ $row->id }}" {{ $row->id == @$customer->sale_account_id? 'selected' : '' }}>
-                                    {{ $row->holder }}
-                                </option>
-                            @endforeach
-                        </select>                        
-                    </div>
-                </div>           
+                </div>                  
             </div>
 
             <!-- other details -->
@@ -257,15 +244,79 @@
                     </div>
                 </div>
                 <div class='form-group hide_picture'>
-                    {{ Form::label( 'picture', trans('customers.picture'),['class' => 'col-lg-2 control-label']) }}
+                    {{ Form::label('picture', trans('customers.picture'),['class' => 'col-lg-2 control-label']) }}
                     <div class='col-lg-6'>
                         {!! Form::file('picture', array('class'=>'input' )) !!}
                     </div>
                 </div>
-                <div class='form-group'>
-                    {{ Form::label( 'password', trans('customers.password'),['class' => 'col-lg-2 control-label']) }}
-                    <div class='col-lg-10'>
-                        {{ Form::text('password', '', ['class' => 'form-control box-size', 'placeholder' => trans('customers.password')]) }}
+                <hr>
+
+                {{-- User Info --}}
+                <h6 class="mb-2">User Info</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class='form-group'>
+                                    {{ Form::label('first_name', 'First Name',['class' => 'col-12 control-label']) }}
+                                    <div class='col-12'>
+                                        {{ Form::text('first_name', @$customer->user->first_name, ['class' => 'form-control box-size', 'placeholder' => 'First Name']) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class='form-group'>
+                                    {{ Form::label('last_name', 'Last Name',['class' => 'col-12 control-label']) }}
+                                    <div class='col-12'>
+                                        {{ Form::text('last_name', @$customer->user->last_name, ['class' => 'form-control box-size', 'placeholder' => 'Last Name']) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class='form-group'>
+                                    {{ Form::label('user_email', 'Email', ['class' => 'col-12 control-label']) }}
+                                    <div class='col-12'>
+                                        {{ Form::text('user_email', @$customer->user->email, ['class' => 'form-control box-size', 'placeholder' => 'Email']) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class='form-group'>
+                                    {{ Form::label( 'password', trans('customers.password'),['class' => 'col-12 control-label']) }}
+                                    <div class='col-12'>
+                                        {{ Form::password('password', ['class' => 'form-control box-size', 'id' => 'password']) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class='form-group'>
+                                    {{ Form::label('password_confirmation', 'Confirm Password',['class' => 'col-12 control-label']) }}
+                                    <div class='col-12'>
+                                        {{ Form::password('password_confirmation', ['class' => 'form-control box-size', 'id' => 'confirm_password']) }}
+                                        <label for="password_match" class="text-danger d-none">Password does not match !</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="ml-2 password-condition">
+                                    <h4>Password must have:</h4>
+                                    <h5 class="text-danger"><i class="fa fa-check" aria-hidden="true"></i> At least 7 characters</h5>
+                                    <h5 class="text-danger"><i class="fa fa-check" aria-hidden="true"></i> Contain Upper and Lowercase letters</h5>
+                                    <h5 class="text-danger"><i class="fa fa-check" aria-hidden="true"></i> At least one number</h5>
+                                    <h5 class="text-danger"><i class="fa fa-check" aria-hidden="true"></i> At least one symbol</h5>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -286,25 +337,41 @@
         init() {
             $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
 
-            if (this.customer) {
-                const openBalanceDate = this.customer.open_balance_date;
-                if (openBalanceDate) $('#open_balance_date').datepicker('setDate', new Date(openBalanceDate));
-
-                const balance = parseFloat(this.customer.open_balance);
+            if (Form.customer && Form.customer.id) {
+                const date = Form.customer.open_balance_date;
+                const balance = parseFloat(Form.customer.open_balance);
+                if (date) $('#open_balance_date').datepicker('setDate', new Date(date));
                 $('#open_balance').val(accounting.formatNumber(balance));
             }
+            $('#password').on('keyup', Form.passwordKeyUp);
+            $('#confirm_password').on('keyup', Form.confirmPasswordKeyUp);
+            $('#open_balance').change(Form.openBalanceChange);
+        },
 
-            $('#open_balance').change(this.openBalanceChange);
+        passwordKeyUp() {
+            const div = $('.password-condition');
+            const value = $(this).val();
+            if (value.length >= 7) div.find('h5:first').removeClass('text-danger').addClass('text-success');
+            else div.find('h5:first').removeClass('text-success').addClass('text-danger');
+            if (new RegExp("[a-z][A-Z]|[A-Z][a-z]").test(value)) div.find('h5:eq(1)').removeClass('text-danger').addClass('text-success');
+            else div.find('h5:eq(1)').removeClass('text-success').addClass('text-danger');
+            if (new RegExp("[0-9]").test(value)) div.find('h5:eq(-2)').removeClass('text-danger').addClass('text-success');
+            else div.find('h5:eq(-2)').removeClass('text-success').addClass('text-danger');
+            if (new RegExp("[^A-Za-z 0-9]").test(value)) div.find('h5:last').removeClass('text-danger').addClass('text-success');
+            else div.find('h5:last').removeClass('text-success').addClass('text-danger');
+        },
+
+        confirmPasswordKeyUp() {
+            if ($(this).val() != $('#password').val()) $(this).next().removeClass('d-none');
+            else $(this).next().addClass('d-none');
         },
 
         openBalanceChange() {
             const balance = accounting.unformat($(this).val());
-            if (balance > 0) $('#sale_account').attr('required', true);
-            else $('#sale_account').attr('required', false);
             $(this).val(accounting.formatNumber(balance));
         },
     };
 
-    $(() => Form.init());
+    $(Form.init);
 </script>
 @endsection

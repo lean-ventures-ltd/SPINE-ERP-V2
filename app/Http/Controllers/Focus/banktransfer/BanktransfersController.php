@@ -88,7 +88,7 @@ class BanktransfersController extends Controller
 
         try {
             $this->repository->create($request->except('_token'));
-        } catch (\Throwable $th) {
+        } catch (\Throwable $th) { 
             return errorHandler('Error Creating Money Transfer!', $th);
         }
 
