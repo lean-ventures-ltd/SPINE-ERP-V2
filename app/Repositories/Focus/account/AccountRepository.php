@@ -7,7 +7,6 @@ use App\Exceptions\GeneralException;
 use App\Models\items\JournalItem;
 use App\Models\manualjournal\Journal;
 use App\Models\project\Project;
-use App\Models\transaction\Transaction;
 use App\Repositories\Accounting;
 use App\Repositories\BaseRepository;
 use Illuminate\Support\Facades\DB;

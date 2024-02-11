@@ -4,9 +4,12 @@ namespace App\Repositories\Focus\tenant;
 
 use App\Exceptions\GeneralException;
 use App\Models\Access\User\User;
+use App\Models\account\Account;
+use App\Models\productvariable\Productvariable;
 use App\Models\tenant\Tenant;
 use App\Models\tenant_package\TenantPackage;
 use App\Models\tenant_package\TenantPackageItem;
+use App\Models\transactioncategory\Transactioncategory;
 use App\Repositories\BaseRepository;
 use Carbon\Carbon;
 use DB;
@@ -74,6 +77,9 @@ class TenantRepository extends BaseRepository
         $user = User::where('customer_id', $tenant_package->customer_id)->first();
         if ($user) $user->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);
 
+        // set tenant account properties
+        $this->account_setup($tenant, $user);
+
         if ($tenant) {
             DB::commit();
             return $tenant;
@@ -139,16 +145,38 @@ class TenantRepository extends BaseRepository
      */
     public function delete(Tenant $tenant)
     {
-        // DB::beginTransaction();
-        // $package = $tenant->package;
-        // if ($package) {
-        //     $package->items()->delete();
-        //     $package()->delete();
-        // }
-        // if ($tenant->delete()) {
-        //     DB::commit();
-        //     return true;
-        // }
         return $tenant->update(['deleted_at' => now()]);
+    }
+
+    /**
+     * Replicate default account records
+     * 
+     */
+    function account_setup($tenant, $user)
+    {
+        // set ledger accounts
+        $accounts = Account::all();
+        foreach ($accounts as $key => $account) {
+            $account2 = $account->replicate();
+            $account2->ins = $tenant->id;
+            $account2->user_id = @$user->id ?: null;
+            $account2->save();
+        }
+        // set transaction categories
+        $tr_categories = Transactioncategory::all();
+        foreach ($tr_categories as $key => $tr_category) {
+            $tr_category2 = $tr_category->replicate();
+            $tr_category2->ins = $tenant->id;
+            $tr_category2->user_id = @$user->id ?: null;
+            $tr_category2->save();
+        }
+        // set product units of measure
+        $units = Productvariable::all();
+        foreach ($units as $key => $unit) {
+            $unit2 = $unit->replicate();
+            $unit2->ins = $tenant->id;
+            $unit2->user_id = @$user->id ?: null;
+            $unit2->save();
+        }
     }
 }

@@ -34,6 +34,9 @@ class AccountsTableController extends Controller
      * @var AccountRepository
      */
     protected $account;
+    protected $debit;
+    protected $credit;
+    protected $balance;
 
     /**
      * contructor to initialize repository object
@@ -42,6 +45,25 @@ class AccountsTableController extends Controller
     public function __construct(AccountRepository $account)
     {
         $this->account = $account;
+    }
+
+    public function set_balances($account, $tr_accounts)
+    {
+        $this->debit = 0;
+        $this->credit = 0;
+        $this->balance = 0;
+        foreach ($tr_accounts as $key => $tr_account) {
+            if ($tr_account->account_id == $account->id) {
+                if (in_array($account->account_type, ['Asset', 'Expense'])) {
+                    $this->debit = $tr_account->debit;
+                    $this->balance = $this->debit - $this->credit;
+                } else {
+                    $this->credit = $tr_account->credit;
+                    $this->balance = $this->credit - $this->debit;
+                }
+                break;
+            }
+        }
     }
 
     /**
@@ -62,31 +84,14 @@ class AccountsTableController extends Controller
             ->escapeColumns(['id', 'number', 'holder'])
             ->addIndexColumn()
             ->addColumn('debit', function ($account) use($tr_accounts) {
-                foreach ($tr_accounts as $key => $tr_account) {
-                    if ($tr_account->account_id == $account->id) {
-                        return numberFormat($tr_account->debit);
-                    }
-                }
-                return numberFormat(0);
+                $this->set_balances($account, $tr_accounts);
+                return numberFormat($this->debit);
             })
-            ->addColumn('credit', function ($account) use($tr_accounts) {
-                foreach ($tr_accounts as $key => $tr_account) {
-                    if ($tr_account->account_id == $account->id) {
-                        return numberFormat($tr_account->credit);
-                    }
-                }
-                return numberFormat(0);
+            ->addColumn('credit', function ($account) {
+                return numberFormat($this->credit);
             })
-            ->addColumn('balance', function ($account) use($tr_accounts) {
-                foreach ($tr_accounts as $key => $tr_account) {
-                    if ($tr_account->account_id == $account->id) {
-                        if (in_array($account->account_type, ['Asset', 'Expense'])) {
-                            return numberFormat($tr_account->debit - $tr_account->credit);
-                        } 
-                        return numberFormat($tr_account->credit - $tr_account->debit);
-                    }
-                }
-                return numberFormat(0);
+            ->addColumn('balance', function ($account) {
+                return numberFormat($this->balance);
             })
             ->addColumn('account_type', function ($account) {
                 return  $account->account_type;

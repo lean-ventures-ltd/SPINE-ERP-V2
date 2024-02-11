@@ -26,9 +26,7 @@ class OpeningStock extends Model
      * Mass Assignable fields of model
      * @var array
      */
-    protected $fillable = [
-        'tid', 'date', 'note', 'warehouse_id', 'total', 'user_id', 'ins'
-    ];
+    protected $fillable = [];
 
     /**
      * Default values for model fields
@@ -77,7 +75,7 @@ class OpeningStock extends Model
         });
 
         static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', '=', auth()->user()->ins);
+            $builder->where('ins', auth()->user()->ins);
         });
     }
 }

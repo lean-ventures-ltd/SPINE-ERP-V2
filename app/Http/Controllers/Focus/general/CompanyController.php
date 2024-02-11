@@ -28,6 +28,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Focus\general\ManageCompanyRequest;
 use App\Models\Company\Company;
 use App\Http\Responses\ViewResponse;
+use App\Models\account\Account;
+use App\Models\items\OpeningStockItem;
+use App\Models\manualjournal\Journal;
+use App\Models\opening_stock\OpeningStock;
+use App\Models\product\ProductVariation;
+use App\Models\warehouse\Warehouse;
+use App\Repositories\Focus\account\AccountRepository;
+use DB;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
@@ -296,6 +304,85 @@ class CompanyController extends Controller
         $data['status'] = Misc::where('section', '=', 2)->get();
         
         return view('focus.general.settings.status', compact('data', 'defaults'));
+    }
+
+    public function opening_stock(ManageCompanyRequest $request)
+    {   
+        if ($request->post()) {
+            $input = $request->only('date', 'note', 'total');
+            $input_items = $request->only('qty', 'cost', 'amount', 'productvar_id', 'product_id', 'warehouse_id');
+            $input['date'] = date_for_database($input['date']);
+            $input['total'] = numberClean($input['total']);
+
+            try {
+                DB::beginTransaction();
+
+                // reset opening stock
+                if ($input['total'] == 0) {
+                    $openingstock = OpeningStock::first();
+                    if ($openingstock) {
+                        $account = $openingstock->account;
+                        if ($account->gen_journal) {
+                            $account->gen_journal->items()->delete();
+                            $account->gen_journal->transactions()->delete();
+                            $account->gen_journal->delete();
+                        }
+                        $openingstock->items()->delete();
+                        if ($openingstock->delete()) {
+                            DB::commit();
+                            return response()->json(['status' => 'Success', 'message' => 'Opening Stock Updated Successfully', 'refresh' => 1]);
+                        }
+                    }
+                }
+
+                // create opening stock
+                $openingstock = OpeningStock::whereDate('date', $input['date'])->first();
+                if ($openingstock) $openingstock->update($input);
+                else $openingstock = OpeningStock::create($input);
+
+                // opening stock items
+                foreach ($input_items as $key => $value) {
+                    if (in_array($key, ['qty', 'cost', 'amount']))
+                        $input_items[$key] = array_map(fn($v) => numberClean($v), $value);
+                }
+                $input_items['opening_stock_id'] = array_fill(0, count($input_items['qty']), $openingstock->id);
+                $input_items = modify_array($input_items);
+                $input_items = array_filter($input_items, fn($v) => $v['amount'] > 0);
+                $openingstock->items()->delete();
+                OpeningStockItem::insert($input_items);
+
+                /** accounting */
+                $account = Account::where('system', 'stock')->first();
+                $openingstock->update(['account_id' => $account->id]);
+                $account->opening_balance = $openingstock->total;
+                $account->opening_balance_date = $openingstock->date;
+                $account->note = $openingstock->note;
+                $accountRepository = new \App\Repositories\Focus\account\AccountRepository;
+                $journal_data = $accountRepository->opening_balance($account, 'update');
+                $journal = new Journal;
+                $journal->fill($journal_data);
+                $journal->id = $journal_data['id'];
+                $journal->refresh();
+                $accountRepository->post_ledger_opening_balance($journal);
+
+                if ($openingstock) {
+                    DB::commit();
+                    return response()->json(['status' => 'Success', 'message' => 'Opening Stock Updated Successfully', 'refresh' => 1]);
+                }
+            } catch (\Throwable $th) {
+                $msg = $th->getMessage() .' {user_id: '. auth()->user()->id . '}' . ' at ' . $th->getFile() . ':' . $th->getLine();
+                \Illuminate\Support\Facades\Log::error($msg);
+                return response()->json(['status' => 'Error', 'message' => 'Error Updating Opening Stock']);
+            }
+        }
+
+        $openingstock = Openingstock::first();
+        $product_vars = ProductVariation::whereHas('product')
+        ->orderBy('warehouse_id', 'ASC')
+        ->with('openingstock_item')
+        ->get();
+        $warehouses = Warehouse::wherehas('products')->get();
+        return view('focus.general.settings.opening_stock', compact('product_vars', 'warehouses', 'openingstock'));
     }
 
     public function crm_hrm_section(ManageCompanyRequest $request)

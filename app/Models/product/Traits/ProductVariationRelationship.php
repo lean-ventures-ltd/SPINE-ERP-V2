@@ -2,6 +2,7 @@
 
 namespace App\Models\product\Traits;
 
+use App\Models\items\OpeningStockItem;
 use App\Models\items\ProjectstockItem;
 use App\Models\items\PurchaseItem;
 use App\Models\items\PurchaseorderItem;
@@ -17,6 +18,11 @@ use App\Models\pricegroup\PriceGroupVariation;
  */
 trait ProductVariationRelationship
 {
+    public function openingstock_item()
+    {
+        return $this->hasOne(OpeningStockItem::class, 'productvar_id');
+    }
+
     public function quote_item()
     {
         return $this->hasOne(QuoteItem::class, 'product_id');

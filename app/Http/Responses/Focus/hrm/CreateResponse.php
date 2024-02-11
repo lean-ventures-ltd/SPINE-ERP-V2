@@ -20,9 +20,8 @@ class CreateResponse implements Responsable
      */
     public function toResponse($request)
     {
-        $roles=Role::where('status',1)->where(function ($q) {
-            $q->where('ins', auth()->user()->ins)->orWhereNull('ins');
-        })->get();
+        $roles=Role::where('status',1)->where('ins', auth()->user()->ins)
+        ->get();
 
         $departments = Department::all()->pluck('name','id');
         $positions = JobTitle::get(['id', 'name', 'department_id']);

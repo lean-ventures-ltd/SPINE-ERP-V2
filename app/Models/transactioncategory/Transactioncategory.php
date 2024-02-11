@@ -74,8 +74,7 @@ class Transactioncategory extends Model
         });
 
         static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', auth()->user()->ins)
-            ->orWhere('ins', 1);
+            $builder->where('ins', auth()->user()->ins);
         });
     }
 }

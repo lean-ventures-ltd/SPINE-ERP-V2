@@ -9,14 +9,12 @@
 @section('content')
     <div class="">
         <div class="content-wrapper">
-            <div class="content-header row">
-                <div class="content-header-left col-md-6 col-12 mb-2">
+            <div class="content-header row mb-1">
+                <div class="content-header-left col-md-6">
                     <h4 class="content-header-title mb-0">{{ trans('labels.backend.transactioncategories.management') }}</h4>
-
                 </div>
                 <div class="content-header-right col-md-6 col-12">
                     <div class="media width-250 float-right">
-
                         <div class="media-body media-right text-right">
                             @include('focus.transactioncategories.partials.transactioncategories-header-buttons')
                         </div>
@@ -38,7 +36,6 @@
                                         <tr>
                                             <th>#</th>
                                             <th>{{ trans('general.title') }}</th>
-                                            <th>Category</th>
                                             <th>Description</th>
                                             <th>{{ trans('general.createdat') }}</th>
                                             <th>{{ trans('labels.general.actions') }}</th>
@@ -85,7 +82,6 @@
                 columns: [
                     {data: 'DT_Row_Index', name: 'id'},
                     {data: 'name', name: 'name'},
-                    {data: 'parent', name: 'parent'},
                     {data: 'note', name: 'note'},
                     {data: 'created_at', name: 'created_at'},
                     {data: 'actions', name: 'actions', searchable: false, sortable: false}
@@ -93,17 +89,8 @@
                 order: [[0, "asc"]],
                 searchDelay: 500,
                 dom: 'Blfrtip',
-                buttons: {
-                    buttons: [
-
-                        {extend: 'csv', footer: true, exportOptions: {columns: [0, 1]}},
-                        {extend: 'excel', footer: true, exportOptions: {columns: [0, 1]}},
-                        {extend: 'print', footer: true, exportOptions: {columns: [0, 1]}}
-                    ]
-                }
+                buttons: ['csv', 'excel', 'print'],
             });
-            $('#transactioncategories-table_wrapper').removeClass('form-inline');
-
         });
     </script>
 @endsection

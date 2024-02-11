@@ -39,7 +39,7 @@ trait Accounting
         ];
 
         $tr_data_arr = [];
-        $account_type = @$manual_journal->ledger_account->account_type;
+        $account_type = $manual_journal->ledger_account->account_type;
         if (in_array($account_type, ['Asset', 'Expense'])) {
             // debit [Asset | Expense] Account 
             $tr_data_arr[] = array_replace($tr_data, [

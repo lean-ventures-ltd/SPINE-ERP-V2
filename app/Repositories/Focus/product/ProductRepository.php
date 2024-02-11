@@ -93,7 +93,7 @@ class ProductRepository extends BaseRepository
     {
         // dd($input);
         DB::beginTransaction();
-        $code_exists = ProductVariation::where('code', $input['code'])->count();
+        
         // validate stock keeping unit
         $sku_exists = Product::where('sku', $input['sku'])->count();
         if (empty($input['sku']) || $sku_exists) {
@@ -152,17 +152,16 @@ class ProductRepository extends BaseRepository
             $variations[] =  array_replace($item, [
                 'parent_id' => $result->id,
                 'productcategory_id' => $input['productcategory_id'],
-                'ins' => auth()->user()->ins
+                'ins' => auth()->user()->ins,
+                'name' => @$item['variation_name'] ?: $result->name,
             ]);
-            //dd($variations);
         }
-        //dd($variations);
         ProductVariation::insert($variations);   
-        
-        DB::commit();
-        if ($result) return $result;
-
-        throw new GeneralException(trans('exceptions.backend.products.create_error'));
+    
+        if ($result) {
+            DB::commit();
+            return $result;
+        }
     }
 
     /**

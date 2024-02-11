@@ -16,6 +16,7 @@
                     @permission('business_settings')
                         <li class="dropdown nav-item mega-dropdown"><a class="dropdown-toggle nav-link" href="#" data-toggle="dropdown">{{trans('business.business_admin')}}</a>
                             <ul class="mega-dropdown-menu dropdown-menu row">
+                                {{-- General Preference --}}
                                 <li class="col-md-3 col-sm-6">
                                     <h6 class="dropdown-menu-header text-uppercase mb-1"><i class="fa fa-building-o"></i> {{trans('business.general_preference')}}</h6>
                                     <ul>
@@ -29,12 +30,15 @@
                                                     </a></li>
                                                 <li><a class="dropdown-item" href="{{route('biller.settings.status')}}"><i class="fa fa-flag-o"></i> {{trans('meta.default_status')}}
                                                     </a></li>
+                                                <li><a class="dropdown-item" href="{{ route('biller.settings.opening_stock') }}"><i class="fa fa-cubes"></i> Opening Stock
+                                                    </a></li>
                                                 <li><a class="dropdown-item" href="{{ route('biller.ticket_categories.index') }}"><i class="fa fa-sun-o"></i> Ticket Categories
                                                     </a></li>
                                             </ul>
                                         </li>
                                     </ul>
                                 </li>
+                                {{-- Miscellaneous Settings --}}
                                 <li class="col-md-3 col-sm-6">
                                     <h6 class="dropdown-menu-header text-uppercase"><i class="fa fa-random"></i> {{trans('business.billing_settings')}}</h6>
                                     <ul>

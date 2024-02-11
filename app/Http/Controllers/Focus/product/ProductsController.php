@@ -38,6 +38,7 @@ use App\Models\client_product\ClientProduct;
 use App\Models\supplier_product\SupplierProduct;
 use App\Models\product\ProductMeta;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * ProductsController
@@ -92,7 +93,12 @@ class ProductsController extends Controller
      */
     public function store(CreateProductRequest $request)
     {
-        $this->repository->create($request->except(['_token']));
+        try {
+            $this->repository->create($request->except(['_token']));
+        } catch (\Throwable $th) { dd($th);
+            if ($th instanceof ValidationException) throw $th;
+            return errorHandler($th, 'Error Creating Product');
+        }
 
         return new RedirectResponse(route('biller.products.index'), ['flash_success' => trans('alerts.backend.products.created')]);
     }
@@ -118,8 +124,13 @@ class ProductsController extends Controller
      */
     public function update(EditProductRequest $request, Product $product)
     {
-        $this->repository->update($product, $request->except(['_token']));
-        
+        try {
+            $this->repository->update($product, $request->except(['_token']));
+        } catch (\Throwable $th) {
+            if ($th instanceof ValidationException) throw $th;
+            return errorHandler($th, 'Error Updating Product');
+        }
+
         return new RedirectResponse(route('biller.products.index'), ['flash_success' => trans('alerts.backend.products.updated')]);
     }
 
@@ -131,7 +142,12 @@ class ProductsController extends Controller
      */
     public function destroy(Product $product)
     {
-        $this->repository->delete($product);
+        try {
+            $this->repository->delete($product);
+        } catch (\Throwable $th) {
+            if ($th instanceof ValidationException) throw $th;
+            return errorHandler($th, 'Error Deleting Product');
+        }
 
         return json_encode(array('status' => 'Success', 'message' => trans('alerts.backend.products.deleted')));
     }

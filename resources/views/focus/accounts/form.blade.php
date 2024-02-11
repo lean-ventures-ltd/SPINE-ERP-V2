@@ -64,7 +64,7 @@
     </div>
     <div class="col-md-6">
         {{ Form::label('date', 'Date') }}
-        {{ Form::text('date', null, ['class' => 'form-control datepicker', 'readonly', 'id' => 'date']) }}
+        {{ Form::text('date', null, ['class' => 'form-control datepicker', 'readonly' => 'readonly', 'id' => 'date']) }}
     </div>
 </div>
 <div class="form-group row">
@@ -87,9 +87,14 @@
     .datepicker('setDate', new Date());
 
     const account = @json(@$account);
-    if (account) {
-        $('#date').datepicker('setDate', new Date(account.opening_balance_date)).attr('readonly', false);
-        $('#openBalance').attr('readonly', false);
+    if (account && account.id) {
+        if (account.system == 'stock') {
+            $('#date').val('');
+            $('#date').parents('.form-group.row').addClass('d-none');
+        } else {
+            $('#openBalance').attr('readonly', false);
+            $('#date').datepicker('setDate', new Date(account.opening_balance_date)).attr('readonly', false);
+        }
     }
         
     // on selecting account type

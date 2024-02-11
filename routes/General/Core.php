@@ -98,6 +98,10 @@ Route::group(['namespace' => 'Focus', 'as' => 'biller.'], function () {
         Route::post('business/settings/theme', 'CompanyController@theme')->name('settings.theme');
         Route::get('business/settings/status', 'CompanyController@status')->name('settings.status');
         Route::post('business/settings/status', 'CompanyController@status')->name('settings.status');
+
+        Route::get('business/settings/opening_stock', 'CompanyController@opening_stock')->name('settings.opening_stock');
+        Route::post('business/settings/opening_stock', 'CompanyController@opening_stock')->name('settings.opening_stock');
+
         Route::get('business/settings/crm_hrm_section', 'CompanyController@crm_hrm_section')->name('settings.crm_hrm_section');
         Route::post('business/settings/crm_hrm_section', 'CompanyController@crm_hrm_section')->name('settings.crm_hrm_section');
         Route::get('business/settings/pos_preference', 'CompanyController@pos_preference')->name('settings.pos_preference');
