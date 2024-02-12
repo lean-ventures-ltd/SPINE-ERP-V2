@@ -143,13 +143,16 @@
         <div class="col-md-2">
             <label for="cu_invoice_no">CU Invoice No.</label>
 {{--            {{ Form::text('cu_invoice_no', null, ['class' => 'form-control']) }}--}}
-            <input type="text" id="cu_invoice_no" name="cu_invoice_no" required readonly class="form-control box-size"
-                   @if(!empty($newCuInvoiceNo))
-                       value="{{substr_replace($newCuInvoiceNo, 'XXX', -3)}}"
-                   @elseif(!empty($invoice->cu_invoice_no))
-                       value="{{$invoice->cu_invoice_no}}"
-                    @endif
-            >
+{{--            <input type="text" id="cu_invoice_no" name="cu_invoice_no" required readonly class="form-control box-size"--}}
+{{--                   @if(!empty($newCuInvoiceNo))--}}
+{{--                       value="{{substr_replace($newCuInvoiceNo, 'XXX', -3)}}"--}}
+{{--                   @elseif(!empty($invoice->cu_invoice_no))--}}
+{{--                       value="{{$invoice->cu_invoice_no}}"--}}
+{{--                    @endif--}}
+{{--            >--}}
+
+            {{ Form::text('cu_invoice_no', null, ['class' => 'form-control round', 'id' => 'cu_invoice_no', 'required']) }}
+
 
         </div>
     @endif

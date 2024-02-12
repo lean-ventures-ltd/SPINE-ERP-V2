@@ -251,7 +251,7 @@ class InvoicesController extends Controller
         // extract request input fields
         $bill = $request->only([
             'customer_id', 'bank_id', 'tax_id', 'tid', 'invoicedate', 'validity', 'notes', 'term_id', 'account_id',
-            'taxable', 'subtotal', 'tax', 'total', 
+            'taxable', 'subtotal', 'tax', 'total', 'cu_invoice_no'
         ]);
         $bill_items = $request->only([
             'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 'product_subtotal', 'product_price', 
@@ -305,7 +305,7 @@ class InvoicesController extends Controller
         // extract request input fields
         $bill = $request->only([
             'customer_id', 'bank_id', 'tax_id', 'tid', 'invoicedate', 'validity', 'notes', 'term_id', 'account_id',
-            'taxable', 'subtotal', 'tax', 'total', 
+            'taxable', 'subtotal', 'tax', 'total', 'cu_invoice_no'
         ]);
         $bill_items = $request->only([
             'id', 'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 

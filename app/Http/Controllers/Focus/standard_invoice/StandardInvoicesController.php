@@ -83,7 +83,6 @@ class StandardInvoicesController extends Controller
         $tax_rates = Additional::all();
         $currencies = Currency::all();
 
-        $latestCuInvoiceNo = Invoice::latest()->first()->cu_invoice_no;
 
         $newCuInvoiceNo = (new CuInvoiceNumberController())->getNext();
 
@@ -104,7 +103,7 @@ class StandardInvoicesController extends Controller
 //            ['cu_invoice_no.unique' => 'The Specified CU Invoice Number is Already Taken']
 //        )->validate();
 
-        $request['cu_invoice_no'] = (new CuInvoiceNumberController())->allocate();
+//        $request['cu_invoice_no'] = (new CuInvoiceNumberController())->allocate();
 
         $data = $request->only([
             'customer_id', 'tid', 'invoicedate', 'tax_id', 'bank_id', 'validity', 'account_id', 'currency_id', 'term_id', 'notes', 
