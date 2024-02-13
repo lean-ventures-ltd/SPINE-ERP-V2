@@ -91,9 +91,8 @@ class BillPaymentController extends Controller
     {
         try {
             $this->repository->create($request->except('_token', 'balance', 'unallocate_ttl'));
-        } catch (\Throwable $th) { 
-            if ($th instanceof ValidationException) throw $th;
-            return errorHandler('Error Creating Bill Payment!', $th);
+        } catch (\Exception $e){
+            return "Error: '" . $e->getMessage() . "on File: " . $e->getFile() . " & Line " . $e->getLine();
         }
 
         return new RedirectResponse(route('biller.billpayments.index'), ['flash_success' => 'Bill Payment Created Successfully']);
