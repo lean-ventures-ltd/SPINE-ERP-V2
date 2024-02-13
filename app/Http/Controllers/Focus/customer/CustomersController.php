@@ -86,24 +86,26 @@ class CustomersController extends Controller
     {
         $request->validate([
             'company' => 'required',
-            'password' => request('password') ? 'required_with:user_email | min:7' : '',
-            'password_confirmation' => 'required_with:password | same:password'
         ]);
-        if (request('password')) {
-            if (!preg_match("/[a-z][A-Z]|[A-Z][a-z]/i", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain Upper and Lowercase letters']);
-            if (!preg_match("/[0-9]/", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain At Least One Number']);
-            if (!preg_match("/[^A-Za-z 0-9]/", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain A Symbol']);
-        }
-            
+
+        // extract input fields
+        $input = $request->except(['_token', 'ins', 'balance']);
+
+        $input['ins'] = auth()->user()->ins;
+        if (!$request->password || strlen($request->password) < 6) 
+            $input['password'] = rand(111111, 999999);
+
         try {
-            $result = $this->repository->create($request->except(['_token', 'ins', 'balance']));
+            $result = $this->repository->create($input);
         } catch (\Throwable $th) {
             if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Creating Customers', $th);
         }
+
+        if (!$result) return redirect()->back();
+        // case ajax request
+        $result['random_password'] = $input['password'];
+        if ($request->ajax()) return response()->json($result);
             
         return new RedirectResponse(route('biller.customers.index'), ['flash_success' => trans('alerts.backend.customers.created')]);
     }
@@ -131,21 +133,13 @@ class CustomersController extends Controller
     {
         $request->validate([
             'company' => 'required',
-            'password' => request('password') ? 'required_with:user_email | min:7' : '',
-            'password_confirmation' => 'required_with:password | same:password'
         ]);
-        if (request('password')) {
-            if (!preg_match("/[a-z][A-Z]|[A-Z][a-z]/i", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain Upper and Lowercase letters']);
-            if (!preg_match("/[0-9]/", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain At Least One Number']);
-            if (!preg_match("/[^A-Za-z 0-9]/", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain A Symbol']);
-        }
-    
+        // extract input fields
+        $input = $request->except(['_token', 'ins', 'balance']);
+        
         try {
-            $this->repository->update($customer, $request->except(['_token', 'ins', 'balance']));
-        } catch (\Throwable $th) { dd($th);
+            $this->repository->update($customer, $input);
+        } catch (\Throwable $th) {
             if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Updating Customers', $th);
         }

@@ -1,17 +1,18 @@
 <?php
 
-namespace App\Models\equipment;
+namespace App\Models\assetequipment;
 
 use App\Models\ModelTrait;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\equipment\Traits\EquipmentAttribute;
-use App\Models\equipment\Traits\EquipmentRelationship;
+use App\Models\assetequipment\Traits\AssetequipmentAttribute;
+use App\Models\assetequipment\Traits\AssetequipmentRelationship;
 
-class Equipment extends Model
+class Assetequipment extends Model
 {
     use ModelTrait,
-        EquipmentAttribute,
-        EquipmentRelationship {
+        AssetequipmentAttribute,
+        AssetequipmentRelationship {
+        // AssetequipmentAttribute::getEditButtonAttribute insteadof ModelTrait;
     }
 
     /**
@@ -23,16 +24,13 @@ class Equipment extends Model
      * The database table used by the model.
      * @var string
      */
-    protected $table = 'equipments';
+    protected $table = 'asset_equipments';
 
     /**
      * Mass Assignable fields of model
      * @var array
      */
-    protected $fillable = [
-        'tid', 'customer_id', 'branch_id', 'equip_serial', 'unique_id', 'capacity', 'location', 'machine_gas',
-        'make_type', 'model', 'equipment_category_id', 'service_rate', 'building', 'floor', 'install_date', 'note'
-    ];
+    protected $fillable = [];
 
     /**
      * Default values for model fields
@@ -65,11 +63,6 @@ class Equipment extends Model
     {
         parent::__construct($attributes);
     }
-
-    /**
-     * model life cycle event listeners
-     * @return void
-     */
     protected static function boot()
     {
         parent::boot();

@@ -103,6 +103,7 @@ class ProductRefillsController extends Controller
         try {
             $this->repository->update($product_refill, $request->except('_token'));
         } catch (\Throwable $th) {
+            dd($th);
             return errorHandler('Error Updating Refill', $th);
         }
 

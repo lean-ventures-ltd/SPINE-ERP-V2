@@ -80,10 +80,8 @@ class ClientUsersController extends Controller
         if (request('password')) {
             if (!preg_match("/[a-z][A-Z]|[A-Z][a-z]/i", $request->password)) 
                 throw ValidationException::withMessages(['password' => 'Password Must Contain Upper and Lowercase letters']);
-            if (!preg_match("/[0-9]/", $request->password)) 
+            if (!preg_match("/[0-9]/i", $request->password)) 
                 throw ValidationException::withMessages(['password' => 'Password Must Contain At Least One Number']);
-            if (!preg_match("/[^A-Za-z 0-9]/", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain A Symbol']);
         }
         
         try {
@@ -120,10 +118,8 @@ class ClientUsersController extends Controller
         if (request('password')) {
             if (!preg_match("/[a-z][A-Z]|[A-Z][a-z]/i", $request->password)) 
                 throw ValidationException::withMessages(['password' => 'Password Must Contain Upper and Lowercase letters']);
-            if (!preg_match("/[0-9]/", $request->password)) 
+            if (!preg_match("/[0-9]/i", $request->password)) 
                 throw ValidationException::withMessages(['password' => 'Password Must Contain At Least One Number']);
-            if (!preg_match("/[^A-Za-z 0-9]/", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain A Symbol']);
         }
 
         try {

@@ -12,6 +12,7 @@ class Banktransfer extends Model
     use ModelTrait,
         BanktransferAttribute,
         BanktransferRelationship {
+        // ProductcategoryAttribute::getEditButtonAttribute insteadof ModelTrait;
     }
 
     /**
@@ -23,7 +24,7 @@ class Banktransfer extends Model
      * The database table used by the model.
      * @var string
      */
-    protected $table = 'bank_transfers';
+    protected $table = 'transactions';
 
     /**
      * Mass Assignable fields of model
@@ -65,17 +66,9 @@ class Banktransfer extends Model
     protected static function boot()
     {
         parent::boot();
-        static::creating(function ($instance) {
-            $instance->fill([
-                'tid' => Banktransfer::max('tid')+1,
-                'user_id' => auth()->user()->id,
-                'ins' => auth()->user()->ins,
-            ]);
-            return $instance;
-        });
-
         static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', auth()->user()->ins);
+            $builder->where('ins', auth()->user()->ins)
+            ->where('tr_type', 'xfer');
         });
     }
 }

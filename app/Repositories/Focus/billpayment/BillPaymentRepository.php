@@ -37,7 +37,7 @@ class BillPaymentRepository extends BaseRepository
         $q->when(request('supplier_id'), function ($q) {
             $q->where('supplier_id', request('supplier_id'));
         });
-
+        
         return $q;
     }
 
@@ -67,7 +67,7 @@ class BillPaymentRepository extends BaseRepository
                 $new_row = [];
                 foreach ($row as $key => $val) {
                     if (stripos($val, 'null') !== false) $val = null;
-                    $new_row[$headers[$key]] = $val;
+                    $new_row[$headers[$key]] = $val; 
                 }
                 $import[] = $new_row;
             }
@@ -85,7 +85,7 @@ class BillPaymentRepository extends BaseRepository
                 $account = Account::whereNull('system')
                     ->whereHas('accountType', fn($q) =>  $q->where('system', 'bank'))
                     ->where('holder', 'LIKE', "%{$account_name}%")->first();
-
+                    
                 $data = array_map(fn($v) => [
                     'tid' => 1,
                     'account_id' => $account? $account->id : 0,
@@ -123,7 +123,7 @@ class BillPaymentRepository extends BaseRepository
         foreach ($input as $key => $val) {
             if ($key == 'date') $input[$key] = date_for_database($val);
             if (in_array($key, ['amount', 'allocate_ttl'])) $input[$key] = numberClean($val);
-            if (in_array($key, ['paid']))
+            if (in_array($key, ['paid'])) 
                 $input[$key] = array_map(fn($v) => numberClean($v), $val);
         }
 
@@ -131,11 +131,11 @@ class BillPaymentRepository extends BaseRepository
         if (empty($input['rel_payment_id'])) {
             if (@$input['reference'] && @$input['account_id']) {
                 $ref_exists = Billpayment::where('account_id', $input['account_id'])
-                    ->where('reference', 'LIKE', "%{$input['reference']}%")
-                    ->whereNull('rel_payment_id')->exists();
+                    ->where('reference', 'LIKE', "%{$input['reference']}%")  
+                    ->whereNull('rel_payment_id')->exists();            
                 if ($ref_exists) throw ValidationException::withMessages(['Duplicate reference no.']);
             }
-        }
+        }  
 
         // create payment
         $tid = Billpayment::where('ins', auth()->user()->ins)->max('tid');
@@ -147,9 +147,9 @@ class BillPaymentRepository extends BaseRepository
         $data_items = Arr::only($input, ['bill_id', 'paid']);
         $data_items = modify_array($data_items);
         $data_items = array_filter($data_items, fn($v) => $v['paid'] > 0);
-        if (!$data_items && $result->payment_type == 'per_invoice')
+        if (!$data_items && $result->payment_type == 'per_invoice') 
             throw ValidationException::withMessages(['amount allocation on line items required!']);
-
+        
         foreach ($data_items as $key => $val) {
             $data_items[$key]['bill_payment_id'] = $result->id;
         }
@@ -194,16 +194,16 @@ class BillPaymentRepository extends BaseRepository
                     // check over allocation
                     $diff = round($rel_payment->amount - $rel_payment->allocate_ttl);
                     if ($diff < 0) throw ValidationException::withMessages(['Allocation limit reached! Please reduce allocated amount by ' . numberFormat($diff*-1)]);
-
+                    
                 }
             }
         }
-
+        
         /**accounting */
         if (!$result->rel_payment_id || $result->is_advance_allocation) {
             $this->post_transaction($result);
         }
-
+                
         if ($result) {
             DB::commit();
             return $result;
@@ -233,16 +233,16 @@ class BillPaymentRepository extends BaseRepository
         if (empty($input['rel_payment_id'])) {
             if (@$input['reference'] && @$input['account_id']) {
                 $ref_exists = Billpayment::where('id', '!=', $billpayment->id)
-                    ->where('account_id', $input['account_id'])
-                    ->where('reference', 'LIKE', "%{$input['reference']}%")
-                    ->whereNull('rel_payment_id')->exists();
+                ->where('account_id', $input['account_id'])
+                    ->where('reference', 'LIKE', "%{$input['reference']}%")  
+                    ->whereNull('rel_payment_id')->exists();            
                 if ($ref_exists) throw ValidationException::withMessages(['Duplicate reference no.']);
-            }
+            }  
         }
 
         // delete billpayment with no unallocated line items
         $data_items = Arr::only($input, ['id', 'bill_id', 'paid']);
-        if (!$data_items && $billpayment->payment_type == 'per_invoice')
+        if (!$data_items && $billpayment->payment_type == 'per_invoice') 
             return $this->delete($billpayment);
 
         DB::beginTransaction();
@@ -308,7 +308,7 @@ class BillPaymentRepository extends BaseRepository
                     $purchase = $bill->purchase;
                     $purchase->decrement('amountpaid', $pmt_item->paid);
                 }
-            }
+            }            
 
             $is_allocated = 0;
             foreach ($data_items as $data_item) {
@@ -340,16 +340,16 @@ class BillPaymentRepository extends BaseRepository
             if ($rel_payment && $rel_payment->payment_type == 'advance_payment')
                 $billpayment->is_advance_allocation = true;
         }
-
+        
         /** accounting */
         if (!$billpayment->rel_payment_id || $billpayment->is_advance_allocation) {
-            Transaction::whereIn('tr_type', ['pmt', 'supplier_adv_pmt'])
-                ->where(['tr_ref' => $billpayment->id, 'user_type' => 'supplier'])
-                ->where(function($q) use($prev_note, $prev_reference) {
-                    $q->where('note', 'LIKE', "%{$prev_note}%")
-                        ->orwhere('note', 'LIKE', "%{$prev_reference}%");
-                })
-                ->delete();
+            Transaction::whereIn('tr_type', ['pmt', 'supplier_adv_pmt']) 
+            ->where(['tr_ref' => $billpayment->id, 'user_type' => 'supplier'])
+            ->where(function($q) use($prev_note, $prev_reference) {
+                $q->where('note', 'LIKE', "%{$prev_note}%")
+                ->orwhere('note', 'LIKE', "%{$prev_reference}%");
+            })
+            ->delete();
 
             $this->post_transaction($billpayment);
         }
@@ -370,7 +370,7 @@ class BillPaymentRepository extends BaseRepository
      * @return bool
      */
     public function delete(Billpayment $billpayment)
-    {
+    {     
         // dd($billpayment->id);
         DB::beginTransaction();
 
@@ -413,35 +413,35 @@ class BillPaymentRepository extends BaseRepository
             }
         }
 
-        Transaction::whereIn('tr_type', ['pmt', 'supplier_adv_pmt'])
-            ->where(['tr_ref' => $billpayment->id, 'user_type' => 'supplier'])
-            ->where(function($q) use($billpayment) {
-                $q->where('note', 'LIKE', "%{$billpayment->reference}%")
-                    ->orwhere('note', 'LIKE', "%{$billpayment->note}%");
-            })
-            ->delete();
+        Transaction::whereIn('tr_type', ['pmt', 'supplier_adv_pmt']) 
+        ->where(['tr_ref' => $billpayment->id, 'user_type' => 'supplier'])
+        ->where(function($q) use($billpayment) {
+            $q->where('note', 'LIKE', "%{$billpayment->reference}%")
+            ->orwhere('note', 'LIKE', "%{$billpayment->note}%");
+        })
+        ->delete();
         aggregate_account_transactions();
-
+        
         if ($billpayment->delete()) {
-            DB::commit();
+            DB::commit(); 
             return true;
         }
-
+    
         DB::rollBack();
     }
 
     /**
      * Post Bill payment transactions
-     *
+     * 
      * @param \App\Models\billpayment\Billpayment $billpayment
      * @return void
      */
     public function post_transaction($billpayment)
-    {
+    {   
         // default liability accounts
         $account = Account::where('system', 'payable')->first(['id']);
         if ($billpayment->employee_id) $account = Account::where('system', 'adv_salary')->first(['id']);
-
+            
         $tr_category = Transactioncategory::where('code', 'pmt')->first(['id', 'code']);
         $tid = Transaction::where('ins', auth()->user()->ins)->max('tid')+1;
         $dr_data = [
@@ -463,39 +463,39 @@ class BillPaymentRepository extends BaseRepository
         if ($billpayment->is_advance_allocation) {
             // debit payables (liability)
             Transaction::create($dr_data);
-
-            // credit supplier advance payment
+            
+            // credit supplier advance payment 
             unset($dr_data['debit'], $dr_data['is_primary']);
             $account = Account::where('system', 'supplier_adv_pmt')->first(['id']);
             $cr_data = array_replace($dr_data, [
                 'account_id' => $account->id,
                 'credit' => $billpayment->amount,
-            ]);
+            ]);    
             Transaction::create($cr_data);
         } else {
             if ($billpayment->payment_type == 'advance_payment') {
-                // debit supplier advance payment
+                // debit supplier advance payment 
                 $account = Account::where('system', 'supplier_adv_pmt')->first(['id']);
                 $dr_data['account_id'] = $account->id;
                 Transaction::create($dr_data);
-
+                
                 // credit bank
                 unset($dr_data['debit'], $dr_data['is_primary']);
                 $cr_data = array_replace($dr_data, [
                     'account_id' => $billpayment->account_id,
                     'credit' => $billpayment->amount,
-                ]);
+                ]);    
                 Transaction::create($cr_data);
             } else {
                 // debit payables (liability)
                 Transaction::create($dr_data);
-
+                            
                 // credit bank
                 unset($dr_data['debit'], $dr_data['is_primary']);
                 $cr_data = array_replace($dr_data, [
                     'account_id' => $billpayment->account_id,
                     'credit' => $billpayment->amount,
-                ]);
+                ]);    
                 Transaction::create($cr_data);
             }
         }

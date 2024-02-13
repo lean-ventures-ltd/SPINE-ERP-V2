@@ -3,8 +3,11 @@
 namespace App\Repositories;
 
 use App\Models\account\Account;
+use App\Models\account\AccountType;
 use App\Models\assetequipment\Assetequipment;
+use App\Models\deposit\Deposit;
 use App\Models\invoice\Invoice;
+use App\Models\items\JournalItem;
 use App\Models\manualjournal\Journal;
 use App\Models\opening_stock\OpeningStock;
 use App\Models\quote\Quote;
@@ -32,40 +35,42 @@ trait Accounting
             'tr_type' => $tr_category->code,
             'tr_ref' => $manual_journal->id,
             'user_type' => 'company',
-            'man_journal_id' => $manual_journal->id,
-            'is_primary' => 0,
+            'man_journal_id' => @$manual_journal->id,
             'debit' => 0,
             'credit' => 0,
         ];
 
-        $tr_data_arr = [];
         $account_type = @$manual_journal->ledger_account->account_type;
         if (in_array($account_type, ['Asset', 'Expense'])) {
             // debit [Asset | Expense] Account 
-            $tr_data_arr[] = array_replace($tr_data, [
+            $dr_data = array_replace($tr_data, [
                 'account_id' => $manual_journal->account_id, 
                 'debit' => $manual_journal->opening_balance,
                 'is_primary' => 1,
             ]);
+            Transaction::create($dr_data);
             // credit Retained Earnings Account
-            $tr_data_arr[] = array_replace($tr_data, [
+            $cr_data = array_replace($tr_data, [
                 'account_id' => $account->id, 
                 'credit' => $manual_journal->opening_balance,
             ]);
+            Transaction::create($cr_data);
         } else {
             // credit "Other" Account
-            $tr_data_arr[] = array_replace($tr_data, [
+            $cr_data = array_replace($tr_data, [
                 'account_id' => $manual_journal->account_id, 
                 'credit' => $manual_journal->opening_balance,
                 'is_primary' => 1,
             ]);
+            Transaction::create($cr_data);
             // debit Retained Earnings Account
-            $tr_data_arr[] = array_replace($tr_data, [
+            $dr_data = array_replace($tr_data, [
                 'account_id' => $account->id, 
-                'debit' => $manual_journal->opening_balance,
+                'credit' => $manual_journal->opening_balance,
             ]);
+            Transaction::create($dr_data);
         }
-        Transaction::insert($tr_data_arr);
+        aggregate_account_transactions();
     }
 
     /**
@@ -103,6 +108,7 @@ trait Accounting
             'credit' => $manual_journal->open_balance
         ]);
         Transaction::create($cr_data);
+        aggregate_account_transactions();
     }
 
     /**
@@ -113,9 +119,10 @@ trait Accounting
     {
         // credit Accounts Receivable (Debtors)
         $account = Account::where('system', 'receivable')->first(['id']);
-        $tr_category = Transactioncategory::where('code', 'wht')->first(['id', 'code']);
+        $tr_category = Transactioncategory::where('code', 'withholding')->first(['id', 'code']);
+        $tid = Transaction::max('tid') + 1;
         $cr_data = [
-            'tid' => Transaction::max('tid')+1,
+            'tid' => $tid,
             'account_id' => $account->id,
             'trans_category_id' => $tr_category->id,
             'credit' => $withholding->amount,
@@ -146,7 +153,7 @@ trait Accounting
             'debit' => $withholding->amount
         ]);
         Transaction::create($dr_data);
-         
+        aggregate_account_transactions(); 
     }
 
     /**
@@ -156,8 +163,9 @@ trait Accounting
     public function post_creditnote_debitnote($resource)
     {  
         $account = Account::where('system', 'receivable')->first(['id']);
+        $tid = Transaction::max('tid') + 1;
         $data = [
-            'tid' => Transaction::max('tid')+1,
+            'tid' => $tid,
             'account_id' => $account->id,
             'tr_ref' => $resource->id,
             'tr_date' => date('Y-m-d'),
@@ -244,7 +252,7 @@ trait Accounting
             }
         }
         Transaction::insert($tr_data);
-        
+        aggregate_account_transactions();
     }
 
     /**
@@ -256,8 +264,9 @@ trait Accounting
         // debit Accounts Receivable (Debtors)
         $account = Account::where('system', 'receivable')->first(['id']);
         $tr_category = Transactioncategory::where('code', 'inv')->first(['id', 'code']);
+        $tid = Transaction::max('tid') + 1;
         $dr_data = [
-            'tid' => Transaction::max('tid') + 1,
+            'tid' => $tid,
             'account_id' => $account->id,
             'trans_category_id' => $tr_category->id,
             'debit' => $invoice->total,
@@ -275,13 +284,9 @@ trait Accounting
             'customer_id' => $invoice->customer_id,
             'invoice_id' => $invoice->id
         ];
+        Transaction::create($dr_data);
 
-        // debit Accounts Receivable (Debtors)
-        $inc_cr_data = array_replace($dr_data, [
-            'debit' => $invoice->total,
-        ]);
-        Transaction::create($inc_cr_data);
-        unset($dr_data['is_primary']);
+        unset($dr_data['debit'], $dr_data['is_primary']);
 
         // credit Revenue Account (Income)
         $inc_cr_data = array_replace($dr_data, [
@@ -289,7 +294,6 @@ trait Accounting
             'credit' => $invoice->subtotal,
         ]);
         Transaction::create($inc_cr_data);
-        unset($dr_data['is_primary']);
 
         // credit tax (VAT)
         if ($invoice->tax > 0) {
@@ -302,7 +306,7 @@ trait Accounting
         }
 
         // WIP and COG transactions
-        $tr_data = [];
+        $tr_data = array();
 
         // stock amount for items issued from inventory
         $store_inventory_amount = 0;
@@ -335,6 +339,7 @@ trait Accounting
         $cog_account = Account::where('system', 'cog')->first(['id']);
         $cr_data = array_replace($dr_data, ['account_id' => $wip_account->id, 'is_primary' => 1]);
         $dr_data = array_replace($dr_data, ['account_id' => $cog_account->id, 'is_primary' => 0]);
+        
         if ($dirpurch_inventory_amount > 0) {
             $tr_data[] = array_replace($cr_data, ['credit' => $dirpurch_inventory_amount]);
             $tr_data[] = array_replace($dr_data, ['debit' => $dirpurch_inventory_amount]);
@@ -351,7 +356,8 @@ trait Accounting
             $tr_data[] = array_replace($cr_data, ['credit' => $store_inventory_amount]);
             $tr_data[] = array_replace($dr_data, ['debit' => $store_inventory_amount]);
         }
-        Transaction::insert($tr_data);       
+        Transaction::insert($tr_data);        
+        aggregate_account_transactions();        
     }
     
     /**
@@ -423,7 +429,7 @@ trait Accounting
                 Transaction::create($dr_data);
             }
         }
-                
+        aggregate_account_transactions();        
     }
 
     /**
@@ -458,7 +464,7 @@ trait Accounting
         $account = Account::where('system', 'retained_earning')->first(['id']);
         $dr_data = array_replace($cr_data, ['account_id' => $account->id, 'debit' => $manual_journal->open_balance]);
         Transaction::create($dr_data);
-        
+        aggregate_account_transactions();
     }
 
     /**
@@ -529,7 +535,7 @@ trait Accounting
                 Transaction::create($cr_data);
             }
         }
-        
+        aggregate_account_transactions();
     }
 
     /**
@@ -621,6 +627,7 @@ trait Accounting
             ]);
         }
         Transaction::insert($dr_data); 
+        aggregate_account_transactions();
     }
 
     /**
@@ -670,7 +677,7 @@ trait Accounting
             'credit' => $utility_bill->total,
         ]);    
         Transaction::create($cr_data);
-        
+        aggregate_account_transactions();
     }  
 
     /**
@@ -678,7 +685,7 @@ trait Accounting
      * @param Journal $journal
      */
     public function post_gen_journal($journal)
-    {   
+    {
         $tr_category = Transactioncategory::where('code', 'genjr')->first(['id', 'code']);
         $data = [
             'tid' => Transaction::max('tid')+1,
@@ -716,7 +723,8 @@ trait Accounting
                 ]);
             }
         }
-        Transaction::insert($tr_data);    
+        Transaction::insert($tr_data);
+        aggregate_account_transactions();    
     }
 
     /**
@@ -725,7 +733,7 @@ trait Accounting
      */
     public function post_account_charge($charge)
     {
-        // credit Asset Account (Bank)
+        // credit bank
         $tr_category = Transactioncategory::where('code', 'chrg')->first(['id', 'code']);
         $cr_data = [
             'tid' => Transaction::max('tid')+1,
@@ -745,13 +753,14 @@ trait Accounting
         ];
         Transaction::create($cr_data);
 
-        // debit Expense Account (Bank Charge Expense)
+        // debit expense account (bank charge)
         unset($cr_data['credit'], $cr_data['is_primary']);
         $dr_data = array_replace($cr_data, [
             'account_id' => $charge['expense_id'],
             'debit' => $charge['amount'],
         ]);
         Transaction::create($dr_data);
+        aggregate_account_transactions();
     }
 
     /**
@@ -789,7 +798,7 @@ trait Accounting
             'credit' => $bank_transfer->amount,
         ]);
         Transaction::create($cr_data);
-        
+        aggregate_account_transactions();
     }
 
     /**
@@ -827,7 +836,7 @@ trait Accounting
             'credit' => $opening_stock->total,
         ]);
         Transaction::create($cr_data);
-        
+        aggregate_account_transactions();
     }
 
     /**
@@ -853,7 +862,7 @@ trait Accounting
             'tr_ref' => $grn->id,
             'user_type' => 'supplier',
             'is_primary' => 1,
-            'supplier_id' => $grn->supplier_id,
+            'supplier_id' => $grn->supplier,
             'grn_id' => $grn->id
         ];
         Transaction::create($cr_data);
@@ -866,6 +875,7 @@ trait Accounting
             'debit' => $grn->subtotal,
         ]);    
         Transaction::create($dr_data);
+        aggregate_account_transactions();
     }
 
     /**
@@ -895,7 +905,6 @@ trait Accounting
             'bill_id' => $utility_bill->id,
         ];
         Transaction::create($dr_data);
-        unset($dr_data['debit'], $dr_data['is_primary']);
 
         // debit TAX
         if ($utility_bill->tax > 0) {
@@ -908,12 +917,14 @@ trait Accounting
         }
 
         // credit Accounts Payable (creditors)
+        unset($dr_data['debit'], $dr_data['is_primary']);
         $account = Account::where('system', 'payable')->first(['id']);
         $cr_data = array_replace($dr_data, [
             'account_id' => $account->id,
             'credit' => $utility_bill->total,
         ]);    
         Transaction::create($cr_data);
+        aggregate_account_transactions();
     }
 
     /**
@@ -952,7 +963,7 @@ trait Accounting
             'debit' => $projectstock['total'],
         ]);
         Transaction::create($dr_data);
-        
+        aggregate_account_transactions();
     }
 
     /**
@@ -993,6 +1004,6 @@ trait Accounting
         } else {
             // business loan
         }
-            
+        aggregate_account_transactions();    
     }
 }

@@ -18,6 +18,7 @@
 
 namespace App\Http\Controllers\Focus\invoice;
 
+use App\Http\Controllers\Focus\cuInvoiceNumber\CuInvoiceNumberController;
 use App\Http\Controllers\Focus\printer\RegistersController;
 use App\Http\Requests\Focus\invoice\ManagePosRequest;
 use App\Models\account\Account;
@@ -112,7 +113,7 @@ class InvoicesController extends Controller
      */
     public function store(CreateInvoiceRequest $request)
     {
-        //dd($request->all());
+        dd($request->all());
     }
 
     /**
@@ -238,20 +239,23 @@ class InvoicesController extends Controller
         $last_tid = Invoice::where('ins', $ins)->max('tid');
         $prefixes = prefixesArray(['invoice', 'quote', 'proforma_invoice', 'purchase_order', 'delivery_note', 'jobcard'], $ins);
 
+        $newCuInvoiceNo = (new CuInvoiceNumberController())->getNext();
+
         return new ViewResponse('focus.invoices.create_project_invoice',
-            compact('quotes', 'customer', 'last_tid', 'banks', 'accounts', 'terms', 'quote_ids', 'additionals', 'prefixes'),
+            compact('quotes', 'customer', 'last_tid', 'banks', 'accounts', 'terms', 'quote_ids', 'additionals', 'prefixes', 'newCuInvoiceNo'),
         );
     }
 
     /**
      * Store newly created project invoice
+     * @throws \Exception
      */
     public function store_project_invoice(Request $request)
     {  
         // extract request input fields
         $bill = $request->only([
             'customer_id', 'bank_id', 'tax_id', 'tid', 'invoicedate', 'validity', 'notes', 'term_id', 'account_id',
-            'taxable', 'subtotal', 'tax', 'total', 'cu_invoice_no'
+            'taxable', 'subtotal', 'tax', 'total', 'cu_invoice_no',
         ]);
         $bill_items = $request->only([
             'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 'product_subtotal', 'product_price', 
@@ -260,6 +264,7 @@ class InvoicesController extends Controller
 
         $bill['user_id'] = auth()->user()->id;
         $bill['ins'] = auth()->user()->ins;
+        $bill['cu_invoice_no'] = (new CuInvoiceNumberController())->allocate();
         $bill_items = modify_array($bill_items);
 
         try {
@@ -305,7 +310,7 @@ class InvoicesController extends Controller
         // extract request input fields
         $bill = $request->only([
             'customer_id', 'bank_id', 'tax_id', 'tid', 'invoicedate', 'validity', 'notes', 'term_id', 'account_id',
-            'taxable', 'subtotal', 'tax', 'total', 'cu_invoice_no'
+            'taxable', 'subtotal', 'tax', 'total', 'cu_invoice_no',
         ]);
         $bill_items = $request->only([
             'id', 'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 
@@ -427,7 +432,7 @@ class InvoicesController extends Controller
 
         try {
             $result = $this->inv_payment_repository->update($payment, compact('data', 'data_items'));
-        } catch (\Throwable $th) {
+        } catch (\Throwable $th) { dd($th);
             return errorHandler('Error Updating Payment', $th);
         }
 
@@ -459,7 +464,10 @@ class InvoicesController extends Controller
             ->where('currency_id', 1)->whereIn('status', ['due', 'partial']);
             
         if ($w) $invoices = $query->where('notes', 'LIKE', "%{$w}%")->orderBy('invoiceduedate', 'asc')->limit(6)->get();
-        else $invoices = $query->orderBy('invoiceduedate', 'asc')->get();
+        else $invoices = $query
+            ->orderBy('amountpaid', 'asc')
+            ->orderBy('invoiceduedate', 'asc')
+            ->get();
             
         return response()->json($invoices);
     }
@@ -525,21 +533,14 @@ class InvoicesController extends Controller
      */
     public function pos_store(CreateInvoiceRequest $request)
     {
-        $request->validate(['customer_id' => 'required']);
-        if (count(array_filter($request->only('is_pay', 'pmt_reference', 'p_account'))) < 3) {
-            throw ValidationException::withMessages(['Payment Reference and Payment Account required']);
+        if (request('is_pay') && (!request('pmt_reference') || !request('p_account'))) {
+            throw ValidationException::withMessages(['payment reference and payment account is required!']);
         }
         
+        // dd($request->all());
         try {
             $result = $this->pos_repository->create($request->except('_token'));
         } catch (\Throwable $th) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'status' => 'Error', 
-                    'message' => 'Error Processing POS Transaction! Try again later',
-                    'error_message' => $th->getMessage(),
-                ]);
-            }
             return errorHandler('Error Creating POS Transaction', $th);
         }
         
@@ -547,6 +548,7 @@ class InvoicesController extends Controller
             'status' => 'Success', 
             'message' => 'POS Transaction Done Successfully',
             'invoice' => $result,
+            // 'invoice' => (object) ['id' => 62],
         ]);
     }
 

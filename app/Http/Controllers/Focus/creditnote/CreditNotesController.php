@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Focus\creditnote;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Focus\cuInvoiceNumber\CuInvoiceNumberController;
 use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
-use App\Models\Company\Company;
 use App\Models\creditnote\CreditNote;
 use App\Repositories\Focus\creditnote\CreditNoteRepository;
 use DateTime;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class CreditNotesController extends Controller
 {
@@ -36,8 +39,20 @@ class CreditNotesController extends Controller
    */
   public function index()
   {
+    // test KRA ETR TIMS device api call
+    // $client = new \GuzzleHttp\Client();
+    // $response = $client->post("http://192.168.0.57:8086/api/v3/invoices", [
+    //   'headers' => [
+    //     // 'Content-Type' => "text/plain; charset=utf-8",
+    //     'Content-Type' => "application/json",
+    //     'Accept' => "application/json",
+    //   ],
+    //   'json' => [],
+    // ]);
+    // $data = $response->getBody()->getContents();
+    // dd(json_decode($data));
+
     $is_debit = request('is_debit');
-    
     return new ViewResponse('focus.creditnotes.index', compact('is_debit'));
   }
 
@@ -54,7 +69,9 @@ class CreditNotesController extends Controller
     $last_tid = CreditNote::where('ins', $ins)->max('tid');
     if ($is_debit == 1) $last_tid = CreditNote::where('ins', $ins)->where('is_debit', 1)->max('tid');
 
-    return new ViewResponse('focus.creditnotes.create', compact('last_tid', 'is_debit', 'prefixes'));
+    $newCuInvoiceNo = (new CuInvoiceNumberController())->getNext();
+
+      return new ViewResponse('focus.creditnotes.create', compact('last_tid', 'is_debit', 'prefixes', 'newCuInvoiceNo'));
   }
 
   /**
@@ -65,27 +82,41 @@ class CreditNotesController extends Controller
    */
   public function store(Request $request)
   {
-    // extract input fields
-    $data = $request->except('_token', 'tax_id', 'amount');
 
-    $data['ins'] = auth()->user()->ins;
-    $data['user_id'] = auth()->user()->id;
+//      Validator::make($request->all(),
+//          ['cu_invoice_no' => 'unique:invoices,cu_invoice_no', 'unique:credit_notes,cu_invoice_no'],
+//          ['cu_invoice_no.unique' => 'The Specified CU Invoice Number is Already Taken']
+//      )->validate();
 
+      // extract input fields
+        $data = $request->except('_token', 'tax_id', 'amount');
 
-    try {
-      $result = $this->repository->create($data);
+        $data['ins'] = auth()->user()->ins;
+        $data['user_id'] = auth()->user()->id;
+
+    $result = $this->repository->create($data);
+
+      try {
+          DB::beginTransaction();
+
+          $creditNote = CreditNote::where('id', $result['id'])->first();
+          $creditNote->cu_invoice_no = (new CuInvoiceNumberController())->allocate();
+          $creditNote->save();
+
+          DB::commit();
+      } catch (Exception $e){
+          DB::rollBack();
+          throw $e;
+      }
 
       $msg = 'Credit Note created successfully';
-      $route = route('biller.creditnotes.index');
-      if ($result['is_debit']) {
-        $msg = 'Debit Note created successfully';
-        $route = route('biller.creditnotes.index', 'is_debit=1');
-      }
-  
-    } catch (\Throwable $th) {
-      return errorHandler('Error Creating Credit Note', $th);
-    }
-    return new RedirectResponse($route, ['flash_success' => $msg]);
+        $route = route('biller.creditnotes.index');
+        if ($result['is_debit']) {
+          $msg = 'Debit Note created successfully';
+          $route = route('biller.creditnotes.index', 'is_debit=1');
+        }
+
+        return new RedirectResponse($route, ['flash_success' => $msg]);
   }
 
   /**
@@ -134,17 +165,13 @@ class CreditNotesController extends Controller
     $data['ins'] = auth()->user()->ins;
     $data['user_id'] = auth()->user()->id;
 
-    try {
-      $this->repository->update($creditnote, $data);
+    $this->repository->update($creditnote, $data);
 
-      $msg = 'Credit Note updated successfully';
-      $route = route('biller.creditnotes.index');
-      if ($creditnote['is_debit']) {
-        $msg = 'Debit Note updated successfully';
-        $route = route('biller.creditnotes.index', 'is_debit=1');
-      }
-    } catch (\Throwable $th) {
-      return errorHandler('Error Updating Credit Note', $th);
+    $msg = 'Credit Note updated successfully';
+    $route = route('biller.creditnotes.index');
+    if ($creditnote['is_debit']) {
+      $msg = 'Debit Note updated successfully';
+      $route = route('biller.creditnotes.index', 'is_debit=1');
     }
 
     return new RedirectResponse($route, ['flash_success' => $msg]);
@@ -158,17 +185,13 @@ class CreditNotesController extends Controller
    */
   public function destroy(CreditNote $creditnote)
   {
-    try {
-      $this->repository->delete($creditnote);
+    $this->repository->delete($creditnote);
 
-      $msg = 'Credit Note updated successfully';
-      $route = route('biller.creditnotes.index');
-      if ($creditnote['is_debit']) {
-        $msg = 'Debit Note updated successfully';
-        $route = route('biller.creditnotes.index', 'is_debit=1');
-      }
-    } catch (\Throwable $th) {
-      return errorHandler('Error Deleting Credit Note', $th);
+    $msg = 'Credit Note updated successfully';
+    $route = route('biller.creditnotes.index');
+    if ($creditnote['is_debit']) {
+      $msg = 'Debit Note updated successfully';
+      $route = route('biller.creditnotes.index', 'is_debit=1');
     }
 
     return new RedirectResponse($route, ['flash_success' => $msg]);
@@ -179,9 +202,7 @@ class CreditNotesController extends Controller
    */
   public function print_creditnote(CreditNote $creditnote)
   {
-    $company = Company::find(auth()->user()->ins) ?: new Company;
-
-    $html = view('focus.creditnotes.print_creditnote', ['resource' => $creditnote, 'company' => $company])->render();
+    $html = view('focus.creditnotes.print_creditnote', ['resource' => $creditnote])->render();
     $pdf = new \Mpdf\Mpdf(config('pdf'));
     $pdf->WriteHTML($html);
     $headers = array(

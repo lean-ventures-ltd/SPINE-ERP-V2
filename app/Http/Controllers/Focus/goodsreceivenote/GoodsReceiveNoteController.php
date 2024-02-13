@@ -116,8 +116,8 @@ class GoodsReceiveNoteController extends Controller
 
             $productVariation = ProductVariation::where('code', $key)->first();
 
-            if (!empty($productVariation)) $grnItemsBySupplier[$key]['name'] = $productVariation->name;
-            else $grnItemsBySupplier[$key]['name'] = 'Product Not Found';
+              if (!empty($productVariation)) $grnItemsBySupplier[$key]['name'] = $productVariation->name;
+              else $grnItemsBySupplier[$key]['name'] = 'Product Not Found';
         }
 
         return $grnItemsBySupplier;

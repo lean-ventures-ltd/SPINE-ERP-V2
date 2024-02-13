@@ -12,7 +12,7 @@
         'loan' => 'LOAN', 
         'chrg' => 'CHARGE',
         'stock' => 'STOCK',
-        'wht' => 'WITHHOLDING',
+        'withholding' => 'WITHHOLDING',
         'cnote' => 'CREDIT NOTE',
         'genjr' => 'JOURNAL ENTRY'
     ];
