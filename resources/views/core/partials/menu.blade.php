@@ -620,22 +620,22 @@
                         </li>
                         @endauth
 
-                        {{-- Product Opening Stock --}}
-                        @permission('manage-opening-stock')
+                        {{-- Stock Adjustment --}}
+                        {{-- @permission('manage-opening-stock') --}}
                         <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
-                            <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-balance-scale"></i> Opening Stock</a>
+                            <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-balance-scale"></i> Stock Adjustment</a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('biller.opening_stock.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Opening Stock</a>
+                                    <a class="dropdown-item" href="{{ route('biller.stock_adjs.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Adjustments</a>
                                 </li>
-                                @permission('create-opening-stock')
+                                {{-- @permission('create-opening-stock') --}}
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('biller.opening_stock.create')}}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Create Opening Stock</a>
+                                    <a class="dropdown-item" href="{{ route('biller.stock_adjs.create')}}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Create Adjustment</a>
                                 </li>
-                                @endauth
+                                {{-- @endauth --}}
                             </ul>
                         </li>
-                        @endauth
+                        {{-- @endauth --}}
 
                         {{-- Goods Receive Note --}}
                         @permission('manage-grn')

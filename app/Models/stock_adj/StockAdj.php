@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Models\equipment;
+namespace App\Models\stock_adj;
 
-use App\Models\assetequipment\Traits\AssetequipmentAttribute;
-use App\Models\assetequipment\Traits\AssetequipmentRelationship;
 use App\Models\ModelTrait;
+use App\Models\stock_adj\Traits\StockAdjAttribute;
+use App\Models\stock_adj\Traits\StockAdjRelationship;
 use Illuminate\Database\Eloquent\Model;
 
-class Assetequipment extends Model
+class StockAdj extends Model
 {
-    use ModelTrait,AssetequipmentAttribute, AssetequipmentRelationship;
+    use ModelTrait, StockAdjAttribute, StockAdjRelationship;
 
     /**
      * NOTE : If you want to implement Soft Deletes in this model,
@@ -20,7 +20,7 @@ class Assetequipment extends Model
      * The database table used by the model.
      * @var string
      */
-    protected $table = 'asset_equipments';
+    protected $table = 'stock_adjs';
 
     /**
      * Mass Assignable fields of model

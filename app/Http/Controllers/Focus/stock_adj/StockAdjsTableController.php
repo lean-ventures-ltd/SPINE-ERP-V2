@@ -15,27 +15,27 @@
  *  * here- http://codecanyon.net/licenses/standard/
  * ***********************************************************************
  */
-namespace App\Http\Controllers\Focus\opening_stock;
+namespace App\Http\Controllers\Focus\stock_adj;
 
 use App\Http\Controllers\Controller;
-use App\Repositories\Focus\opening_stock\OpeningStockRepository;
+use App\Repositories\Focus\stock_adj\StockAdjRepository;
 use Request;
 use Yajra\DataTables\Facades\DataTables;
 
 
-class OpeningStockTableController extends Controller
+class StockAdjsTableController extends Controller
 {
     /**
      * variable to store the repository object
-     * @var OpeningStockRepository
+     * @var StockAdjRepository
      */
     protected $repository;
 
     /**
      * contructor to initialize repository object
-     * @param OpeningStockRepository $repository ;
+     * @param StockAdjRepository $repository ;
      */
-    public function __construct(OpeningStockRepository $repository)
+    public function __construct(StockAdjRepository $repository)
     {
         $this->repository = $repository;
     }
@@ -52,24 +52,17 @@ class OpeningStockTableController extends Controller
         return Datatables::of($core)
             ->escapeColumns(['id'])
             ->addIndexColumn()    
-            ->addColumn('tid', function ($opening_stock) {
-                return $opening_stock->tid;
-            })    
-            ->addColumn('date', function ($opening_stock) {
-                return dateFormat($opening_stock->date);
+            ->editColumn('date', function ($stock_adj) {
+                return dateFormat($stock_adj->date);
             })
-            ->addColumn('amount', function ($opening_stock) {
-                return numberFormat($opening_stock->total);
+            ->addColumn('account', function ($stock_adj) {
+                return @$stock_adj->account->holder;
             })
-            ->addColumn('warehouse', function ($opening_stock) {
-                if ($opening_stock->warehouse)
-                return $opening_stock->warehouse->title;
+            ->editColumn('total', function ($stock_adj) {
+                return numberFormat($stock_adj->total);
             })
-            // ->addColumn('aggregate', function ($opening_stock) use($aggregate) {
-            //     return $aggregate;
-            // })
-            ->addColumn('actions', function ($opening_stock) {
-                return $opening_stock->action_buttons;
+            ->addColumn('actions', function ($stock_adj) {
+                return $stock_adj->action_buttons;
             })
             ->make(true);
     }

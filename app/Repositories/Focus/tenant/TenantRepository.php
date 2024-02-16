@@ -5,10 +5,13 @@ namespace App\Repositories\Focus\tenant;
 use App\Exceptions\GeneralException;
 use App\Models\Access\User\User;
 use App\Models\account\Account;
+use App\Models\additional\Additional;
+use App\Models\currency\Currency;
 use App\Models\productvariable\Productvariable;
 use App\Models\tenant\Tenant;
 use App\Models\tenant_package\TenantPackage;
 use App\Models\tenant_package\TenantPackageItem;
+use App\Models\term\Term;
 use App\Models\transactioncategory\Transactioncategory;
 use App\Repositories\BaseRepository;
 use Carbon\Carbon;
@@ -77,8 +80,8 @@ class TenantRepository extends BaseRepository
         $user = User::where('customer_id', $tenant_package->customer_id)->first();
         if ($user) $user->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);
 
-        // set tenant account properties
-        $this->account_setup($tenant, $user);
+        // set tenant common configuration
+        $this->set_common_config($tenant, $user);
 
         if ($tenant) {
             DB::commit();
@@ -149,34 +152,32 @@ class TenantRepository extends BaseRepository
     }
 
     /**
-     * Replicate default account records
-     * 
+     * Replicate Common Configuration
      */
-    function account_setup($tenant, $user)
+    function set_common_config($tenant, $user)
     {
-        // set ledger accounts
-        $accounts = Account::all();
-        foreach ($accounts as $key => $account) {
-            $account2 = $account->replicate();
-            $account2->ins = $tenant->id;
-            $account2->user_id = @$user->id ?: null;
-            $account2->save();
-        }
-        // set transaction categories
-        $tr_categories = Transactioncategory::all();
-        foreach ($tr_categories as $key => $tr_category) {
-            $tr_category2 = $tr_category->replicate();
-            $tr_category2->ins = $tenant->id;
-            $tr_category2->user_id = @$user->id ?: null;
-            $tr_category2->save();
-        }
-        // set product units of measure
-        $units = Productvariable::all();
-        foreach ($units as $key => $unit) {
-            $unit2 = $unit->replicate();
-            $unit2->ins = $tenant->id;
-            $unit2->user_id = @$user->id ?: null;
-            $unit2->save();
+        $collections = [
+            'accounts' => Account::all(),
+            'tr_categories' => Transactioncategory::all(),
+            'prod_units' => Productvariable::all(),
+            'currencies' => Currency::all(),
+            'terms' => Term::all(),
+            'vat_rates' => Additional::all(),
+        ];
+        foreach ($collections as $key => $collection) {
+            foreach ($collection as $i => $item) {
+                $item_repl = $item->replicate();
+                $item_repl->ins = $tenant->id;
+                $item_repl->user_id = @$user->id;
+                if ($key == 'accounts') {
+                    unset(
+                        $item_repl['opening_balance'],
+                        $item_repl['opening_balance_date'],
+                        $item_repl['note']
+                    );
+                }
+                $item_repl->save();
+            }
         }
     }
 }

@@ -5,10 +5,11 @@
  * General Error Handling
  **/
 if (!function_exists('errorHandler')) {
-    function errorHandler($msg = 'Internal Server Error! Please try again later.', $e = null)
+    function errorHandler($msg = '', $e = null)
     {
+        if ($e instanceof \Illuminate\Validation\ValidationException) throw $e;
         if ($e) \Illuminate\Support\Facades\Log::error($e->getMessage() .' {user_id: '. auth()->user()->id . '}' . ' at ' . $e->getFile() . ':' . $e->getLine());
-        return redirect()->back()->with('flash_error', $msg);
+        return redirect()->back()->with('flash_error', $msg ?: 'Internal Server Error! Please try again later.');
     }
 }
 

@@ -1,16 +1,13 @@
 <?php
 
-namespace App\Models\equipment;
+namespace App\Models\stock_adj;
 
-use App\Models\assetequipment\Traits\AssetequipmentAttribute;
-use App\Models\assetequipment\Traits\AssetequipmentRelationship;
-use App\Models\ModelTrait;
+use App\Models\stock_adj\Traits\StockAdjItemRelationship;
 use Illuminate\Database\Eloquent\Model;
 
-class Assetequipment extends Model
+class StockAdjItem extends Model
 {
-    use ModelTrait,AssetequipmentAttribute, AssetequipmentRelationship;
-
+    use StockAdjItemRelationship;
     /**
      * NOTE : If you want to implement Soft Deletes in this model,
      * then follow the steps here : https://laravel.com/docs/5.4/eloquent#soft-deleting
@@ -20,7 +17,7 @@ class Assetequipment extends Model
      * The database table used by the model.
      * @var string
      */
-    protected $table = 'asset_equipments';
+    protected $table = 'stock_adj_items';
 
     /**
      * Mass Assignable fields of model
@@ -67,15 +64,5 @@ class Assetequipment extends Model
     protected static function boot()
     {
         parent::boot();
-
-        static::creating(function ($instance) {
-            $instance->user_id = auth()->user()->id;
-            $instance->ins = auth()->user()->ins;
-            return $instance;
-        });
-
-        static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', auth()->user()->ins);
-        });
     }
 }

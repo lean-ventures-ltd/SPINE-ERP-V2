@@ -1,24 +1,23 @@
 <?php
 
+Route::group(['namespace' => 'stock_adj'], function () {
+    Route::resource('stock_adjs', 'StockAdjsController');
+    // datatable
+    Route::post('stock_adjs/get', 'StockAdjsTableController')->name('stock_adjs.get');
+});
+
 Route::group(['namespace' => 'stock_transfer'], function () {
     Route::resource('stock_transfers', 'StockTransfersController');
     // data table
     Route::post('stock_transfers/get', 'StockTransfersTableController')->name('stock_transfers.get');
 });
 
-Route::group(['namespace' => 'opening_stock'], function () {
-    Route::post('opening_stock/product_variation', 'OpeningStockController@product_variation')->name('opening_stock.product_variation');
-    Route::resource('opening_stock', 'OpeningStockController');
-    // data table
-    Route::post('opening_stock/get', 'OpeningStockTableController')->name('opening_stock.get');
-});
 
 Route::group(['namespace' => 'goodsreceivenote'], function () {
     Route::resource('goodsreceivenote', 'GoodsReceiveNoteController');
     Route::get('grn/items-by-supplier/{supplierId}', 'GoodsReceiveNoteController@getGrnItemsBySupplier')->name('grn-items-by-supplier');
     Route::get('grn/items-by-supplier-v2', 'GoodsReceiveNoteController@getGrnItemsBySupplierV2')->name('grn-items-by-supplier-v2');
-
-
+    // datatable
     Route::post('goodsreceivenote/get', 'GoodsReceiveNoteTableController')->name('goodsreceivenote.get');
 });
 

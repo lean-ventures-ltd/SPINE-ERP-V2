@@ -3,7 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\account\Account;
-use App\Models\assetequipment\Assetequipment;
+use App\Models\equipment\Assetequipment;
 use App\Models\invoice\Invoice;
 use App\Models\manualjournal\Journal;
 use App\Models\opening_stock\OpeningStock;
@@ -13,6 +13,61 @@ use App\Models\transactioncategory\Transactioncategory;
 
 trait Accounting
 {
+    /**
+     * Inventory Stock Adjustment
+     * @param object $stock_adj
+     */
+    public function post_stock_adjustment($stock_adj)
+    {
+        $stock_account = Account::where('system', 'stock')->first(['id']);
+        $tr_category = Transactioncategory::where('code', 'stock')->first(['id', 'code']);
+        $tr_data = [
+            'tid' => Transaction::max('tid')+1,
+            'trans_category_id' => $tr_category->id,
+            'tr_date' => $stock_adj->date,
+            'due_date' => $stock_adj->date,
+            'user_id' => $stock_adj->user_id,
+            'note' => $stock_adj->note,
+            'ins' => $stock_adj->ins,
+            'tr_type' => $tr_category->code,
+            'tr_ref' => $stock_adj->id,
+            'user_type' => 'employee',
+            'stock_adj_id' => $stock_adj->id,
+            'is_primary' => 0,
+            'debit' => 0,
+            'credit' => 0,
+        ];
+
+        $tr_data_arr = [];
+        $account = Account::find($stock_adj->account_id);
+        if ($account->account_type == 'Expense') {
+            // credit Inventory
+            $tr_data_arr[] = array_replace($tr_data, [
+                'account_id' => $stock_account->id,
+                'is_primary' => 1,
+                'credit' =>  $stock_adj->total,
+            ]);
+            // debit Expense Account
+            $tr_data_arr[] = array_replace($tr_data, [
+                'account_id' => $stock_adj->account_id,
+                'debit' =>  $stock_adj->total,
+            ]);
+        } elseif ($account->account_type == 'Income') {
+            // debit Inventory
+            $tr_data_arr[] = array_replace($tr_data, [
+                'account_id' => $stock_account->id,
+                'is_primary' => 1,
+                'debit' =>  $stock_adj->total,
+            ]);
+            // credit Income Account
+            $tr_data_arr[] = array_replace($tr_data, [
+                'account_id' => $stock_adj->account_id,
+                'credit' =>  $stock_adj->total,
+            ]);
+        }
+        Transaction::insert($tr_data_arr);
+    }
+
     /**
      * Ledger Account Opening Balance
      * @param object $account
