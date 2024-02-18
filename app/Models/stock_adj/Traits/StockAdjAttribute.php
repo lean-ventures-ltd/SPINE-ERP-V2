@@ -14,4 +14,16 @@ trait StockAdjAttribute
         .' '. $this->getEditButtonAttribute("edit-opening-stock", "biller.stock_adjs.edit")
         .' '.$this->getDeleteButtonAttribute("delete-opening-stock", "biller.stock_adjs.destroy");     
     }
+
+    /**
+     * Adjustment Type Attribute
+     */
+    public function getAdjustmentTypeAttribute()
+    {
+        $label = '';
+        if ($this->adj_type == 'Qty') $label = 'Quantity';
+        if ($this->adj_type == 'Cost') $label = 'Cost';
+        if ($this->adj_type == 'Qty-Cost') $label = 'Cost & Quantity';
+        return $label;
+    }
 }

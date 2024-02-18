@@ -1,16 +1,16 @@
 @extends ('core.layouts.app')
 
-@section('title', 'Product Opening Stock')
+@section('title', 'Stock Adjustment')
 
 @section('content')
 <div class="content-wrapper">
     <div class="content-header row mb-1">
         <div class="content-header-left col-6">
-            <h4 class="content-header-title">Product Opening Stock</h4>
+            <h4 class="content-header-title">Stock Adjustment</h4>
         </div>
         <div class="col-6">
             <div class="btn-group float-right">
-                @include('focus.opening_stock.partials.opening-stock-header-buttons')
+                @include('focus.stock_adjs.partials.stockadjs-header-buttons')
             </div>
         </div>
     </div>
@@ -22,11 +22,11 @@
                     <table class="table table-bordered table-sm">
                         @php
                             $details = [
-                                'Transaction No' => $opening_stock->tid,
-                                'Date' => dateFormat($opening_stock->date),
-                                'Note' => $opening_stock->note,
-                                'Warehouse' => $opening_stock->warehouse->title,
-                                'Amount' => numberFormat($opening_stock->total)
+                                'Adjustment Type' => $stock_adj->adjustment_type,
+                                'Date' => dateFormat($stock_adj->date, 'd-M-Y'),
+                                'Note' => $stock_adj->note,
+                                'Account' => @$stock_adj->account->holder,
+                                'Total Amount' => numberFormat($stock_adj->total),
                             ];
                         @endphp
                         @foreach ($details as $key => $val)
@@ -42,21 +42,25 @@
                             <thead>
                                 <tr class="bg-gradient-directional-blue white">
                                     <th>#</th>
-                                    <th>Description</th>
-                                    <th width="10%">Base Unit</th>
-                                    <th width="16%">Purchase Price</th>
-                                    <th width="12%">Unit Qty</th>
-                                    <th width="16%">Amount</th>
+                                    <th width="30%">Stock Item</th>
+                                    <th>Unit</th>
+                                    <th>Qty On-Hand</th>
+                                    <th>New Qty</th>
+                                    <th>Qty Diff</th>
+                                    <th width="15%">Cost</th>
+                                    <th width="15%">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>   
-                                @foreach ($opening_stock->items as $i => $item)
+                                @foreach ($stock_adj->items as $i => $item)
                                     <tr>
                                         <td>{{ $i+1 }}</td>
-                                        <td>{{ $item->productvariation->name }}</td>
-                                        <td>{{ $item->product->unit? $item->product->unit->code : ''}}</td>
-                                        <td>{{ numberFormat($item->purchase_price) }}</td>
-                                        <td>{{ +$item->qty }}</td>
+                                        <td>{{ $item->productvar->name }}</td>
+                                        <td>{{ @$item->productvar->product->unit->code }}</td>
+                                        <td>{{ +$item->qty_onhand }}</td>
+                                        <td>{{ +$item->new_qty }}</td>
+                                        <td>{{ +$item->qty_diff }}</td>
+                                        <td>{{ numberFormat($item->cost) }}</td>
                                         <td>{{ numberFormat($item->amount) }}</td>
                                     </tr>
                                 @endforeach                                
