@@ -17,6 +17,54 @@ trait Accounting
      * Inventory Stock Adjustment
      * @param object $stock_adj
      */
+    public function post_stock_issue($stock_issue)
+    {
+        $stock_account = Account::where('system', 'stock')->first(['id']);
+        $tr_category = Transactioncategory::where('code', 'stock')->first(['id', 'code']);
+        // credit Stock Account
+        $cr_data = [
+            'tid' => Transaction::max('tid')+1,
+            'account_id' => $stock_account->id,
+            'trans_category_id' => $tr_category->id,
+            'tr_date' => $stock_issue->date,
+            'due_date' => $stock_issue->date,
+            'user_id' => $stock_issue->user_id,
+            'note' => $stock_issue->note,
+            'ins' => $stock_issue->ins,
+            'tr_type' => $tr_category->code,
+            'tr_ref' => $stock_issue->id,
+            'user_type' => $stock_issue->customer_id? 'customer':'employee',
+            'customer_id' => $stock_issue->customer_id,
+            'stock_issue_id' => $stock_issue->id,
+            'is_primary' => 1,
+            'credit' => $stock_issue->total,
+        ];
+        Transaction::create($cr_data);
+        unset($cr_data['credit'], $cr_data['is_primary']);
+
+        if ($stock_issue->project_id) {
+            // debit WIP account
+            $wip_account = Account::where('system', 'wip')->first(['id']);
+            $dr_data = array_replace($cr_data, [
+                'account_id' => $wip_account->id,
+                'debit' =>  $stock_issue->total,
+            ]);
+            Transaction::create($dr_data);
+        } else {
+            // debit COG Account
+            $cog_account = Account::where('system', 'cog')->first(['id']);
+            $dr_data = array_replace($cr_data, [
+                'account_id' => $cog_account->id,
+                'debit' =>  $stock_issue->total,
+            ]);
+            Transaction::create($dr_data);
+        }
+    }
+
+    /**
+     * Inventory Stock Adjustment
+     * @param object $stock_adj
+     */
     public function post_stock_adjustment($stock_adj)
     {
         $stock_account = Account::where('system', 'stock')->first(['id']);

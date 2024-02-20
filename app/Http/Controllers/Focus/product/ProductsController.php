@@ -210,6 +210,19 @@ class ProductsController extends Controller
             ]);
             // set purchase price using inventory valuation (LIFO) method
             $product['purchase_price'] = $this->repository->eval_purchase_price($row->id, $row->qty, $row->purchase_price);
+
+            // product qty
+            $product['qty'] = 0;
+            $warehouses = Warehouse::whereHas('products', fn($q) => $q->where('name', 'LIKE', "%{$row->name}%"))
+            ->with(['products' => fn($q) => $q->where('name', 'LIKE', "%{$row->name}%")])
+            ->get();
+            foreach ($warehouses as $key1 => $wh) {
+                $product['qty'] += $wh->products->sum('qty');
+                $warehouses[$key1]['products_qty'] = $wh->products->sum('qty');
+                unset($warehouses[$key1]['products']);
+            }
+            $product['warehouses'] = $warehouses;
+
             $products[] =  $product;
         }
         
