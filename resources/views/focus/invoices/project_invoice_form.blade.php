@@ -27,8 +27,9 @@
                     $tid = $invoice->tid;
                 }
             @endphp
-            {{ Form::text('tid', $label, ['class' => 'form-control round', 'disabled']) }}
-            <input type="hidden" name="tid" value={{ $tid }}>
+{{--            {{ Form::text('tid', $label, ['class' => 'form-control round', 'disabled']) }}--}}
+            <input id="tid" type="text" name="tid" value="{{ $label }}" class="form-control round" @if(empty(@$invoice->tid)) readonly @endif >
+            <input type="hidden" name="tid" value={{ $tid }} @if(empty(@$invoice->tid)) @endif>
         </div>
     </div>
 
@@ -122,7 +123,7 @@
     @else
         <div class="col-md-2">
             <label for="cu_invoice_no">CU Invoice No.</label>
-            <input type="text" id="cu_invoice_no" name="cu_invoice_no" required readonly class="form-control box-size"
+            <input type="text" id="cu_invoice_no" name="cu_invoice_no" required  class="form-control box-size"
                    @if(!empty($newCuInvoiceNo))
                        value="{{$newCuInvoiceNo}}"
                     @elseif(!empty($invoice->cu_invoice_no))

@@ -153,7 +153,7 @@
                 language: {@lang("datatable.strings")},
                 ajax: {
                     url: '{{ route("biller.pricelistsSupplier.get") }}',
-                    type: 'post',
+                    type: 'get',
                     data: {
                         supplier_id: $('#supplier').val(),
                         contract: $('#contract').val(),

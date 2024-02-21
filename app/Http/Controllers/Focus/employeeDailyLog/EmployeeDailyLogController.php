@@ -294,8 +294,8 @@ class EmployeeDailyLogController extends Controller
         $validated = $request->validate([
             'date' => [
                 'required',
-                'after_or_equal:' . (new DateTime('now'))->sub(new DateInterval('P7D'))->format('Y-m-d'),
-                'before_or_equal:' . (new DateTime('now'))->format('Y-m-d'),
+//                'after_or_equal:' . (new DateTime('now'))->sub(new DateInterval('P7D'))->format('Y-m-d'),
+//                'before_or_equal:' . (new DateTime('now'))->format('Y-m-d'),
             ],
             'subcategory0' => ['required', 'string', 'max:1000'],
             'hours0' => ['required', 'numeric'],
