@@ -373,6 +373,7 @@ class PayrollController extends Controller
         $payrollItems = PayrollItemV2::where('payroll_id', $id)
             ->join('users', 'payroll_items.employee_id', 'users.id')
             ->join('salary', 'payroll_items.employee_id', 'salary.employee_id')
+            ->where('salary.payroll_status', 1)
             ->select(
                 'payroll_items.*',
                 'salary.nhif as nhif_status',
@@ -383,6 +384,7 @@ class PayrollController extends Controller
 
         $payDetails = Hrm::join('salary', 'users.id', 'salary.employee_id')
 //            ->join('labour_allocation_items', 'users.id', 'labour_allocation_items.employee_id')
+            ->where('salary.payroll_status', 1)
             ->select(
                 'users.id as employee_id',
                 DB::raw('CONCAT(first_name, " ", last_name) as name') ,

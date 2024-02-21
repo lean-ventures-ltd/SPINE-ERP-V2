@@ -125,7 +125,7 @@ class SalaryController extends Controller
     {
         //Input received from the request
        // $input = $request->except(['_token', 'ins']);
-        $data = $request->only(['employee_id', 'employee_name', 'basic_pay', 'contract_type','workshift_id','start_date','duration', 'pay_per_hr', 'nhif', 'deduction_exempt']);
+        $data = $request->only(['employee_id', 'payroll_status','employee_name', 'basic_pay', 'contract_type','workshift_id','start_date','duration', 'pay_per_hr', 'nhif', 'deduction_exempt']);
         //dd($input);
         $data_items = $request->only([
             'allowance_id','amount','id'

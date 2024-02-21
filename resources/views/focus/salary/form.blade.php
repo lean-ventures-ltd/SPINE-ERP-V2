@@ -125,6 +125,23 @@
     </div>
 
 
+    <div class='form-group col-md-2'>
+        <label for="payroll_status"> Payroll Status </label>
+        {!! Form::select('payroll_status',
+            [
+                '1' => 'Included in Payroll',
+                '0' => 'NOT Included in Payroll',
+            ],
+            null,
+            [
+                'class' => ' form-control round',
+                'id' => 'payroll_status',
+                'required' => 'required',
+            ]
+        ) !!}
+    </div>
+
+
 </div>
 
 
