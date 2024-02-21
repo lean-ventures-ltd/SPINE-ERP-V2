@@ -251,7 +251,37 @@
                         {{ Form::text('award', null, ['class' => 'form-control round', 'placeholder' => 'Award*','required']) }}
                     </div>
                 </div>
-                <div class='form-group hide_picture'>
+
+
+                  <div class='form-group'>
+                      {{ Form::label( 'second_education_level', 'Second Level Of Education*',['class' => 'col-lg-6 control-label']) }}
+                      <div class='col-lg-10'>
+                          {!! Form::select('second_education_level', ['KCPE'=>'KCPE','KCSE'=>'KCSE','KCSE','Certificate'=>'Certificate','Diploma'=>'Diploma','Degree'=>'Degree','Masters'=>'Masters','PHD'=>'PHD'], null, [
+                              'placeholder' => '-- Select Second Level Of Edution --',
+                              'class' => ' form-control round',
+                              'id' => 'second_education_level',
+                              'required' => 'required',
+                          ]) !!}
+
+                      </div>
+                  </div>
+
+                  <div class='form-group'>
+                      {{ Form::label( 'second_institution', 'Institution',['class' => 'col-lg-2 control-label']) }}
+                      <div class='col-lg-10'>
+                          {{ Form::text('second_institution', null, ['class' => 'form-control round', 'placeholder' => 'Institution*','required']) }}
+                      </div>
+                  </div>
+
+                  <div class='form-group'>
+                      {{ Form::label( 'second_award', 'Award ',['class' => 'col-lg-2 control-label']) }}
+                      <div class='col-lg-10'>
+                          {{ Form::text('second_award', null, ['class' => 'form-control round', 'placeholder' => 'Award*','required']) }}
+                      </div>
+                  </div>
+
+
+                  <div class='form-group hide_picture'>
                     {{ Form::label( 'cv', 'Curriculum Vitae',['class' => 'col-lg-2 control-label']) }}
                     <div class='col-lg-6'>
                         {!! Form::file('cv', array('class'=>'input' )) !!}  @if(@$hrms->id)
