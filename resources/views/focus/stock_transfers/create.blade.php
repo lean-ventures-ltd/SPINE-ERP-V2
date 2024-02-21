@@ -21,6 +21,10 @@
                 <div class="card-body">
                     {{ Form::open(['route' => 'biller.stock_transfers.store', 'method' => 'POST']) }}
                         @include('focus.stock_transfers.form')
+                        <div class="edit-form-btn row">
+                            {{ link_to_route('biller.stock_adjs.index', trans('buttons.general.cancel'), [], ['class' => 'btn btn-danger btn-md col-1 ml-auto mr-1']) }}
+                            {{ Form::submit(trans('buttons.general.crud.create'), ['class' => 'btn btn-primary btn-md col-1 mr-2']) }}                                           
+                        </div>
                     {{ Form::close() }}
                 </div>
             </div>

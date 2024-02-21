@@ -15,8 +15,8 @@ trait StockTransferItemRelationship
         return $this->belongsTo(StockTransfer::class);
     }
 
-    public function product_variation()
+    public function productvar()
     {
-        return $this->belongsTo(ProductVariation::class, 'product_id');
+        return $this->belongsTo(ProductVariation::class, 'productvar_id');
     }
 }

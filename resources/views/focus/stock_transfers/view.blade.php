@@ -1,12 +1,12 @@
 @extends ('core.layouts.app')
 
-@section('title', 'View | Stock Transfer Management')
+@section('title', 'View | Stock Transfer')
 
 @section('content')
 <div class="content-wrapper">
     <div class="content-header row mb-1">
         <div class="content-header-left col-6">
-            <h4 class="content-header-title">Stock Transfer Management</h4>
+            <h4 class="content-header-title">Stock Transfer</h4>
         </div>
         <div class="col-6">
             <div class="btn-group float-right">
@@ -18,7 +18,7 @@
     <div class="content-body">
         <div class="card">
             <div class="card-content">
-                <div class="card-header">
+                <div class="card-header pb-0 mb-0">
                     {{-- <a href="#" class="btn btn-warning btn-sm mr-1" data-toggle="modal" data-target="#Stock TransferStatusModal">
                         <i class="fa fa-pencil" aria-hidden="true"></i> Status
                     </a> --}}
@@ -27,12 +27,11 @@
                     <table class="table table-bordered table-sm">
                         @php
                             $details = [
-                                'Stock Transfer Category' => '',
-                                'Stock Transfer Status' => $stock_transfer->status,
-                                'Stock Transfer Reason' => $stock_transfer->reason,
-                                'Stock Transfer Duration' => $stock_transfer->qty . ' days',
-                                'Start Date' => dateFormat($stock_transfer->start_date),
-                                'End Date' => dateFormat($stock_transfer->end_date),
+                                'Date' => dateFormat($stock_transfer->date, 'd-M-Y'),
+                                'Reference No' => $stock_transfer->ref_no,
+                                'Transfer From' => @$stock_transfer->source->title,
+                                'Transfer To' => @$stock_transfer->destination->title,
+                                'Note' => $stock_transfer->note,
                             ];
                         @endphp
                         @foreach ($details as $key => $val)
@@ -48,6 +47,33 @@
                             </tr>
                         @endforeach
                     </table>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm tfr my_stripe_single">
+                            <thead>
+                                <tr class="bg-gradient-directional-blue white">
+                                    <th>#</th>
+                                    <th width="30%">Stock Item</th>
+                                    <th>Unit</th>
+                                    <th>Qty On-Hand</th>
+                                    <th>Qty Rem</th>
+                                    <th>Transf. Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody>   
+                                @foreach ($stock_transfer->items as $i => $item)
+                                    <tr>
+                                        <td>{{ $i+1 }}</td>
+                                        <td>{{ $item->productvar->name }}</td>
+                                        <td>{{ @$item->productvar->product->unit->code }}</td>
+                                        <td>{{ +$item->qty_onhand }}</td>
+                                        <td>{{ +$item->qty_rem }}</td>
+                                        <td>{{ +$item->qty_transf }}</td>
+                                    </tr>
+                                @endforeach                                
+                            </tbody>                
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

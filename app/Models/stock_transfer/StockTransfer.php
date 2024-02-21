@@ -72,7 +72,6 @@ class StockTransfer extends Model
             $instance->fill( [
                 'ins' => auth()->user()->ins,
                 'user_id' => auth()->user()->id,
-                'tid' => StockTransfer::getTid()+1,
             ]);
             return $instance;
         });
@@ -80,11 +79,5 @@ class StockTransfer extends Model
         static::addGlobalScope('ins', function ($builder) {
             $builder->where('ins', auth()->user()->ins);
         });
-    }
-
-    static function getTid()
-    {
-        $ins = auth()->user()->ins;
-        return StockTransfer::where('ins', $ins)->max('tid');
     }
 }

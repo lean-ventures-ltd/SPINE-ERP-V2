@@ -39,73 +39,34 @@ class StockTransferRepository extends BaseRepository
      * @return StockTransfer $stock_transfer
      */
     public function create(array $input)
-    {
-        // dd($input);
-        $data = Arr::only($input, ['tid', 'source_id', 'destination_id', 'note', 'total']);
-        $data_items = Arr::only($input, ['product_id', 'qty', 'uom', 'unit_price', 'amount']);
-
+    {  
         DB::beginTransaction();
 
-        $data['total'] = numberClean($data['total']);
-        $result = StockTransfer::create($data);
-        
-        $data_items = modify_array($data_items);
-        $data_items = array_map(function($v) use($result) {
-            return array_replace($v, [
-                'qty' => numberClean($v['qty']),
-                'unit_price' => numberClean($v['unit_price']),
-                'amount' => numberClean($v['amount']),
-                'stock_transfer_id' => $result->id,
-                'user_id' => auth()->user()->id,
-                'ins' => auth()->user()->ins,
-            ]);
-        }, $data_items);    
-        StockTransferItem::insert($data_items);
-
-        // update inventory
-        foreach ($result->items as $item) {
-            $prod_variation = $item->product_variation;
-            if ($prod_variation) {
-                $similar_prod_variation = ProductVariation::where(['parent_id' => $prod_variation->parent_id, 'warehouse_id' => $result->destination_id])
-                    ->where('name', 'LIKE', '%'. $prod_variation->name .'%')
-                    ->first();
-                if (!$similar_prod_variation) {
-                    // new warehouse product variation
-                    $similar_prod_variation = $prod_variation->replicate();
-                    $similar_prod_variation->fill([
-                        'warehouse_id' => $result->destination_id,
-                        'price' => $item->unit_price,
-                    ]);
-                    unset($similar_prod_variation->id, $similar_prod_variation->qty);
-                    $similar_prod_variation->save();
-                }
-
-                // apply unit conversion
-                if (isset($prod_variation->product->units)) {
-                    $units = $prod_variation->product->units;
-                    foreach ($units as $unit) {
-                        if ($unit->code == $item['uom']) {
-                            if ($unit->unit_type == 'base') {
-                                $prod_variation->decrement('qty', $item['qty']);
-                                $similar_prod_variation->increment('qty', $item['qty']);
-                            } else {
-                                $converted_qty = $item['qty'] * $unit->base_ratio;
-                                $prod_variation->decrement('qty', $converted_qty);
-                                $similar_prod_variation->increment('qty', $converted_qty);
-                            }
-                            break;
-                        }
-                    }  
-                } else throw ValidationException::withMessages(['Please attach units to stock items']);     
+        $input['date'] = date_for_database($input['date']);
+        $input['total'] = numberClean($input['total']);
+        foreach ($input as $key => $val) {
+            if (in_array($key, ['qty_transf', 'qty_rem', 'qty_onhand', 'cost', 'amount'])) {
+                $input[$key] = array_map(fn($v) =>  numberClean($v), $val);
             }
         }
 
-        if ($result) {
+        // create stock transfer
+        $data = Arr::only($input, ['date', 'ref_no', 'source_id', 'dest_id', 'note', 'total']);
+        $stock_transfer = StockTransfer::create($data);
+
+        $data_items = array_diff_key($input, $data);
+        $data_items['stock_transfer_id'] = array_fill(0, count($data_items['qty_transf']), $stock_transfer->id);
+        $data_items = modify_array($data_items);
+        $data_items = array_filter($data_items, fn($v) => $v['qty_transf'] > 0);
+        if (!$data_items) throw ValidationException::withMessages(['Qty Transfer fields are required!']);
+        StockTransferItem::insert($data_items);
+
+        // update Stock Qty
+        
+        if ($stock_transfer) {
             DB::commit();
-            return $result;
+            return $stock_transfer;
         }
-            
-        throw new GeneralException(trans('exceptions.backend.stock_transfer.create_error'));
     }
 
     /**
@@ -118,9 +79,34 @@ class StockTransferRepository extends BaseRepository
      */
     public function update(StockTransfer $stock_transfer, array $input)
     {   
-        dd($stock_transfer);
+        DB::beginTransaction();
 
-        throw new GeneralException(trans('exceptions.backend.stock_transfer.update_error'));
+        $input['date'] = date_for_database($input['date']);
+        $input['total'] = numberClean($input['total']);
+        foreach ($input as $key => $val) {
+            if (in_array($key, ['qty_transf', 'qty_rem', 'qty_onhand', 'cost', 'amount'])) {
+                $input[$key] = array_map(fn($v) =>  numberClean($v), $val);
+            }
+        }
+
+        // update stock transfer
+        $data = Arr::only($input, ['date', 'ref_no', 'source_id', 'dest_id', 'note', 'total']);
+        $result =  $stock_transfer->update($data);
+
+        $data_items = array_diff_key($input, $data);
+        $data_items['stock_transfer_id'] = array_fill(0, count($data_items['qty_transf']), $stock_transfer->id);
+        $data_items = modify_array($data_items);
+        $data_items = array_filter($data_items, fn($v) => $v['qty_transf'] > 0);
+        if (!$data_items) throw ValidationException::withMessages(['Qty Transfer fields are required!']);
+        $stock_transfer->items()->delete();
+        StockTransferItem::insert($data_items);
+
+        // update Stock Qty
+        
+        if ($result) {
+            DB::commit();
+            return $result;
+        }
     }
 
     /**
@@ -133,40 +119,12 @@ class StockTransferRepository extends BaseRepository
     public function delete(StockTransfer $stock_transfer)
     { 
         DB::beginTransaction();
-
-        // reverse stock state
-        foreach ($stock_transfer->items as $item) {
-            $prod_variation = $item->product_variation;
-            $similar_prod_variation = ProductVariation::where(['parent_id' => $prod_variation->parent_id, 'warehouse_id' => $stock_transfer->destination_id])
-                    ->where('name', 'LIKE', '%'. $prod_variation->name .'%')
-                    ->first();
-
-            if ($prod_variation && $similar_prod_variation) {
-                // apply unit conversion
-                if (isset($prod_variation->product->units)) {
-                    $units = $prod_variation->product->units;
-                    foreach ($units as $unit) {
-                        if ($unit->code == $item['uom']) {
-                            if ($unit->unit_type == 'base') {
-                                $prod_variation->increment('qty', $item['qty']);
-                                $similar_prod_variation->decrement('qty', $item['qty']);
-                            } else {
-                                $converted_qty = $item['qty'] * $unit->base_ratio;
-                                $prod_variation->increment('qty', $converted_qty);
-                                $similar_prod_variation->decrement('qty', $converted_qty);
-                            }
-                            break;
-                        }
-                    }  
-                } else throw ValidationException::withMessages(['Please attach units to stock items']);     
-            }
-        }
+        $stock_transfer->items()->delete();
+        // Update Stock Qty 
 
         if ($stock_transfer->delete()) {
             DB::commit();
             return true;
         }
-            
-        throw new GeneralException(trans('exceptions.backend.stock_transfer.delete_error'));
     }
 }

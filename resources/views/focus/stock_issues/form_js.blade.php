@@ -75,14 +75,23 @@
             $('#productsTbl').on('click', '.remove', Index.removeRowClick);
                 
             const data = @json(@$stock_issue);
-            if (data && data.id) {
+            const data_items = @json(@$stock_issue->items);
+            if (data && data_items.length) {
                 $('.datepicker').datepicker('setDate', new Date(data.date));
                 $('#issue_to').val(data.issue_to);
                 $('#productsTbl tbody tr').each(function(i) {
-                    if (i == 0) return;
-                    $(this).find('.name').autocomplete(config.autoCompleteCb());
-                    $(this).find('.source').select2({allowClear: true});
-                    $(this).find('.assignee').select2({allowClear: true});
+                    const row = $(this);
+                    const v = data_items[i];
+                    if (i > 0) {
+                        row.find('.name').autocomplete(config.autoCompleteCb());
+                        row.find('.source').select2({allowClear: true});
+                        row.find('.assignee').select2({allowClear: true});
+                    }
+                    row.find('.qty-onhand-inp').val(v.qty_onhand*1);
+                    row.find('.qty-rem-inp').val(v.qty_rem*1);
+                    row.find('.cost').val(v.cost*1);
+                    row.find('.amount').val(v.amount*1);
+                    row.find('.prodvar-id').val(v.productvar_id);
                 });
                 Index.calcTotals();
             }

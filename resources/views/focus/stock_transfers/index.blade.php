@@ -1,12 +1,12 @@
 @extends ('core.layouts.app')
 
-@section('title', 'Stock Transfer Management')
+@section('title', 'Stock Transfer')
 
 @section('content')
 <div class="content-wrapper">
     <div class="content-header row mb-1">
         <div class="content-header-left col-6">
-            <h4 class="content-header-title">Stock Transfer Management</h4>
+            <h4 class="content-header-title">Stock Transfer</h4>
         </div>
         <div class="col-6">
             <div class="btn-group float-right">
@@ -25,11 +25,11 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>#TFR No.</th>
+                                        <th>Transf. From</th>
+                                        <th>Transf. To</th>
+                                        <th>Date</th>
+                                        <th>Reference No.</th>
                                         <th>Note</th>
-                                        <th>Source</th>
-                                        <th>Destination</th>
-                                        <th>Stock Amount</th>
                                         <th>{{ trans('labels.general.actions') }}</th>
                                     </tr>
                                 </thead>
@@ -71,12 +71,12 @@
                 responsive: true,
                 language: {@lang('datatable.strings')},
                 ajax: {
-                    url: "{{ route('biller.projectstocktransfers.get') }}",
+                    url: "{{ route('biller.stock_transfers.get') }}",
                     type: 'POST',
                 },
                 columns: [
                     {data: 'DT_Row_Index', name: 'id'},
-                    ...['tid', 'note', 'source_location', 'destination_location', 'total'].map(v=> ({data: v, name: v})),
+                    ...['source', 'dest', 'date', 'ref_no', 'note'].map(v=> ({data: v, name: v})),
                     {data: 'actions', name: 'actions', searchable: false, sortable: false}
                 ],
                 order: [[0, "desc"]],

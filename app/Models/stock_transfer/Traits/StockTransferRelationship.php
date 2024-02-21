@@ -12,13 +12,13 @@ trait StockTransferRelationship
         return $this->hasMany(StockTransferItem::class);
     }
 
-    public function source_location()
+    public function source()
     {
         return $this->belongsTo(Warehouse::class, 'source_id');
     }
 
-    public function destination_location()
+    public function destination()
     {
-        return $this->belongsTo(Warehouse::class, 'destination_id');
+        return $this->belongsTo(Warehouse::class, 'dest_id');
     }
 }

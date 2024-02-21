@@ -51,20 +51,15 @@ class StockTransfersTableController extends Controller
 
         return Datatables::of($core)
             ->escapeColumns(['id'])
-            ->addIndexColumn()   
-            ->addColumn('tid', function ($stock_transfer) {
-                return gen4tid('TFR-', $stock_transfer->tid);
+            ->addIndexColumn()  
+            ->editColumn('date', function ($stock_adj) {
+                return dateFormat($stock_adj->date);
+            }) 
+            ->addColumn('source', function ($stock_transfer) {
+                return @$stock_transfer->source->title;
             })
-            ->addColumn('source_location', function ($stock_transfer) {
-                if ($stock_transfer->source_location)
-                return $stock_transfer->source_location->title;
-            })
-            ->addColumn('destination_location', function ($stock_transfer) {
-                if ($stock_transfer->destination_location)
-                return $stock_transfer->destination_location->title;
-            })
-            ->addColumn('total', function ($stock_transfer) {
-                return numberFormat($stock_transfer->total);
+            ->addColumn('dest', function ($stock_transfer) {
+                return @$stock_transfer->destination->title;
             })
             ->addColumn('actions', function ($stock_transfer) {
                 return $stock_transfer->action_buttons;

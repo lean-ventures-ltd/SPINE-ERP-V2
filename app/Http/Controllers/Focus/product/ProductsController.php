@@ -189,7 +189,8 @@ class ProductsController extends Controller
         }
 
         // fetch inventory products
-        $productvariations = ProductVariation::where(function ($q) {
+        $productvariations = ProductVariation::when(request('warehouse_id'), fn($q) => $q->where('warehouse_id', request('warehouse_id')))
+        ->where(function ($q) {
             $q->whereHas('product', function ($q) {
                 $q->where('name', 'LIKE', '%' . request('keyword') . '%')->orWhere('code', 'LIKE', '%' . request('keyword') . '%');
             })->orWhere('name', 'LIKE', '%' . request('keyword') . '%');
@@ -208,12 +209,15 @@ class ProductsController extends Controller
                 'units' => $row->product? $row->product->units->toArray(): [],
                 'warehouse' => $row->warehouse? $row->warehouse->toArray() : [],
             ]);
-            // set purchase price using inventory valuation (LIFO) method
-            $product['purchase_price'] = $this->repository->eval_purchase_price($row->id, $row->qty, $row->purchase_price);
+            
+            // set purchase price (LIFO valuation method)
+            $cost = $this->repository->eval_purchase_price($row->id, $row->qty, $row->purchase_price);
+            $product['purchase_price'] = $cost;
 
-            // product qty
+            // set product qty
             $product['qty'] = 0;
-            $warehouses = Warehouse::whereHas('products', fn($q) => $q->where('name', 'LIKE', "%{$row->name}%"))
+            $warehouses = Warehouse::when(request('warehouse_id'), fn($q) => $q->where('id', request('warehouse_id')))
+            ->whereHas('products', fn($q) => $q->where('name', 'LIKE', "%{$row->name}%"))
             ->with(['products' => fn($q) => $q->where('name', 'LIKE', "%{$row->name}%")])
             ->get();
             foreach ($warehouses as $key1 => $wh) {

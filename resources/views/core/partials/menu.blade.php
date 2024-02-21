@@ -668,7 +668,7 @@
                         {{-- @endauth   --}}
 
                         {{-- Project-stock issuance --}}
-                        @permission('manage-issuance')
+                        {{-- @permission('manage-issuance')
                         <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
                             <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-cubes" aria-hidden="true"></i> Project Stock Issuance</a>
                             <ul class="dropdown-menu">
@@ -678,7 +678,7 @@
                                 @endauth
                             </ul>
                         </li>  
-                        @endauth   
+                        @endauth    --}}
 
                         {{-- Stock Transfer --}}
                         @permission('manage-stock-transfer')
@@ -686,7 +686,7 @@
                             <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="ft-wind"></i> {{ trans('products.stock_transfer') }}
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ route('biller.stock_transfers.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Transfer Management
+                                <li><a class="dropdown-item" href="{{ route('biller.stock_transfers.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Stock Transfers
                                     </a>
                                 </li>
                                 @permission('create-stock-transfer')

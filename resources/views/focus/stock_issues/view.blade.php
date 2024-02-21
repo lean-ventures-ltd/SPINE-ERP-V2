@@ -37,7 +37,7 @@
                     </table>
 
                     <div class="table-responsive">
-                        <table class="table table-sm tfr my_stripe_single" id="invoiceTbl">
+                        <table class="table table-sm tfr my_stripe_single">
                             <thead>
                                 <tr class="bg-gradient-directional-blue white">
                                     <th>#</th>

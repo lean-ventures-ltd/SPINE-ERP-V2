@@ -26,6 +26,7 @@ use App\Models\warehouse\Warehouse;
 use App\Repositories\Focus\stock_transfer\StockTransferRepository;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class StockTransfersController extends Controller
 {
@@ -59,11 +60,10 @@ class StockTransfersController extends Controller
      */
     public function create()
     {
-        $tid = StockTransfer::max('tid');
-
-        $warehouses = Warehouse::get(['id', 'title', 'extra']);
+        $source_warehouses = Warehouse::whereHas('products')->get(['id', 'title']);
+        $dest_warehouses = Warehouse::get(['id', 'title']);
         
-        return view('focus.stock_transfers.create', compact('tid', 'warehouses'));
+        return view('focus.stock_transfers.create', compact('source_warehouses', 'dest_warehouses'));
     }
 
     /**
@@ -73,7 +73,14 @@ class StockTransfersController extends Controller
      */
     public function store(Request $request)
     {
-        $this->repository->create($request->except('_token'));
+        if ($request->source_id == $request->dest_id)
+            throw ValidationException::withMessages(['Please choose a different transfer destination']);
+
+        try {
+            $this->repository->create($request->except('_token'));
+        } catch (\Throwable $th) { 
+            return errorHandler('Error Creating Stock Transfer', $th);
+        }
 
         return new RedirectResponse(route('biller.stock_transfers.index'), ['flash_success' => 'Stock Transfer Created Successfully']);
     }
@@ -86,7 +93,10 @@ class StockTransfersController extends Controller
      */
     public function edit(StockTransfer $stock_transfer)
     {
-        return view('focus.stock_transfers.edit', compact('stock_transfer', 'leave_categories', 'users'));
+        $source_warehouses = Warehouse::whereHas('products')->get(['id', 'title']);
+        $dest_warehouses = Warehouse::get(['id', 'title']);
+        
+        return view('focus.stock_transfers.edit', compact('stock_transfer', 'source_warehouses', 'dest_warehouses'));
     }
 
     /**
@@ -98,7 +108,14 @@ class StockTransfersController extends Controller
      */
     public function update(Request $request, StockTransfer $stock_transfer)
     {
-        $this->repository->update($stock_transfer, $request->except('_token'));
+        if ($request->source_id == $request->dest_id)
+            throw ValidationException::withMessages(['Please choose a different transfer destination']);
+
+        try {
+            $this->repository->update($stock_transfer, $request->except('_token', '_method'));
+        } catch (\Throwable $th) {
+            return errorHandler('Error Updating Stock Transfer', $th);
+        }
 
         return new RedirectResponse(route('biller.stock_transfers.index'), ['flash_success' => 'StockTransfer Updated Successfully']);
     }
@@ -111,7 +128,11 @@ class StockTransfersController extends Controller
      */
     public function destroy(StockTransfer $stock_transfer)
     {
-        $this->repository->delete($stock_transfer);
+        try {
+            $this->repository->delete($stock_transfer);
+        } catch (\Throwable $th) {
+            return errorHandler('Error Deleting Stock Transfer', $th);
+        }
 
         return new RedirectResponse(route('biller.stock_transfers.index'), ['flash_success' => 'StockTransfer Deleted Successfully']);
     }
