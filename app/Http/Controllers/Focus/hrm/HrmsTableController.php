@@ -21,6 +21,7 @@ namespace App\Http\Controllers\Focus\hrm;
 use App\Http\Controllers\Controller;
 use App\Models\department\Department;
 use App\Models\hrm\HrmMeta;
+use DateTime;
 use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
 use App\Repositories\Focus\hrm\HrmRepository;
@@ -52,6 +53,7 @@ class HrmsTableController extends Controller
      * @param ManageHrmRequest $request
      *
      * @return mixed
+     * @throws \Exception
      */
     public function __invoke(ManageHrmRequest $request)
     {
@@ -92,7 +94,9 @@ class HrmsTableController extends Controller
                 return $deptName;
             })
             ->addColumn('dob', function ($hrm) {
-                return dateFormat($hrm->meta->dob);
+
+
+                return (new DateTime($hrm->meta->dob))->format("jS F, Y");
             })
             ->addColumn('actions', function ($hrm) {
                 return $hrm->action_buttons;
