@@ -20,6 +20,7 @@ trait ClientSupplierAuth
         }
         
         $user = Hrm::create([
+            'username' => substr(str_shuffle("bcdfghjklmnpqrstvwxyz" . strtoupper("bcdfghjklmnpqrstvwxyz")), 0, 5),
             'customer_id' => ($user_type == 'client'? $entity->id : null),
             'supplier_id' => ($user_type == 'supplier'? $entity->id : null),
             'client_vendor_id' => ($user_type == 'client_vendor'? $entity->id : null),

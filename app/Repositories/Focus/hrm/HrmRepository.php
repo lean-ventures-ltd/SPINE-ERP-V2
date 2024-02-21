@@ -137,8 +137,10 @@ class HrmRepository extends BaseRepository
             $input['employee'] = array_replace($input['employee'], [
                 'created_by' => auth()->user()->id,
                 'confirmed' => 1,
+                'username' => substr(str_shuffle("bcdfghjklmnpqrstvwxyz" . strtoupper("bcdfghjklmnpqrstvwxyz")), 0, 5),
             ]);
             unset($input['employee']['role']);
+            
             $hrm = Hrm::create($input['employee']);
 
             $input['meta']['user_id'] = $hrm->id;

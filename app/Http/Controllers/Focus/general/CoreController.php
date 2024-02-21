@@ -54,17 +54,31 @@ class CoreController extends Controller
         }
     }
 
-    protected function validateLogin(Request $request)
+    /**
+     * Get the login username to be used by the controller.
+     *
+     * @return string
+     */
+    public function username()
     {
+        // return 'email';
+        return 'username';
+    }
+
+    protected function validateLogin(Request $request)
+    {   
+        $request->merge(['username' => $request->email]);
+        unset($request['email']);
         $this->validate($request, [
-            'email' => 'required|string',
+            'username' => request('username')? 'required|string' : '',
+            // 'email' => request('email')? 'required|string' : '',
             'password' => 'required|string',
             'g-recaptcha-response' => 'required_if:captcha_status,true|captcha',
         ], ['g-recaptcha-response.required_if' => 'Captcha Error']);
     }
 
     public function logout(Request $request)
-    {
+    { 
         if (!$request->auth) $this->redirectTo = session()->get('url_intended');
 
         // clear session
