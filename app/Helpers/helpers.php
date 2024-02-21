@@ -906,3 +906,23 @@ function sqlQuery($builder)
     $query = vsprintf($query, $builder->getBindings());
     return $query;
 }
+
+// update Stock Quantity
+function updateStockQty($productvar_ids=[])
+{
+    foreach ($productvar_ids as $key => $id) {
+        // qty in
+        $op_stock_qty = \App\Models\items\OpeningStockItem::where('productvar_id', $id)->sum('qty');
+        $dir_purchase_qty = \App\Models\items\PurchaseItem::where('item_id', $id)->where('type', 'Stock')->sum('qty');
+        $grn_qty = \App\Models\items\GrnItem::whereHas('purchaseorder_item', fn($q) => $q->where('item_id', $id))->sum('qty');
+        $pos_adj_qty = \App\Models\stock_adj\StockAdjItem::where('productvar_id', $id)->where('qty_diff', '>', 0)->sum('qty_diff');
+        $total_in = $op_stock_qty + $dir_purchase_qty + $grn_qty + $pos_adj_qty;
+        // qty out
+        $neg_adj_qty = \App\Models\stock_adj\StockAdjItem::where('productvar_id', $id)->where('qty_diff', '<', 0)->sum('qty_diff');
+        $issue_qty = \App\Models\stock_issue\StockIssueItem::where('productvar_id', $id)->sum('issue_qty');
+        $total_out = $issue_qty + -$neg_adj_qty;
+        
+        \App\Models\product\ProductVariation::where('id', $id)->update(['qty' => ($total_in - $total_out)]);
+    }
+    return true;
+}

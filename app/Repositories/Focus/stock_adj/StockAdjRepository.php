@@ -72,7 +72,13 @@ class StockAdjRepository extends BaseRepository
             $stock_adj->update(['total' => $adj_total]);
         }
         
-        // update stock Qty and Cost
+        // Update Stock Cost
+        foreach ($stock_adj->items as $key => $item) {
+            if ($item->productvar) $item->productvar->update(['purchase_price', $item->cost]);
+        }
+        // update stock Qty
+        $productvar_ids = $stock_adj->items()->pluck('productvar_id')->toArray();
+        updateStockQty($productvar_ids);
 
         /** accounting */
         if ($stock_adj->total < 0) $stock_adj->total = $stock_adj->total*-1;
@@ -127,7 +133,13 @@ class StockAdjRepository extends BaseRepository
             $stock_adj->update(['total' => $adj_total]);
         }
         
-        // update stock Qty and Cost
+        // Update Stock Cost
+        foreach ($stock_adj->items as $key => $item) {
+            if ($item->productvar) $item->productvar->update(['purchase_price', $item->cost]);
+        }
+        // update stock Qty
+        $productvar_ids = $stock_adj->items()->pluck('productvar_id')->toArray();
+        updateStockQty($productvar_ids);
 
         /** accounting */
         if ($stock_adj->total < 0) $stock_adj->total = $stock_adj->total*-1;
@@ -152,10 +164,20 @@ class StockAdjRepository extends BaseRepository
     public function delete(StockAdj $stock_adj)
     { 
         DB::beginTransaction();
-        
+        $productvar_ids = $stock_adj->items()->pluck('productvar_id')->toArray();
+
+        // Update Cost to reflect opening stock
+        foreach ($stock_adj->items as $key => $item) {
+            if ($item->productvar) {
+                $op_stock_item = $item->productvar->openingstock_item;
+                if ($op_stock_item) $item->productvar->update(['purchase_price', $op_stock_item->cost]);
+            }
+        }
+
         $stock_adj->transactions()->delete();
         $stock_adj->items()->delete();
-        // update Stock Qty and Cost
+        // update Stock Qty 
+        updateStockQty($productvar_ids);
 
         if ($stock_adj->delete()) {
             DB::commit();

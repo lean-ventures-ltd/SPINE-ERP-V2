@@ -62,7 +62,9 @@ class StockIssueRepository extends BaseRepository
         if (!$data_items) throw ValidationException::withMessages(['Issue Qty field is required!']);
         StockIssueItem::insert($data_items);
         
-        // update stock Qty and Cost
+        // update stock Qty
+        $productvar_ids = $stock_issue->items()->pluck('productvar_id')->toArray();
+        updateStockQty($productvar_ids);
 
         /** accounting */
         $this->post_stock_issue($stock_issue);
@@ -105,7 +107,9 @@ class StockIssueRepository extends BaseRepository
         $stock_issue->items()->delete();
         StockIssueItem::insert($data_items);
         
-        // update stock Qty and Cost
+        // update stock Qty
+        $productvar_ids = $stock_issue->items()->pluck('productvar_id')->toArray();
+        updateStockQty($productvar_ids);
 
         /** accounting */
         $stock_issue->transactions()->delete();
@@ -127,10 +131,12 @@ class StockIssueRepository extends BaseRepository
     public function delete(StockIssue $stock_issue)
     { 
         DB::beginTransaction();
-        
+        $productvar_ids = $stock_issue->items()->pluck('productvar_id')->toArray();
+
         $stock_issue->transactions()->delete();
         $stock_issue->items()->delete();
-        // update Stock Qty and Cost
+        // update stock Qty
+        updateStockQty($productvar_ids);
 
         if ($stock_issue->delete()) {
             DB::commit();

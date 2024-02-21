@@ -351,6 +351,14 @@ class CompanyController extends Controller
                 $openingstock->items()->delete();
                 OpeningStockItem::insert($input_items);
 
+                // Update Stock Cost
+                foreach ($openingstock->items as $key => $item) {
+                    if ($item->productvariation) $item->productvariation->update(['purchase_price', $item->cost]);
+                }
+                // Update Stock Qty
+                $productvar_ids = $openingstock->items()->pluck('productvar_id')->toArray();
+                updateStockQty($productvar_ids);
+
                 /** accounting */
                 $account = Account::where('system', 'stock')->first();
                 $openingstock->update(['account_id' => $account->id]);
