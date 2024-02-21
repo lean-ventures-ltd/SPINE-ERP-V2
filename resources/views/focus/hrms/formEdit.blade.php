@@ -40,6 +40,11 @@
                    aria-selected="false">Roles & Permissions</a>
             </li>
 
+            <li class="nav-item">
+                <a class="nav-link" id="base-tab10" data-toggle="tab" aria-controls="tab10" href="#tab10" role="tab"
+                   aria-selected="false">Account Status</a>
+            </li>
+
 
         </ul>
       
@@ -501,6 +506,35 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Account Status --}}
+            <div class="tab-pane" id="tab10" role="tabpanel" aria-labelledby="base-tab0">
+
+
+                <div class='form-group'>
+                    {{ Form::label( 'status', 'Account Status',['class' => 'col-lg-6 control-label']) }}
+                    <div class='col-lg-10'>
+                        {!! Form::select('status',
+                            [
+                                '1' => 'Active',
+                                '0' => 'Deactivated',
+                            ],
+                            null,
+                            [
+//                                'placeholder' => '-- Select Employment Type --',
+                                'class' => ' form-control round',
+                                'id' => 'status',
+                                'required' => 'required',
+                            ]
+                        ) !!}
+
+                    </div>
+                </div>
+
+
+            </div>
+
+
         </div>
     </div>
 </div>

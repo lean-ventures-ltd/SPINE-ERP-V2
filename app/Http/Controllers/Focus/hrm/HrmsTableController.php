@@ -78,10 +78,12 @@ class HrmsTableController extends Controller
                 alt="Employee Image">';
             })
             ->addColumn('active', function ($hrm) {
-                $c = '';
-                if ($hrm->status) $c = 'checked';
-                return '<div class="user_active icheckbox_flat-aero ' . $c . '" data-cid="' . $hrm->id . '" data-active="' . $hrm->status . '"></div>';
-            })->addColumn('role', function ($hrm) {
+                $buttonClass = $hrm->status ? 'btn-success' : 'btn-danger';
+                $buttonText = $hrm->status ? 'Active' : 'Deactivated';
+
+                return '<button class="btn round ' . $buttonClass . '" data-cid="' . $hrm->id . '" data-active="' . $hrm->status . '" disabled>' . $buttonText . '</button>';
+            })
+            ->addColumn('role', function ($hrm) {
                 $role = $hrm->role;
                 if ($role) return $role->name;
             })

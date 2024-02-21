@@ -126,8 +126,8 @@ class HrmsController extends Controller
             'employee_no' => ['unique:hrm_metas,employee_no'],
         ]);
 
-        $input['employee'] = $request->only(['first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role']);
-        $input['meta'] = $request->except(['_token', 'first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role', 'permission', 'check_all']);
+        $input['employee'] = $request->only(['first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role', 'status']);
+        $input['meta'] = $request->except(['_token', 'first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role', 'permission', 'check_all', 'status']);
         $input = array_merge($input, $request->only(['permission']));
 
         // validate
@@ -193,8 +193,8 @@ class HrmsController extends Controller
             throw ValidationException::withMessages(['Last character of KRA PIN must be a letter!']);
 
 
-        $input['employee'] = $request->only(['first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role']);
-        $input['meta'] = $request->except(['_token', '_method', 'first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role', 'permission', 'check_all']);
+        $input['employee'] = $request->only(['first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role', 'status']);
+        $input['meta'] = $request->except(['_token', '_method', 'first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role', 'permission', 'check_all', 'status']);
         $input = array_merge($input, $request->only(['permission']));
 
         // validate

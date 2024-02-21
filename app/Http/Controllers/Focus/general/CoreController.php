@@ -50,7 +50,9 @@ class CoreController extends Controller
         }
         if (!$user->isActive()) {
             access()->logout();
-            trigger_error(trans('exceptions.frontend.auth.deactivated'));
+
+            return view('focus.hrms.deactivated');
+//            trigger_error(trans('exceptions.frontend.auth.deactivated'));
         }
     }
 
