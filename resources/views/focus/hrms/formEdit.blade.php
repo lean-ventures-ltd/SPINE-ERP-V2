@@ -309,6 +309,32 @@
 
                     </div>
                 </div>
+
+
+                <div class='form-group'>
+                    {{ Form::label( 'employment_type', 'Type of Employment',['class' => 'col-lg-6 control-label']) }}
+                    <div class='col-lg-10'>
+                        {!! Form::select('employment_type',
+                            [
+                                'Permanent' => 'Permanent',
+                                'Fixed-Term' => 'Fixed-Term',
+                                'Casual/Temporary/Attachees' => 'Casual/Temporary/Attachees',
+                                'Part-Time' => 'Part-Time',
+                                'Probationary' => 'Probationary',
+                            ],
+                            null,
+                            [
+                                'placeholder' => '-- Select Employment Type --',
+                                'class' => ' form-control round',
+                                'id' => 'employment_type',
+                                'required' => 'required',
+                            ]
+                        ) !!}
+
+                    </div>
+                </div>
+
+
                 <div class='form-group'>
                     {{ Form::label( 'position', 'Position',['class' => 'col-lg-2 control-label']) }}
                     <div class='col-lg-10'>
