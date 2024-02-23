@@ -921,6 +921,12 @@ function updateStockQty($productvar_ids=[])
         $neg_adj_qty = \App\Models\stock_adj\StockAdjItem::where('productvar_id', $id)->where('qty_diff', '<', 0)->sum('qty_diff');
         $issue_qty = \App\Models\stock_issue\StockIssueItem::where('productvar_id', $id)->sum('issue_qty');
         $total_out = $issue_qty + -$neg_adj_qty;
+
+        // inter-location transfer
+        $transf_qty = \App\Models\items\StockTransferItem::where('productvar_id', $id)->sum('qty_transf');
+        $transf_rcv_qty = \App\Models\stock_rcv\StockRcvItem::where('productvar_id', $id)->sum('qty_rcv');
+        $total_in -= $transf_qty;
+        $total_in += $transf_rcv_qty;
         
         \App\Models\product\ProductVariation::where('id', $id)->update(['qty' => ($total_in - $total_out)]);
     }

@@ -93,6 +93,9 @@ class StockTransfersController extends Controller
      */
     public function edit(StockTransfer $stock_transfer)
     {
+        if ($stock_transfer->stock_rcvs()->exists())
+            throw ValidationException::withMessages(['Transfer with received goods cannot be edited']);
+
         $source_warehouses = Warehouse::whereHas('products')->get(['id', 'title']);
         $dest_warehouses = Warehouse::get(['id', 'title']);
         
@@ -110,6 +113,8 @@ class StockTransfersController extends Controller
     {
         if ($request->source_id == $request->dest_id)
             throw ValidationException::withMessages(['Please choose a different transfer destination']);
+        if ($stock_transfer->stock_rcvs()->exists())
+            throw ValidationException::withMessages(['Transfer with received goods cannot be edited']);
 
         try {
             $this->repository->update($stock_transfer, $request->except('_token', '_method'));
@@ -128,6 +133,9 @@ class StockTransfersController extends Controller
      */
     public function destroy(StockTransfer $stock_transfer)
     {
+        if ($stock_transfer->stock_rcvs()->exists())
+            throw ValidationException::withMessages(['Transfer with received goods cannot be deleted']);
+
         try {
             $this->repository->delete($stock_transfer);
         } catch (\Throwable $th) {

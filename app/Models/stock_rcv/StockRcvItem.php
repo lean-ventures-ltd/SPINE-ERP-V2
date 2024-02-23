@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Models\stock_transfer;
+namespace App\Models\stock_rcv;
 
 use App\Models\ModelTrait;
-use App\Models\stock_transfer\Traits\StockTransferAttribute;
-use App\Models\stock_transfer\Traits\StockTransferRelationship;
+use App\Models\stock_rcv\Traits\StockRcvItemRelationship;
 use Illuminate\Database\Eloquent\Model;
 
-class StockTransfer extends Model
+class StockRcvItem extends Model
 {
-    use ModelTrait, StockTransferAttribute, StockTransferRelationship;
+    use ModelTrait, StockRcvItemRelationship;
 
     /**
      * NOTE : If you want to implement Soft Deletes in this model,
@@ -20,7 +19,7 @@ class StockTransfer extends Model
      * The database table used by the model.
      * @var string
      */
-    protected $table = 'stock_transfers';
+    protected $table = 'stock_rcv_items';
 
     /**
      * Mass Assignable fields of model
@@ -67,18 +66,5 @@ class StockTransfer extends Model
     protected static function boot()
     {
         parent::boot();
-
-        static::creating(function ($instance) {
-            $instance->fill( [
-                'tid' => StockTransfer::max('tid'),
-                'ins' => auth()->user()->ins,
-                'user_id' => auth()->user()->id,
-            ]);
-            return $instance;
-        });
-
-        static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', auth()->user()->ins);
-        });
     }
 }

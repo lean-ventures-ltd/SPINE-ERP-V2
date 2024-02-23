@@ -1,5 +1,11 @@
 <?php
 
+Route::group(['namespace' => 'stock_rcv'], function () {
+    Route::resource('stock_rcvs', 'StockRcvsController');
+    // datatable
+    Route::post('stock_rcvs/get', 'StockRcvsTableController')->name('stock_rcvs.get');
+});
+
 Route::group(['namespace' => 'stock_issue'], function () {
     Route::post('stock_issues/quote_pi_products', 'StockIssuesController@quote_pi_products')->name('stock_issues.quote_pi_products');
     Route::resource('stock_issues', 'StockIssuesController');

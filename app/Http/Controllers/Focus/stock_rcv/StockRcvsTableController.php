@@ -15,27 +15,27 @@
  *  * here- http://codecanyon.net/licenses/standard/
  * ***********************************************************************
  */
-namespace App\Http\Controllers\Focus\stock_transfer;
+namespace App\Http\Controllers\Focus\stock_rcv;
 
 use App\Http\Controllers\Controller;
-use App\Repositories\Focus\stock_transfer\StockTransferRepository;
+use App\Repositories\Focus\stock_rcv\StockRcvRepository;
 use Request;
 use Yajra\DataTables\Facades\DataTables;
 
 
-class StockTransfersTableController extends Controller
+class StockRcvsTableController extends Controller
 {
     /**
      * variable to store the repository object
-     * @var StockTransferRepository
+     * @var StockRcvRepository
      */
     protected $repository;
 
     /**
      * contructor to initialize repository object
-     * @param StockTransferRepository $repository ;
+     * @param StockRcvRepository $repository ;
      */
-    public function __construct(StockTransferRepository $repository)
+    public function __construct(StockRcvRepository $repository)
     {
         $this->repository = $repository;
     }
@@ -52,22 +52,17 @@ class StockTransfersTableController extends Controller
         return Datatables::of($core)
             ->escapeColumns(['id'])
             ->addIndexColumn()  
-            ->editColumn('tid', function ($stock_transfer) {
-                return gen4tid('STR-', $stock_transfer->tid) ;
-            })
-            ->editColumn('date', function ($stock_adj) {
-                return dateFormat($stock_adj->date);
+            ->editColumn('date', function ($stock_rcv) {
+                return dateFormat($stock_rcv->date);
             }) 
-            ->addColumn('source', function ($stock_transfer) {
-                return @$stock_transfer->source->title;
+            ->addColumn('transf_tid', function ($stock_rcv) {
+                return gen4tid('STR-', $stock_rcv->stock_transfer->tid);
             })
-            ->addColumn('dest', function ($stock_transfer) {
-                return @$stock_transfer->destination->title;
+            ->addColumn('receiver', function ($stock_rcv) {
+                return @$stock_rcv->receiver->full_name;
             })
-            ->addColumn('actions', function ($stock_transfer) {
-                $rcv_btn = '<a href="'. route('biller.stock_rcvs.create', ['stock_transfer_id' => $stock_transfer->id]) .'" class="btn btn-purple round" data-toggle="tooltip" data-placement="bottom" title="Receive Goods"><i class="fa fa-shopping-cart" aria-hidden="true"></i></a>';
-                if ($stock_transfer->status == 'Complete') $rcv_btn = '';
-                return $rcv_btn .' '. $stock_transfer->action_buttons;
+            ->addColumn('actions', function ($stock_rcv) {
+                return $stock_rcv->action_buttons;
             })
             ->make(true);
     }

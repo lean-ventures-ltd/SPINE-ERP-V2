@@ -1,16 +1,16 @@
 @extends ('core.layouts.app')
 
-@section('title', 'Stock Transfer')
+@section('title', 'Stock Receiving')
 
 @section('content')
 <div class="content-wrapper">
     <div class="content-header row mb-1">
         <div class="content-header-left col-6">
-            <h4 class="content-header-title">Stock Transfer</h4>
+            <h4 class="content-header-title">Stock Receiving</h4>
         </div>
         <div class="col-6">
             <div class="btn-group float-right">
-                @include('focus.stock_transfers.partials.stock-transfer-header-buttons')
+                @include('focus.stock_rcvs.partials.stock-rcv-header-buttons')
             </div>
         </div>
     </div>
@@ -21,17 +21,15 @@
                 <div class="card">
                     <div class="card-content">
                         <div class="card-body">
-                            <table id="stocktransferTbl" class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
+                            <table id="stockrcvTbl" class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Transf. No</th>
-                                        <th>Transf. From</th>
-                                        <th>Transf. To</th>
+                                        <th>Transfer No.</th>
+                                        <th>Received By</th>
                                         <th>Date</th>
                                         <th>Reference No.</th>
                                         <th>Note</th>
-                                        <th>Status</th>
                                         <th>{{ trans('labels.general.actions') }}</th>
                                     </tr>
                                 </thead>
@@ -63,22 +61,22 @@
 
     const Index = {
         init() {
-            this.drawDataTable();
+            Index.drawDataTable();
         },
 
         drawDataTable() {
-            $('#stocktransferTbl').dataTable({
+            $('#stockrcvTbl').dataTable({
                 processing: true,
                 serverSide: true,
                 responsive: true,
                 language: {@lang('datatable.strings')},
                 ajax: {
-                    url: "{{ route('biller.stock_transfers.get') }}",
+                    url: "{{ route('biller.stock_rcvs.get') }}",
                     type: 'POST',
                 },
                 columns: [
                     {data: 'DT_Row_Index', name: 'id'},
-                    ...['tid', 'source', 'dest', 'date', 'ref_no', 'note', 'status'].map(v=> ({data: v, name: v})),
+                    ...['transf_tid', 'receiver', 'date', 'ref_no', 'note'].map(v=> ({data: v, name: v})),
                     {data: 'actions', name: 'actions', searchable: false, sortable: false}
                 ],
                 order: [[0, "desc"]],
@@ -89,6 +87,6 @@
         }
     };
 
-    $(() => Index.init());
+    $(Index.init);
 </script>
 @endsection

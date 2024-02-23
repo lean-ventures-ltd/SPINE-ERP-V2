@@ -4,7 +4,6 @@ namespace App\Repositories\Focus\stock_transfer;
 
 use App\Exceptions\GeneralException;
 use App\Models\items\StockTransferItem;
-use App\Models\product\ProductVariation;
 use App\Models\stock_transfer\StockTransfer;
 use App\Repositories\BaseRepository;
 use DB;
@@ -62,6 +61,8 @@ class StockTransferRepository extends BaseRepository
         StockTransferItem::insert($data_items);
 
         // update Stock Qty
+        $productvar_ids = $stock_transfer->items->pluck('productvar_id')->toArray();
+        updateStockQty($productvar_ids);
         
         if ($stock_transfer) {
             DB::commit();
@@ -102,6 +103,8 @@ class StockTransferRepository extends BaseRepository
         StockTransferItem::insert($data_items);
 
         // update Stock Qty
+        $productvar_ids = $stock_transfer->items->pluck('productvar_id')->toArray();
+        updateStockQty($productvar_ids);
         
         if ($result) {
             DB::commit();
@@ -119,8 +122,11 @@ class StockTransferRepository extends BaseRepository
     public function delete(StockTransfer $stock_transfer)
     { 
         DB::beginTransaction();
+        $productvar_ids = $stock_transfer->items->pluck('productvar_id')->toArray();
+
         $stock_transfer->items()->delete();
         // Update Stock Qty 
+        updateStockQty($productvar_ids);
 
         if ($stock_transfer->delete()) {
             DB::commit();
