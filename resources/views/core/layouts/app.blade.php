@@ -70,7 +70,7 @@
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">×</span>
                 </button>
-                <strong>Error!</strong> {!! implode('', $errors->all('<div>:message</div>'))  !!}
+                <strong>Error!</strong> {!! implode('', $errors->all(':message'))  !!}
             </div>
         @endif
         <div class="app-content content">
@@ -82,13 +82,13 @@
         <script type='text/javascript'>
             accounting.settings = {
                 number: {
-                    precision: '{{config('currency.precision_point')}}',
-                    thousand: '{{config('currency.thousand_sep')}}',
-                    decimal: '{{config('currency.decimal_sep')}}'
+                    precision: "{{config('currency.precision_point')}}",
+                    thousand: "{{config('currency.thousand_sep')}}",
+                    decimal: "{{config('currency.decimal_sep')}}"
                 }
             };
-            var two_fixed ={{config('currency.precision_point')}};
-            var currency = '{{config('currency.symbol')}}';
+            var two_fixed = "{{config('currency.precision_point')}}";
+            var currency = "{{config('currency.symbol')}}";
 
             function editor() {
                 $('.html_editor').summernote({

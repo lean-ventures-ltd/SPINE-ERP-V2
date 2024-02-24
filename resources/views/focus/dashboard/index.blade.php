@@ -3,10 +3,7 @@
 @section('content')
 
     <head>
-        <title>Laravel 8 Chart JS Example Tutorial - Pie Chart - Tutsmake.com</title>
         <!-- Latest CSS -->
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-{{--        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.js"></script>--}}
         <script src="https://cdn.jsdelivr.net/npm/chart.js@3.0.0/dist/chart.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
@@ -18,11 +15,7 @@
             <div class="content-header row">
             </div>
             <div class="content-body">
-
-{{--                <code>{{ json_encode($keyMetrics)}}</code>--}}
-
                 <div class="row match-height height-70-per">
-
                     <div class="col-12 col-lg-6">
                         <div class="card radius-8">
                             <div class="card-header">
@@ -115,7 +108,7 @@
                         <div>
 
                             <!-- Yesterday's Man Hours -->
-                            <div class="card mb-3 radius-8">
+                            <div class="card mb-1 radius-8">
                                 <div class="card-content">
                                     <div class="media align-items-stretch">
                                         <div class="p-2 text-center bg-warning bg-darken-2 radius-8-left">
@@ -133,7 +126,7 @@
                             </div>
 
                             <!-- Yesterday Invoices -->
-                            <div class="card mb-3 radius-8">
+                            <div class="card mb-1 radius-8">
                                 <div class="card-content">
                                     <div class="media align-items-stretch">
                                         <div class="p-2 text-center bg-primary bg-darken-2 radius-8-left">
@@ -151,7 +144,7 @@
                                 </div>
                             </div>
 
-                            <div class="card mb-3 radius-8">
+                            <div class="card mb-1 radius-8">
                                 <div class="card-content">
                                     <div class="media align-items-stretch">
                                         <div class="p-2 text-center bg-primary bg-darken-2 radius-8-left">
@@ -170,7 +163,7 @@
                             </div>
 
                             <!-- This Month's Man Hours -->
-                            <div class="card mb-3 radius-8">
+                            <div class="card mb-1 radius-8">
                                 <div class="card-content">
                                     <div class="media align-items-stretch">
                                         <div class="p-2 text-center bg-success bg-darken-2 radius-8-left">
@@ -190,7 +183,7 @@
 
 
                             <!-- This Month's Sales Total-->
-                            <div class="card mb-3 radius-8">
+                            <div class="card mb-1 radius-8">
                                 <div class="card-content">
                                     <div class="media align-items-stretch">
                                         <div class="p-2 text-center bg-success bg-darken-2 radius-8-left">
@@ -209,7 +202,7 @@
 
 
                             <!-- This Month's Purchases Total-->
-                            <div class="card mb-3 radius-8">
+                            <div class="card mb-1 radius-8">
                                 <div class="card-content">
                                     <div class="media align-items-stretch">
                                         <div class="p-2 text-center bg-success bg-darken-2 radius-8-left">
@@ -302,25 +295,6 @@
                         </div>
                     </div>
 
-                    <!-- Income Vs Expense Report -->
-{{--                    <div class="col-xl-4 col-lg-12">--}}
-{{--                        <div class="card radius-8">--}}
-{{--                            <div class="card-content">--}}
-{{--                                <div class="card-header">--}}
-{{--                                    <div class="chart-title mb-1 text-center">--}}
-{{--                                        <h3>{{ trans('dashboard.income_vs_expenses') }}</h3>--}}
-{{--                                    </div>--}}
-{{--                                    <hr>--}}
-{{--                                </div>--}}
-{{--                                <div class="card-body sales-growth-chart">--}}
-{{--                                    <div class="dashboard-sales-breakdown-chart height-350" id="income-compare-chart">--}}
-{{--                                    </div>--}}
-{{--                                </div>--}}
-{{--                            </div>--}}
-{{--                        </div>--}}
-{{--                    </div>--}}
-
-
                     <!-- Recent Buyers -->
                     <div class="col-12 col-lg-4 card radius-8" >
                         <div class="card-header">
@@ -353,68 +327,7 @@
                             </div>
                         </div>
                     </div>
-
-
                 </div>
-
-            </div>
-            <div class="row">
-                <!-- CashFlow Graph -->
-                {{-- <div class="col-xl-7 col-lg-12">
-                    <div <div class="card radius-8"> id="transactions">
-                        <div class="card-body">
-                            <h4>{{ trans('dashboard.cash_flow') }}</h4>
-                            <p>{{ trans('dashboard.cash_flow_graph') }}</p>
-                            <ul class="nav nav-tabs">
-                                <li class="nav-item">
-                                    <a class="nav-link active" id="base-tab1" data-toggle="tab" aria-controls="tab1"
-                                        href="#sales" aria-expanded="true">{{ trans('accounts.Income') }}</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" id="base-tab2" data-toggle="tab" aria-controls="tab2"
-                                        href="#transactions1" aria-expanded="false">{{ trans('accounts.Expenses') }}</a>
-                                </li>
-                            </ul>
-                            <div class="tab-content pt-1">
-                                <div role="tabpanel" class="tab-pane active" id="sales" aria-expanded="true"
-                                    data-toggle="tab">
-                                    <div id="dashboard-income-chart"></div>
-                                </div>
-                                <div class="tab-pane" id="transactions1" data-toggle="tab" aria-expanded="false">
-                                    <div id="dashboard-expense-chart"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> --}}
-
-                <!-- Task Manager -->
-                {{-- <div class="col-xl-5 col-lg-12">
-                    <div class="card radius-8">
-                        <div class="card-header">
-                            <h4 class="card-title">{{ trans('dashboard.task_manager') }} <a
-                                    href="{{ route('biller.todo') }}"><i class="icon-arrow-right deep-orange"></i></a>
-                            </h4>
-                        </div>
-                        <div class="card-content  p-1">
-                            <div id="daily-activity">
-                                <table id="tasks-table"
-                                    class="table table-striped table-bordered zero-configuration font-size-base"
-                                    cellspacing="0" width="100%">
-                                    <thead>
-                                        <tr class="font-size-small">
-                                            <th>{{ trans('tasks.task') }}</th>
-                                            <th>{{ trans('tasks.start') }}</th>
-                                            <th>{{ trans('tasks.duedate') }}</th>
-                                            <th>{{ trans('tasks.status') }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div> --}}
             </div>
         </div>
     </div>
@@ -617,20 +530,6 @@
                         }
                     }]
                 },
-                // tooltips: {
-                //     enabled: true,
-                //     mode: 'single',
-                //     callbacks: {
-                //         title: function (tooltipItems, data) {
-                //             //Return value for title
-                //             return keyMetrics.month + ' ' + tooltipItems[0].xLabel;
-                //         },
-                //         label: function (tooltipItems, data) { // Solution found on https://stackoverflow.com/a/34855201/6660135
-                //             //Return value for label
-                //             return 'KES ' + tooltipItems.yLabel;
-                //         }
-                //     }
-                // },
                 responsive: true,
                 transitions: {
                     show: {
@@ -717,13 +616,6 @@
                         borderColor: 'rgba(153, 102, 255)',
                         data: [yesterdayTotals.expenses, monthTotals.expenses]
                     },
-                    // {
-                    //     label: "Labour Entries",
-                    //     backgroundColor: 'rgba(201, 203, 207, 0.2)',
-                    //     borderWidth: 1,
-                    //     borderColor: 'rgba(201, 203, 207)',
-                    //     data: [yesterdayTotals.labourEntries, monthTotals.labourEntries]
-                    // },
                 ]
             },
             options: {
@@ -756,20 +648,6 @@
                         }
                     }]
                 },
-                // tooltips: {
-                //     enabled: true,
-                //     mode: 'single',
-                //     callbacks: {
-                //         title: function (tooltipItems, data) {
-                //             //Return value for title
-                //             return keyMetrics.month + ' ' + tooltipItems[0].xLabel;
-                //         },
-                //         label: function (tooltipItems, data) { // Solution found on https://stackoverflow.com/a/34855201/6660135
-                //             //Return value for label
-                //             return 'KES ' + tooltipItems.yLabel;
-                //         }
-                //     }
-                // },
                 responsive: true,
                 transitions: {
                     show: {
@@ -811,20 +689,7 @@
                 }
             }
         });
-
-
     });
-
-
-
-    // const ps = new PerfectScrollbar('#recent-buyers_p', {
-    //     wheelSpeed: 2,
-    //     wheelPropagation: true,
-    //     minScrollbarLength: 20
-    // });
-    // $(window).on("load", function() {
-    //     setTimeout(function() { loadDash() }, 1500);
-    // });
 
     function loadDash() {
         $.ajaxSetup({
@@ -839,13 +704,10 @@
             dataType: 'json',
             success: function(data) {
                 var i = 1;
-                //  var obj = jQuery.parseJSON(data);
                 $.each(data.dash, function(key, value) {
                     $('#dash_' + i).text(value);
                     i++;
                 });
-                // drawIncomeChart(data.income_chart);
-                // drawExpenseChart(data.expense_chart);
                 drawCompareChart(data.inv_exp);
                 sales(data.sales);
             }
@@ -971,12 +833,10 @@
     .radius-8 {
         border-radius: 8px;
     }
-
     .grid-container-2 {
         display: grid;
         gap: 20px;
         grid-template-columns: auto auto;
     }
 </style>
-
 @endsection
