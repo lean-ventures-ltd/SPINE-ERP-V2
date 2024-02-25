@@ -1,10 +1,8 @@
 <!doctype html>
 <html>
 <head>
-
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Print Statement</title>
-
     <style>
         body {
             color: #2B2000;
@@ -34,7 +32,6 @@
             border: 0;
             font-size: 16pt;
             line-height: 24pt;
-
             color: #000;
         }
 
@@ -46,6 +43,11 @@
 
         .plist tr td {
             line-height: 12pt;
+        }
+
+        .subtotal-container {
+            width: 35%;
+            margin-left: auto;
         }
 
         .subtotal tr td {
@@ -140,7 +142,8 @@
         .myw {
             width: 230pt;
             font-size: 16pt;
-            line-height: 30pt;
+            line-height: 25pt;
+            text-align: center;
         }
 
         .summary {
@@ -152,51 +155,54 @@
     </style>
 </head>
 <body>
-<div class="invoice-box">
-    <table>
-        <tr>
-            <td class="myco">
-                <img src="{{ Storage::disk('public')->url('app/public/img/company/' . config('core.logo')) }}"
-                     style="max-width:100px;">
-            </td>
-            <td>
-            </td>
-            <td class="myw">{{$lang['title']}}<br><small>{{trans('meta.generated_on')}}
-                    : {{dateFormat(date('Y-m-d'))}}</small></td>
-        </tr>
-    </table>
-    <br>
-    <table>
-        <thead>
-        <tr class="heading">
-            <td> {{trans('general.business_info')}}:</td>
+    <div class="invoice-box">
+        <table>
+            <tr>
+                <td colspan="3" class="myco">
+                    <img src="{{ Storage::disk('public')->url('app/public/img/company/' . config('core.logo')) }}" style="object-fit:contain" width="100%">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3" class="myw">
+                    <h4 style="margin-bottom:0;padding-bottom:0;">{{$lang['title']}}</h4>
+                    <small>{{trans('meta.generated_on')}}: {{ dateFormat(date('Y-m-d'), 'd-M-Y') }}</small>
+                </td>
+            </tr>
+        </table>
 
-            <td>{{$lang['title2']}}:</td>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td><h4>{{(config('core.cname'))}}</h4>
-                {{(config('core.address'))}}<br>{{(config('core.city'))}}, {{(config('core.region'))}}
-                <br>{{trans('general.phone')}}: {{(config('core.phone'))}}<br> {{trans('general.email')}}
-                : {{(config('core.email'))}}  @if(config('core.taxid'))
-                    <br>    {{trans('general.tax_id')}}: {{config('core.taxid')}}
-                @endif</td>
+        <!-- Business Meta
+        <table>
+            <thead>
+            <tr class="heading">
+                <td> {{trans('general.business_info')}}:</td>
+                <td>{{$lang['title2']}}:</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><h4>{{(config('core.cname'))}}</h4>
+                    {{(config('core.address'))}}<br>{{(config('core.city'))}}, {{(config('core.region'))}}
+                    <br>{{trans('general.phone')}}: {{(config('core.phone'))}}<br> {{trans('general.email')}}
+                    : {{(config('core.email'))}}  @if(config('core.taxid'))
+                        <br>    {{trans('general.tax_id')}}: {{config('core.taxid')}}
+                    @endif</td>
 
-            <td>
-                {!!$lang['party']!!}
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    @yield('statement_body')
-    <br>
-    <div class="sign">{{trans('general.authorized_person')}}</div>
-    <div class="sign1"></div>
-    <div class="sign2"></div>
-    <div class="sign3"></div>
-    <br>
-    <hr>
-</div>
+                <td>
+                    {!!$lang['party']!!}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        -->
+
+        @yield('statement_body')
+        <br>
+        {{-- <div class="sign">{{trans('general.authorized_person')}}</div> --}}
+        <div class="sign1"></div>
+        <div class="sign2"></div>
+        <div class="sign3"></div>
+        <br>
+        <hr>
+    </div>
 </body>
 </html>

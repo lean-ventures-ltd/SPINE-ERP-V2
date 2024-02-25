@@ -36,7 +36,9 @@ use App\Models\transactioncategory\Transactioncategory;
 use App\Models\warehouse\Warehouse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Focus\report\ManageReports;
+use App\Models\items\StockTransferItem;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Validation\ValidationException;
 
 class StatementController extends Controller
 {
@@ -337,17 +339,21 @@ class StatementController extends Controller
         }
     }
 
+    /**
+     * Generate Stock Statement
+     */
     public function generate_stock_statement(ManageReports $reports)
     {
-
         switch ($reports->stock_action) {
             case 'warehouse':
-                if (!$reports->from_warehouse) return new RedirectResponse(route('biller.reports.statements', [$reports->section]), ['flash_error' => trans('meta.invalid_entry')]);
-                $account_details = ProductMeta::when($reports->from_warehouse != 'all', function ($q) use ($reports) {
-                    return $q->where('ref_id', '=', $reports->from_warehouse);
-                })->when($reports->to_warehouse != 'all', function ($q) use ($reports) {
-                    return $q->where('value2', '=', $reports->to_warehouse);
-                })->whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])->where('rel_type', '=', 1)->get();
+                if (!$reports->from_warehouse) 
+                    throw ValidationException::withMessages(['from_warehouse' => trans('meta.invalid_entry')]);
+                $stock_transf_items = StockTransferItem::whereHas('stock_transfer', function($q) use($reports) {
+                    $q->whereBetween('date', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)]);
+                    $q->when($reports->from_warehouse > 0, fn($q) => $q->where('source_id', $reports->from_warehouse));
+                    $q->when($reports->to_warehouse > 0, fn($q) => $q->where('dest_id', $reports->to_warehouse));
+                })->get();
+
                 $lang['title'] = trans('meta.stock_transfer_statement');
                 $lang['title2'] = trans('meta.stock_transfer_statement_warehouse');
                 $lang['module'] = 'warehouse';
@@ -476,10 +482,8 @@ class StatementController extends Controller
 
         if ($transfer == 1) {
             switch ($reports->output_format) {
-
                 case 'pdf_print':
-
-                    $html = view('focus.report.pdf.stock_transfer', compact('account_details', 'lang'))->render();
+                    $html = view('focus.report.pdf.stock_transfer', compact('stock_transf_items', 'lang'))->render();
                     $headers = array(
                         "Content-type" => "application/pdf",
                         "Pragma" => "no-cache",
@@ -489,15 +493,11 @@ class StatementController extends Controller
                     $pdf = new \Mpdf\Mpdf(config('pdf'));
                     $pdf->WriteHTML($html);
                     return Response::stream($pdf->Output($file_name . '.pdf', 'I'), 200, $headers);
-
-                    break;
                 case 'pdf':
-                    $html = view('focus.report.pdf.stock_transfer', compact('account_details', 'lang'))->render();
+                    $html = view('focus.report.pdf.stock_transfer', compact('stock_transf_items', 'lang'))->render();
                     $pdf = new \Mpdf\Mpdf(config('pdf'));
                     $pdf->WriteHTML($html);
                     return $pdf->Output($file_name . '.pdf', 'D');
-                    break;
-
                 case 'csv':
                     $headers = array(
                         "Content-type" => "text/csv",
@@ -506,20 +506,22 @@ class StatementController extends Controller
                         "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
                         "Expires" => "0"
                     );
-                    $columns = array(trans('general.date'), trans('products.product'), trans('products.stock_transfer_from'), trans('products.stock_transfer_to'), trans('products.qty'), trans('general.total'));
-                    $callback = function () use ($account_details, $columns) {
+                    $callback = function() use ($stock_transf_items) {
                         $file = fopen('php://output', 'w');
-                        fputcsv($file, $columns);
-                        $balance = 0;
-
-                        foreach ($account_details as $row) {
-                            $balance += $row['value'];
-                            fputcsv($file, array(dateFormat($row['created_at']), @$row->product->product['name'] . ' ' . @$row->product['name'], $row->from_warehouse['title'], $row->to_warehouse['title'], numberFormat($row['value']), numberFormat($balance) . ' ' . @$row->product->product['unit']));
+                        fputcsv($file, [trans('general.date'), trans('products.product'), trans('products.stock_transfer_from'), trans('products.stock_transfer_to'), trans('products.qty'), trans('general.total') . ' Value']);
+                        foreach ($stock_transf_items as $item) {
+                            fputcsv($file, [
+                                @$item->stock_transfer->date? dateFormat($item->stock_transfer->date, 'd/m/Y') : 'NULL',
+                                @$item->productvar->name ?: 'NULL',
+                                @$item->stock_transfer->source->title ?: 'NULL',
+                                @$item->stock_transfer->destination->title ?: 'NULL',
+                                $item->qty_transf,
+                                numberFormat($item->amount),
+                            ]);
                         }
                         fclose($file);
                     };
                     return Response::stream($callback, 200, $headers);
-                    break;
             }
         }
         if ($transfer == 2) {

@@ -4,42 +4,50 @@
         <tr class="heading">
             <td>{{trans('general.date')}}</td>
             <td>{{trans('products.product')}}</td>
-            <td>{{trans('products.stock_transfer_from')}}</td>
+            <td>{{ trans('products.stock_transfer_from')}}</td>
             <td>{{trans('products.stock_transfer_to')}}</td>
             <td>{{trans('products.qty')}}</td>
-            <td>{{trans('general.total')}}</td>
+            <td>{{trans('general.total')}} Value</td>
         </tr>
         @php
-            $fill = false;
-            $balance=0;
-            foreach ($account_details as $row) {
-
-                if ($fill == true) {
-                    $flag = ' mfill';
-                } else {
-                    $flag = '';
-                }
-                  $balance += $row['value'];
-                echo '<tr class="item' . $flag . '"><td>' . dateFormat($row['created_at']) . '</td><td>' . @$row->product->product['name'] . ' ' . @$row->product['name'] . '</td><td>' . $row->from_warehouse['title'] . '</td><td>' . $row->to_warehouse['title'] . '</td><td>' . numberFormat($row['value']) . '</td><td>' . numberFormat($balance) . ' '.@$row->product->product['unit'].'</td></tr>';
-                $fill = !$fill;
-            }
+            $total = 0
         @endphp
+        @foreach ($stock_transf_items as $item)
+            <tr class="item">
+                <td>{{ dateFormat(@$item->stock_transfer->date, 'd/m/Y') }}</td>
+                <td>{{ @$item->productvar->name }}</td>
+                <td>{{ @$item->stock_transfer->source->title }}</td>
+                <td>{{ @$item->stock_transfer->destination->title }}</td>
+                <td>{{ +$item->qty_transf }}</td>
+                <td>{{ numberFormat($item->amount) }}</td>
+            </tr>
+            @php
+                $total += $item->amount;
+            @endphp
+        @endforeach
+        <!-- 20 dynamic empty rows -->
+        @for ($i = count($stock_transf_items); $i < 10; $i++)
+            <tr class="item">
+                @for($j = 0; $j < 5; $j++)
+                    <td></td>
+                @endfor
+            </tr>
+        @endfor
+        <!--  -->
     </table>
     <br>
-    <table class="subtotal">
-        <thead>
-        <tbody>
-        <tr>
-            <td class="myco2" rowspan="2"><br>
-            </td>
-            <td class="summary"><strong>{{trans('general.summary')}}</strong></td>
-            <td class="summary"></td>
-        </tr>
-        <tr>
-            <td>{{trans('general.total')}}:</td>
-            <td>{{numberFormat($balance)}}</td>
-        </tr>
-
-        </tbody>
-    </table>
+    <div class="subtotal-container">
+        <table class="subtotal">
+            <thead></thead>
+            <tbody>
+                <tr>
+                    <td colspan="2" class="summary"><strong>{{trans('general.summary')}}</strong></td>
+                </tr>
+                <tr>
+                    <td>{{trans('general.total')}}:</td>
+                    <td style="text-align: right;">{{numberFormat($total)}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 @endsection
