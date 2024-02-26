@@ -6,7 +6,7 @@
     <div class="content-body">
         <div class="card">
             <div class="card-header">
-                <h5> {{$lang['title']}}</h5>
+                <h5>{{ $lang['title'] }}</h5>
                 <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
                 <div class="heading-elements">
                     <ul class="list-inline mb-0">
@@ -19,7 +19,6 @@
             <div class="card-content">
                 <div id="notify" class="alert alert-success" style="display:none;">
                     <a href="#" class="close" data-dismiss="alert">&times;</a>
-
                     <div class="message"></div>
                 </div>
                 <div class="card-body">
@@ -63,56 +62,45 @@
             dataType: 'json',
             type: 'POST',
             quietMillis: 50,
-            data: function (person) {
-                return {
-                    person: person
-                };
-            },
-            processResults: function (data) {
-                return {
-                    results: $.map(data, function (item) {
-                        return {
-                            text: item.name,
-                            id: item.id
-                        }
-                    })
-                };
+            data: (person) => ({person: person}),
+            processResults: (data) => {
+                return {results: data.map(v => ({text: v.name, id: v.id}))}
             },
         }
     });
 
-    $("#products_l").select2();
-    $("#wfrom").on('change', function () {
-        var tips = $('#wfrom').val();
-        $("#products_l").select2({
+    $("#products_l").select2({allowClear: true});
 
+    $("#wfrom").on('change', function () {
+        $("#products_l").select2({
+            allowClear: true,
             tags: [],
             ajax: {
-                url: '{{route('biller.products.product_search',['label'])}}',
+                url: "{{ route('biller.products.product_search', ['label']) }}",
                 dataType: 'json',
                 type: 'POST',
                 quietMillis: 50,
-                data: function (product) {
-
-                    return {
-                        keyword: product,
-                        wid: tips
-
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: $.map(data, function (item) {
-                            return {
-                                text: item.name,
-                                id: item.id
-                            }
-                        })
-                    };
+                data: (product) => ({keyword: product, wid: $('#wfrom').val()}),
+                processResults: (data) => {
+                    return {results: data.map(v => ({text: v.name, id: v.id}))}
                 },
             }
         });
     });
 
+    $("#product").select2({
+        allowClear: true,
+        ajax: {
+            url: "{{ route('biller.products.quote_product_search') }}",
+            dataType: 'json',
+            type: 'POST',
+            quietMillis: 50,
+            data: ({term}) => ({keyword: term}),
+            processResults: (data) => {
+                data.unshift({id: "all", name: '-- All Products --'});
+                return {results: data.map(v => ({text: `${v.name} ${v.warehouse? '(' + v.warehouse.title + ')' : ''}`, id: v.id}))}
+            },
+        }
+    });
 </script>
 @endsection

@@ -1252,12 +1252,11 @@
                                     </li>
                                     <li><a class="dropdown-item" href="#"><i class="fa fa-th"></i>{{trans('meta.product_statement')}}</a>
                                         <ul class="mega-menu-sub">
-                                            <li><a class="dropdown-item" href="{{route('biller.reports.statements',['product_statement'])}}" data-toggle="dropdown">{{trans('meta.product_statement')}}</a>
-                                            </li>
-                                            <li><a class="dropdown-item" href="{{route('biller.reports.statements',['product_category_statement'])}}" data-toggle="dropdown">{{trans('meta.product_category_statement')}}</a>
-                                            </li>
-                                            <li><a class="dropdown-item" href="{{route('biller.reports.statements',['product_warehouse_statement'])}}" data-toggle="dropdown">{{trans('meta.product_warehouse_statement')}}</a>
-                                            </li>
+                                            {{-- <li><a class="dropdown-item" href="{{route('biller.reports.statements',['product_statement'])}}" data-toggle="dropdown">{{trans('meta.product_statement')}}</a>
+                                            </li> --}}
+                                            <li><a class="dropdown-item" href="{{route('biller.reports.statements',['product_category_statement'])}}" data-toggle="dropdown">{{trans('meta.product_category_statement')}}</a></li>
+                                            <li><a class="dropdown-item" href="{{route('biller.reports.statements',['product_warehouse_statement'])}}" data-toggle="dropdown">{{trans('meta.product_warehouse_statement')}}</a></li>
+                                            <li><a class="dropdown-item" href="{{ route('biller.reports.statements',['product_movement_statement'])}}" data-toggle="dropdown">Products Movement Statement</a></li>
                                         </ul>
                                     </li>
                                     <li><a class="dropdown-item" href="#"><i class="fa fa-road"></i>{{trans('products.stock_transfer')}}</a>
