@@ -3,8 +3,8 @@
 namespace App\Models\items\Traits;
 
 use App\Models\account\Account;
-use App\Models\assetequipment\Assetequipment;
-use App\Models\items\GrnItem;
+use App\Models\equipment\Assetequipment;
+use App\Models\items\GoodsreceivenoteItem;
 use App\Models\product\ProductVariation;
 use App\Models\project\Project;
 use App\Models\purchaseorder\Purchaseorder;
@@ -18,7 +18,7 @@ trait PurchaseorderItemRelationship
 
     public function grn_items()
     {
-        return $this->hasMany(GrnItem::class, 'poitem_id');
+        return $this->hasMany(GoodsreceivenoteItem::class, 'poitem_id');
     }
 
     public function asset()

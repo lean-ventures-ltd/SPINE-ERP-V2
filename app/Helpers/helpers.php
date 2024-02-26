@@ -914,7 +914,7 @@ function updateStockQty($productvar_ids=[])
         // qty in
         $op_stock_qty = \App\Models\items\OpeningStockItem::where('productvar_id', $id)->sum('qty');
         $dir_purchase_qty = \App\Models\items\PurchaseItem::where('item_id', $id)->where('type', 'Stock')->sum('qty');
-        $grn_qty = \App\Models\items\GrnItem::whereHas('purchaseorder_item', fn($q) => $q->where('item_id', $id))->sum('qty');
+        $grn_qty = \App\Models\items\GoodsreceivenoteItem::whereHas('purchaseorder_item', fn($q) => $q->where('item_id', $id))->sum('qty');
         $pos_adj_qty = \App\Models\stock_adj\StockAdjItem::where('productvar_id', $id)->where('qty_diff', '>', 0)->sum('qty_diff');
         $total_in = $op_stock_qty + $dir_purchase_qty + $grn_qty + $pos_adj_qty;
         // qty out
