@@ -357,19 +357,26 @@ class StatementController extends Controller
     {  
         switch ($reports->stock_action) {
             case 'warehouse':
-                if (!$reports->from_warehouse) 
-                    throw ValidationException::withMessages(['from_warehouse' => trans('meta.invalid_entry')]);
-                $stock_transf_items = StockTransferItem::whereHas('stock_transfer', function($q) use($reports) {
+                $reports->validate(['from_warehouse' => 'required']);
+
+                $account_details = StockTransferItem::whereHas('stock_transfer', function($q) use($reports) {
                     $q->whereBetween('date', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)]);
                     $q->when($reports->from_warehouse > 0, fn($q) => $q->where('source_id', $reports->from_warehouse));
                     $q->when($reports->to_warehouse > 0, fn($q) => $q->where('dest_id', $reports->to_warehouse));
-                })->get();
+                })
+                ->with('rcv_items')
+                ->get();
+                foreach ($account_details as $i => $item) {
+                    $item['qty_rcv'] = $item->rcv_items->sum('qty_rcv');
+                    $item['qty_onhand'] = $item->qty_transf - $item->qty_rcv;
+                    $item['amount'] = $item->qty_onhand * $item->cost;
+                    $account_details[$i] = $item;
+                }
 
+                $lang['from_date'] = $reports->from_date;
+                $lang['to_date'] = $reports->to_date;
                 $lang['title'] = trans('meta.stock_transfer_statement');
-                $lang['title2'] = trans('meta.stock_transfer_statement_warehouse');
                 $lang['module'] = 'warehouse';
-                $lang['party'] = config('core.cname');
-                $lang['party_2'] = trans('customers.customer');
                 $transfer = 1;
                 $file_name = preg_replace('/[^A-Za-z0-9]+/', '-', $lang['title'] . '_' . $reports->from_date);
                 break;
@@ -700,7 +707,7 @@ class StatementController extends Controller
         if ($transfer == 1) {
             switch ($reports->output_format) {
                 case 'pdf_print':
-                    $html = view('focus.report.pdf.stock_transfer', compact('stock_transf_items', 'lang'))->render();
+                    $html = view('focus.report.pdf.stock_transfer', compact('account_details', 'lang'))->render();
                     $headers = array(
                         "Content-type" => "application/pdf",
                         "Pragma" => "no-cache",
@@ -711,7 +718,7 @@ class StatementController extends Controller
                     $pdf->WriteHTML($html);
                     return Response::stream($pdf->Output($file_name . '.pdf', 'I'), 200, $headers);
                 case 'pdf':
-                    $html = view('focus.report.pdf.stock_transfer', compact('stock_transf_items', 'lang'))->render();
+                    $html = view('focus.report.pdf.stock_transfer', compact('account_details', 'lang'))->render();
                     $pdf = new \Mpdf\Mpdf(config('pdf'));
                     $pdf->WriteHTML($html);
                     return $pdf->Output($file_name . '.pdf', 'D');
@@ -723,16 +730,18 @@ class StatementController extends Controller
                         "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
                         "Expires" => "0"
                     );
-                    $callback = function() use ($stock_transf_items) {
+                    $callback = function() use ($account_details) {
                         $file = fopen('php://output', 'w');
-                        fputcsv($file, [trans('general.date'), trans('products.product'), trans('products.stock_transfer_from'), trans('products.stock_transfer_to'), trans('products.qty'), trans('general.total') . ' Value']);
-                        foreach ($stock_transf_items as $item) {
+                        fputcsv($file, [trans('general.date'), trans('products.product'), 'From Location', 'Qty Out', 'To Destination', 'Qty In', 'On Hand', 'Asset Value']);
+                        foreach ($account_details as $item) {
                             fputcsv($file, [
-                                @$item->stock_transfer->date? dateFormat($item->stock_transfer->date, 'd/m/Y') : 'NULL',
+                                $item->stock_transfer? dateFormat($item->stock_transfer->date) : 'NULL',
                                 @$item->productvar->name ?: 'NULL',
                                 @$item->stock_transfer->source->title ?: 'NULL',
+                                +$item->qty_transf,
                                 @$item->stock_transfer->destination->title ?: 'NULL',
-                                $item->qty_transf,
+                                +$item->qty_rcv,
+                                +$item->qty_onhand,
                                 numberFormat($item->amount),
                             ]);
                         }
