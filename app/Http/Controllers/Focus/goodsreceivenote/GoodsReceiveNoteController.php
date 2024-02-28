@@ -7,6 +7,7 @@ use App\Http\Responses\RedirectResponse;
 use App\Models\additional\Additional;
 use App\Models\goodsreceivenote\Goodsreceivenote;
 use App\Models\supplier\Supplier;
+use App\Models\warehouse\Warehouse;
 use App\Repositories\Focus\goodsreceivenote\GoodsreceivenoteRepository;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -50,8 +51,9 @@ class GoodsReceiveNoteController extends Controller
         $tid = Goodsreceivenote::where('ins', auth()->user()->ins)->max('tid');
         $suppliers = Supplier::get(['id', 'name']);
         $additionals = Additional::get();
+        $warehouses = Warehouse::all();
 
-        return view('focus.goodsreceivenotes.create', compact('tid', 'suppliers', 'additionals'));
+        return view('focus.goodsreceivenotes.create', compact('tid', 'suppliers', 'additionals', 'warehouses'));
     }
 
     /**
@@ -95,8 +97,9 @@ class GoodsReceiveNoteController extends Controller
     {
         $suppliers = Supplier::get(['id', 'name']);
         $additionals = Additional::get();
+        $warehouses = Warehouse::all();
 
-        return view('focus.goodsreceivenotes.edit', compact('goodsreceivenote', 'suppliers', 'additionals'));
+        return view('focus.goodsreceivenotes.edit', compact('goodsreceivenote', 'suppliers', 'additionals', 'warehouses'));
     }
 
     /**
