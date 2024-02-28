@@ -795,69 +795,33 @@ class EmployeeDailyLogController extends Controller
     public function createPerms() {
 
 //        Permission::create([
-//            'name' => 'manage-daily-logs',
-//            'display_name' => 'EDL Manage Permission',
+//            'name' => 'manage-business-account',
+//            'display_name' => 'Business Account Management Permission',
 //        ]);
 //
 //        Permission::create([
-//            'name' => 'create-daily-logs',
-//            'display_name' => 'EDL Create Permission',
+//            'name' => 'edit-business-account',
+//            'display_name' => 'Business Account Editing Permission',
 //        ]);
 //
 //        Permission::create([
-//            'name' => 'edit-daily-logs',
-//            'display_name' => 'EDL Edit Permission',
+//            'name' => 'delete-business-account',
+//            'display_name' => 'Business Account Deletion Permission',
 //        ]);
-//
-//        Permission::create([
-//            'name' => 'delete-daily-logs',
-//            'display_name' => 'EDL Delete Permission',
-//        ]);
-//
-//        Permission::create([
-//            'name' => 'review-daily-logs',
-//            'display_name' => 'EDL Review Permission',
-//        ]);
-//
-//        Permission::create([
-//            'name' => 'manage-edl-categories',
-//            'display_name' => 'EDL Categories Manage Permission',
-//        ]);
-//
-//        Permission::create([
-//            'name' => 'create-edl-categories',
-//            'display_name' => 'EDL Categories Create Permission',
-//        ]);
-//
-//         Permission::create([
-//            'name' => 'edit-edl-categories',
-//            'display_name' => 'EDL Categories Edit Permission',
-//        ]);
-//
-//        Permission::create([
-//            'name' => 'delete-edl-categories',
-//            'display_name' => 'EDL Categories Delete Permission',
-//        ]);
-//
-//        Permission::create([
-//            'name' => 'allocate-edl-categories',
-//            'display_name' => 'EDL Categories Allocate Permission',
-//        ]);
-
 
         Permission::create([
-            'name' => 'finance-management',
-            'display_name' => 'Finance Management Permission',
+            'name' => 'manage-account-service',
+            'display_name' => 'Account Service Deletion Permission',
         ]);
 
         Permission::create([
-            'name' => 'procurement-management',
-            'display_name' => 'Procurement Management Permission',
+            'name' => 'edit-account-service',
+            'display_name' => 'Account Service Deletion Permission',
         ]);
 
         Permission::create([
-            'name' => 'banking-management',
-            'display_name' => 'Banking Management Permission',
+            'name' => 'delete-account-service',
+            'display_name' => 'Account Service Deletion Permission',
         ]);
 
 

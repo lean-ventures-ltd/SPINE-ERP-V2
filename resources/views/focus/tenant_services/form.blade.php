@@ -43,16 +43,57 @@
                         <tr>
                             <td class="text-nowrap fw-bolder">
                                 <div class="row">
-                                    @foreach ($package_extras as $i => $package)
-                                        <div class="col-3 mb-1">
-                                            <div class="row">
-                                                <div class="col-8">{{ $package->name }}</div>
-                                                <div class="col-4">
-                                                    <input type="checkbox" class="form-check-input select" name="module_id[]" value="{{ $package->id }}" id="mod-{{ $package->id }}">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
+
+                                    <div id="available-permissions" class="mt-2"
+                                         style="height: 1000px; overflow-x: hidden; overflow-y: scroll;">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                @if ($permissions->count())
+                                                    @php
+                                                        $groupClassName =  null;
+                                                    @endphp
+
+
+                                                    @foreach ($permissions as $perm)
+
+                                                        @if( strtolower(explode(' ', $perm->display_name)[0]) !== $groupClassName )
+
+                                                            @php
+                                                                $groupClassName = strtolower(explode(' ', $perm->display_name)[0]);
+                                                            @endphp
+
+                                                            <div class="mt-2">
+                                                                <input type="checkbox"
+                                                                       id="pg-master-{{strtolower(explode(' ', $perm->display_name)[0])}}"
+                                                                       style="width: 20px; height: 20px;"
+                                                                       class="round pg-master-{{strtolower(explode(' ', $perm->display_name)[0])}}"
+                                                                >
+                                                                <label for="pg-master-{{strtolower(explode(' ', $perm->display_name)[0])}}" style="font-size: 22px;">  Grant All '{{ explode(' ', $perm->display_name)[0] }}' Permissions </label>
+                                                            </div>
+
+                                                        @endif
+
+
+                                                        <label class="control--checkbox">
+                                                            <input class="icheckbox_square icheckbox_flat-blue pg-child-{{strtolower(explode(' ', $perm->display_name)[0]) }}"
+                                                                   type="checkbox"
+                                                                   name="permissions[{{ $perm->id }}]"
+                                                                   value="{{ $perm->id }}"
+                                                                   id="perm_{{ $perm->id }}"
+                                                                    {{ is_array(old('permissions')) ? (in_array($perm->id, old('permissions')) ? 'checked' : '') : (in_array($perm->id, $packagePermissions) ? 'checked' : '') }} />
+                                                            <label for="perm_{{ $perm->id }}">{{ $perm->display_name }}</label>
+                                                            <div class="control__indicator"></div>
+                                                        </label>
+                                                        <br/>
+                                                    @endforeach
+                                                @else
+                                                    <p>There are no available permissions.</p>
+                                                @endif
+                                            </div><!--col-lg-6-->
+                                        </div><!--row-->
+                                    </div><!--available permissions-->
+
+
                                 </div>
                             </td>    
                         </tr>

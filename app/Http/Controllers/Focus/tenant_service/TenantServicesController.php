@@ -18,6 +18,8 @@
 
 namespace App\Http\Controllers\Focus\tenant_service;
 
+use App\Http\Controllers\Focus\employeeDailyLog\EmployeeDailyLogController;
+use App\Models\Access\Permission\Permission;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
@@ -65,8 +67,11 @@ class TenantServicesController extends Controller
     public function create()
     {
         $package_extras = PackageExtra::where('active', 0)->get();
-        
-        return view('focus.tenant_services.create', compact('package_extras'));
+
+        $permissions = Permission::orderBy('display_name')->get();
+        $packagePermissions = [];
+
+        return view('focus.tenant_services.create', compact('package_extras', 'permissions', 'packagePermissions'));
     }
 
     /**
