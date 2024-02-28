@@ -93,8 +93,6 @@ class QuotesController extends Controller
      */
     public function store(CreateQuoteRequest $request)
     {
-        return $request;
-
         $request->validate([
             'lead_id' => 'required',
         ]);
