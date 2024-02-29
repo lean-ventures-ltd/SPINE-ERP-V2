@@ -70,17 +70,17 @@ class CoreController extends Controller
      */
     public function username()
     {
-        // return 'email';
-        return 'username';
+        return 'email';
+        // return 'username';
     }
 
     protected function validateLogin(Request $request)
     {   
         $request->merge(['username' => $request->email]);
-        unset($request['email']);
+        // unset($request['email']);
         $this->validate($request, [
-            'username' => request('username')? 'required|string' : '',
-            // 'email' => request('email')? 'required|string' : '',
+            // 'username' => request('username')? 'required|string' : '',
+            'email' => request('email')? 'required|string' : '',
             'password' => 'required|string',
             'g-recaptcha-response' => 'required_if:captcha_status,true|captcha',
         ], ['g-recaptcha-response.required_if' => 'Captcha Error']);
@@ -99,7 +99,7 @@ class CoreController extends Controller
         $request->session()->flush();
         $request->session()->regenerate();
 
-        session()->put('url_intended', $this->redirectTo);
+        session(['url_intended' => $this->redirectTo]);
 
         return redirect()->route('biller.index');
     }
