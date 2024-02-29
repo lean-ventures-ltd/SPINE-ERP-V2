@@ -6,6 +6,7 @@ use App\Models\items\InvoiceItem;
 use App\Models\invoice\Invoice;
 use App\Exceptions\GeneralException;
 use App\Models\invoice_payment\InvoicePayment;
+use App\Repositories\Accounting;
 use App\Repositories\BaseRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -16,6 +17,7 @@ use Mavinoo\LaravelBatch\LaravelBatchFacade as Batch;
  */
 class InvoiceRepository extends BaseRepository
 {
+    use Accounting;
     /**
      * Associated Repository Model.
      */

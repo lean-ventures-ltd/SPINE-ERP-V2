@@ -5,18 +5,24 @@
  *
  */
 
-use Illuminate\Support\Facades\Route;
+Route::group(['namespace' => 'estimate'], function () {
+    Route::post('estimates/verified_products', 'EstimatesController@verified_products')->name('estimates.verified_products');
+    Route::post('estimates/quote_select', 'EstimatesController@quote_select')->name('estimates.quote_select');
+    Route::resource('estimates', 'EstimatesController');
+    // datatable
+    Route::post('estimates/get', 'EstimatesTableController')->name('estimates.get');
+});
 
 Route::prefix('cu-invoice-number')->namespace('cuInvoiceNumber')->group(function () {
     Route::get('set', 'CuInvoiceNumberController@set');
 });
 
- Route::group(['namespace' => 'standard_invoice'], function () {
+Route::group(['namespace' => 'standard_invoice'], function () {
     Route::post('standard_invoices/customer/create', 'StandardInvoicesController@create_customer')->name('invoices.create_customer');
     Route::resource('standard_invoices', 'StandardInvoicesController');
- });
- 
- // payment
+});
+
+// payment
 Route::group(['namespace' => 'invoice_payment'], function () {
     Route::resource('invoice_payments', 'InvoicePaymentsController');
     // datatable

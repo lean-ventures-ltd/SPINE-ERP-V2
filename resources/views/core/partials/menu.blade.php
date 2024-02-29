@@ -1141,20 +1141,16 @@
                                 class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
                                     class="ft-layout"></i> Invoice Management</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('biller.invoices.index') }}"
-                                   data-toggle="dropdown"><i class="ft-file-text"></i> Manage Project Invoice
-                                </a>
-                            </li>
                             @permission('create-invoice')
-                            <li><a class="dropdown-item" href="{{ route('biller.invoices.uninvoiced_quote') }}"
-                                   data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Create Project Invoice
-                                </a>
-                            </li>
-                            <li><a class="dropdown-item" href="{{ route('biller.standard_invoices.create') }}"
-                                   data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Detached Invoice
-                                </a>
-                            </li>
+                                <li><a class="dropdown-item" href="{{ route('biller.invoices.uninvoiced_quote') }}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Project Invoice</a></li>                            
+                                <li><a class="dropdown-item" href="{{ route('biller.standard_invoices.create') }}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Detached Invoice</a></li>
                             @endauth
+                            <li><a class="dropdown-item" href="{{ route('biller.invoices.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Invoices</a></li>
+                            <hr>
+                            @permission('create-invoice')
+                                <li><a class="dropdown-item" href="{{ route('biller.estimates.create') }}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Invoice Estimate</a></li>                            
+                            @endauth
+                            <li><a class="dropdown-item" href="{{ route('biller.estimates.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Estimates</a></li>
                         </ul>
                     </li>
                     @endauth

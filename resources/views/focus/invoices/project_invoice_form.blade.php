@@ -155,6 +155,12 @@
     @endif
 </div>
 
+<!-- estimate id -->
+@if (@$quotes && @$quotes[0]['estimate_id'] > 0)
+    <input type="hidden" name="estimate_id" value="{{ $quotes[0]['estimate_id'] }}">
+@endif
+<!-- end estimate id -->
+
 <div class="table-responsive">
     <table id="quoteTbl" class="table tfr my_stripe_single pb-1">
         <thead>
@@ -170,7 +176,6 @@
         </thead>
         <tbody>
             @if (isset($quotes))
-                {{-- create invoice items --}}
                 @foreach($quotes as $k => $val)
                     @php
                         // Reference details

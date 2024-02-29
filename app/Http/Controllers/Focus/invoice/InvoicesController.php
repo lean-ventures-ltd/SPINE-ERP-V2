@@ -41,6 +41,7 @@ use App\Models\project\Project;
 use App\Models\bank\Bank;
 use App\Models\Company\Company;
 use App\Models\currency\Currency;
+use App\Models\estimate\Estimate;
 use App\Models\invoice_payment\InvoicePayment;
 use App\Models\lpo\Lpo;
 use App\Models\term\Term;
@@ -220,6 +221,25 @@ class InvoicesController extends Controller
                     $v->verified_jcs = $v->jc_items;
                     return $v;
                 });
+        } elseif ($request->estimate_id) {
+            $estimate = Estimate::find($request->estimate_id);
+            $quote = @$estimate->quote;
+            if (!$quote) throw ValidationException::withMessages(['Corresponding Quote / PI could not be found']);
+            $verified_products = collect();
+            foreach ($quote->verified_products as $key => $item) {
+                $est_item = $item->est_items()->where('estimate_id', $estimate->id)->first();
+                if ($est_item) {
+                    $item->tax_rate = 0;
+                    $item->product_qty = $est_item->est_qty;
+                    $item->product_subtotal = $est_item->est_rate;
+                    $item->product_price = $est_item->est_rate;
+                    $verified_products->add($item);
+                }
+            }
+            unset($quote['verified_products']);
+            $quote->estimate_id = $estimate->id;
+            $quote->verified_products = $verified_products;
+            $quotes = collect([$quote]);
         } else {
             // Quote/PI in order of selection (main verification)
             $quotes = Quote::whereIn('id', $quote_ids)
@@ -227,7 +247,8 @@ class InvoicesController extends Controller
                 ->with(['verified_products' => fn($q) =>$q->orderBy('row_index', 'ASC')])
                 ->get();
         }
-
+        
+        
         $customer = Customer::find($customer_id) ?: new Customer;
         $accounts = Account::whereHas('accountType', fn($q) => $q->whereIn('name', ['Income', 'Other Income']))->get();
         $terms = Term::where('type', 1)->get();  // invoice term type is 1
@@ -251,7 +272,7 @@ class InvoicesController extends Controller
         // extract request input fields
         $bill = $request->only([
             'customer_id', 'bank_id', 'tax_id', 'tid', 'invoicedate', 'validity', 'notes', 'term_id', 'account_id',
-            'taxable', 'subtotal', 'tax', 'total', 
+            'taxable', 'subtotal', 'tax', 'total', 'estimate_id'
         ]);
         $bill_items = $request->only([
             'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 'product_subtotal', 'product_price', 
@@ -265,7 +286,6 @@ class InvoicesController extends Controller
         try {
             $result = $this->repository->create_project_invoice(compact('bill', 'bill_items'));
         } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Creating Project Invoice', $th);
         }
 
@@ -321,7 +341,6 @@ class InvoicesController extends Controller
         try {
             $result = $this->repository->update_project_invoice($invoice, compact('bill', 'bill_items'));
         } catch (\Throwable $th) { 
-            if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Updating Project Invoice', $th);
         }
 
