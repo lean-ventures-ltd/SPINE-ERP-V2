@@ -973,32 +973,50 @@
                     </li>
                     @endauth
 
-                        {{-- Asset and Equipments  --}}
-                        @permission('manage-asset-equipment')
-                        <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="ft-target"></i> Assets & Equipments
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ route('biller.assetequipments.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Assets & Equipments Management
-                                    </a>
-                                </li>
-                                @permission('create-asset-equipment')
-                                <li><a class="dropdown-item" href="{{ route('biller.assetequipments.create') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Assets & Equipments
-                                    </a>
-                                </li>
-                                @endauth
-                            </ul>
-                        </li>
-                        @endauth
-                    </ul>
-                </li>
-            @endif
-            
-            {{-- procurement module --}}
-            @if(access()->allow('finance'))
-            <li class="dropdown nav-item" data-menu="dropdown"><a class="dropdown-toggle nav-link" href="#" data-toggle="dropdown"><i class="fa fa-tags"></i><span>Procurement</span></a>
-                <ul class="dropdown-menu">
-                    @permission('manage-supplier')
-                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="ft-target"></i> Supplier Management
+                    {{-- Product Management --}}
+                    @permission('manage-product')
+                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a
+                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
+                                    class="fa fa-cube"></i> Inventory Management</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ route('biller.products.index') }}"
+                                   data-toggle="dropdown"> <i class="ft-list"></i>Manage Inventory
+                                </a>
+                            </li>
+                            @permission('create-product')
+                            <li><a class="dropdown-item" href="{{ route('biller.products.create') }}"
+                                   data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Inventory
+                                </a>
+                            </li>
+                            @endauth
+                        </ul>
+                    </li>
+                    @endauth
+
+                    {{-- Product Opening Stock --}}
+{{--                    @permission('manage-opening-stock')--}}
+{{--                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">--}}
+{{--                        <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i--}}
+{{--                                    class="fa fa-balance-scale"></i> Inventory Opening Stock</a>--}}
+{{--                        <ul class="dropdown-menu">--}}
+{{--                            <li>--}}
+{{--                                <a class="dropdown-item" href="{{ route('biller.opening_stock.index') }}"--}}
+{{--                                   data-toggle="dropdown"><i class="ft-file-text"></i> Manage Opening Stock</a>--}}
+{{--                            </li>--}}
+{{--                            @permission('create-opening-stock')--}}
+{{--                            <li>--}}
+{{--                                <a class="dropdown-item" href="{{ route('biller.opening_stock.create') }}"--}}
+{{--                                   data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Create Opening Stock</a>--}}
+{{--                            </li>--}}
+{{--                            @endauth--}}
+{{--                        </ul>--}}
+{{--                    </li>--}}
+{{--                    @endauth--}}
+
+                    @permission('manage-product-category')
+                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a
+                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
+                                    class="fa fa-object-ungroup"></i> Inventory Categories
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ route('biller.productcategories.index') }}"
@@ -1141,14 +1159,19 @@
                                 class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
                                     class="ft-layout"></i> Invoice Management</a>
                         <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ route('biller.invoices.index') }}"
+                                   data-toggle="dropdown"><i class="ft-file-text"></i> Manage Project Invoice
+                                </a>
+                            </li>
                             @permission('create-invoice')
-                                <li><a class="dropdown-item" href="{{ route('biller.invoices.uninvoiced_quote') }}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Project Invoice</a></li>                            
-                                <li><a class="dropdown-item" href="{{ route('biller.standard_invoices.create') }}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Detached Invoice</a></li>
-                            @endauth
-                            <li><a class="dropdown-item" href="{{ route('biller.invoices.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Invoices</a></li>
-                            <hr>
-                            @permission('create-invoice')
-                                <li><a class="dropdown-item" href="{{ route('biller.estimates.create') }}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Invoice Estimate</a></li>                            
+                            <li><a class="dropdown-item" href="{{ route('biller.invoices.uninvoiced_quote') }}"
+                                   data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Create Project Invoice
+                                </a>
+                            </li>
+                            <li><a class="dropdown-item" href="{{ route('biller.standard_invoices.create') }}"
+                                   data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Detached Invoice
+                                </a>
+                            </li>
                             @endauth
                             <li><a class="dropdown-item" href="{{ route('biller.estimates.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Estimates</a></li>
                         </ul>
