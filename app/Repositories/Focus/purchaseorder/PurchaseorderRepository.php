@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Focus\purchaseorder;
 
+use App\Models\product\ProductVariation;
 use App\Models\project\ProjectMileStone;
 use App\Models\purchaseorder\Purchaseorder;
 use App\Exceptions\GeneralException;
@@ -83,6 +84,7 @@ class PurchaseorderRepository extends BaseRepository
                 'ins' => $result->ins,
                 'user_id' => $result->user_id,
                 'purchaseorder_id' => $result->id,
+                'product_code' => ProductVariation::find($v['item_id'])->code,
                 'rate' => numberClean($v['rate']),
                 'taxrate' => numberClean($v['taxrate']),
                 'amount' => numberClean($v['amount'])
