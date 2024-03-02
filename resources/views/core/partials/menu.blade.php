@@ -43,6 +43,8 @@
                                                             class="ft-align-center"></i>
                                                     {{ trans('transactioncategories.transactioncategories') }}
                                                 </a></li>
+                                            <li><a class="dropdown-item" href="{{ route('biller.settings.opening_stock') }}"><i class="fa fa-cubes"></i> Opening Stock
+                                                </a></li>
                                             <li><a class="dropdown-item"
                                                    href="{{ route('biller.settings.status') }}"><i
                                                             class="fa fa-flag-o"></i> {{ trans('meta.default_status') }}
@@ -993,6 +995,26 @@
                     </li>
                     @endauth
 
+
+                    {{-- Stock Adjustment --}}
+                     @permission('manage-opening-stock')
+                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-balance-scale"></i> Stock Adjustment</a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{{ route('biller.stock_adjs.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Adjustments</a>
+                            </li>
+                             @permission('create-opening-stock')
+                            <li>
+                                <a class="dropdown-item" href="{{ route('biller.stock_adjs.create')}}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Create Adjustment</a>
+                            </li>
+                             @endauth
+                        </ul>
+                    </li>
+                     @endauth
+
+
+
                     {{-- Product Opening Stock --}}
 {{--                    @permission('manage-opening-stock')--}}
 {{--                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">--}}
@@ -1089,8 +1111,17 @@
                     {{-- Stock Transfer --}}
                     @permission('manage-stock-transfer')
                     <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
-                        <a class="dropdown-item " href="{{ route('biller.products.stock_transfer') ? '#' : '#' }}"><i
-                                    class="ft-wind"></i> {{ trans('products.stock_transfer') }}</a>
+                        <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="ft-wind"></i> {{ trans('products.stock_transfer') }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            @permission('create-stock-transfer')
+                            <li><a class="dropdown-item" href="{{ route('biller.stock_transfers.create') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Transfer
+                                </a>
+                            </li>
+                            @endauth
+                            <li><a class="dropdown-item" href="{{ route('biller.stock_transfers.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Stock Transfers</a></li>
+                            <li><a class="dropdown-item" href="{{ route('biller.stock_rcvs.index') }}" data-toggle="dropdown">  <i class="ft-list"></i> Stock Receiving</a></li>
+                        </ul>
                     </li>
                     @endauth
 
@@ -1155,23 +1186,16 @@
                     @endauth
 
                     @permission('manage-invoice')
-                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a
-                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
-                                    class="ft-layout"></i> Invoice Management</a>
+                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-usd"></i> Invoice Management</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('biller.invoices.index') }}"
-                                   data-toggle="dropdown"><i class="ft-file-text"></i> Manage Project Invoice
-                                </a>
-                            </li>
                             @permission('create-invoice')
-                            <li><a class="dropdown-item" href="{{ route('biller.invoices.uninvoiced_quote') }}"
-                                   data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Create Project Invoice
-                                </a>
-                            </li>
-                            <li><a class="dropdown-item" href="{{ route('biller.standard_invoices.create') }}"
-                                   data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Detached Invoice
-                                </a>
-                            </li>
+                            <li><a class="dropdown-item" href="{{ route('biller.invoices.uninvoiced_quote') }}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Project Invoice</a></li>
+                            <li><a class="dropdown-item" href="{{ route('biller.standard_invoices.create') }}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Detached Invoice</a></li>
+                            @endauth
+                            <li><a class="dropdown-item" href="{{ route('biller.invoices.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Invoices</a></li>
+                            <hr>
+                            @permission('create-invoice')
+                            <li><a class="dropdown-item" href="{{ route('biller.estimates.create') }}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Invoice Estimate</a></li>
                             @endauth
                             <li><a class="dropdown-item" href="{{ route('biller.estimates.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Estimates</a></li>
                         </ul>
@@ -1975,21 +1999,13 @@
                                         </li>
                                     </ul>
                                 </li>
-                                <li><a class="dropdown-item" href="#"><i
-                                                class="fa fa-th"></i>{{ trans('meta.product_statement') }}</a>
+                                <li><a class="dropdown-item" href="#"><i class="fa fa-th"></i>{{trans('meta.product_statement')}}</a>
                                     <ul class="mega-menu-sub">
-                                        <li><a class="dropdown-item"
-                                               href="{{ route('biller.reports.statements', ['product_statement']) }}"
-                                               data-toggle="dropdown">{{ trans('meta.product_statement') }}</a>
-                                        </li>
-                                        <li><a class="dropdown-item"
-                                               href="{{ route('biller.reports.statements', ['product_category_statement']) }}"
-                                               data-toggle="dropdown">{{ trans('meta.product_category_statement') }}</a>
-                                        </li>
-                                        <li><a class="dropdown-item"
-                                               href="{{ route('biller.reports.statements', ['product_warehouse_statement']) }}"
-                                               data-toggle="dropdown">{{ trans('meta.product_warehouse_statement') }}</a>
-                                        </li>
+                                        {{-- <li><a class="dropdown-item" href="{{route('biller.reports.statements',['product_statement'])}}" data-toggle="dropdown">{{trans('meta.product_statement')}}</a>
+                                        </li> --}}
+                                        <li><a class="dropdown-item" href="{{route('biller.reports.statements',['product_category_statement'])}}" data-toggle="dropdown">{{trans('meta.product_category_statement')}}</a></li>
+                                        <li><a class="dropdown-item" href="{{route('biller.reports.statements',['product_warehouse_statement'])}}" data-toggle="dropdown">{{trans('meta.product_warehouse_statement')}}</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('biller.reports.statements',['product_movement_statement'])}}" data-toggle="dropdown">Products Movement Statement</a></li>
                                     </ul>
                                 </li>
                                 <li><a class="dropdown-item" href="#"><i
