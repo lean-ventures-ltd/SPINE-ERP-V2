@@ -79,7 +79,7 @@ class PurchaseorderRepository extends BaseRepository
             if (@$item['type'] == 'Stock' && !$item['uom'])
             throw ValidationException::withMessages(['Unit of Measure (uom) required for Inventory Items']);
         }
-        return $order_items = array_map(function ($v) use($result) {
+        $order_items = array_map(function ($v) use($result) {
 
             $productVariation = ProductVariation::find($v['item_id']);
 
