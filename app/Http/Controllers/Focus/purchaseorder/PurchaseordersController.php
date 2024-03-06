@@ -189,7 +189,10 @@ class PurchaseordersController extends Controller
         $purchaseorder = Purchaseorder::find(request('purchaseorder_id'));
         $stock_goods = $purchaseorder? $purchaseorder->goods()->where('type', 'Stock')->get() : collect();
         $stock_goods = $stock_goods->map(function($v) {
-            if ($v->productvariation) $v->description .= " - {$v->productvariation->code}";
+            if ($v->productvariation) {
+                $v->description .= " - {$v->productvariation->code}";
+                $v->product_code = $v->productvariation->code;
+            }
             if ($v->project){
                 $quote_tid = !$v->project->quote ?: gen4tid('QT-', $v->project->quote->tid);
                 $customer = !$v->project->customer ?: $v->project->customer->company;

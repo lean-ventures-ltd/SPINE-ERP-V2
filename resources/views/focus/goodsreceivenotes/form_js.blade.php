@@ -158,7 +158,10 @@
             return `
                 <tr>
                     <td width="5%">${i+1}</td>    
-                    <td width="20%" class="text-left">${v.description}</td> 
+                    <td width="20%" class="text-left">
+                        ${v.description}
+                        <input type="hidden" class="product_code" name="product_code[]" value="${v.product_code}">
+                    </td>
                     <td width="15%">
                         <input class="form-control projectstock" value="${v.project_name}" id="projectstocktext-${i+1}" placeholder="Search Project By Name"></input>
                         <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="${v.itemproject_id}" id="projectstockval-${i+1}" >

@@ -101,7 +101,10 @@
                     @endphp
                     <tr>
                         <td>{{ $i+1 }}</td>
-                        <td class="text-left">{{ $po_item->description }}</td>
+                        <td class="text-left">
+                            {{ $po_item->description }}
+                            <input type="hidden" class="product_code" name="product_code[]" value="{{$po_item->product_code}}">
+                        </td>
                         <td> 
                             <input type="text" class="form-control projectstock" value="{{ $project_name }}" id="projectstocktext-{{$i}}" placeholder="Search Project By Name">
                             <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="{{$item->itemproject_id}}" id="projectstockval-{{$i}}">
