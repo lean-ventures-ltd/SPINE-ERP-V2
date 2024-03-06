@@ -62,9 +62,9 @@ class SalaryTableController extends Controller
                 $employee_no = @$salary->user->meta->employee_no;
                 if ($employee_no) $employee_no .= " - {$salary->user->full_name}";
                 return $employee_no;
-             })
+            })
             ->addColumn('basic_salary', function ($salary) {
-                  return amountFormat($salary->basic_salary);
+                return amountFormat($salary->basic_salary);
             })
             ->addColumn('max_hourly_salary', function ($salary) {
 

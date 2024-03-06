@@ -88,14 +88,14 @@ class SalaryController extends Controller
 ////        $empDetails = json_decode(json_encode($empDetails), true);
 //        $input = array_merge(['employee_name' => $empDetails['full_name'], 'employee_id' => $empDetails['id']], $input);
 
-       // dd($request->all());
+        // dd($request->all());
         $input['ins'] = auth()->user()->ins;
         $input['user_id'] = auth()->user()->id;
         $employee_allowance = $request->only(['allowance_id','amount']);
-       
+
         $employee_allowance = modify_array($employee_allowance);
         $employee_allowance = array_filter($employee_allowance, function ($v) { return $v['allowance_id']; });
-        
+
         //Create the model using repository create method
         $this->repository->create(compact('input', 'employee_allowance'));
         //return with successfull messagetrans
@@ -124,8 +124,8 @@ class SalaryController extends Controller
     public function update(Request $request, Salary $salary)
     {
         //Input received from the request
-       // $input = $request->except(['_token', 'ins']);
-        $data = $request->only(['employee_id', 'employee_name', 'basic_pay', 'contract_type','workshift_id','start_date','duration', 'pay_per_hr', 'nhif', 'deduction_exempt']);
+        // $input = $request->except(['_token', 'ins']);
+        $data = $request->except(['_method', '_token']);
         //dd($input);
         $data_items = $request->only([
             'allowance_id','amount','id'
@@ -175,7 +175,7 @@ class SalaryController extends Controller
         //returning with successfull message
         return new ViewResponse('focus.salary.view', compact('salary', 'user','workshifts'));
     }
-    
+
     public function select(Request $request)
     {
         $q = $request->keyword;
@@ -194,13 +194,13 @@ class SalaryController extends Controller
                 ]);
                 return $v1;
             });
-            
+
         return response()->json($users);
     }
 
     public function renew_contract(Request $request)
     {
-        
+
         $old_contract = Salary::find($request->id);
         if($old_contract->status == 'ongoing'){
             $old_contract->status = 'terminated';
@@ -233,7 +233,7 @@ class SalaryController extends Controller
             $terminate_contract->update();
             return new RedirectResponse(route('biller.salary.index'), ['flash_success' => 'Contract Terminated Successfully!!']);
         }
-        
+
         return new RedirectResponse(route('biller.salary.index'), ['flash_error' => 'Contract Cannot be Terminated!!']);
     }
 }

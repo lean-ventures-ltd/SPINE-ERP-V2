@@ -43,12 +43,12 @@ class SalaryRepository extends BaseRepository
      */
     public function create( $input)
     {
-       
+
         $createsalary = Salary::create($input['input']);
-        
+
         $allarr= $input['employee_allowance'];
         $allarr = array_map(function ($v) use($createsalary) {
-            
+
             return array_replace($v, [
                 'contract_id' => $createsalary->id,
                 'user_id'=> auth()->user()->id,
@@ -57,7 +57,7 @@ class SalaryRepository extends BaseRepository
         }, $allarr);
         if ($createsalary) {
             AllowanceEmployee::insert($allarr);
-            
+
             return true;
         }
         throw new GeneralException(trans('exceptions.backend.salarys.create_error'));
@@ -75,7 +75,7 @@ class SalaryRepository extends BaseRepository
     {
         $data = $input['data'];
         foreach ($data as $key => $val) {
-            if (in_array($key, ['start_date'], 1)) 
+            if (in_array($key, ['start_date'], 1))
                 $data[$key] = date_for_database($val);
         }
         $salary->update($data);
@@ -91,7 +91,7 @@ class SalaryRepository extends BaseRepository
             $data_item = AllowanceEmployee::firstOrNew(['id' => $item['id']]);
             $data_item->fill($item);
             if (!$data_item->id) unset($data_item->id);
-            $data_item->save();                
+            $data_item->save();
         }
         if ($salary) {
             DB::commit();
