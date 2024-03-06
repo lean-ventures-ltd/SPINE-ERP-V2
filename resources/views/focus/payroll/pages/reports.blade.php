@@ -1,122 +1,86 @@
-@extends ('core.layouts.app')
+@extends('core.layouts.app')
 
 @section('title', 'Payroll Management')
 
-@section('page-header')
-    <h1>
-        Payroll Management
-        <small>View</small>
-    </h1>
-@endsection
-
 @section('content')
-    <div class="">
-        <div class="content-wrapper">
-            <div class="content-header row">
-                <div class="content-header-left col-md-6 col-12 mb-2">
-                    <h4 class="content-header-title mb-0">Payroll Reports</h4>
+<div class="content-wrapper">
+    <div class="content-header row">
+        <div class="content-header-left col-md-6 col-12 mb-2">
+            <h4 class="content-header-title mb-0">Payroll Reports</h4>
 
-                </div>
-                <div class="content-header-right col-md-6 col-12">
-                    <div class="media width-250 float-right">
+        </div>
+        <div class="content-header-right col-md-6 col-12">
+            <div class="media width-250 float-right">
 
-                        <div class="media-body media-right text-right">
-                            @include('focus.payroll.partials.payroll-header-buttons')
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-header">
-                    
-                </div>
-                <div class="card-body">
-                    <ul class="nav nav-tabs" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link active" id="base-tab1" data-toggle="tab" aria-controls="tab1" href="#tab1"
-                                role="tab" aria-selected="true"><span class="">NSSF REPORTS </span>
-
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="base-tab2" data-toggle="tab" aria-controls="tab2" href="#tab2"
-                                role="tab" aria-selected="false"><span>PAYE REPORTS</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="base-tab3" data-toggle="tab" aria-controls="tab3" href="#tab3"
-                                role="tab" aria-selected="false">
-                                <span>NHIF REPORTS</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="base-tab9" data-toggle="tab" aria-controls="tab9" href="#tab9"
-                                role="tab" aria-selected="false">
-                                <span>HOUSING LEVY REPORTS</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="base-tab8" data-toggle="tab" aria-controls="tab8" href="#tab8" role="tab"
-                               aria-selected="false">
-                               <span>PAYROLL REPORTS</span>
-                            </a>
-                        </li>
-                    </ul>
-                    <div class="tab-content px-1 pt-1">
-                        <div class="tab-pane active" id="tab1" role="tabpanel" aria-labelledby="base-tab1">
-                            @include('focus.payroll.reports.nssf-report')
-                        </div>
-                        <div class="tab-pane" id="tab2" role="tabpanel" aria-labelledby="base-tab2">
-                            @include('focus.payroll.reports.paye-report')
-                        </div>
-                        <div class="tab-pane" id="tab3" role="tabpanel" aria-labelledby="base-tab3">
-                            @include('focus.payroll.reports.nhif-report')
-                        </div>
-                        <div class="tab-pane" id="tab9" role="tabpanel" aria-labelledby="base-tab9">
-                            @include('focus.payroll.reports.housing-levy-report')
-                        </div>
-                        <div class="tab-pane" id="tab8" role="tabpanel" aria-labelledby="base-tab8">
-                            @include('focus.payroll.reports.payroll-report')
-                        </div>
-                    </div>
+                <div class="media-body media-right text-right">
+                    @include('focus.payroll.partials.payroll-header-buttons')
                 </div>
             </div>
         </div>
     </div>
+    <div class="card">
+        <div class="card-header">
+            <div class="row">
+                    <div class="col-1 h2">{{ (new DateTime($payrollTallies[0]['payroll_month']))->format('M Y') }}</div>
+                    <div class="col-4 h3">| {{ $payrollTallies[0]['working_days'] }} Working Days</div>
+            </div>
+        </div>
+        <div class="card-body">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="base-tab1" data-toggle="tab" aria-controls="tab1" href="#tab1"
+                        role="tab" aria-selected="true"><span class="">NSSF REPORTS </span>
+
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="base-tab2" data-toggle="tab" aria-controls="tab2" href="#tab2"
+                        role="tab" aria-selected="false"><span>PAYE REPORTS</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="base-tab3" data-toggle="tab" aria-controls="tab3" href="#tab3"
+                        role="tab" aria-selected="false">
+                        <span>NHIF REPORTS</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="base-tab9" data-toggle="tab" aria-controls="tab9" href="#tab9"
+                        role="tab" aria-selected="false">
+                        <span>HOUSING LEVY REPORTS</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="base-tab8" data-toggle="tab" aria-controls="tab8" href="#tab8" role="tab"
+                        aria-selected="false">
+                        <span>PAYROLL REPORTS</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="tab-content px-1 pt-1">
+                <div class="tab-pane active" id="tab1" role="tabpanel" aria-labelledby="base-tab1">
+                    @include('focus.payroll.reports.nssf-report')
+                </div>
+                <div class="tab-pane" id="tab2" role="tabpanel" aria-labelledby="base-tab2">
+                    @include('focus.payroll.reports.paye-report')
+                </div>
+                <div class="tab-pane" id="tab3" role="tabpanel" aria-labelledby="base-tab3">
+                    @include('focus.payroll.reports.nhif-report')
+                </div>
+                <div class="tab-pane" id="tab9" role="tabpanel" aria-labelledby="base-tab9">
+                    @include('focus.payroll.reports.housing-levy-report')
+                </div>
+                <div class="tab-pane" id="tab8" role="tabpanel" aria-labelledby="base-tab8">
+                    @include('focus.payroll.reports.payroll-report')
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
 @section('after-scripts')
 {{ Html::script(mix('js/dataTable.js')) }}
-{{-- <script>
-    config = {
-        date: {format: "{{ config('core.user_date_format') }}", autoHide: true}
-    }
-    approval();
-    $('#statusModal').on('shown.bs.modal', function() {
-            $('.datepicker').datepicker({
-                container: '#statusModal',
-                ...config.date
-            }).datepicker('setDate', new Date());
-        });
-    $('.send_mail').click(function () { 
-        var id = @json($payroll->id);
-        $.post("{{ route('biller.payroll.send_mail')}}", {id: id},
-            function (data, textStatus, jqXHR) {
-                
-            },
-            "dataType"
-        );
-        
-    });
-    function approval() {
-        $('.send_mail').addClass('d-none');
-        var status = @json($payroll->status);
-        if(status == 'approved'){
-            $('.send_mail').removeClass('d-none');
-            $('.approve').addClass('d-none');
-        }
-    }
-        
-</script> --}}
 <script>
     $(function () {
         setTimeout(function () {
@@ -132,20 +96,20 @@
         });
 
          $('#payrollTable').dataTable({
-             processing: true,
-             serverSide: true,
-             responsive: true,
-             language: {
-                 @lang('datatable.strings')
-             },
-             ajax: {
-                 url: '{{ route("biller.payroll.get_reports", $payroll) }}',
-                 data: { payroll_id: @json(@$payroll) },
-                 type: 'get',
-             },
+            processing: true,
+            serverSide: true,
+            responsive: true,
+            language: {@lang('datatable.strings')},
+            ajax: {
+                url: '{{ route("biller.payroll.get_reports", $payroll) }}',
+                data: { payroll_id: @json(@$payroll) },
+                type: 'post',
+            },
             columns: [
                 {data: 'payroll_id', name: 'payroll_id'},
                 {data: 'employee_id', name: 'employee_id'},
+                {data: 'name', name: 'name'},
+                {data: 'id_number', name: 'id_number'},
                 {data: 'fixed_salary', name: 'fixed_salary'},
                 {data: 'max_hourly_salary', name: 'max_hourly_salary'},
                 {data: 'pay_per_hr', name: 'pay_per_hr'},
@@ -182,20 +146,23 @@
             order: [[0, "asc"]],
             searchDelay: 500,
             dom: 'Blfrtip',
-            buttons: ['csv', 'excel', 'print']
-        });
+            buttons: ['csv', 'excel', 'print'],
+             lengthMenu: [
+                 [25, 50, 100, 200, -1],
+                 [25, 50, 100, 200, "All"]
+             ],
+             pageLength: -1,
+         });
 
         $('#nssfTbl').dataTable({
             processing: true,
             serverSide: true,
             responsive: true,
-            language: {
-                @lang('datatable.strings')
-            },
+            language: {@lang('datatable.strings')},
             ajax: {
-                url: '{{ route("biller.payroll.get_reports", $payroll) }}',
+                url: '{{ route("biller.payroll.getNssfReport", $payroll) }}',
                 data: { payroll_id: @json(@$payroll) },
-                type: 'get',
+                type: 'post',
             },
             columns: [
                 { data: 'payroll_id', name: 'payroll_id' },
@@ -211,19 +178,22 @@
             searchDelay: 500,
             dom: 'Blfrtip',
             buttons: ['csv', 'excel', 'print'],
+            lengthMenu: [
+                [25, 50, 100, 200, -1],
+                [25, 50, 100, 200, "All"]
+            ],
+            pageLength: -1,
         });
 
         $('#payeTbl').dataTable({
             processing: true,
             serverSide: true,
             responsive: true,
-            language: {
-                @lang('datatable.strings')
-            },
+            language: {@lang('datatable.strings')},
             ajax: {
-                url: '{{ route("biller.payroll.get_reports", $payroll) }}',
+                url: '{{ route("biller.payroll.getPayeReport", $payroll) }}',
                 data: { payroll_id: @json(@$payroll) },
-                type: 'get',
+                type: 'post',
             },
             columns: [
                 {data: 'kra_pin', name: 'kra_pin'},
@@ -265,21 +235,23 @@
             order: [[0, "asc"]],
             searchDelay: 500,
             dom: 'Blfrtip',
-            buttons: ['csv', 'excel', 'print']
+            buttons: ['csv', 'excel', 'print'],
+            lengthMenu: [
+                [25, 50, 100, 200, -1],
+                [25, 50, 100, 200, "All"]
+            ],
+            pageLength: -1,
         });
-
 
         $('#nhifTbl').dataTable({
             processing: true,
             serverSide: true,
             responsive: true,
-            language: {
-                @lang('datatable.strings')
-            },
+            language: {@lang('datatable.strings')},
             ajax: {
-                url: '{{ route("biller.payroll.get_reports", $payroll) }}',
+                url: '{{ route("biller.payroll.getNhifReport", $payroll) }}',
                 data: { payroll_id: @json(@$payroll) },
-                type: 'get',
+                type: 'post',
             },
             columns: [
                 { data: 'payroll_id', name: 'payroll_id' },
@@ -292,21 +264,23 @@
             order: [[0, "asc"]],
             searchDelay: 500,
             dom: 'Blfrtip',
-            buttons: ['csv', 'excel', 'print']
+            buttons: ['csv', 'excel', 'print'],
+            lengthMenu: [
+                [25, 50, 100, 200, -1],
+                [25, 50, 100, 200, "All"]
+            ],
+            pageLength: -1,
         });
-
 
         $('#housingLevyTbl').dataTable({
             processing: true,
             serverSide: true,
             responsive: true,
-            language: {
-                @lang('datatable.strings')
-            },
+            language: {@lang('datatable.strings')},            
             ajax: {
-                url: '{{ route("biller.payroll.get_reports", $payroll) }}',
+                url: '{{ route("biller.payroll.getHousingLevyReport", $payroll) }}',
                 data: { payroll_id: @json(@$payroll) },
-                type: 'get',
+                type: 'post',
             },
             columns: [
                 { data: 'id_number', name: 'id_number' },
@@ -317,10 +291,14 @@
             order: [[0, "asc"]],
             searchDelay: 500,
             dom: 'Blfrtip',
-            buttons: ['csv', 'excel', 'print']
-        });
-        {{--//$('#payrollTbl_wrapper').removeClass('form-inline');--}}
+            buttons: ['csv', 'excel', 'print'],
+            lengthMenu: [
+                [25, 50, 100, 200, -1],
+                [25, 50, 100, 200, "All"]
+            ],
+            pageLength: -1,
 
+        });
     }
 </script>
 @endsection

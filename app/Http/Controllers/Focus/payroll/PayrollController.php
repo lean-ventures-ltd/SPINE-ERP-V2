@@ -23,6 +23,8 @@ use App\Models\Access\Permission\PermissionUser;
 use App\Models\labour_allocation\LabourAllocationItem;
 use App\Models\payroll\Payroll;
 use App\Models\payroll\PayrollItemV2;
+use App\Models\product\Product;
+use App\Models\product\ProductVariation;
 use DateTime;
 use Exception;
 use Illuminate\Http\Request;
@@ -78,7 +80,6 @@ class PayrollController extends Controller
      * Display a listing of the resource.
      *
      * @param App\Http\Requests\Focus\payroll\ManagepayrollRequest $request
-     * @return \App\Http\Responses\ViewResponse
      */
     public function index(Request $request)
     {
@@ -453,15 +454,16 @@ class PayrollController extends Controller
      */
     public function approve_payroll(Request $request)
     {
+//        return $request;
         //dd($request->all());
         $payroll = Payroll::find($request->id);
-        $payroll->approval_note = $request->approval_note;
-        $payroll->approval_date = date_for_database($request->approval_date);
-        $payroll->status = $request->status;
+//        $payroll->approval_note = $request->approval_note;
+//        $payroll->approval_date = date_for_database($request->approval_date);
+//        $payroll->status = $request->status;
        // $payroll['account'] = $request->account_id;
        // $payroll->update();
-        $this->repository->approve_payroll(compact('payroll'));
-        return redirect()->back();
+        return $this->repository->approve_payroll(compact('payroll'));
+//        return redirect()->back();
     }
 
     /**
@@ -1331,6 +1333,7 @@ class PayrollController extends Controller
                 DB::raw('SUM(nhif) as nhif_tally'),
                 DB::raw('SUM(paye) as paye_tally'),
                 DB::raw('SUM(netpay) as netpay_tally'),
+                DB::raw('SUM(net_after_bnd) as final_pay_tally'),
                 DB::raw('SUM(absent_total_deduction + total_nhif + total_nssf + housing_levy + loan + other_deductions) as deductions_tally'),
             )
             ->get();
@@ -1341,11 +1344,239 @@ class PayrollController extends Controller
         $housing_levy_total = amountFormat($payrollTallies->sum('housing_levy_tally'));
         $paye_total = amountFormat($payrollTallies->sum('paye_tally'));
         $netpay_total = amountFormat($payrollTallies->sum('netpay_tally'));
-        $tallies = compact('nssf_total', 'nhif_total', 'housing_levy_total', 'paye_total', 'netpay_total');
+        $final_pay_total = amountFormat($payrollTallies->sum('final_pay_tally'));
+        $tallies = compact('nssf_total', 'nhif_total', 'housing_levy_total', 'paye_total', 'netpay_total', 'final_pay_total');
 
 
-        return view('focus.payroll.pages.reports',compact('payroll', 'tallies'));
+        return view('focus.payroll.pages.reports',compact('payroll', 'tallies', 'payrollTallies'));
     }
+
+    public function getNhifReport($payrollId){
+
+        $query = Payroll::where('payroll_id', $payrollId)
+            ->join('payroll_items', 'payroll.id', 'payroll_items.payroll_id')
+            ->where('payroll_items.nhif', '!=', 0.00);
+
+        return $this->getReportsV2($payrollId, $query);
+    }
+
+    public function getNssfReport($payrollId){
+
+        $query = Payroll::where('payroll_id', $payrollId)
+            ->join('payroll_items', 'payroll.id', 'payroll_items.payroll_id')
+            ->where('payroll_items.nssf', '!=', 0.00);
+
+        return $this->getReportsV2($payrollId, $query);
+    }
+
+    public function getPayeReport($payrollId){
+
+        $query = Payroll::where('payroll_id', $payrollId)
+            ->join('payroll_items', 'payroll.id', 'payroll_items.payroll_id')
+            ->where('payroll_items.paye', '!=', 0.00);
+
+        return $this->getReportsV2($payrollId, $query);
+    }
+
+    public function getHousingLevyReport($payrollId){
+
+        $query = Payroll::where('payroll_id', $payrollId)
+            ->join('payroll_items', 'payroll.id', 'payroll_items.payroll_id')
+            ->where('payroll_items.housing_levy', '!=', 0.00);
+
+        return $this->getReportsV2($payrollId, $query);
+    }
+
+    public function getReportsV2($payrollId, $query)
+    {
+        $payroll = Payroll::find($payrollId);
+
+
+        $payrollItems = $query
+            ->join('users', 'payroll_items.employee_id', 'users.id')
+            ->join('hrm_metas', 'users.id', 'hrm_metas.user_id')
+            ->select(
+                'payroll_items.*',
+//                'payroll_items.basic_salary as employee_basic_salary'.
+                'payroll.*',
+                'hrm_metas.nssf as nssf_number',
+                'hrm_metas.nhif as nhif_number',
+                'kra_pin',
+                'first_name',
+                'last_name',
+                'id_number',
+                'primary_contact',
+                DB::raw('CONCAT(first_name, " ", last_name) as name'),
+            )
+            ->get();
+
+        return Datatables::of($payrollItems)
+            ->escapeColumns(['id'])
+            ->addIndexColumn()
+            ->addColumn('employee_id', function ($payrollItems) {
+                return $payrollItems->employee_id;
+            })
+            ->addColumn('payroll_id', function ($payrollItems) {
+                $payroll_id = gen4tid('PYRLL-', $payrollItems->payroll_id);
+                return $payrollItems->payroll_id;
+            })
+            ->addColumn('name', function ($payrollItems) {
+                return $payrollItems->name;
+            })
+            ->addColumn('surname', function ($payrollItems) {
+
+                $parts = explode(" ", $payrollItems->last_name);
+                $surname = end($parts);
+
+                return $surname;
+            })
+            ->addColumn('other_names', function ($payrollItems) {
+
+                $parts = explode(" ", $payrollItems->last_name);
+
+                if (count($parts) >= 2) {
+                    // Remove the last part
+                    array_pop($parts);
+
+                    $otherNames = implode(" ", $parts);
+                } else {
+                    $otherNames = '';
+                }
+
+                return $payrollItems->first_name . " " . $otherNames;
+            })
+            ->addColumn('id_number', function ($payrollItems) {
+                return $payrollItems->id_number;
+            })
+            ->addColumn('nssf_number', function ($payrollItems) {
+
+                if ($payrollItems->nssf_number == 00 || $payrollItems->nssf_number == 0) return '0';
+
+                return $payrollItems->nssf_number;
+            })
+            ->addColumn('kra_pin', function ($payrollItems) {
+                return $payrollItems->kra_pin;
+            })
+            ->addColumn('nhif_number', function ($payrollItems) {
+
+                if ($payrollItems->nhif_number == 00 || $payrollItems->nhif_number == 0) return '0';
+                return $payrollItems->nhif_number;
+            })
+            ->addColumn('primary_contact', function ($payrollItems) {
+                return $payrollItems->primary_contact;
+            })
+            ->addColumn('fixed_salary', function ($payrollItem) {
+                return number_format($payrollItem->fixed_salary, 2, '.', ',');
+            })
+            ->addColumn('max_hourly_salary', function ($payrollItem) {
+                return number_format($payrollItem->max_hourly_salary, 2, '.', ',');
+            })
+            ->addColumn('pay_per_hr', function ($payrollItem) {
+                return number_format($payrollItem->pay_per_hr, 2, '.', ',');
+            })
+            ->addColumn('man_hours', function ($payrollItem) {
+                return number_format($payrollItem->man_hours, 2, '.', ',');
+            })
+            ->addColumn('basic_hourly_salary', function ($payrollItem) {
+                return number_format($payrollItem->basic_hourly_salary, 2, '.', ',');
+            })
+            ->addColumn('absent_days', function ($payrollItem) {
+                return number_format($payrollItem->absent_days, 2, '.', ',');
+            })
+            ->addColumn('absent_daily_deduction', function ($payrollItem) {
+                return number_format($payrollItem->absent_daily_deduction, 2, '.', ',');
+            })
+            ->addColumn('absent_total_deduction', function ($payrollItem) {
+                return number_format($payrollItem->absent_total_deduction, 2, '.', ',');
+            })
+            ->addColumn('basic_salary', function ($payrollItem) {
+                return number_format($payrollItem->basic_salary, 2, '.', ',');
+            })
+            ->addColumn('house_allowance', function ($payrollItem) {
+                return number_format($payrollItem->house_allowance, 2, '.', ',');
+            })
+            ->addColumn('transport_allowance', function ($payrollItem) {
+                return number_format($payrollItem->transport_allowance, 2, '.', ',');
+            })
+            ->addColumn('other_allowance', function ($payrollItem) {
+                return number_format($payrollItem->other_allowance, 2, '.', ',');
+            })
+            ->addColumn('total_allowance', function ($payrollItem) {
+                return number_format($payrollItem->total_allowance, 2, '.', ',');
+            })
+            ->addColumn('basic_plus_allowance', function ($payrollItem) {
+                return number_format($payrollItem->basic_plus_allowance, 2, '.', ',');
+            })
+            ->addColumn('taxable_deductions', function ($payrollItem) {
+                return number_format($payrollItem->taxable_deductions, 2, '.', ',');
+            })
+            ->addColumn('deduction_narration', function ($payrollItem) {
+                return $payrollItem->deduction_narration;
+            })
+            ->addColumn('nssf', function ($payrollItem) {
+                return number_format($payrollItem->nssf, 2, '.', ',');
+            })
+            ->addColumn('taxable_gross', function ($payrollItem) {
+                return number_format($payrollItem->taxable_gross, 2, '.', ',');
+            })
+            ->addColumn('nhif', function ($payrollItem) {
+                return number_format($payrollItem->nhif, 2, '.', ',');
+            })
+            ->addColumn('housing_levy', function ($payrollItem) {
+                return number_format($payrollItem->housing_levy, 2, '.', ',');
+            })
+            ->addColumn('income_tax', function ($payrollItem) {
+                return number_format($payrollItem->income_tax, 2, '.', ',');
+            })
+            ->addColumn('nhif_relief', function ($payrollItem) {
+                return number_format($payrollItem->nhif_relief, 2, '.', ',');
+            })
+            ->addColumn('personal_relief', function ($payrollItem) {
+                return number_format($payrollItem->personal_relief, 2, '.', ',');
+            })
+            ->addColumn('paye', function ($payrollItem) {
+                return number_format($payrollItem->paye, 2, '.', ',');
+            })
+            ->addColumn('netpay', function ($payrollItem) {
+                return number_format($payrollItem->netpay, 2, '.', ',');
+            })
+            ->addColumn('loan', function ($payrollItem) {
+                return number_format($payrollItem->loan, 2, '.', ',');
+            })
+            ->addColumn('advance', function ($payrollItem) {
+                return number_format($payrollItem->advance, 2, '.', ',');
+            })
+            ->addColumn('benefits', function ($payrollItem) {
+                return number_format($payrollItem->benefits, 2, '.', ',');
+            })
+            ->addColumn('other_deductions', function ($payrollItem) {
+                return number_format($payrollItem->other_deductions, 2, '.', ',');
+            })
+            ->addColumn('other_allowances', function ($payrollItem) {
+                return number_format($payrollItem->other_allowances, 2, '.', ',');
+            })
+            ->addColumn('net_after_bnd', function ($payrollItem) {
+                return number_format($payrollItem->net_after_bnd, 2, '.', ',');
+            })
+            ->addColumn('tax_obligation', function ($payrollItem) {
+                return 'Resident';
+            })
+            ->addColumn('employee_type', function ($payrollItem) {
+                return 'Primary Employee';
+            })
+            ->addColumn('benefit_not_given', function ($payrollItem) {
+                return 'Benefit not given';
+            })
+            ->addColumn('blank_col', function ($payrollItem) {
+                return '';
+            })
+            ->addColumn('zero_col', function ($payrollItem) {
+                return 0;
+            })
+
+            ->make(true);
+    }
+
 
     /**
      * @param Request $request
@@ -1420,19 +1651,18 @@ class PayrollController extends Controller
                return $payrollItems->nssf_number;
             })
             ->addColumn('kra_pin', function ($payrollItems) {
-
-//                if ($payrollItems->kra_pin == 00 || $payrollItems->kra_pin == 0) return '0';
-
                 return $payrollItems->kra_pin;
             })
             ->addColumn('nhif_number', function ($payrollItems) {
-
                 if ($payrollItems->nhif_number == 00 || $payrollItems->nhif_number == 0) return '0';
                 return $payrollItems->nhif_number;
             })
             ->addColumn('primary_contact', function ($payrollItems) {
-
-                return $payrollItems->primary_contact;
+                $contact = $payrollItems->primary_contact;
+                if (substr($contact, 0, 1) == 0) {
+                    $contact = substr_replace($contact, "254", 0, 1);
+                }
+                return $contact;
             })
             ->addColumn('fixed_salary', function ($payrollItem) {
                 return number_format($payrollItem->fixed_salary, 2, '.', ',');

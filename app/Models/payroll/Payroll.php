@@ -6,10 +6,12 @@ use App\Models\ModelTrait;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\payroll\Traits\PayrollAttribute;
 use App\Models\payroll\Traits\PayrollRelationship;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payroll extends Model
 {
     use ModelTrait,
+        SoftDeletes,
         PayrollAttribute,
     	PayrollRelationship {
             // payrollAttribute::getEditButtonAttribute insteadof ModelTrait;

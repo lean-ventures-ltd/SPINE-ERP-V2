@@ -3,9 +3,12 @@
 namespace App\Models\payroll;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PayrollItemV2 extends Model
 {
+
+    use SoftDeletes;
 
     protected $table = 'payroll_items';
 
@@ -17,7 +20,6 @@ class PayrollItemV2 extends Model
         "absent_total_deduction",
         "advance",
         "basic_hourly_salary",
-        "additional_hourly_salary",
         "basic_plus_allowance",
         "basic_salary",
         "benefits",
@@ -29,7 +31,6 @@ class PayrollItemV2 extends Model
         "income_tax",
         "loan",
         "man_hours",
-        "additional_hours",
         "max_hourly_salary",
         "nhif",
         "deduction_exempt",

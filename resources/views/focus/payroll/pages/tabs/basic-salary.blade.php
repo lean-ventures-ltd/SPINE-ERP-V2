@@ -33,9 +33,7 @@
                     <th>Max Hourly Salary</th>
                     <th>Hourly Wage</th>
                     <th>Man Hours</th>
-                    <th>Additional Hours</th>
-                    <th>Basic Hourly Salary</th>
-                    <th>Additional Hourly Salary</th>
+                    <th>Net Hourly Salary</th>
                     <th>Absent Days</th>
                     <th>Daily Deduction</th>
                     <th>Absenteeism Deduction</th>
@@ -73,7 +71,8 @@
 
                         @php
 
-                            $hourlyRate = bcdiv(bcdiv($maxHourlySalary, $payroll->total_month_days, 4), 6, 2);
+//                            $hourlyRate = bcdiv(bcdiv($maxHourlySalary, $payroll->total_month_days, 4), 6, 2);
+                            $hourlyRate = bcdiv(bcdiv($maxHourlySalary, 26, 4), 6, 2);
 
                         @endphp
                         <td>{{ $hourlyRate }}</td>
@@ -82,18 +81,14 @@
                         <td>{{ $pd['man_hours'] }}</td>
                         <input type="hidden" class="man_hours" name="man_hours[]" id="man_hours-{{$i}}" value="{{ $pd['man_hours'] }}">
 
-                        <td class="editable-cell"><input type="number" step="0.01" name="additional_hours[]" class="form-control additional_hours" value="0"  id="additional_hours-{{$i}}"></td>
-
                         @php
 
                             $basicHourlySalary = 0.00;
                             if($maxHourlySalary > 0) $basicHourlySalary = bcmul($hourlyRate, $pd['man_hours'], 2);
 
                         @endphp
-{{--                        <td>{{ amountFormat($basicHourlySalary) }}</td>--}}
-                        <td><input type="number" step="0.001" class="form-control basic_hourly_salary" name="basic_hourly_salary[]" id="basic_hourly_salary-{{$i}}" value="{{ $basicHourlySalary }}" readonly></td>
-
-                        <td><input type="number" step="0.001" class="form-control additional_hourly_salary" name="additional_hourly_salary[]" id="additional_hourly_salary-{{$i}}" value="0" readonly></td>
+                        <td>{{ amountFormat($basicHourlySalary) }}</td>
+                        <input type="hidden" class="basic_hourly_salary" name="basic_hourly_salary[]" id="basic_hourly_salary-{{$i}}" value="{{ $basicHourlySalary }}">
 
                         <td class="editable-cell"><input type="number" step="0.01" name="absent_days[]" class="form-control absent" value="0"  id="absent_days-{{$i}}"></td>
                         <td>

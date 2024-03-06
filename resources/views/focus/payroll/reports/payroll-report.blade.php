@@ -2,13 +2,15 @@
     <div class="card-body">
         <div class="row mb-1">
             <div class="col-2 h4">Total NETPAY</div>                           
-            <div class="col-4 h4 netpay_worth">{{ $tallies['netpay_total'] }}</div>
+            <div class="col-4 h4 netpay_worth">{{ $tallies['final_pay_total'] }}</div>
         </div>
         <table id="payrollTable" class="table table-striped table-responsive table-bordered zero-configuration" cellspacing="0" width="100%">
             <thead>
                 <tr>
                     <th>Payroll ID</th>
                     <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>National ID</th>
                     <th>Fixed Salary</th>
                     <th>Max Hourly Salary</th>
                     <th>Pay Per Hour</th>

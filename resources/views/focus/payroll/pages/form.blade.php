@@ -154,7 +154,7 @@
             init() {
                 // console.table(this.payroll_items);
             $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
-            $('#employeeTbl').on('keyup', '.absent, .present, .rate, .rate-month, .total, .additional_hours', this.employeeChange);
+            $('#employeeTbl').on('keyup', '.absent, .present, .rate, .rate-month, .total', this.employeeChange);
             $('#employeeTbl').on('change', '.absent_deduction', this.absentRateChange);
             $('.ab-days').on('keyup', this.absentChange);
             $('#allowanceModal').on('keyup', '.ha, .oa, .ta', this.houseTransportChange);
@@ -284,29 +284,13 @@
 
                 const hourly_salary = accounting.unformat(row.find('.basic_hourly_salary').val());
 
-                const additionalHours = accounting.unformat(row.find('.additional_hours').val());
-
-                const hourlyRate = accounting.unformat(row.find('.pay_per_hr').val());
-                const maxHourlySalary = accounting.unformat(row.find('.max_hourly_salary').val());
-                let additionalHourlySalary = 0;
-
-                if(maxHourlySalary > 0){
-
-                    additionalHourlySalary = accounting.unformat((hourlyRate * additionalHours).toFixed(2));
-                    console.log("Additional Hrly Salary: " + additionalHourlySalary);
-                }
-
-                // hourly_salary += additionalHourlySalary;
-                row.find('.additional_hourly_salary').val(accounting.unformat(additionalHourlySalary).toFixed(2));
-
-
                 const working_days = $('.working_days').val();
 
                 const month_days = $('.month_days').val();
 
                 const absent_amount_deduct = fixed_salary / month_days * absent;
 
-                const total_basic_salary = fixed_salary + hourly_salary + additionalHourlySalary - absent_amount_deduct;
+                const total_basic_salary = fixed_salary + hourly_salary - absent_amount_deduct;
 
                 // console.table({
                 //     'Fixed Salary' :  fixed_salary,
@@ -491,9 +475,7 @@
                         <td>${accounting.formatNumber((v.max_hourly_salary))}</td>
                         <td>${accounting.formatNumber((v.pay_per_hr))}</td>
                         <td>${accounting.formatNumber((v.man_hours))}</td>
-                        <td>${accounting.formatNumber((v.additional_hours))}</td>
                         <td>${accounting.formatNumber((v.basic_hourly_salary))}</td>
-                        <td>${accounting.formatNumber((v.additional_hourly_salary))}</td>
                         <td class="editable-cell">${v.absent_days}</td>
                         <td>${accounting.formatNumber(v.absent_daily_deduction)}</td>
                         <td>${accounting.formatNumber(v.absent_total_deduction)}</td>

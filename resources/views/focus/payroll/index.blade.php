@@ -198,3 +198,39 @@
         $(() => Index.init());
     </script>
 @endsection
+
+
+<style>
+    /* Styling for the modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75);
+    }
+
+    .radius-8-right {
+        border-radius: 0 8px 8px 0;
+    }
+    .radius-8-left {
+        border-radius: 8px 0 0 8px;
+    }
+    .radius-8 {
+        border-radius: 8px;
+    }
+
+
+</style>
+
