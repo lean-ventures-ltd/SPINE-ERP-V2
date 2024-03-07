@@ -129,7 +129,7 @@ trait CustomerSupplierBalance
                 }   
                 JournalItem::create($data);
             }
-            UtilityBill::create([
+            $bill = UtilityBill::create([
                 'supplier_id' => $supplier->id,
                 'document_type' => 'opening_balance',
                 'date' => $open_balance_date,

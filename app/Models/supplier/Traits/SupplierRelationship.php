@@ -5,6 +5,7 @@ namespace App\Models\supplier\Traits;
 use App\Models\creditnote\CreditNote;
 use App\Models\goodsreceivenote\Goodsreceivenote;
 use App\Models\items\PaidbillItem;
+use App\Models\manualjournal\Journal;
 use App\Models\purchaseorder\Purchaseorder;
 use App\Models\purchase\Purchase;
 use App\Models\utility_bill\UtilityBill;
@@ -15,6 +16,10 @@ use App\Models\supplier_product\SupplierProduct;
  */
 trait SupplierRelationship
 {
+    function journal() {
+        return $this->hasOne(Journal::class);
+    }
+    
     public function debit_notes()
     {
         return $this->hasMany(CreditNote::class);

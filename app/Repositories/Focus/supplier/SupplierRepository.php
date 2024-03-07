@@ -153,6 +153,7 @@ class SupplierRepository extends BaseRepository
             'open_balance_date' => date_for_database($account_data['open_balance_date']),
             'open_balance_note' => $account_data['open_balance_note'],
         ]);
+        if ($data['open_balance'] == 0) $data['open_balance_date'] = null;
         $result = $supplier->update($data);
 
         /**accounting */   
@@ -160,17 +161,18 @@ class SupplierRepository extends BaseRepository
             $tr_data = $this->supplier_opening_balance($supplier, 'update'); 
             $this->post_supplier_opening_balance((object) $tr_data);    
         } else {
-            $journal = $supplier->journal;
-            if ($journal) {
-                $bill = $journal->bill;
-                if ($bill && $bill->payments()->exists()) {
+            $journal = @$supplier->journal;
+            $bill = @$journal->bill;
+            if ($bill) {
+                if ($bill->payments()->exists()) {
                     foreach ($bill->payments as $key => $item) {
                         $tids[] = @$item->bill_payment->tid ?: '';
                     }
                     throw ValidationException::withMessages(['Supplier has attached Payments with Nos.: ('.implode(', ', $tids).')']);                 
-                } elseif ($bill) {
-                    $bill->delete();
                 }
+                $bill->delete();
+            }
+            if ($journal) {
                 $journal->transactions()->delete();
                 $journal->delete();
             }

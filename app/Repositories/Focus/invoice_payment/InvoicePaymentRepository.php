@@ -5,7 +5,7 @@ namespace App\Repositories\Focus\invoice_payment;
 use App\Exceptions\GeneralException;
 use App\Models\invoice_payment\InvoicePayment;
 use App\Models\items\InvoicePaymentItem;
-use App\Models\transaction\Transaction;
+use App\Repositories\Accounting;
 use App\Repositories\BaseRepository;
 use App\Repositories\CustomerSupplierBalance;
 use DB;
@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 class InvoicePaymentRepository extends BaseRepository
 {
-    use CustomerSupplierBalance;
+    use Accounting, CustomerSupplierBalance;
 
     /**
      * Associated Repository Model.
@@ -192,7 +192,7 @@ class InvoicePaymentRepository extends BaseRepository
         
         /** accounting */
         if (!$is_allocation || $invoice_payment->is_advance_allocation) {
-            Transaction::where('deposit_id', $invoice_payment->id)->delete();
+            $invoice_payment->transactions()->delete();
             $this->post_invoice_deposit($invoice_payment);
         }
 
@@ -249,8 +249,7 @@ class InvoicePaymentRepository extends BaseRepository
         
         /** accounting */
         if (!$is_allocation || $is_advance_allocation) {
-            Transaction::where('deposit_id', $invoice_payment_id)->delete();
-            aggregate_account_transactions();
+            $invoice_payment->transactions()->delete();
         }
 
         if ($result) {

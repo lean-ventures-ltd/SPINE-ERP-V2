@@ -5,6 +5,7 @@ namespace App\Models\customer\Traits;
 use App\Models\branch\Branch;
 use App\Models\client_product\ClientProduct;
 use App\Models\lead\Lead;
+use App\Models\manualjournal\Journal;
 use App\Models\transaction\Transaction;
 use App\Models\project\Project;
 use App\Models\quote\Quote;
@@ -14,6 +15,10 @@ use App\Models\quote\Quote;
  */
 trait CustomerRelationship
 {
+    function journal() {
+        return $this->hasOne(Journal::class);
+    }
+
     function quotes() {
         return $this->hasMany(Quote::class);
     }

@@ -3,12 +3,25 @@
 namespace App\Models\manualjournal\Traits;
 
 use App\Models\account\Account;
+use App\Models\bill\Bill;
+use App\Models\invoice\Invoice;
 use App\Models\items\JournalItem;
 use App\Models\reconciliation\ReconciliationItem;
 use App\Models\transaction\Transaction;
+use App\Models\utility_bill\UtilityBill;
 
 trait JournalRelationship
 {
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class, 'man_journal_id');
+    }
+
+    public function bill()
+    {
+        return $this->hasOne(UtilityBill::class, 'man_journal_id');
+    }
+
     public function reconciliation_items()
     {
         return $this->hasMany(ReconciliationItem::class, 'man_journal_id');

@@ -29,7 +29,7 @@ class UtilityBill extends Model
      */
     protected $fillable = [
         'tid', 'supplier_id', 'reference', 'reference_type','document_type', 'ref_id', 'date', 'due_date', 'tax_rate', 'subtotal', 
-        'tax', 'total', 'note', 'status', 'amount_paid', 'user_id', 'ins'      
+        'tax', 'total', 'note', 'status', 'amount_paid', 'user_id', 'ins', 'man_journal_id' 
     ];
 
     /**

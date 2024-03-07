@@ -10,9 +10,6 @@ use App\Repositories\BaseRepository;
 use Illuminate\Support\Facades\Storage;
 use App\Models\branch\Branch;
 use App\Models\Company\Company;
-use App\Models\invoice\Invoice;
-use App\Models\manualjournal\Journal;
-use App\Models\transaction\Transaction;
 use App\Repositories\Accounting;
 use App\Repositories\CustomerSupplierBalance;
 use Illuminate\Support\Arr;
@@ -186,6 +183,8 @@ class CustomerRepository extends BaseRepository
             'open_balance' => numberClean($input['open_balance']),
             'open_balance_date' =>  date_for_database($input['open_balance_date'])
         ]);
+        if ($input['open_balance'] == 0) $input['open_balance_date'] = null;
+
         $result = $customer->update($input);
 
         /**accounting */   
@@ -193,17 +192,18 @@ class CustomerRepository extends BaseRepository
             $tr_data = $this->customer_opening_balance($customer, 'update'); 
             $this->post_customer_opening_balance((object) $tr_data);    
         } else {
-            $journal = $customer->journal;
-            if ($journal) {
-                $invoice = $journal->invoice;
-                if ($invoice && $invoice->payments()->exists()) {
+            $journal = @$customer->journal;
+            $invoice = @$journal->invoice;
+            if ($invoice) {
+                if ($invoice->payments()->exists()) {
                     foreach ($invoice->payments as $key => $item) {
                         $tids[] = @$item->paid_invoice->tid ?: '';
                     }
-                    throw ValidationException::withMessages(['Customer has attached Payments: ('.implode(', ', $tids).')']);                 
-                } elseif ($invoice) {
-                    $invoice->delete();
+                    throw ValidationException::withMessages(['Customer has attached Payments: ('.implode(', ', $tids).')']);
                 }
+                $invoice->delete();
+            } 
+            if ($journal) {
                 $journal->transactions()->delete();
                 $journal->delete();
             }
