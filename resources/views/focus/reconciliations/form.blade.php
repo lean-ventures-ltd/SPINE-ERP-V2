@@ -229,7 +229,11 @@
             const url = "{{ route('biller.reconciliations.account_items') }}";
             const params = {account_id: $(this).val(), end_date: $('#end_date').val()};
             $.post(url, params, data => {
-                data.forEach(v => {
+                data.forEach((v,i) => {
+                    if(i == 0) {
+                        $('#begin_balance').val(accounting.formatNumber(v.begin_balance*1));
+                        $('.begin-bal').text(accounting.formatNumber(v.begin_balance*1));
+                    }
                     const row = Index.initRow.clone();
                     row.removeClass('d-none');
                     row.find('.journalitem-id').val(v.journal_item_id);

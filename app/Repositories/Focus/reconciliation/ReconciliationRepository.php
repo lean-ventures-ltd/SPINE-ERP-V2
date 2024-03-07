@@ -8,6 +8,7 @@ use App\Models\reconciliation\ReconciliationItem;
 use App\Repositories\BaseRepository;
 use DB;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Class ProductcategoryRepository.
@@ -46,6 +47,10 @@ class ReconciliationRepository extends BaseRepository
             if (in_array($key, ['end_balance', 'begin_balance', 'cash_in', 'cash_out', 'cleared_balance', 'balance_diff']))
                 $input[$key] = numberClean($value);
         }
+
+        $dates = explode('-', $input['end_date']);
+        $exists = Reconciliation::whereYear('end_date', $dates[0])->whereMonth('end_date', $dates[1])->exists();
+        if ($exists) throw ValidationException::withMessages(['end_date' => 'Reconciliation For The Same Month already Exists']);
 
         $data_items = Arr::only($input, ['checked', 'man_journal_id', 'journal_item_id', 'payment_id', 'deposit_id']);
         $data = array_diff_key($input, $data_items);
