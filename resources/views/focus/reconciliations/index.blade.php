@@ -28,11 +28,10 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Account</th>
-                                        <th>Start Date</th>
-                                        <th>End Date</th>
-                                        <th>System Amount</th>
-                                        <th>Opening Amount</th>
-                                        <th>Closing Amount</th>  
+                                        <th>Statement Ending</th>
+                                        <th>Ending Balance</th>
+                                        <th>Difference</th>
+                                        <th>Reconciled On</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -78,30 +77,7 @@
                 data: 'DT_Row_Index',
                 name: 'id'
             },
-            {
-                data: 'account',
-                name: 'account'
-            },
-            {
-                data: 'start_date',
-                name: 'start_date'
-            },
-            {
-                data: 'end_date',
-                name: 'end_date'
-            },
-            {
-                data: 'open_amount',
-                name: 'open_amount'
-            },
-            {
-                data: 'close_amount',
-                name: 'close_amount'
-            },
-            {
-                data: 'system_amount',
-                name: 'system_amount'
-            },
+            ...['account', 'end_date', 'end_balance', 'balance_diff', 'created_at'].map(v => ({data:v, name: v})),
             {
                 data: 'actions',
                 name: 'actions',
@@ -109,37 +85,10 @@
                 sortable: false
             },            
         ],
-        order: [
-            [0, "desc"]
-        ],
+        order: [[0, "desc"]],
         searchDelay: 500,
         dom: 'Blfrtip',
-        buttons: {
-            buttons: [
-
-                {
-                    extend: 'csv',
-                    footer: true,
-                    exportOptions: {
-                        columns: [0, 1]
-                    }
-                },
-                {
-                    extend: 'excel',
-                    footer: true,
-                    exportOptions: {
-                        columns: [0, 1]
-                    }
-                },
-                {
-                    extend: 'print',
-                    footer: true,
-                    exportOptions: {
-                        columns: [0, 1]
-                    }
-                }
-            ]
-        }
+        buttons: ['csv', 'excel', 'print'],
     });
 </script>
 @endsection

@@ -89,8 +89,15 @@ class JournalsController extends Controller
      */
     public function destroy(Journal $journal)
     {
-        $this->repository->delete($journal);
-
+        try {
+            if ($journal->reconciliation_items()->exists()) 
+                return errorHandler('Not Allowed! Journal Entry is attached to a Reconciliation record');
+            
+            $this->repository->delete($journal);
+        } catch (\Throwable $th) {
+            return errorHandler('Error Deleting Journal Entry', $th);
+        }
+        
         return new RedirectResponse(route('biller.journals.index'), ['flash_success' => 'Manual Journal deleted successfully']);
     }
 

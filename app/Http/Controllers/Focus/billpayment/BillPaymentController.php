@@ -10,7 +10,6 @@ use App\Models\billpayment\Billpayment;
 use App\Models\supplier\Supplier;
 use App\Models\utility_bill\UtilityBill;
 use App\Repositories\Focus\billpayment\BillPaymentRepository;
-use DirectoryIterator;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -140,9 +139,11 @@ class BillPaymentController extends Controller
     public function update(Request $request, Billpayment $billpayment)
     {
         try {
+            if ($billpayment->reconciliation_items()->exists()) 
+                return errorHandler('Not Allowed! Bill Payment is attached to a Reconciliation record');
+
             $this->repository->update($billpayment, $request->except('_token', 'balance', 'unallocate_ttl'));
         } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Updating Bill Payment!', $th);
         }
 
@@ -158,9 +159,11 @@ class BillPaymentController extends Controller
     public function destroy(Billpayment $billpayment)
     {
         try {
+            if ($billpayment->reconciliation_items()->exists()) 
+                return errorHandler('Not Allowed! Bill Payment is attached to a Reconciliation record');
+
             $this->repository->delete($billpayment);
         } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Deleting Bill Payment!', $th);
         }
 

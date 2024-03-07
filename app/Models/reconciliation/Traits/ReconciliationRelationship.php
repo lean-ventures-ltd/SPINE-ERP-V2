@@ -3,7 +3,7 @@
 namespace App\Models\reconciliation\Traits;
 
 use App\Models\account\Account;
-use App\Models\transaction\Transaction;
+use App\Models\reconciliation\ReconciliationItem;
 
 trait ReconciliationRelationship
 {
@@ -14,6 +14,6 @@ trait ReconciliationRelationship
 
     public function items()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(ReconciliationItem::class);
     }
 }

@@ -1,6 +1,6 @@
 @extends ('core.layouts.app')
 
-@section('title', 'Create | Reconciliation Management')
+@section('title', 'Edit | Reconciliation Management')
 
 @section('content')
 <div class="content-wrapper">
@@ -18,11 +18,11 @@
     </div>
 
     <div class="content-body">
-        {{ Form::open(['route' => 'biller.reconciliations.store', 'method' => 'POST', 'id' => 'recon-form']) }}
+        {{ Form::model($reconciliation, ['route' => array('biller.reconciliations.update', $reconciliation), 'method' => 'PATCH', 'id' => 'recon-form']) }}
             @include('focus.reconciliations.form')
             <div class="edit-form-btn row">
                 {{ link_to_route('biller.reconciliations.index', trans('buttons.general.cancel'), [], ['class' => 'btn btn-danger btn-md col-1 ml-auto mr-1']) }}
-                {{ Form::submit(trans('buttons.general.crud.create'), ['class' => 'btn btn-primary btn-md col-1 mr-2']) }}                                           
+                {{ Form::submit(trans('buttons.general.crud.update'), ['class' => 'btn btn-primary btn-md col-1 mr-2']) }}                                           
             </div>
         {{ Form::close() }}
     </div>

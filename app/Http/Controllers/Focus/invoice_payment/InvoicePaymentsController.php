@@ -143,9 +143,11 @@ class InvoicePaymentsController extends Controller
         $data_items = modify_array($data_items);
 
         try {
+            if ($invoice_payment->reconciliation_items()->exists()) 
+                return errorHandler('Not Allowed! Invoice Payment is attached to a Reconciliation record');
+            
             $result = $this->repository->update($invoice_payment, compact('data', 'data_items'));
         } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Updating Invoice Payment', $th);
         }
 
@@ -159,9 +161,11 @@ class InvoicePaymentsController extends Controller
     public function destroy(InvoicePayment $invoice_payment)
     {
         try {
+            if ($invoice_payment->reconciliation_items()->exists()) 
+                return errorHandler('Not Allowed! Invoice Payment is attached to a Reconciliation record');
+
             $this->repository->delete($invoice_payment);
         } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Deleting Invoice Payment', $th);
         }
 

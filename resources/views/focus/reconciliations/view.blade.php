@@ -1,6 +1,6 @@
 @extends ('core.layouts.app')
 
-@section ('title', 'Reconciliations Management')
+@section ('title', 'View | Reconciliations Management')
 
 @section('content')
 <div class="content-wrapper">
@@ -22,15 +22,19 @@
             <table id="journalsTbl" class="table table-lg table-bordered zero-configuration" cellspacing="0" width="100%">
                 <tbody>
                     @php
-                        $reconciliation_details = [
-                            'Account' => $reconciliation->account->holder,
-                            'Date' => dateFormat($reconciliation->start_date) . ' : ' . dateFormat($reconciliation->end_date),
-                            'System Balance' => number_format($reconciliation->system_amount),
-                            'Opening Balance' => number_format($reconciliation->open_amount, 2),
-                            'Closing Balance' => number_format($reconciliation->close_amount, 2),                          
+                        $recon = $reconciliation;
+                        $recon_details = [
+                            'Account' => @$recon->account->holder,
+                            'Statement Ending' => dateFormat($recon->end_date),
+                            'Ending Balance' => numberFormat($recon->end_balance),
+                            'Reconciled On' => dateFormat($recon->created_at),
+                            'Beginning Balance' => numberFormat($recon->begin_balance),   
+                            'Cash Out' => numberFormat($recon->cash_out),                     
+                            'Cash In' => numberFormat($recon->cash_in),   
+                            'Cleared Balance' => numberFormat($recon->cleared_balance),
                         ];
                     @endphp
-                    @foreach ($reconciliation_details as $key => $val)
+                    @foreach ($recon_details as $key => $val)
                         <tr>
                             <th>{{ $key }}</th>
                             <td>{{ $val }}</td>
@@ -43,22 +47,54 @@
                 <table id="ledgerTbl" class="table">
                     <thead>
                         <tr class="bg-gradient-directional-blue white">
-                            <th class="text-center">Date</th>
-                            <th>Transaction ID</th>
-                            <th width="40%" class="text-center">Note</th>
-                            <th width="12%" class="text-center">Debit</th>
-                            <th width="12%" class="text-center">Credit</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Trans. Ref</th>
+                            <th>Payer / Payee</th>
+                            <th>Note</th>
+                            <th class="mr-0 pr-0" width="15%">Amount</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($reconciliation->items as $item)
-                            <tr>
-                                <td>{{ dateFormat($item->tr_date) }}</td>
-                                <td>{{ $item->id }}</td>
-                                <td>{{ $item->note }}</td>
-                                <td>{{ number_format($item->debit, 2) }}</td>
-                                <td>{{ number_format($item->credit, 2) }}</td>
-                            </tr>
+                        @foreach ($reconciliation->items()->whereNotNull('checked')->get() as $item)
+                            @if ($item->journal && $item->journal_item)
+                                @php
+                                    $journal = $item->journal;
+                                    $journal_item = $item->journal_item;
+                                @endphp
+                                <tr>
+                                    <td>{{ dateFormat($journal->date) }}</td>
+                                    <td>{{ $journal_item->debit == 0? 'cash-out' : 'cash-in' }}</td>
+                                    <td>{{ gen4tid('JNL-', $journal->tid) }}</td>
+                                    <td></td>
+                                    <td>{{ $journal->note }}</td>
+                                    <td>{{ $journal_item->debit == 0? numberFormat($journal_item->credit) : numberFormat($journal_item->debit) }}</td>
+                                </tr>
+                            @elseif ($item->payment)
+                                @php
+                                    $payment = $item->payment;
+                                @endphp
+                                <tr>
+                                    <td>{{ dateFormat($payment->date) }}</td>
+                                    <td>{{ 'cash-out' }}</td>
+                                    <td>{{ gen4tid('RMT-', $payment->tid) }}</td>
+                                    <td>{{ @$payment->supplier->name }}</td>
+                                    <td>{{ $payment->note }}</td>
+                                    <td>{{ numberFormat($payment->amount) }}</td>
+                                </tr>
+                            @elseif ($item->deposit)
+                                @php
+                                    $deposit = $item->deposit;
+                                @endphp
+                                <tr>
+                                    <td>{{ dateFormat($deposit->date) }}</td>
+                                    <td>{{ 'cash-in' }}</td>
+                                    <td>{{ gen4tid('PMT-', $deposit->tid) }}</td>
+                                    <td>{{ @$deposit->customer->company }}</td>
+                                    <td>{{ $deposit->note }}</td>
+                                    <td>{{ numberFormat($deposit->amount) }}</td>
+                                </tr>
+                            @endif
                         @endforeach
                     </tbody>
                 </table>

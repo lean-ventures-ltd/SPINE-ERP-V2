@@ -50,6 +50,9 @@ class JournalsTableController extends Controller
         return Datatables::of($core)
             ->escapeColumns(['id'])
             ->addIndexColumn()
+            ->editColumn('tid', function ($journal) {
+                return gen4tid('JNL-', $journal->tid);
+            })
             ->addColumn('date', function ($journal) {
                 return dateFormat($journal->date);
             })

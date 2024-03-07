@@ -34,26 +34,23 @@ class ReconciliationsTableController extends Controller
         return Datatables::of($core)
             ->escapeColumns(['id'])
             ->addIndexColumn()
-            ->addColumn('account', function ($reconciliation) {
-                return $reconciliation->account->holder;
+            ->addColumn('account', function ($recon) {
+                return @$recon->account->holder;
             })
-            ->addColumn('start_date', function ($reconciliation) {
-                return dateFormat($reconciliation->start_date);
+            ->editColumn('end_date', function ($recon) {
+                return dateFormat($recon->end_date);
             })
-            ->addColumn('end_date', function ($reconciliation) {
-                return dateFormat($reconciliation->end_date);
+            ->editColumn('end_balance', function ($recon) {
+                return numberFormat($recon->end_balance);
             })
-            ->addColumn('open_amount', function ($reconciliation) {
-                return number_format($reconciliation->open_amount, 2);
+            ->editColumn('balance_diff', function ($recon) {
+                return numberFormat($recon->balance_diff);
             })
-            ->addColumn('close_amount', function ($reconciliation) {
-                return number_format($reconciliation->close_amount, 2);
+            ->editColumn('created_at', function ($recon) {
+                return dateFormat($recon->created_at);
             })
-            ->addColumn('system_amount', function ($reconciliation) {
-                return number_format($reconciliation->system_amount, 2);
-            })
-            ->addColumn('actions', function ($reconciliation) {
-                return $reconciliation->action_buttons;
+            ->addColumn('actions', function ($recon) {
+                return $recon->action_buttons;
             })
             ->make(true);
     }

@@ -3,19 +3,18 @@
 namespace App\Models\reconciliation;
 
 use App\Models\ModelTrait;
-use App\Models\reconciliation\Traits\ReconciliationAtrribute;
-use App\Models\reconciliation\Traits\ReconciliationRelationship;
+use App\Models\reconciliation\Traits\ReconciliationItemRelationship;
 use Illuminate\Database\Eloquent\Model;
 
-class Reconciliation extends Model
+class ReconciliationItem extends Model
 {
-    use ModelTrait, ReconciliationAtrribute, ReconciliationRelationship;
+    use ModelTrait, ReconciliationItemRelationship;
 
     /**
      * The database table used by the model.
      * @var string
      */
-    protected $table = 'reconciliations';
+    protected $table = 'reconciliation_items';
 
     /**
      * Mass Assignable fields of model
@@ -57,18 +56,5 @@ class Reconciliation extends Model
     protected static function boot()
     {
         parent::boot();
-
-        static::creating(function ($instance) {
-            $instance->fill([
-                'tid' => Reconciliation::max('tid')+1,
-                'user_id' => auth()->user()->id,
-                'ins' => auth()->user()->ins,
-            ]);
-            return $instance;
-        });
-
-        static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', auth()->user()->ins);
-        });
     }
 }

@@ -5,13 +5,19 @@ namespace App\Models\invoice_payment\Traits;
 use App\Models\account\Account;
 use App\Models\customer\Customer;
 use App\Models\items\InvoicePaymentItem;
+use App\Models\reconciliation\ReconciliationItem;
 use App\Models\transaction\Transaction;
 
 trait InvoicePaymentRelationship
 {
+    public function reconciliation_items()
+    {
+        return $this->hasMany(ReconciliationItem::class, 'deposit_id');
+    }
+
     public function transactions()
     {
-        return $this->hasMany(Transaction::class, 'tr_ref')->whereIn('tr_type', ['pmt', 'adv_pmt']);
+        return $this->hasMany(Transaction::class, 'deposit_id');
     }
 
     public function account()
