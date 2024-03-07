@@ -5,7 +5,6 @@ namespace App\Repositories\Focus\billpayment;
 use App\Exceptions\GeneralException;
 use App\Models\billpayment\Billpayment;
 use App\Models\items\BillpaymentItem;
-use App\Models\transaction\Transaction;
 use App\Repositories\Accounting;
 use App\Repositories\BaseRepository;
 use App\Repositories\CustomerSupplierBalance;
@@ -201,7 +200,7 @@ class BillPaymentRepository extends BaseRepository
         
         /** accounting */
         if (!$is_allocation || $billpayment->is_advance_allocation) {
-            Transaction::where('payment_id', $billpayment->id)->delete();
+            $billpayment->transactions()->delete();
             $this->post_bill_payment($billpayment);
         }
 
@@ -258,8 +257,7 @@ class BillPaymentRepository extends BaseRepository
         
         /** accounting */
         if (!$is_allocation || $is_advance_allocation) {
-            Transaction::where('payment_id', $billpayment_id)->delete();
-            aggregate_account_transactions();
+            $billpayment->transactions()->delete();
         }
 
         if ($result) {
