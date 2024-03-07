@@ -189,13 +189,13 @@ class ReconciliationsController extends Controller
         
         // set beginning balance
         $account = Account::find(request('account_id'));
-        $beginning_balance = $account->opening_balance;
+        $begin_balance = $account->opening_balance;
         $last_recon =  Reconciliation::where('account_id', request('id'))->orderBy('id', 'DESC')->first();
-        if ($last_recon) $beginning_balance = $last_recon->end_balance;
+        if ($last_recon) $begin_balance = $last_recon->end_balance;
 
         $account_items = [];
         foreach ($sorted_items as $key => $value) {
-            $value['beginning_balance'] = $beginning_balance;
+            $value['begin_balance'] = $begin_balance;
             $account_items[] = $value;
         }
 
