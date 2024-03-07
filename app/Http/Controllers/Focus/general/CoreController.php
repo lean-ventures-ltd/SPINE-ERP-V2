@@ -36,6 +36,15 @@ class CoreController extends Controller
 
     public function showLoginForm()
     {
+        if (url()->current() . '/' == url()->previous()) {
+            session()->forget('url_intended');
+        }
+
+        if(session()->has('url_intended')) {
+            $url = session()->get('url_intended');
+            if (strpos($url, 'logout') !== false) session()->forget('url_intended');
+        } 
+
         return view('core.index');
     }
 
