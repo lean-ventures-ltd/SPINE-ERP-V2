@@ -47,6 +47,8 @@ class PayrollItemV2 extends Model
         "taxable_pay",
         "total_allowance",
         "transport_allowance",
+        "additional_hours",
+        "additional_hourly_salary",
     ];
 
 

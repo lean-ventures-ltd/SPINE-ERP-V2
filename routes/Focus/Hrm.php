@@ -100,7 +100,12 @@ Route::group(['namespace' => 'payroll'], function () {
         Route::post('/update_deduction', 'PayrollController@update_deduction')->name('payroll.update_deduction');
         Route::post('/update_other', 'PayrollController@update_other')->name('payroll.update_other');
         Route::get('/reports/{id}', 'PayrollController@reports')->name('payroll.reports');
-        Route::get('/get-reports/{payrollID}', 'PayrollController@get_reports')->name('payroll.get_reports');
+        Route::post('/get-reports/{payrollID}', 'PayrollController@get_reports')->name('payroll.get_reports');
+
+        Route::post('/get-reports/nssf/{payrollID}', 'PayrollController@getNssfReport')->name('payroll.getNssfReport');
+        Route::post('/get-reports/nhif/{payrollID}', 'PayrollController@getNhifReport')->name('payroll.getNhifReport');
+        Route::post('/get-reports/paye/{payrollID}', 'PayrollController@getPayeReport')->name('payroll.getPayeReport');
+        Route::post('/get-reports/hl/{payrollID}', 'PayrollController@getHousingLevyReport')->name('payroll.getHousingLevyReport');
 
     });
 });
