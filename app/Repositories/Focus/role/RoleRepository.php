@@ -8,6 +8,7 @@ use App\Models\Access\Permission\PermissionUser;
 use App\Models\Access\Role\Role;
 use App\Models\employee\RoleUser;
 use App\Repositories\BaseRepository;
+use App\SubscriptionTier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -79,11 +80,19 @@ class RoleRepository extends BaseRepository
             throw ValidationException::withMessages([trans('exceptions.backend.access.roles.needs_permission')]);
 
         $role = Role::create([
-            'name' => $input['name'],
+            'name' => $input['subscription_tier'] ? '>>>Subscription-Pack<<< ' . $input['name'] : $input['name'],
             'sort' => 0,
             'all' => 0,
             'status' => @$input['status'] ?: 0,
         ]);
+
+        if($input['subscription_tier']){
+
+            $subscriptionTier = new SubscriptionTier();
+            $subscriptionTier->st_number = uniqid('ST-');
+            $subscriptionTier->role = $role->id;
+            $subscriptionTier->save();
+        }
 
         if ($role) {
             $role->attachPermissions($input['permissions']);
@@ -95,7 +104,7 @@ class RoleRepository extends BaseRepository
     /**
      * @param App\Models\Access\Role\Role $role
      * @param array $input
-     * 
+     *
      * @return bool
      */
     public function update($role, array $input)
@@ -108,7 +117,7 @@ class RoleRepository extends BaseRepository
 
         // check if the role must contain a permission as per config
         $input['permissions'] = @$input['permissions'] ?: [];
-        if (config('access.roles.role_must_contain_permission') && !$input['permissions']) 
+        if (config('access.roles.role_must_contain_permission') && !$input['permissions'])
             throw ValidationException::withMessages([trans('exceptions.backend.access.roles.needs_permission')]);
 
         $role_data = [
@@ -117,7 +126,7 @@ class RoleRepository extends BaseRepository
             'all' => 0,
             'status' => @$input['status'] ?: 0,
         ];
-        
+
         if ($role->update($role_data)) {
             // delete unchecked permission from users with this role
             $unchecked_role_permissions = PermissionRole::where('role_id', $role->id)
@@ -155,7 +164,7 @@ class RoleRepository extends BaseRepository
         DB::beginTransaction();
 
         // user attached role
-        if ($role->users()->count()) 
+        if ($role->users()->count())
             throw ValidationException::withMessages([trans('exceptions.backend.access.roles.has_users')]);
 
         // delete permissions from users with this role
@@ -169,7 +178,7 @@ class RoleRepository extends BaseRepository
         if ($role->delete()) {
             DB::commit();
             return true;
-        }   
+        }
     }
 
     /**
@@ -180,7 +189,7 @@ class RoleRepository extends BaseRepository
         $q = $this->query();
         if (is_numeric(config('access.users.default_role')))
             return $q->where('id', (int) config('access.users.default_role'))->first();
-        
+
         return $q->where('name', config('access.users.default_role'))->first();
     }
 }

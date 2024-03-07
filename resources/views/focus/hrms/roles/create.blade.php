@@ -26,41 +26,77 @@
                             {{ Form::open(['route' => 'biller.role.store', 'method' => 'post', 'id' => 'create-role']) }}
                                 <div class="box box-info">
                                     <div class="box-body">
+
+                                        <div class="form-group">
+                                            <input type="checkbox"
+                                                   id="subscription_tier"
+                                                   style="width: 20px; height: 20px;"
+                                                   class="round subscription_tier"
+                                                   name="subscription_tier"
+                                                   value="1"
+                                            >
+                                            <label for="subscription_tier" style="font-size: 22px;"> Subscription Tier </label>
+                                        </div>
+
                                         <div class="form-group">
                                             {{ Form::label('name', trans('validation.attributes.backend.access.roles.name'), ['class' => 'col-lg-2 control-label required']) }}
                                             <div class="col-lg-10">
                                                 {{ Form::text('name', null, ['class' => 'form-control box-size', 'placeholder' => trans('validation.attributes.backend.access.roles.name'), 'required' => 'required']) }}
                                             </div><!--col-lg-10-->
                                         </div><!--form control-->
-                                        <div class="form-group">
-                                            {{ Form::label('associated_permissions', trans('validation.attributes.backend.access.roles.associated_permissions'), ['class' => 'col-lg-2 control-label']) }}
 
-                                            <div class="col-lg-10">
-                                                {{ Form::select('associated_permissions', array('none' => trans('meta.select'), 'custom' => trans('hrms.permissions')), 'none', ['class' => 'form-control select2 box-size']) }}
-                                                <div id="available-permissions" class="hidden mt-2">
-                                                    <div class="row">
-                                                        <div class="col-12">
-                                                            @if (@$permissions->count())
-                                                                @foreach ($permissions as $perm)
-                                                                    <label class=" control-checkbox">
-                                                                        <input class="icheckbox_square icheckbox_flat-blue"
-                                                                                type="checkbox"
-                                                                                name="permissions[{{ $perm->id }}]"
-                                                                                value="{{ $perm->id }}"
-                                                                                id="perm_{{ $perm->id }}" {{ is_array(old('permissions')) && in_array($perm->id, old('permissions')) ? 'checked' : '' }} />
+
+                                        <div class="form-group">
+                                            <div class="row">
+                                                @if ($permissions->count())
+                                                    @php
+                                                        $groupClassName = null;
+                                                    @endphp
+
+                                                    <div class="col-lg-6"> <!-- Start first column -->
+                                                        @foreach ($permissions as $perm)
+                                                            <div class="parent-child-wrapper">
+                                                                <div>
+                                                                    @if(strtolower(explode(' ', $perm->display_name)[0]) !== $groupClassName)
+                                                                        @php
+                                                                            $groupClassName = strtolower(explode(' ', $perm->display_name)[0]);
+                                                                        @endphp
+
+                                                                        <div class="mt-2">
+                                                                            <input type="checkbox"
+                                                                                   id="pg-master-{{strtolower(explode(' ', $perm->display_name)[0])}}"
+                                                                                   style="width: 20px; height: 20px;"
+                                                                                   class="round pg-master-{{strtolower(explode(' ', $perm->display_name)[0])}}"
+                                                                            >
+                                                                            <label for="pg-master-{{strtolower(explode(' ', $perm->display_name)[0])}}" style="font-size: 22px;">  Grant All '{{ explode(' ', $perm->display_name)[0] }}' Permissions </label>
+                                                                        </div>
+                                                                    @endif
+
+                                                                    <label class="control--checkbox">
+                                                                        <input class="icheckbox_square icheckbox_flat-blue pg-child-{{strtolower(explode(' ', $perm->display_name)[0]) }}"
+                                                                               type="checkbox"
+                                                                               name="permissions[{{ $perm->id }}]"
+                                                                               value="{{ $perm->id }}"
+                                                                               id="perm_{{ $perm->id }}"
+                                                                        />
                                                                         <label for="perm_{{ $perm->id }}">{{ $perm->display_name }}</label>
                                                                         <div class="control__indicator"></div>
                                                                     </label>
                                                                     <br/>
-                                                                @endforeach
-                                                            @else
-                                                                <p>There are no available permissions.</p>
-                                                            @endif
-                                                        </div><!--col-lg-6-->
-                                                    </div><!--row-->
-                                                </div><!--available permissions-->
-                                            </div><!--col-lg-3-->
-                                        </div><!--form control-->
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div> <!-- End first column -->
+
+                                                    <!-- Add content for the second column if needed -->
+                                                    <!-- <div class="col-lg-6">
+                                                        Second column content goes here
+                                                    </div> -->
+                                                @else
+                                                    <p>There are no available permissions.</p>
+                                                @endif
+                                            </div><!--row-->
+                                        </div><!--form-group-->
 
 
                                         <div class="form-group">

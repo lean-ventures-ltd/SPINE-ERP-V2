@@ -26,10 +26,38 @@
                             {{ Form::model($role, ['route' => ['biller.role.update', $role], 'class' => 'form-horizontal', 'role' => 'form', 'method' => 'PATCH', 'id' => 'edit-role']) }}
                                 <div class="box box-info">
                                     <div class="box-body">
+
+                                        @php
+                                            $subscriptionTierRoles = \App\SubscriptionTier::all()->pluck('role');
+                                            $isSubTier = in_array($role->id, $subscriptionTierRoles->toArray());
+                                        @endphp
+
                                         <div class="form-group">
-                                            {{ Form::label('name', trans('validation.attributes.backend.access.roles.name'), ['class' => 'col-lg-2 control-label required']) }}
+                                            <input type="checkbox"
+                                                   id="subscription_tier"
+                                                   style="width: 20px; height: 20px;"
+                                                   class="round subscription_tier"
+                                                   name="subscription_tier"
+                                                   value="1"
+                                                   @if($isSubTier) checked @endif
+                                                    disabled
+                                            >
+                                            <label for="subscription_tier" style="font-size: 22px;"> Subscription Tier </label>
+                                        </div>
+
+                                        <div class="form-group">
                                             <div class="col-lg-10">
-                                                {{ Form::text('name', null, ['class' => 'form-control box-size', 'placeholder' => trans('validation.attributes.backend.access.roles.name'), 'required' => 'required']) }}
+                                                <label for="name" > Role Name </label>
+                                                <input type="text" id="name col-lg-5" class="form-control" placeholder="Role Name" name="name"
+                                                       @if($isSubTier)
+                                                            value="{{ explode('>>>Subscription-Pack<<< ', $role->name)[1] }}"
+                                                       @else
+                                                           value="{{ $role->name }}"
+                                                       @endif
+                                                >
+
+
+
                                             </div><!--col-lg-10-->
                                         </div><!--form control-->
 

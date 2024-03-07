@@ -3,7 +3,10 @@
 namespace App\Repositories\Focus\client_vendor;
 
 use App\Http\Controllers\ClientSupplierAuth;
+use App\Models\Access\Role\Role;
+use App\Models\Access\User\User;
 use App\Models\client_vendor\ClientVendor;
+use App\Models\tenant_service\TenantService;
 use App\Repositories\BaseRepository;
 use DB;
 use Illuminate\Support\Arr;
@@ -42,7 +45,7 @@ class ClientVendorRepository extends BaseRepository
     {  
         DB::beginTransaction();
         $user_data = Arr::only($input, ['first_name', 'last_name', 'user_email', 'password']);
-        $vendor_data = Arr::except($input, array_flip($user_data));
+        $vendor_data = Arr::except($input, ['first_name', 'last_name', 'user_email', 'password', 'password_confirmation']);
         
         $vendor = ClientVendor::create($vendor_data);
         // authorize

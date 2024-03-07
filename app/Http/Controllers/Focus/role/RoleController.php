@@ -71,7 +71,18 @@ class RoleController extends Controller
      */
     public function create(ManageHrmRequest $request)
     {
+
+        $permissionDisplayNames = Permission::all()->pluck('display_name');
+
+        $permissionClassNames = [];
+        foreach ($permissionDisplayNames as $name){
+            array_push($permissionClassNames, strtolower(explode(' ', $name)[0]));
+        }
+
+        $permissionClassNames = array_values(array_unique($permissionClassNames));
+
         return view('focus.hrms.roles.create')
+            ->with(compact('permissionClassNames'))
             ->withPermissions($this->permissions->getAll())
             ->withRoleCount($this->roles->getCount());
     }
@@ -85,7 +96,7 @@ class RoleController extends Controller
     {
         try {
             $this->roles->create($request->except('_token'));
-        } catch (\Throwable $th) { 
+        } catch (\Throwable $th) {
             if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Creating Role', $th);
         }
@@ -128,9 +139,9 @@ class RoleController extends Controller
     {
         try {
             $this->roles->update($role, $request->except('_token'));
-        } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th; 
-            errorHandler('Error Updating Role', $th);
+        } catch (\Exception $e) {
+
+            errorHandler("Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . " | & Line " . $e->getLine());
         }
 
         return new RedirectResponse(route('biller.role.index'), ['flash_success' => trans('alerts.backend.roles.updated')]);
@@ -147,7 +158,7 @@ class RoleController extends Controller
         try {
             $this->roles->delete($role);
         } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th; 
+            if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Deleting Roles', $th);
         }
 

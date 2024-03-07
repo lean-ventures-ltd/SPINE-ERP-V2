@@ -794,37 +794,49 @@ class EmployeeDailyLogController extends Controller
 
     public function createPerms() {
 
-//        Permission::create([
-//            'name' => 'manage-business-account',
-//            'display_name' => 'Business Account Management Permission',
-//        ]);
-//
-//        Permission::create([
-//            'name' => 'edit-business-account',
-//            'display_name' => 'Business Account Editing Permission',
-//        ]);
-//
-//        Permission::create([
-//            'name' => 'delete-business-account',
-//            'display_name' => 'Business Account Deletion Permission',
-//        ]);
+        $rosePermissions = array(
+            array('name' => 'client-area', 'display_name' => 'Client Area'),
+            array('name' => 'manage-account-service', 'display_name' => 'Account Service Manage Permission'),
+            array('name' => 'create-account-service', 'display_name' => 'Account Service Create Permission'),
+            array('name' => 'edit-account-service', 'display_name' => 'Account Service Edit Permission'),
+            array('name' => 'delete-account-service', 'display_name' => 'Account Service Delete Permission'),
+            array('name' => 'manage-business-account', 'display_name' => 'Business Account Manage Permission'),
+            array('name' => 'create-business-account', 'display_name' => 'Business Account Create Permission'),
+            array('name' => 'edit-business-account', 'display_name' => 'Business Account Edit Permission'),
+            array('name' => 'delete-business-account', 'display_name' => 'Business Account Delete Permission'),
+            array('name' => 'manage-client-area-ticket', 'display_name' => 'Client Area Ticket Manage Permission'),
+            array('name' => 'create-client-area-ticket', 'display_name' => 'Client Area Ticket Create Permission'),
+            array('name' => 'edit-client-area-ticket', 'display_name' => 'Client Area Ticket Edit Permission'),
+            array('name' => 'delete-client-area-ticket', 'display_name' => 'Client Area Ticket Delete Permission'),
+            array('name' => 'manage-crm-user', 'display_name' => 'CRM User Manage Permission'),
+            array('name' => 'create-crm-user', 'display_name' => 'CRM User Create Permission'),
+            array('name' => 'edit-crm-user', 'display_name' => 'CRM User Edit Permission'),
+            array('name' => 'delete-crm-user', 'display_name' => 'CRM User Delete Permission'),
+            array('name' => 'manage-crm-vendor', 'display_name' => 'CRM Client Vendor Manage Permission'),
+            array('name' => 'create-crm-vendor', 'display_name' => 'CRM Client Vendor Create Permission'),
+            array('name' => 'edit-crm-vendor', 'display_name' => 'CRM Client Vendor Edit Permission'),
+            array('name' => 'delete-crm-vendor', 'display_name' => 'CRM Client Vendor Delete Permission'),
+            array('name' => 'manage-crm-ticket-tag', 'display_name' => 'CRM Ticket Tag Manage Permission'),
+            array('name' => 'create-crm-ticket-tag', 'display_name' => 'CRM Ticket Tag Create Permission'),
+            array('name' => 'edit-crm-ticket-tag', 'display_name' => 'CRM Ticket Tag Edit Permission'),
+            array('name' => 'delete-crm-ticket-tag', 'display_name' => 'CRM Ticket Tag Delete Permission'),
+            array('name' => 'manage-crm-ticket', 'display_name' => 'CRM Ticket Manage Permission'),
+            array('name' => 'create-crm-ticket', 'display_name' => 'CRM Ticket Create Permission'),
+            array('name' => 'edit-crm-ticket', 'display_name' => 'CRM Ticket Edit Permission'),
+            array('name' => 'delete-crm-ticket', 'display_name' => 'CRM Ticket Delete Permission')
+        );
 
-        Permission::create([
-            'name' => 'manage-account-service',
-            'display_name' => 'Account Service Deletion Permission',
-        ]);
+        foreach ($rosePermissions as $perm){
 
-        Permission::create([
-            'name' => 'edit-account-service',
-            'display_name' => 'Account Service Deletion Permission',
-        ]);
+            Permission::create([
+                'name' => $perm['name'],
+                'display_name' => $perm['display_name'],
+            ]);
 
-        Permission::create([
-            'name' => 'delete-account-service',
-            'display_name' => 'Account Service Deletion Permission',
-        ]);
+        }
 
 
+        return Permission::all();
     }
 
 

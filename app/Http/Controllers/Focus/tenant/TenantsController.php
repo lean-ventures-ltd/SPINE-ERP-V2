@@ -95,8 +95,8 @@ class TenantsController extends Controller
 
         try {
             $this->repository->create($request->except(['_token']));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Account!', $th);
+        } catch (\Exception $e) {
+            return errorHandler("Error: '" . $e->getMessage() . "on File: " . $e->getFile() . " & Line " . $e->getLine());
         }
         
         return new RedirectResponse(route('biller.tenants.index'), ['flash_success' => 'Account  Successfully Created']);

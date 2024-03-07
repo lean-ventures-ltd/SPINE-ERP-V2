@@ -3,7 +3,7 @@
         <div class="card-body">
             <div class="row mb-1">
                 <div class="col-12">
-                    <h6 class="mb-2">Package Info</h6>
+                    <h2 class="mb-2">Package Info</h2>
                     <div class="row">
                         <div class="col-12">
                             <div class='form-group'>
@@ -15,13 +15,13 @@
                             <div class='form-group'>
                                 {{ Form::label('cost', 'Package Cost', ['class' => 'col control-label']) }}
                                 <div class='col'>
-                                    {{ Form::text('cost', null, ['class' => 'form-control box-size', 'placeholder' => 'Package Cost', 'id' => 'cost', 'required' => 'required']) }}
+                                    {{ Form::number('cost', null, ['class' => 'form-control box-size', 'placeholder' => 'Package Cost', 'id' => 'cost', 'required' => 'required', 'step' => '0.001']) }}
                                 </div>
                             </div>
                             <div class='form-group'>
                                 {{ Form::label('maintenance_cost', 'Maintenance Cost', ['class' => 'col control-label']) }}
                                 <div class='col'>
-                                    {{ Form::text('maintenance_cost', null, ['class' => 'form-control box-size', 'placeholder' => 'Maintenance Cost', 'id' => 'maintenance_cost', 'required' => 'required']) }}
+                                    {{ Form::number('maintenance_cost', null, ['class' => 'form-control box-size', 'placeholder' => 'Maintenance Cost', 'id' => 'maintenance_cost', 'required' => 'required', 'step' => '0.001']) }}
                                 </div>
                             </div>
                         </div>
@@ -35,114 +35,34 @@
 {{-- select modules --}}
 <div class="card rounded">
     <div class="card-content">
-        <div class="card-body">
-            <h5 class="ml-1">Active Modules</h5>
-            <div class="table-responsive">
-                <table class="table table-flush-spacing" id="modulesTbl">
-                    <tbody>
-                        <tr>
-                            <td class="text-nowrap fw-bolder">
-                                <div class="row">
+        <div class="card-body p-3">
+            <h2 class="mb-3">Subscription Packs</h2>
+                <div class="row">
 
-                                    <div id="available-permissions" class="mt-2"
-                                         style="height: 1000px; overflow-x: hidden; overflow-y: scroll;">
-                                        <div class="row">
-                                            <div class="col-12">
-                                                @if ($permissions->count())
-                                                    @php
-                                                        $groupClassName =  null;
-                                                    @endphp
+                    @foreach($subscriptionTiers as $sT)
 
-
-                                                    @foreach ($permissions as $perm)
-
-                                                        @if( strtolower(explode(' ', $perm->display_name)[0]) !== $groupClassName )
-
-                                                            @php
-                                                                $groupClassName = strtolower(explode(' ', $perm->display_name)[0]);
-                                                            @endphp
-
-                                                            <div class="mt-2">
-                                                                <input type="checkbox"
-                                                                       id="pg-master-{{strtolower(explode(' ', $perm->display_name)[0])}}"
-                                                                       style="width: 20px; height: 20px;"
-                                                                       class="round pg-master-{{strtolower(explode(' ', $perm->display_name)[0])}}"
-                                                                >
-                                                                <label for="pg-master-{{strtolower(explode(' ', $perm->display_name)[0])}}" style="font-size: 22px;">  Grant All '{{ explode(' ', $perm->display_name)[0] }}' Permissions </label>
-                                                            </div>
-
-                                                        @endif
-
-
-                                                        <label class="control--checkbox">
-                                                            <input class="icheckbox_square icheckbox_flat-blue pg-child-{{strtolower(explode(' ', $perm->display_name)[0]) }}"
-                                                                   type="checkbox"
-                                                                   name="permissions[{{ $perm->id }}]"
-                                                                   value="{{ $perm->id }}"
-                                                                   id="perm_{{ $perm->id }}"
-                                                                    {{ is_array(old('permissions')) ? (in_array($perm->id, old('permissions')) ? 'checked' : '') : (in_array($perm->id, $packagePermissions) ? 'checked' : '') }} />
-                                                            <label for="perm_{{ $perm->id }}">{{ $perm->display_name }}</label>
-                                                            <div class="control__indicator"></div>
-                                                        </label>
-                                                        <br/>
-                                                    @endforeach
-                                                @else
-                                                    <p>There are no available permissions.</p>
-                                                @endif
-                                            </div><!--col-lg-6-->
-                                        </div><!--row-->
-                                    </div><!--available permissions-->
-
-
-                                </div>
-                            </td>    
-                        </tr>
-                    </tbody>
-                </table>        
-            </div>
-        </div>
-    </div>
-</div>  
-
-{{-- package extras --}}
-<div class="card rounded">
-    <div class="card-content">
-        <div class="card-body">
-            @if (count($package_extras))
-                <div class="row mb-2">
-                    <div class="col-12">
-                        <h6 class="mb-2 ml-1">Package Extras</h6>
-                        <div class="row">
-                            <div class="col-md-10 ml-auto mr-auto">
-                                <div class="table-responsive">
-                                    <table class="table table-flush-spacing" id="extrasTbl">
-                                        <tbody>
-                                            @foreach ($package_extras as $package)
-                                                <tr>
-                                                    <td class="text-nowrap fw-bolder">{{ $package->name }}</td>
-                                                    <td><input type="checkbox" class="form-check-input select" name="package_id[]" value="{{ $package->id }}" {{ $package->checked }}></td>
-                                                    <td><input type="text" class="form-control col-10 pb-0 pt-0 extra-cost" placeholder="Package Cost" name="extra_cost[]" value="{{ $package->extra_cost }}"></td>
-                                                    <td><input type="text" class="form-control col-10 pb-0 pt-0 maint-cost" placeholder="Maintenance Cost" name="maint_cost[]" value="{{ $package->maint_cost }}"></td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>        
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            <input type="checkbox"
+                                   id="subscription_packs"
+                                   style="width: 20px; height: 20px;"
+                                   class="round ml-1 mr-1"
+                                   name="subscription_packs[]"
+                                   value="{{$sT->st_number}}"
+                                   @if(!empty(@$tenant_service) && in_array($sT->st_number, @$tenant_service->subscription_packs))
+                                       checked
+                                   @endif
+                            >
+                            <label for="subscription_packs" style="font-size: 22px;"> {{ explode('>>>Subscription-Pack<<< ', $sT->related_role->name)[1] }} </label>
                         </div>
-                    </div>
+
+                    @endforeach
+
                 </div>
-            @endif
-            <div class="row">
-                <div class="col-12">
-                    <h5 class="ml-2 font-weight-bold">Total Cost: <span class="total-cost"></span></h5>
-                    {{ Form::hidden('total_cost', null, ['id' => 'total-cost']) }}
-                    {{ Form::hidden('extras_total', null, ['id' => 'extras-cost']) }}
-                </div>
-            </div>
         </div>
     </div>
 </div>  
+
+
 @section('extra-scripts')
 {{ Html::script('focus/js/select2.min.js') }}
 <script type="text/javascript">
