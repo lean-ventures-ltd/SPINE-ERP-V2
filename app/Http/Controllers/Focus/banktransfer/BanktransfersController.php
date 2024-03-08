@@ -125,7 +125,7 @@ class BanktransfersController extends Controller
         
         try {
             $this->repository->update($banktransfer, $request->except('_token'));
-        } catch (\Throwable $th) {
+        } catch (\Throwable $th) { dd($th);
             return errorHandler('Error Updating Money Transfer!', $th);
         }
 

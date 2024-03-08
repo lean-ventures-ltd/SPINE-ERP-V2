@@ -15,8 +15,9 @@ trait BanktransferAttribute
      */
     public function getActionButtonsAttribute()
     {
-        return $this->getViewButtonAttribute("manage-money-transfer", "biller.banktransfers.show") 
-        . ' ' . $this->getEditButtonAttribute("edit-money-transfer", "biller.banktransfers.edit")
+        return 
+        // $this->getViewButtonAttribute("manage-money-transfer", "biller.banktransfers.show") 
+        $this->getEditButtonAttribute("edit-money-transfer", "biller.banktransfers.edit")
         . ' ' . $this->getDeleteButtonAttribute("delete-money-transfer", "biller.banktransfers.destroy");                
     }
 

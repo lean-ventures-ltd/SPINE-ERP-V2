@@ -33,8 +33,8 @@ class TenantRepository extends BaseRepository
      */
     public function getForDataTable()
     {
-
-        $q = $this->query()->whereNull('deleted_at')->where('id', '>', 1);
+        // id 1 and 2 are reserved for management accounts
+        $q = $this->query()->whereNotIn('id', [1,2]);
 
         return $q->get();
     }
