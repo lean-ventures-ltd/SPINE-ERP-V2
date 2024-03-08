@@ -7,9 +7,15 @@ use App\Models\items\PurchaseorderItem;
 use App\Models\product\ProductVariation;
 use App\Models\project\Project;
 use App\Models\supplier_product\SupplierProduct;
+use App\Models\transaction\Transaction;
 
 trait GoodsreceivenoteItemRelationship
 {
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'grn_id');
+    }
+
     public function supplier_product()
     {
         return $this->belongsTo(SupplierProduct::class, 'item_id');

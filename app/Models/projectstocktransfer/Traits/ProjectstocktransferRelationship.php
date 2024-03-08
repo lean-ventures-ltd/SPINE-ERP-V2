@@ -43,10 +43,6 @@ trait ProjectstocktransferRelationship
     {
         return $this->belongsTo('App\Models\term\Term')->withoutGlobalScopes();
     }
-     public function transactions()
-    {
-        return $this->hasMany('App\Models\transaction\Transaction','bill_id')->where('relation_id','=',9)->withoutGlobalScopes();
-    }
 
     public function attachment()
     {

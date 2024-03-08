@@ -42,12 +42,5 @@ trait CreditorRelationship
        public function branch()
     {
         return $this->hasMany(Branch::class);
-    }
-
-           public function transactions()
-    { 
-        return $this->hasMany('App\Models\transaction\Transaction','payer_id')->where('payer_type','=','supplier')->where('payer_type', '=','supplier')->withoutGlobalScopes();
-    }
-
-    
+    }    
 }

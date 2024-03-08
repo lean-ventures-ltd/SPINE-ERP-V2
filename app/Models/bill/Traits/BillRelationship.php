@@ -51,9 +51,4 @@ trait BillRelationship
     {
         return $this->belongsTo('App\Models\term\Term')->withoutGlobalScopes();
     }
-
-    public function transactions()
-    {
-        return $this->hasMany('App\Models\transaction\Transaction', 'tr_ref')->where('tr_type', 'bill');
-    }
 }

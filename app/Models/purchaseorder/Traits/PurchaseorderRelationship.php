@@ -63,11 +63,6 @@ trait PurchaseorderRelationship
     {
         return $this->belongsTo('App\Models\term\Term')->withoutGlobalScopes();
     }
-    
-    public function transactions()
-    {
-        return $this->hasManyThrough(Transaction::class, Bill::class, 'po_id', 'tr_ref')->where('tr_type', 'bill')->withoutGlobalScopes();
-    }
 
     public function attachment()
     {

@@ -2,11 +2,9 @@
 
 namespace App\Models\creditnote\Traits;
 
-use App\Models\bill\Bill;
 use App\Models\customer\Customer;
 use App\Models\invoice\Invoice;
 use App\Models\items\TaxReportItem;
-use App\Models\supplier\Supplier;
 use App\Models\transaction\Transaction;
 
 trait CreditNoteRelationship
@@ -23,22 +21,12 @@ trait CreditNoteRelationship
 
     public function debitnote_transactions()
     {
-        return $this->hasMany(Transaction::class, 'tr_ref')->whereIn('tr_type', ['dnote']);
+        return $this->hasMany(Transaction::class, 'dnote_id');
     }
 
     public function creditnote_transactions()
     {
-        return $this->hasMany(Transaction::class, 'tr_ref')->whereIn('tr_type', ['cnote']);
-    }
-
-    public function bill()
-    {
-        return $this->belongsTo(Bill::class);
-    }
-
-    public function supplier()
-    {
-        return $this->belongsTo(Supplier::class);
+        return $this->hasMany(Transaction::class, 'cnote_id');
     }
 
     public function invoice()

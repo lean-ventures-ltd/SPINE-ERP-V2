@@ -12,7 +12,7 @@ trait StockIssueRelationship
 {    
     public function transactions()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(Transaction::class, 'stock_issue_id');
     }
 
     public function employee()
