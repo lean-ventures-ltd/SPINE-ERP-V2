@@ -7,6 +7,7 @@ use App\Models\Access\User\User;
 use App\Models\account\Account;
 use App\Models\additional\Additional;
 use App\Models\currency\Currency;
+use App\Models\hrm\HrmMeta;
 use App\Models\productvariable\Productvariable;
 use App\Models\tenant\Tenant;
 use App\Models\tenant_package\TenantPackage;
@@ -78,7 +79,26 @@ class TenantRepository extends BaseRepository
 
         // update tenant user
         $user = User::where('customer_id', $tenant_package->customer_id)->first();
-        if ($user) $user->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);
+        if ($user) {
+            $user->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);
+            $hrm_meta = HrmMeta::create([
+                'user_id' => $user->id,
+                'employee_no' => 0,
+                'id_number' => 'None',
+                'primary_contact' => 'None',
+                'secondary_contact' => 'None',
+                'gender' => 'None',
+                'marital_status' => 'None',
+                'id_front' => 'None',
+                'id_back' => 'None',
+                'home_county' => 'None',
+                'home_address' => 'None',
+                'residential_address' => 'None',
+                'award' => 'None',
+                'position' => 'None',
+                'specify' => 'None',
+            ]);
+        }
 
         // set tenant common configuration
         $this->set_common_config($tenant, $user);
