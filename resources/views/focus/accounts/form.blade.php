@@ -60,11 +60,11 @@
 <div class="form-group row">
     <div class="col-md-6">        
         {{ Form::label('opening_balance', 'Opening Balance') }}           
-        {{ Form::text('opening_balance', numberFormat(@$account->opening_balance), ['class' => 'form-control', 'readonly', 'id' => 'openBalance']) }}
+        {{ Form::text('opening_balance', numberFormat(@$account->opening_balance), ['class' => 'form-control', 'id' => 'openBalance']) }}
     </div>
     <div class="col-md-6">
         {{ Form::label('date', 'Date') }}
-        {{ Form::text('date', null, ['class' => 'form-control datepicker', 'readonly' => 'readonly', 'id' => 'date']) }}
+        {{ Form::text('date', null, ['class' => 'form-control datepicker', 'id' => 'date']) }}
     </div>
 </div>
 <div class="form-group row">
@@ -83,32 +83,24 @@
     });
 
     // initialize datepicker
-    $('.datepicker').datepicker({format: "{{ config('core.user_date_format') }}", autoHide: true})
-    .datepicker('setDate', new Date());
-
+    $('.datepicker').datepicker({format: "{{ config('core.user_date_format') }}", autoHide: true}).datepicker('setDate', new Date());
+    
     const account = @json(@$account);
     if (account && account.id) {
         if (account.system == 'stock') {
             $('#date').val('');
             $('#date').parents('.form-group.row').addClass('d-none');
         } else {
-            $('#openBalance').attr('readonly', false);
-            $('#date').datepicker('setDate', new Date(account.opening_balance_date)).attr('readonly', false);
+            $('#date').datepicker('setDate', new Date(account.opening_balance_date));
         }
     }
-        
+
     // on selecting account type
     $('#accType').change(function() {
         const opt = $('#accType option:selected');
         $('#accTypeId').val(opt.attr('key'));
         $('#isMultiple').val(opt.attr('isMultiple'));
 
-        $('#openBalance').attr('readonly', true);
-        $('#date').attr('readonly', false);
-        if (opt.attr('isOpenBalance') == 1) {
-            $('#openBalance').attr('readonly', false);
-            $('#date').attr('readonly', false);
-        }
         $.ajax({
             url: "{{ route('biller.accounts.search_next_account_no') }}",
             type: 'POST',
