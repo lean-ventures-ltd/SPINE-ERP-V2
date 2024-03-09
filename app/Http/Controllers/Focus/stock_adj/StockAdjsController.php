@@ -58,7 +58,7 @@ class StockAdjsController extends Controller
      */
     public function create()
     {
-        $accounts = Account::whereIn('account_type', ['Expense', 'Income'])
+        $accounts = Account::whereIn('system', ['stock_loss', 'stock_gain'])
         ->get(['id', 'number', 'holder', 'account_type']);
         
         return view('focus.stock_adjs.create', compact('accounts'));
@@ -87,7 +87,7 @@ class StockAdjsController extends Controller
      */
     public function edit(StockAdj $stock_adj)
     {
-        $accounts = Account::whereIn('account_type', ['Expense', 'Income'])
+        $accounts = Account::whereIn('system', ['stock_loss', 'stock_gain'])
         ->get(['id', 'number', 'holder', 'account_type']);
 
         return view('focus.stock_adjs.edit', compact('stock_adj', 'accounts'));
