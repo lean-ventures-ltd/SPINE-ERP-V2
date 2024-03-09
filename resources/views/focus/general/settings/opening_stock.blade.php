@@ -9,12 +9,12 @@
                 <div class="card-header border-bottom-blue-grey">
                     <h4 class="card-title">Products Opening Stock</h4>
                 </div>
-                <div class="card-content">
+                <div class="card-content mb-0 pb-0">
                     <div class="card-body">
-                        <p class="font-weight-bold font-italic h-4 ml-1">
-                            <span class="text-danger">***</span> Set Quantity and Cost for All Stock Items and Update
+                        <p class="font-weight-bold font-italic h4 ml-1 mb-2">
+                            <span class="text-danger">***</span> Enter Quantity, Unit Cost: for All Products and Save At Once
                         </p>
-                        <div class='form-group row'>
+                        <div class='row'>
                             <div class="col-md-3">
                                 {{ Form::label('date', 'As of Date', ['class' => 'col-12 control-label']) }}
                                 <div class='col pr-0'>
@@ -24,15 +24,22 @@
                             <div class="col-md-9">
                                 {{ Form::label('note', 'Note', ['class' => 'col-12 control-label']) }}
                                 <div class='col'>
-                                    {{ Form::text('note', null, ['class' => 'form-control', 'id' => 'note']) }}
+                                    {{ Form::text('note', null, ['class' => 'form-control', 'id' => 'note', 'autocomplete' => 'off']) }}
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>        
+            
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-body">
                         <div class="row mb-1">
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <div class="col pr-0">
-                                    <select id="warehouse" class="form-control custom-select">
-                                        <option value="">-- Filter By Location --</option>
+                                    <select id="warehouse" class="form-control custom-select" autocomplete="off">
+                                        <option value="">-- Filter Products To Display By Location --</option>
                                         @foreach ($warehouses as $item)
                                             <option value="{{ $item->id }}">{{ $item->title }}</option>
                                         @endforeach
@@ -40,7 +47,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="table-responsive">
+                        <div class="table-responsive mb-2" style="height: 80vh">
                             <table id="productsTbl" class="table table-sm tfr my_stripe_single text-center">
                                 <thead>
                                     <tr class="bg-gradient-directional-blue white">
@@ -77,8 +84,7 @@
                                 </tbody>
                             </table>
                         </div>
-
-                        <table class="tfr" id="locationsTbl">
+                        <table class="tfr mb-2" id="locationsTbl">
                             <thead>
                                 <tr class="item_header bg-gradient-directional-blue white">
                                     <th width="70%">Location</th>
@@ -95,7 +101,6 @@
                                 @endforeach
                             </tbody>
                         </table>
-                                
                         <div class="form-group row">
                             <div class="col-2 ml-auto">
                                 <label for="total" class="mb-0">Total Amount</label>
@@ -104,13 +109,13 @@
                         </div>
                         <div class="row">
                             <div class="col-md-3 ml-auto">
-                                {{ Form::button('Update', ['class' => 'btn btn-primary btn-lg float-right reset', 'type' => 'submit']) }}
+                                {{ Form::button('Save', ['class' => 'btn btn-primary btn-lg float-right reset', 'type' => 'submit']) }}
                                 {{ Form::button('Reset', ['class' => 'btn btn-danger btn-lg float-right mr-1', 'id' => 'reset']) }}
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>            
+            </div>
         {{ Form::close() }}
     </div>
 </div>
@@ -145,7 +150,20 @@
         formSubmit(e) {
             e.preventDefault();
             if (!$('#date').val()) return;
-            addObject({form: $(this).serialize(),url: $(this).attr('action')}, true);
+            const data = {};
+            const formData = new FormData($(this)[0]); 
+            for (const [key, value] of formData) {
+                let field;
+                let isArray = false;
+                if (key.includes('[]')) {
+                    field = key.replace('[]', '');
+                    if (!data[field]) data[field] = '';
+                    isArray = true;
+                } else field = key;
+                if (isArray && data[field]) data[field] = data[field] + ';' + value;
+                else data[field] = value;
+            }
+            return addObject({form: data,url: $(this).attr('action')}, true);
         },
 
         resetForm() {
@@ -159,10 +177,11 @@
 
         warehouseChange() {
             const value = $(this).val();
+            if (!value) return $('#productsTbl tbody tr').css('display', '');
             $('#productsTbl tbody tr').each(function() {
                 const locationId = $(this).find('.location-id').val();
-                if (locationId == value) $(this).addClass('d-none');
-                else $(this).removeClass('d-none');
+                if (locationId == value) $(this).css('display', '');
+                else $(this).css('display', 'none');
             });
         },
 

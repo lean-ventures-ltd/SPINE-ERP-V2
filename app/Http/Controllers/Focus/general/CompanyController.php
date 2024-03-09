@@ -306,15 +306,22 @@ class CompanyController extends Controller
         return view('focus.general.settings.status', compact('data', 'defaults'));
     }
 
+    /**
+     * Opening Stock Management
+     */
     public function opening_stock(ManageCompanyRequest $request)
     {   
+        // store or update opening stock
         if ($request->post()) {
-            $input = $request->only('date', 'note', 'total');
-            $input_items = $request->only('qty', 'cost', 'amount', 'productvar_id', 'product_id', 'warehouse_id');
-            $input['date'] = date_for_database($input['date']);
-            $input['total'] = numberClean($input['total']);
-
             try {
+                $input = $request->only('date', 'note', 'total');
+                $input['date'] = date_for_database($input['date']);
+                $input['total'] = numberClean($input['total']);
+                $input_items = $request->only('qty', 'cost', 'amount', 'productvar_id', 'product_id', 'warehouse_id');
+                foreach ($input_items as $key => $value) {
+                    $input_items[$key] = explode(';', $value);
+                }
+    
                 DB::beginTransaction();
 
                 // reset opening stock
@@ -330,7 +337,7 @@ class CompanyController extends Controller
                         $openingstock->items()->delete();
                         if ($openingstock->delete()) {
                             DB::commit();
-                            return response()->json(['status' => 'Success', 'message' => 'Opening Stock Updated Successfully', 'refresh' => 1]);
+                            return response()->json(['status' => 'Success', 'message' => 'Opening Stock Reset Successfully', 'refresh' => 1]);
                         }
                     }
                 }
