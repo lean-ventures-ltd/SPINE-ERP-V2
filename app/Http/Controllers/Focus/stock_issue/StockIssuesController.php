@@ -71,12 +71,21 @@ class StockIssuesController extends Controller
             'client_vendor_id' => null,
             'client_user_id' => null,
         ])->get(['id', 'first_name', 'last_name']);
-        // project status - continuing
-        $projects = Project::where('status', 16)->get(['id', 'tid', 'name']);
+
+        // project status - 16 (continuing)
+        $projects = Project::where('status', 16)
+        ->with('quotes')
+        ->get(['id', 'tid', 'name'])
+        ->map(function($v) {
+            $v['quote_ids'] = $v->quotes->pluck('id')->toArray();
+            unset($v['quotes']);
+            return $v;
+        });
+
         $quotes = Quote::whereNotNull('approved_date')
             ->whereNotNull('approved_method')
             ->whereNotNull('approved_by')
-            ->get(['id', 'tid', 'bank_id']);
+            ->get(['id', 'notes', 'tid', 'bank_id', 'customer_id']);
         
         return view('focus.stock_issues.create', compact('customers', 'employees', 'projects', 'quotes'));
     }
@@ -114,11 +123,19 @@ class StockIssuesController extends Controller
             'client_user_id' => null,
         ])->get(['id', 'first_name', 'last_name']);
         // project status - continuing
-        $projects = Project::where('status', 16)->get(['id', 'tid', 'name']);
+        $projects = Project::where('status', 16)
+            ->with('quotes')
+            ->get(['id', 'tid', 'name'])
+            ->map(function($v) {
+                $v['quote_ids'] = $v->quotes->pluck('id')->toArray();
+                unset($v['quotes']);
+                return $v;
+            });
+
         $quotes = Quote::whereNotNull('approved_date')
             ->whereNotNull('approved_method')
             ->whereNotNull('approved_by')
-            ->get(['id', 'tid', 'bank_id']);
+            ->get(['id', 'notes', 'tid', 'bank_id', 'customer_id']);
     
         return view('focus.stock_issues.edit', compact('stock_issue', 'customers', 'employees', 'projects', 'quotes'));
     }

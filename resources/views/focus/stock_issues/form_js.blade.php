@@ -54,11 +54,13 @@
         currRow: '',
         sourceTd: '',
         assigneeTd: '',
+        quoteOpts: '',
 
         init() {
             $('#productsTbl tbody td').css({paddingLeft: '5px', paddingRight: '5px', paddingBottom: 0});
             $.ajaxSetup(config.ajax);
             $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
+            Index.quoteOpts = $('#quote option:not(:first)').clone();
             ['#employee', '#customer', '#project', '#quote'].forEach(v => $(v).select2({allowClear: true}));
 
             Index.sourceTd = $('.td-source:first').clone();
@@ -69,6 +71,9 @@
             $('#add-item').click(Index.addItemClick);
             $('#issue_to').change(Index.issueToChange);
             $('#quote').change(Index.quoteChange);
+            $('#customer').change(Index.customerChange);
+            $('#project').change(Index.projectChange);
+            
             $('#productsTbl').on('keyup', '.issue-qty', Index.qtyCostKeyUp);
             $('#productsTbl').on('change', '.source', Index.qtyCostKeyUp);
             $('#productsTbl').on('keyup', '.name', function() { Index.currRow = $(this).parents('tr') });
@@ -127,6 +132,27 @@
                     });
                 });
             }
+        },
+
+        customerChange() {
+            $('#quote option:not(:first)').remove();
+            const value = this.value;
+            if (!value) return;
+            Index.quoteOpts.each(function() {
+                let customerId = $(this).attr('customer_id');
+                if (customerId == value) $('#quote').append($(this));
+            });
+        },
+
+        projectChange() {
+            $('#quote option:not(:first)').remove();
+            if (!this.value) return;
+            let quoteIds = $(this).find(':selected').attr('quote_ids');
+            quoteIds = quoteIds.split(',');
+            Index.quoteOpts.each(function() {
+                let value = $(this).attr('value');
+                if (quoteIds.includes(value)) $('#quote').append($(this));
+            });
         },
 
         issueToChange() {

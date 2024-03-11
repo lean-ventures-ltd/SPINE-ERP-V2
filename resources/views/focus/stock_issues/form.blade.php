@@ -9,7 +9,7 @@
     </div>
     <div class="col-md-2 col-12">
         <label for="issue_to">Issue To</label>
-        <select name="issue_to" id="issue_to" class="custom-select">
+        <select name="issue_to" id="issue_to" class="custom-select" autocomplete="off">
             @foreach (['Employee', 'Customer', 'Project'] as $value)
                 <option value="{{ $value }}">
                     {{ $value }}
@@ -19,7 +19,7 @@
     </div>
     <div class="col-md-6 col-12 select-col">
         <label for="employee">Employee</label>
-        <select name="employee_id" id="employee" class="form-control" data-placeholder="Search Employee">
+        <select name="employee_id" id="employee" class="form-control" data-placeholder="Search Employee" autocomplete="off">
             <option value=""></option>
             @foreach ($employees as $row)
                 <option value="{{ $row->id }}" {{ @$stock_issue->employee_id == $row->id? 'selected' : ''}}>
@@ -30,7 +30,7 @@
     </div>
     <div class="col-md-6 col-12 select-col d-none">
         <label for="customer">Customer</label>
-        <select name="customer_id" id="customer" class="form-control d-none" data-placeholder="Search Customer">
+        <select name="customer_id" id="customer" class="form-control d-none" data-placeholder="Search Customer" autocomplete="off">
             <option value=""></option>
             @foreach ($customers as $row)
                 <option value="{{ $row->id }}" {{ @$stock_issue->customer_id == $row->id? 'selected' : ''}}>
@@ -41,10 +41,14 @@
     </div>
     <div class="col-md-6 col-12 select-col d-none">
         <label for="project">Project</label>
-        <select name="project_id" id="project" class="form-control d-none" data-placeholder="Search Project">
+        <select name="project_id" id="project" class="form-control d-none" data-placeholder="Search Project" autocomplete="off">
             <option value=""></option>
             @foreach ($projects as $row)
-                <option value="{{ $row->id }}" {{ @$stock_issue->project_id == $row->id? 'selected' : ''}}>
+                <option 
+                    value="{{ $row->id }}"
+                    quote_ids="{{ implode(',', $row->quote_ids) }}"
+                    {{ @$stock_issue->project_id == $row->id? 'selected' : ''}}
+                >
                     {{ gen4tid('PRJ-', $row->tid) }} - {{ $row->name }}
                 </option>    
             @endforeach
@@ -60,13 +64,17 @@
 </div>
 <hr>
 <div class="row mb-1">
-    <div class="col-md-3 col-12">
+    <div class="col-md-6 col-12">
         <label for="quote">Load Items From Quote / PI</label>
         <select name="quote_id" id="quote" class="form-control" data-placeholder="Search Quote / PI Number" autocomplete="off">
             <option value=""></option>
             @foreach ($quotes as $row)
-                <option value="{{ $row->id }}" {{ @$stock_issue->quote_id == $row->id? 'selected' : ''}}>
-                    {{ gen4tid($row->bank_id? 'PI-' : 'QT-', $row->tid) }}
+                <option 
+                    value="{{ $row->id }}" 
+                    customer_id="{{ $row->customer_id }}"
+                    {{ @$stock_issue->quote_id == $row->id? 'selected' : ''}}
+                >
+                    {{ gen4tid($row->bank_id? 'PI-' : 'QT-', $row->tid) }} {{ $row->notes }}
                 </option>    
             @endforeach
         </select>
