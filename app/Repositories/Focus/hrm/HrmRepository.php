@@ -110,7 +110,7 @@ class HrmRepository extends BaseRepository
             }
         }
 
-        $username = Str::random(4);
+        $username = random_username();
         $password = strval("123456");
         $email = @$input['employee']['email'];
         if ($email) {

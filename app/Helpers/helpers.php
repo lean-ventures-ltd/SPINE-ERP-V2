@@ -932,3 +932,8 @@ function updateStockQty($productvar_ids=[])
     }
     return true;
 }
+// generate random username
+function random_username()
+{
+    return substr(str_shuffle("bcdfghjklmnpqrstvwxyz" . strtoupper("bcdfghjklmnpqrstvwxyz")), 0, 5);
+}

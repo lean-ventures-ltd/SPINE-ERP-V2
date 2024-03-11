@@ -99,10 +99,9 @@ class CustomersController extends Controller
         }
             
         try {
-            $result = $this->repository->create($request->except(['_token', 'ins', 'balance']));
+            $this->repository->create($request->except(['_token', 'ins', 'balance']));
         } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
-            return errorHandler('Error Creating Customers', $th);
+            return errorHandler('Error Creating Customer', $th);
         }
             
         return new RedirectResponse(route('biller.customers.index'), ['flash_success' => trans('alerts.backend.customers.created')]);
@@ -146,8 +145,7 @@ class CustomersController extends Controller
         try {
             $this->repository->update($customer, $request->except(['_token', 'ins', 'balance']));
         } catch (\Throwable $th) { dd($th);
-            if ($th instanceof ValidationException) throw $th;
-            return errorHandler('Error Updating Customers', $th);
+            return errorHandler('Error Updating Customer', $th);
         }
 
         return new RedirectResponse(route('biller.customers.show', $customer), ['flash_success' => trans('alerts.backend.customers.updated')]);

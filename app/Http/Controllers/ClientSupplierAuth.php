@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Access\Permission\Permission;
 use App\Models\Access\Permission\PermissionRole;
 use App\Models\Access\Permission\PermissionUser;
+use App\Models\Access\Role\Role;
 use App\Models\Access\User\User;
 use App\Models\employee\RoleUser;
 use App\Models\hrm\Hrm;
@@ -20,7 +21,7 @@ trait ClientSupplierAuth
         }
         
         $user = Hrm::create([
-            'username' => substr(str_shuffle("bcdfghjklmnpqrstvwxyz" . strtoupper("bcdfghjklmnpqrstvwxyz")), 0, 5),
+            'username' => random_username(),
             'customer_id' => ($user_type == 'client'? $entity->id : null),
             'supplier_id' => ($user_type == 'supplier'? $entity->id : null),
             'client_vendor_id' => ($user_type == 'client_vendor'? $entity->id : null),
@@ -37,9 +38,14 @@ trait ClientSupplierAuth
         // assign permissions
         $perm_ids = [];
         if (auth()->user()->business->is_main && $user->customer_id) {
-            // business owner role and permissions
-            RoleUser::create(['user_id' => $user->id, 'role_id' => 2]);
-            $perm_ids = PermissionRole::select('permission_id')->distinct()->where('role_id', 2)
+            // tenant role and permissions
+            $auth_role = auth()->user()->roles()->first();
+            $user_role = $auth_role->replicate();
+            $user_role->created_by = $user->id;
+            $user_role->save();
+            RoleUser::create(['role_id' => $user_role->id, 'user_id' => $user->id]);
+
+            $perm_ids = PermissionRole::select('permission_id')->distinct()->where('role_id', $auth_role->id)
             ->pluck('permission_id')->toArray();
         } elseif ($user->customer_id || $user->client_user_id) {
             $perms = [
@@ -49,16 +55,13 @@ trait ClientSupplierAuth
                 'manage-crm-ticket', 'create-crm-ticket', 'edit-crm-ticket', 'delete-crm-ticket',
                 'maintenance-project', 'manage-project', 'manage-equipment', 'manage-pm-contract','manage-schedule',
             ];
-            $perm_ids = Permission::whereIn('name', $perms)
-            ->pluck('id')->toArray();
+            $perm_ids = Permission::whereIn('name', $perms)->pluck('id')->toArray();
         } elseif ($user->supplier_id) {
             $perms = ['finance', 'manage-supplier', 'manage-pricelist', 'stock', 'manage-grn'];
-            $perm_ids = Permission::whereIn('name', $perms)
-            ->pluck('id')->toArray();
+            $perm_ids = Permission::whereIn('name', $perms)->pluck('id')->toArray();
         } elseif ($user->client_vendor_id) {
             $perms = ['crm','manage-client','manage-crm-ticket', 'create-crm-ticket', 'edit-crm-ticket', 'delete-crm-ticket',];
-            $perm_ids = Permission::whereIn('name', $perms)
-                ->pluck('id')->toArray(); 
+            $perm_ids = Permission::whereIn('name', $perms)->pluck('id')->toArray(); 
         } 
         
         foreach ($perm_ids as $key => $value) {
@@ -102,10 +105,17 @@ trait ClientSupplierAuth
         // assign permissions
         $perm_ids = [];
         if (auth()->user()->business->is_main && $user->customer_id) {
-            // business owner role and permissions
-            $params = ['user_id' => $user->id, 'role_id' => 2];
-            if (!RoleUser::where($params)->first()) RoleUser::create($params);
-            $perm_ids = PermissionRole::select('permission_id')->distinct()->where('role_id', 2)
+            // tenant role and permissions
+            $auth_role = auth()->user()->roles()->first();
+            $user_role = Role::where('created_by', $user->id)->first();
+            if (!$user_role) {
+                $user_role = $auth_role->replicate();
+                $user_role->created_by = $user->id;
+                $user_role->save();
+                RoleUser::create(['role_id' => $user_role->id, 'user_id' => $user->id]);
+            }
+
+            $perm_ids = PermissionRole::select('permission_id')->distinct()->where('role_id', $auth_role->id)
             ->pluck('permission_id')->toArray();
         } elseif ($user->customer_id || $user->client_user_id) {
             $perms = [
@@ -119,12 +129,10 @@ trait ClientSupplierAuth
                 ->pluck('id')->toArray();
         } elseif ($user->supplier_id) {
             $perms = ['finance', 'manage-supplier', 'manage-pricelist', 'stock', 'manage-grn'];
-            $perm_ids = Permission::whereIn('name', $perms)
-            ->pluck('id')->toArray();
+            $perm_ids = Permission::whereIn('name', $perms)->pluck('id')->toArray();
         } elseif ($user->client_vendor_id) {
             $perms = ['crm','manage-client','manage-crm-ticket', 'create-crm-ticket', 'edit-crm-ticket', 'delete-crm-ticket',];
-            $perm_ids = Permission::whereIn('name', $perms)
-                ->pluck('id')->toArray();
+            $perm_ids = Permission::whereIn('name', $perms)->pluck('id')->toArray();
         }
          
         PermissionUser::where('user_id', $user->id)->whereIn('permission_id', $perm_ids)->delete();
@@ -146,7 +154,8 @@ trait ClientSupplierAuth
 
         if ($user) {
             $this->removeAuthImage($user);
-            if (auth()->user()->business->is_main) RoleUser::where(['user_id' => $user->id, 'role_id' => 2])->delete();
+            $user->role()->first()->delete();
+            RoleUser::where(['user_id' => $user->id])->delete();
             PermissionUser::where('user_id', $user->id)->delete();
             $user->delete(); 
             return true;
