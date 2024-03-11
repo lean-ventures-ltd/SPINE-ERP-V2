@@ -57,14 +57,14 @@ class Role extends BaseModel
         parent::boot();
 
         static::creating(function ($instance) {
-            if (empty($instance->created_by)) $instance->created_by = auth()->user()->id;
-            if (empty($instance->updated_by)) $instance->updated_by = auth()->user()->id;
-            $instance->ins = auth()->user()->ins;
+            $instance->created_by = $instance->created_by ?: auth()->user()->id;
+            $instance->updated_by = $instance->updated_by ?: auth()->user()->id;
+            $instance->ins = $instance->ins ?: auth()->user()->ins;
             return $instance;
         });
 
         static::updating(function ($instance) {
-            if (empty($instance->updated_by)) $instance->updated_by = auth()->user()->id;
+            $instance->updated_by = $instance->updated_by ?: auth()->user()->id;
             return $instance;
         });
 

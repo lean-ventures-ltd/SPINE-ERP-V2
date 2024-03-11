@@ -68,8 +68,8 @@ class Transactioncategory extends Model
         parent::boot();
 
         static::updating(function ($instance) {
-            $instance->user_id = auth()->user()->id;
-            $instance->ins = auth()->user()->ins;
+            $instance->user_id = $instance->user_id ?: auth()->user()->id;
+            $instance->ins = $instance->ins ?: auth()->user()->ins;
             return $instance;
         });
 

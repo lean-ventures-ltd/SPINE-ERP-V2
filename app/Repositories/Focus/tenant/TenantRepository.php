@@ -201,24 +201,32 @@ class TenantRepository extends BaseRepository
     /**
      * Replicate Common Configuration
      */
-    function set_common_config($tenant, $user)
+    public function set_common_config($tenant, $user)
     {
+        $results = [];
+        $params = ['user_id' => $user->id, 'ins' => $tenant->id];
         $models = [
-            'accounts' => Account::all(),
-            'tr_categories' => Transactioncategory::all(),
-            'prod_units' => Productvariable::all(),
-            'currencies' => Currency::all(),
-            'terms' => Term::all(),
-            'vat_rates' => Additional::all(),
-            'miscs' => Misc::all(),
+            'accounts' => Account::query(),
+            'tr_categories' => Transactioncategory::query(),
+            'prod_units' => Productvariable::query(),
+            'currencies' => Currency::query(),
+            'terms' => Term::query(),
+            'vat_rates' => Additional::query(),
+            'miscs' => Misc::query(),
         ];
-        foreach ($models as $key => $collection) {
+        foreach ($models as $key => $model) {
+            $items = [];
+            $collection = $model->get();
             foreach ($collection as $i => $item) {
-                $item2 = $item->replicate();
-                $item2->fill(['user_id' => $user->id, 'ins' => $tenant->id]);
-                if ($key == 'accounts') unset($item2['opening_balance'],$item2['opening_balance_date'],$item2['note']); 
-                $item2->save();
+                $item->fill($params);
+                if ($key == 'accounts') unset($item['opening_balance'],$item['opening_balance_date'],$item['note']); 
+                unset($item->id, $item->created_at, $item->updated_at);
+                $items[] = $item->toArray();
             }
+            $result = $model->insert($items);
+            if ($result) $results[$key] = $items;            
         }
+
+        return $results;
     }
 }

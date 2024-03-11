@@ -27,6 +27,7 @@ use App\Models\customer\Customer;
 use App\Models\tenant\Tenant;
 use App\Models\tenant_service\TenantService;
 use App\Repositories\Focus\tenant\TenantRepository;
+use DB;
 
 /**
  * ProductcategoriesController
