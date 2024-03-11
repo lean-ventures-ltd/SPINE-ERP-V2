@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Company\Company;
 use App\Models\Company\ConfigMeta;
 use Closure;
 
@@ -20,21 +19,14 @@ class FocusMiddleware
         /**
          * Set core configuraion key value to company instance 
          */
-        $company = Company::find(auth()->user()->ins);
-        config(['core' => $company]);
+        try {
+            $company = auth()->user()->business;
+            $meta = ConfigMeta::where('feature_id', 2)->first();
+            config(['core' => $company, 'app.timezone' => $company->zone, 'currency' => $meta->currency]);
+        } catch (\Throwable $th) {
+            abort(500, 'Something went wrong! Check System Configurations');
+        }
 
-        $company_zone = $company ? $company->zone : '';
-        config(['app.timezone' => $company_zone]);
-        date_default_timezone_set($company_zone);
-
-        if ($company) {
-            $meta = ConfigMeta::withoutGlobalScopes()
-                ->where(['feature_id' => 2, 'ins' => $company->id])
-                ->first();
-
-            config(['currency' => $meta ? $meta->currency : '']);
-        } 
-               
         return $next($request);
     }
 }

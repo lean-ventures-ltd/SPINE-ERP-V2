@@ -56,7 +56,6 @@ class TenantServiceRepository extends BaseRepository
             if ($key == 'module_id') $input[$key] = implode(',', $value);
         } 
         $service = TenantService::create($input);
-        $service->modules = json_encode($input['modules']);
 
         $items_data = Arr::only($input, ['package_id', 'extra_cost', 'maint_cost']);
         $items_data = modify_array($items_data);

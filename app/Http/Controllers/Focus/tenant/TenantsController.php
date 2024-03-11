@@ -95,8 +95,8 @@ class TenantsController extends Controller
 
         try {
             $this->repository->create($request->except(['_token']));
-        } catch (\Exception $e) {
-            return errorHandler("Error: '" . $e->getMessage() . "on File: " . $e->getFile() . " & Line " . $e->getLine());
+        } catch (\Throwable $th) {
+            return errorHandler('Error Creating Account!', $th);
         }
         
         return new RedirectResponse(route('biller.tenants.index'), ['flash_success' => 'Account  Successfully Created']);
@@ -138,7 +138,7 @@ class TenantsController extends Controller
 
         try {
             $this->repository->update($tenant, $request->except(['_token']));
-        } catch (\Throwable $th) {
+        } catch (\Throwable $th) { 
             return errorHandler('Error Updating Account!', $th);
         }
         
@@ -195,6 +195,7 @@ class TenantsController extends Controller
     {
         $q = $request->input('q');
         $customers = Customer::where('company', 'LIKE', '%' . $q . '%')
+        ->doesntHave('tenant_package')
         ->limit(10)->get();
 
         return response()->json($customers);

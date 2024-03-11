@@ -56,7 +56,8 @@ class HrmRepository extends BaseRepository
     public function getForDataTable()
     {
         $q = $this->query()->where('first_name', 'NOT LIKE', '%Admin%')->where('last_name', 'NOT LIKE', '%Admin%');
-        
+        $q->where('users.id', '!=', auth()->user()->id);
+
         if (request('rel_type') == 2 and request('rel_id')) {
             $q->whereHas('meta', function ($s) {
                 return $s->where('department_id', '=', request('rel_id', 0));

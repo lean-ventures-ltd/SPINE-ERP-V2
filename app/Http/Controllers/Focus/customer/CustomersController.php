@@ -144,7 +144,7 @@ class CustomersController extends Controller
     
         try {
             $this->repository->update($customer, $request->except(['_token', 'ins', 'balance']));
-        } catch (\Throwable $th) { dd($th);
+        } catch (\Throwable $th) { 
             return errorHandler('Error Updating Customer', $th);
         }
 

@@ -21,7 +21,7 @@ class Term extends Model
      * Mass Assignable fields of model
      * @var array
      */
-    protected $fillable = ['title', 'type', 'terms', 'ins'];
+    protected $fillable = ['title', 'type', 'terms', 'ins', 'user_id'];
 
     /**
      * Default values for model fields
@@ -61,7 +61,7 @@ class Term extends Model
 
         static::creating(function ($instance) {
             $instance->ins = auth()->user()->ins;
-            $instance->id = auth()->user()->id;
+            $instance->user_id = auth()->user()->id;
             return $instance;
         });
 

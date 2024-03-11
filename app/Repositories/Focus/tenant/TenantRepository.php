@@ -84,7 +84,8 @@ class TenantRepository extends BaseRepository
         $user = User::where('customer_id', $tenant_package->customer_id)->first();
         if (!$user) throw ValidationException::withMessages(['Default User must be created under customer module']);
         $user->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);
-        Role::where('created_by', $user->id)->first()->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);            
+        $role = Role::where('created_by', $user->id)->first();
+        $role->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);            
         HrmMeta::create([
             'user_id' => $user->id,
             'employee_no' => 0,
@@ -156,7 +157,8 @@ class TenantRepository extends BaseRepository
         $user = User::where('customer_id', $tenant_package->customer_id)->first();
         if (!$user) throw ValidationException::withMessages(['Default User must be created under customer module']);
         $user->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);
-        Role::where('created_by', $user->id)->first()->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);            
+        $role = Role::where('created_by', $user->id)->first();
+        $role->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);            
         $user_meta = HrmMeta::where('user_id', $user->id)->first();
         if (!$user_meta) {
             HrmMeta::create([
@@ -201,7 +203,7 @@ class TenantRepository extends BaseRepository
      */
     function set_common_config($tenant, $user)
     {
-        $collections = [
+        $models = [
             'accounts' => Account::all(),
             'tr_categories' => Transactioncategory::all(),
             'prod_units' => Productvariable::all(),
@@ -210,15 +212,12 @@ class TenantRepository extends BaseRepository
             'vat_rates' => Additional::all(),
             'miscs' => Misc::all(),
         ];
-        foreach ($collections as $key => $collection) {
+        foreach ($models as $key => $collection) {
             foreach ($collection as $i => $item) {
-                $item_repl = $item->replicate();
-                $item_repl->ins = $tenant->id;
-                $item_repl->user_id = @$user->id;
-                if ($key == 'accounts') {
-                    unset($item_repl['opening_balance'],$item_repl['opening_balance_date'],$item_repl['note']);
-                }
-                $item_repl->save();
+                $item2 = $item->replicate();
+                $item2->fill(['user_id' => $user->id, 'ins' => $tenant->id]);
+                if ($key == 'accounts') unset($item2['opening_balance'],$item2['opening_balance_date'],$item2['note']); 
+                $item2->save();
             }
         }
     }

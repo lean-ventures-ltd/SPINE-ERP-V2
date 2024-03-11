@@ -41,7 +41,8 @@ trait ClientSupplierAuth
             // tenant role and permissions
             $auth_role = auth()->user()->roles()->first();
             $user_role = $auth_role->replicate();
-            $user_role->created_by = $user->id;
+            $user_role->fill(['created_by' => $user->id, 'updated_by' => $user->id]);
+            unset($user_role->pivot, $user_role->created_at, $user_role->updated_at);
             $user_role->save();
             RoleUser::create(['role_id' => $user_role->id, 'user_id' => $user->id]);
 
@@ -101,7 +102,7 @@ trait ClientSupplierAuth
         ];
         if (isset($input['password'])) $data['password'] = $input['password'];
         $user->update($data);
-
+        
         // assign permissions
         $perm_ids = [];
         if (auth()->user()->business->is_main && $user->customer_id) {
@@ -110,7 +111,8 @@ trait ClientSupplierAuth
             $user_role = Role::where('created_by', $user->id)->first();
             if (!$user_role) {
                 $user_role = $auth_role->replicate();
-                $user_role->created_by = $user->id;
+                $user_role->fill(['created_by' => $user->id, 'updated_by' => $user->id]);
+                unset($user_role->pivot, $user_role->created_at, $user_role->updated_at);
                 $user_role->save();
                 RoleUser::create(['role_id' => $user_role->id, 'user_id' => $user->id]);
             }
@@ -134,7 +136,7 @@ trait ClientSupplierAuth
             $perms = ['crm','manage-client','manage-crm-ticket', 'create-crm-ticket', 'edit-crm-ticket', 'delete-crm-ticket',];
             $perm_ids = Permission::whereIn('name', $perms)->pluck('id')->toArray();
         }
-         
+        
         PermissionUser::where('user_id', $user->id)->whereIn('permission_id', $perm_ids)->delete();
         foreach ($perm_ids as $key => $value) {
             $perm_ids[$key] = ['permission_id' => $value, 'user_id' => $user->id];

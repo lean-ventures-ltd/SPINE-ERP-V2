@@ -37,7 +37,7 @@ class Role extends BaseModel
      *
      * @var array
      */
-    protected $fillable = ['name', 'all', 'sort'];
+    protected $fillable = ['name', 'all', 'sort', 'ins', 'created_by', 'updated_by', 'deleted_at'];
 
     /**
      * @param array $attributes
@@ -57,14 +57,14 @@ class Role extends BaseModel
         parent::boot();
 
         static::creating(function ($instance) {
-            $instance->created_by = auth()->user()->id;
-            $instance->updated_by = auth()->user()->id;
+            if (empty($instance->created_by)) $instance->created_by = auth()->user()->id;
+            if (empty($instance->updated_by)) $instance->updated_by = auth()->user()->id;
             $instance->ins = auth()->user()->ins;
             return $instance;
         });
 
         static::updating(function ($instance) {
-            $instance->updated_by = auth()->user()->id;
+            if (empty($instance->updated_by)) $instance->updated_by = auth()->user()->id;
             return $instance;
         });
 

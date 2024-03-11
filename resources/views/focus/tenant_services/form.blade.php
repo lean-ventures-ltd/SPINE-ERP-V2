@@ -1,33 +1,32 @@
-<div class="card rounded">
+<div class="card rounded mb-1">
     <div class="card-content">
-        <div class="card-body">
-            <div class="row mb-1">
-                <div class="col-12">
-                    <h2 class="mb-2">Package Info</h2>
-                    <div class="row">
-                        <div class="col-12">
-                            <div class='form-group'>
-                                {{ Form::label('package_name', 'Package Name', ['class' => 'col control-label']) }}
-                                <div class='col'>
-                                    {{ Form::text('name', null, ['class' => 'form-control box-size', 'placeholder' => 'Package Name', 'id' => 'name', 'required' => 'required']) }}
-                                </div>
-                            </div>
-                            <div class='form-group'>
-                                {{ Form::label('cost', 'Package Cost', ['class' => 'col control-label']) }}
-                                <div class='col'>
-                                    {{ Form::number('cost', null, ['class' => 'form-control box-size', 'placeholder' => 'Package Cost', 'id' => 'cost', 'required' => 'required', 'step' => '0.001']) }}
-                                </div>
-                            </div>
-                            <div class='form-group'>
-                                {{ Form::label('maintenance_cost', 'Maintenance Cost', ['class' => 'col control-label']) }}
-                                <div class='col'>
-                                    {{ Form::number('maintenance_cost', null, ['class' => 'form-control box-size', 'placeholder' => 'Maintenance Cost', 'id' => 'maintenance_cost', 'required' => 'required', 'step' => '0.001']) }}
-                                </div>
-                            </div>
+        <div class="card-body">     
+            <div class="row">
+                <div class="col-md-6 col-12">
+                    <div class='form-group'>
+                        {{ Form::label('package_name', 'Package Name', ['class' => 'col control-label']) }}
+                        <div class='col'>
+                            {{ Form::text('name', null, ['class' => 'form-control box-size', 'placeholder' => 'Package Name', 'id' => 'name', 'required' => 'required']) }}
                         </div>
                     </div>
                 </div>
-            </div> 
+                <div class="col-md-3 col-12">
+                    <div class='form-group'>
+                        {{ Form::label('cost', 'Package Cost', ['class' => 'col control-label']) }}
+                        <div class='col'>
+                            {{ Form::text('cost', null, ['class' => 'form-control box-size', 'placeholder' => 'Package Cost', 'id' => 'cost', 'required' => 'required']) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-12">
+                    <div class='form-group'>
+                        {{ Form::label('maintenance_cost', 'Maintenance Cost', ['class' => 'col control-label']) }}
+                        <div class='col'>
+                            {{ Form::text('maintenance_cost', null, ['class' => 'form-control box-size', 'placeholder' => 'Maintenance Cost', 'id' => 'maintenance_cost', 'required' => 'required']) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>  
@@ -35,29 +34,64 @@
 {{-- select modules --}}
 <div class="card rounded">
     <div class="card-content">
-        <div class="card-body p-3">
-            <h2 class="mb-3">Subscription Packs</h2>
-                <div class="row">
-
-                    @foreach($subscriptionTiers as $sT)
-
-                        <div class="form-group">
-                            <input type="checkbox"
-                                   id="subscription_packs"
-                                   style="width: 20px; height: 20px;"
-                                   class="round ml-1 mr-1"
-                                   name="subscription_packs[]"
-                                   value="{{$sT->st_number}}"
-                                   @if(!empty(@$tenant_service) && in_array($sT->st_number, @$tenant_service->subscription_packs))
-                                       checked
-                                   @endif
-                            >
-                            <label for="subscription_packs" style="font-size: 22px;"> {{ explode('>>>Subscription-Pack<<< ', $sT->related_role->name)[1] }} </label>
+        <div class="card-body">
+            <h5 class="ml-1">Active Modules</h5>
+            <div class="table-responsive">
+                <table class="table table-flush-spacing" id="modulesTbl">
+                    <tbody>
+                        <tr>
+                            <td class="text-nowrap fw-bolder">
+                                <div class="row">
+                                    @foreach ($package_extras as $i => $package)
+                                        <div class="col-3 mb-1">
+                                            <div class="row">
+                                                <div class="col-8">{{ $package->name }}</div>
+                                                <div class="col-4">
+                                                    <input type="checkbox" class="form-check-input select" name="module_id[]" value="{{ $package->id }}" id="mod-{{ $package->id }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </td>    
+                        </tr>
+                    </tbody>
+                </table>        
+            </div>
+            <br>
+            {{-- package extras --}}
+            @if (count($package_extras))
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <h6 class="mb-2 ml-1">Package Extras</h6>
+                        <div class="row">
+                            <div class="col-md-10 ml-auto mr-auto">
+                                <div class="table-responsive" style="height:50vh">
+                                    <table class="table table-flush-spacing" id="extrasTbl">
+                                        <tbody>
+                                            @foreach ($package_extras as $package)
+                                                <tr>
+                                                    <td class="text-nowrap fw-bolder">{{ $package->name }}</td>
+                                                    <td><input type="checkbox" class="select" name="package_id[]" value="{{ $package->id }}" {{ $package->checked }}></td>
+                                                    <td><input type="text" class="form-control col-8 ml-5 pb-0 pt-0 extra-cost" placeholder="Package Cost" name="extra_cost[]" value="{{ $package->extra_cost }}"></td>
+                                                    <td><input type="text" class="form-control col-8 pb-0 pt-0 maint-cost" placeholder="Maintenance Cost" name="maint_cost[]" value="{{ $package->maint_cost }}"></td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>        
+                                </div>
+                            </div>
                         </div>
-
-                    @endforeach
-
+                    </div>
                 </div>
+            @endif
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h5 class="ml-2 font-weight-bold">Total Cost: <span class="total-cost"></span></h5>
+                    {{ Form::hidden('total_cost', null, ['id' => 'total-cost']) }}
+                    {{ Form::hidden('extras_total', null, ['id' => 'extras-cost']) }}
+                </div>
+            </div>
         </div>
     </div>
 </div>  
@@ -66,6 +100,8 @@
 @section('extra-scripts')
 {{ Html::script('focus/js/select2.min.js') }}
 <script type="text/javascript">
+    $('#extrasTbl tbody td').css({paddingLeft: '5px', paddingRight: '5px', paddingBottom: 0});
+
     config = {
         ajax: {headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"}},
         date: {format: "{{ config('core.user_date_format')}}", autoHide: true},

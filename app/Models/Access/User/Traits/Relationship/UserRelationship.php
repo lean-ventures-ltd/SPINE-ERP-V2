@@ -8,6 +8,7 @@ use App\Models\leave\Leave;
 use App\Models\System\Session;
 use App\Models\Access\Permission\PermissionUser;
 use App\Models\Access\Permission\Permission;
+use App\Models\tenant\Tenant;
 
 /**
  * Class UserRelationship.
@@ -27,6 +28,11 @@ trait UserRelationship
     public function business()
     {
         return $this->hasOne(Company::class, 'id', 'ins');
+    }
+
+    function tenant()
+    {
+        return $this->hasOne(Tenant::class, 'id', 'ins')->where('is_main', 0);
     }
 
     public function providers()

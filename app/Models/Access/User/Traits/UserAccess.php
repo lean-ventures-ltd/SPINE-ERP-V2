@@ -92,11 +92,8 @@ trait UserAccess
         if (auth()->user()->business->is_main || !auth()->user()->is_tenant) {
             //Check permissions directly tied to user
             foreach ($this->permissions as $perm) {
-                if (is_numeric($nameOrId) && $perm->id == $nameOrId) {
-                    return true;
-                } elseif ($perm->name == $nameOrId) {
-                    return true;
-                }
+                if (is_numeric($nameOrId) && $perm->id == $nameOrId) return true;
+                if ($perm->name == $nameOrId) return true;
             }
             // See if role has all permissions
             foreach ($this->roles as $role) {
@@ -106,28 +103,22 @@ trait UserAccess
         } 
 
         // Permissions depending on service package i.e Basic or Standard
-        if (auth()->user()->tenant) {
-            $tenant = auth()->user()->tenant;
-            $module_ids = @$tenant->package->service->module_id;
-            $module_ids = $module_ids? explode(',', $module_ids) : [];
+        $tenant = auth()->user()->tenant;
+        if ($tenant && isset($tenant->package->service->module_id)) {
+            $module_id = $tenant->package->service->module_id;
+            $module_ids = explode(',', $module_id);
             foreach ($this->permissions as $perm) {
                 if (in_array($perm->module_id, $module_ids)) {
-                    if (is_numeric($nameOrId) && $perm->id == $nameOrId) {
-                        return true;
-                    } elseif ($perm->name == $nameOrId) {
-                        return true;
-                    }
+                    if (is_numeric($nameOrId) && $perm->id == $nameOrId) return true;
+                    if ($perm->name == $nameOrId) return true;
                 }
             }
             // check role permssions
             foreach ($this->roles as $role) {
                 foreach ($role->permissions as $perm) {
                     if (in_array($perm->module_id, $module_ids)) {
-                        if (is_numeric($nameOrId) && $perm->id == $nameOrId) {
-                            return true;
-                        } elseif ($perm->name == $nameOrId) {
-                            return true;
-                        }
+                        if (is_numeric($nameOrId) && $perm->id == $nameOrId) return true;
+                        if ($perm->name == $nameOrId) return true;
                     }
                 }
             }

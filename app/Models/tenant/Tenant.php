@@ -66,9 +66,10 @@ class Tenant extends Model
         
         static::creating(function ($instance) {
             $instance->fill([
+                'tid' => Tenant::max('tid')+1,
                 'main_date_format' => 'd-m-Y',
                 'user_date_format' => 'DD-MM-YYYY',
-                'zone' => 'US/Central',
+                'zone' => 'Africa/Nairobi',
                 'lang' => 'english',
                 'valid' => 1,
                 'tax' => 0,

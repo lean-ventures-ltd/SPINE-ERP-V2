@@ -18,17 +18,12 @@
 
 namespace App\Http\Controllers\Focus\tenant_service;
 
-use App\Http\Controllers\Focus\employeeDailyLog\EmployeeDailyLogController;
-use App\Models\Access\Permission\Permission;
-use App\SubscriptionTier;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
 use App\Models\tenant_service\PackageExtra;
 use App\Models\tenant_service\TenantService;
 use App\Repositories\Focus\tenant_service\TenantServiceRepository;
-use Illuminate\Support\Facades\DB;
-use function Symfony\Component\Translation\t;
 
 /**
  * ProductcategoriesController
@@ -70,13 +65,8 @@ class TenantServicesController extends Controller
     public function create()
     {
         $package_extras = PackageExtra::where('active', 0)->get();
-
-        $permissions = Permission::orderBy('display_name')->get();
-        $packagePermissions = [];
-
-        $subscriptionTiers = SubscriptionTier::all();
-
-        return view('focus.tenant_services.create', compact('package_extras', 'permissions', 'packagePermissions', 'subscriptionTiers'));
+        
+        return view('focus.tenant_services.create', compact('package_extras'));
     }
 
     /**
@@ -86,34 +76,19 @@ class TenantServicesController extends Controller
      * @return \App\Http\Responses\RedirectResponse
      */
     public function store(Request $request)
-    {
-
-        $validated = $request->validate([
-            'name' => ['required', 'string'],
-            'cost' => ['required', 'numeric'],
-            'maintenance_cost' => ['required', 'numeric'],
-            'subscription_packs' => ['required', 'array'],
-            'subscription_packs.*' => ['required', 'string'],
+    { 
+        $request->validate([
+            'name' => 'required',
+            'cost' => 'required',
+            'maintenance_cost' => 'required',
         ]);
 
         try {
-            DB::beginTransaction();
-
-
-            $tenantService = new TenantService();
-            $tenantService->fill($validated);
-            $tenantService->total_cost = $validated['cost'] + $validated['maintenance_cost'];
-            $tenantService->subscription_packs = json_encode($validated['subscription_packs']);
-            $tenantService->save();
-
-            DB::commit();
-
-        } catch (\Exception $e) {
-
-            DB::rollBack();
-            return "Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . " | & Line " . $e->getLine();
+            $this->repository->create($request->except(['_token']));
+        } catch (\Throwable $th) {
+            return errorHandler('Error Creating Tenant Service!', $th);
         }
-
+        
         return new RedirectResponse(route('biller.tenant_services.index'), ['flash_success' => 'Tenant Service  Successfully Created']);
     }
 
@@ -126,44 +101,40 @@ class TenantServicesController extends Controller
      */
     public function edit(TenantService $tenant_service, Request $request)
     {
-
-        $subscriptionTiers = SubscriptionTier::all();
-        $tenant_service->subscription_packs = json_decode($tenant_service->subscription_packs, true);
-
-        return view('focus.tenant_services.edit', compact('tenant_service', 'subscriptionTiers'));
+        $package_extras = PackageExtra::get();
+        foreach ($package_extras as $key => $package) {
+            foreach ($tenant_service->items as $key => $item) {
+                if ($item->package_id == $package->id) {
+                    $package_extras[$key]['extra_cost'] = $item->extra_cost;
+                    $package_extras[$key]['maint_cost'] = $item->maint_cost;
+                    $package_extras[$key]['checked'] = 'checked';
+                }
+            }
+        }
+        
+        return view('focus.tenant_services.edit', compact('tenant_service', 'package_extras'));
     }
 
     /**
      * Update Resource in Storage
      * 
      */
-    public function update(Request $request, TenantService $tenantService)
-    {
+    public function update(Request $request, TenantService $tenant_service)
+    {  
+        $request->validate([
+            'name' => 'required',
+            'cost' => 'required',
+            'maintenance_cost' => 'required',
+        ]);
+        if (!$request->module_id) return errorHandler('Selected modules are required!');
+        
         try {
-            DB::beginTransaction();
-
-            $validated = $request->validate([
-                'name' => ['required', 'string'],
-                'cost' => ['required', 'numeric'],
-                'maintenance_cost' => ['required', 'numeric'],
-                'subscription_packs' => ['required', 'array'],
-                'subscription_packs.*' => ['required', 'string'],
-            ]);
-
-            $tenantService->fill($validated);
-            $tenantService->total_cost = $validated['cost'] + $validated['maintenance_cost'];
-            $tenantService->subscription_packs = json_encode($validated['subscription_packs']);
-            $tenantService->save();
-
-            DB::commit();
-
-        } catch (\Exception $e) {
-
-            DB::rollBack();
-            return "Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . " | & Line " . $e->getLine();
+            $this->repository->update($tenant_service, $request->except(['_token']));
+        } catch (\Throwable $th) {
+            return errorHandler('Error Updating Tenant Service!', $th);
         }
 
-        return new RedirectResponse(route('biller.tenant_services.index'), ['flash_success' => 'Tenant Service Successfully Updated']);
+        return new RedirectResponse(route('biller.tenant_services.index'), ['flash_success' => 'Tenant Service  Successfully Updated']);
     }
 
     /**

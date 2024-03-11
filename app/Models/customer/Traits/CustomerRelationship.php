@@ -9,12 +9,17 @@ use App\Models\manualjournal\Journal;
 use App\Models\transaction\Transaction;
 use App\Models\project\Project;
 use App\Models\quote\Quote;
+use App\Models\tenant_package\TenantPackage;
 
 /**
  * Class CustomerRelationship
  */
 trait CustomerRelationship
 {
+    function tenant_package() {
+        return $this->hasOne(TenantPackage::class);
+    }
+
     function journal() {
         return $this->hasOne(Journal::class);
     }
