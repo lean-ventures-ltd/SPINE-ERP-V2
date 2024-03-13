@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Focus\supplier;
 
+use App\Helpers\Auth\Auth;
 use DB;
 use App\Models\supplier\Supplier;
 use App\Exceptions\GeneralException;
@@ -95,7 +96,13 @@ class SupplierRepository extends BaseRepository
         $account_data = $input['account_data'];
         $data['open_balance'] = numberClean($account_data['open_balance']);
         $data['open_balance_date'] = date_for_database($account_data['open_balance_date']);
-        $supplier = Supplier::create($data);
+//        $supplier = Supplier::create($data);
+
+        $supplier = new Supplier();
+        $supplier->fill($data);
+        $supplier->ins = auth()->user()->ins;
+        $supplier->save();
+
 
         // opening balance
         if ($supplier->open_balance > 0) {
