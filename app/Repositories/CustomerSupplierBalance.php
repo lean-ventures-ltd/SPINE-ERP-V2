@@ -177,7 +177,7 @@ trait CustomerSupplierBalance
             }
             $creditor_account = Account::where('system', 'payable')->first(['id']); 
             $tr_data = array_replace($journal->toArray(), ['open_balance' => $open_balance,'account_id' => $creditor_account->id]);
-            $journal->transacions()->delete();
+            $journal->transactions()->delete();
         }
         return $tr_data;
     }
