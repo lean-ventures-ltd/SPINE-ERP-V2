@@ -46,7 +46,7 @@ class EditResponse implements Responsable
         $hrms = $this->hrms->fill($hrms_mod);
         $last_tid = $hrms->employee_no;
 
-        $emp_role = $this->hrms->role->id;
+        $emp_role = !empty($this->hrms->role) ? $this->hrms->role->id : '';
         $permissions_all = Permission::whereHas('roles', function ($q) use ($emp_role) {
             $q->where('role_id', $emp_role);
         })->get()->toArray();

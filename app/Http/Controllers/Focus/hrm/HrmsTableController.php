@@ -68,7 +68,7 @@ class HrmsTableController extends Controller
                 return '<a class="font-weight-bold" href="' . route('biller.hrms.show', [$hrm->id]) . '">' . $hrm->first_name . ' ' . $hrm->last_name . '</a> <small> ' . $hrm->phone . '</small>';
             })
             ->addColumn('email', function ($hrm) {
-                return $hrm->email;
+                return $hrm->email ?? '';
             })
             ->addColumn('picture', function ($hrm) {
                 return '<img class="media-object img-lg border round"
@@ -85,14 +85,17 @@ class HrmsTableController extends Controller
             })
             ->addColumn('department', function ($hrm) {
 
-                $dept = HrmMeta::where('user_id', $hrm->id)->first()->department_id;
+                $dept = HrmMeta::where('user_id', $hrm->id)->first();
 
-                $deptName = Department::find($dept)->name;
+                if (!empty($dept)) $dept = $dept->department_id;
 
+                if ($dept) $deptName = Department::find($dept)->name;
+                else $deptName = '';
                 return $deptName;
             })
             ->addColumn('dob', function ($hrm) {
-                return dateFormat($hrm->meta->dob);
+                if ($hrm->meta) return dateFormat($hrm->meta->dob);
+                else return '';
             })
             ->addColumn('actions', function ($hrm) {
                 return $hrm->action_buttons;
