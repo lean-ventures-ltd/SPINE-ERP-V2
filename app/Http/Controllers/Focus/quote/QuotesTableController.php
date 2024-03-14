@@ -158,7 +158,7 @@ class QuotesTableController extends Controller
                     $name = 'biller.quotes.show';
                     $action_buttons = str_replace(route($name, $quote), route($name, [$quote, 'page=pi']), $action_buttons);
                 }
-                $valid_token = token_validator('', 'q'.$quote->id .$quote->tid, true);
+                $valid_token = token_validator('', 'q' . $quote->id . $quote->tid, true);
                 $copy_text = $quote->bank_id ? 'PI Copy' : 'Quote Copy';
                 $task = $quote->bank_id ? 'page=pi&task=pi_to_pi' : 'task=quote_to_quote';
 

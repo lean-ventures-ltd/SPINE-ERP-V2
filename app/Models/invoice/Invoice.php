@@ -66,10 +66,7 @@ class Invoice extends Model
     protected static function boot()
     {
         parent::boot();
-        static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', auth()->user()->ins);
-        });
-
+        
         static::creating(function ($instance) {
             $instance->fill([
                 'user_id' => auth()->user()->id,
@@ -77,6 +74,12 @@ class Invoice extends Model
                 'tid' => Invoice::getTid() + 1,
             ]);
             return $instance;
+        });
+
+        static::addGlobalScope('ins', function ($builder) {
+            if (isset(auth()->user()->ins)) {
+                $builder->where('ins', auth()->user()->ins);
+            }
         });
     }
 

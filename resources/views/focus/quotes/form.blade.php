@@ -16,6 +16,7 @@
                     <select class="form-control" name="lead_id" id="lead_id" required>                                                 
                         @foreach ($leads as $lead)
                             @php
+                                if (!$lead) continue;
                                 $customer_name = '';
                                 if ($lead->customer) {
                                     $customer_name .= $lead->customer->company;

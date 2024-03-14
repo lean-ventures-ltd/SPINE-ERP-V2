@@ -3,6 +3,7 @@
 namespace App\Models\quote\Traits;
 
 use App\Models\Access\User\User;
+use App\Models\bank\Bank;
 use App\Models\customer\Customer;
 use App\Models\branch\Branch;
 use App\Models\currency\Currency;
@@ -116,6 +117,16 @@ trait QuoteRelationship
     public function currency()
     {
         return $this->belongsTo(Currency::class);
+    }
+
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class);
+    }
+
+    public function quote_client()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 
     public function client()

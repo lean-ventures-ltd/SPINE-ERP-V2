@@ -159,17 +159,23 @@
 			<td width="50%">
 				<span class="customer-dt-title">CUSTOMER DETAILS:</span><br><br>
 				@php
-					$clientname = $resource->lead->client_name;
-					$branch = $resource->lead->branch? $resource->lead->branch->name : '';
-					$address = $resource->lead->client_address;
-					$email = $resource->lead->client_email;
-					$cell = $resource->lead->client_contact;
+					$clientname = @$resource->lead->client_name ?: '';
+					$branch = @$resource->lead->branch? $resource->lead->branch->name : '';
+					$address = @$resource->lead->client_address ?: '';
+					$email = @$resource->lead->client_email ?: '';
+					$cell = @$resource->lead->client_contact ?: '';
 					if ($resource->client) {
 						$clientname = $resource->client->company;						
 						$branch = $resource->branch? $resource->branch->name : '';
 						$address = $resource->client->address;
 						$email = $resource->client->email;
 						$cell = $resource->client->phone;
+					} elseif ($resource->quote_client) {
+						$clientname = $resource->quote_client->company;						
+						$branch = $resource->branch? $resource->branch->name : '';
+						$address = $resource->quote_client->address;
+						$email = $resource->quote_client->email;
+						$cell = $resource->quote_client->phone;
 					}					
 				@endphp
 				<b>Client Name :</b> {{ $clientname }}<br>

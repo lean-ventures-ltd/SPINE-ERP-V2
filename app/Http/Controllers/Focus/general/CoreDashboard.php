@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Focus\general;
 
 use App\Http\Controllers\Focus\labour_allocation\LabourAllocationController;
 use App\Models\invoice\Invoice;
-use App\Models\product\ProductVariation;
 use App\Models\transaction\Transaction;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ViewResponse;
@@ -13,15 +12,11 @@ use App\Models\hrm\Hrm;
 use App\Models\misc\Misc;
 use App\Models\project\Project;
 use App\Models\purchase\Purchase;
-use App\Models\purchaseorder\Purchaseorder;
 use App\Models\utility_bill\UtilityBill;
 use App\Repositories\Focus\labour_allocation\LabourAllocationRepository;
-use Carbon\Carbon;
 use DateInterval;
 use DateTime;
 use Exception;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 
@@ -34,7 +29,15 @@ class CoreDashboard extends Controller
      */
     public function index()
     {
-        if (!access()->allow('dashboard-owner')) return view('focus.dashboard.common');
+        if (!access()->allow('dashboard-owner')) 
+            return view('focus.dashboard.common');
+
+        // tenant subscription notice
+        $tenant = auth()->user()->tenant;
+        $customer = @$tenant->package->customer;
+        if ($customer && $customer->is_subscription_due) {
+            session(['flash_error' => 'Account payment is almost due. Kindly make payment for the next subscription']);
+        }
 
         $today = date('Y-m-d');
         $start_date = date_for_database("{$today} - 1 days");
@@ -45,11 +48,6 @@ class CoreDashboard extends Controller
 
         // customers
         $data['customers'] = Customer::whereIn('id', $data['invoices']->pluck('customer_id')->toArray())->get();
-
-        // stock alerts
-//        $data['stock_alert'] = ProductVariation::whereRaw('qty <= alert')
-//            ->whereHas('product', fn($q) => $q->where('stock_type', 'general'))
-//            ->get();
 
         // projects
         $projects = Project::whereHas('misc', fn($q) => $q->where('name', '!=', 'Complete'))->latest()->limit(12)->get();

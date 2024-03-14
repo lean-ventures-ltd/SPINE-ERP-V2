@@ -2,6 +2,8 @@
 
 namespace App\Models\customer\Traits;
 
+use Carbon\Carbon;
+
 /**
  * Class CustomerAttribute.
  */
@@ -22,5 +24,29 @@ trait CustomerAttribute
                 '.$this->getEditButtonAttribute("edit-customer", "biller.customers.edit").'
                 '.$this->getDeleteButtonAttribute("delete-customer", "biller.customers.destroy",'table').'
                 ';
+    }
+
+    /**
+     * Tenant Subscription Balance
+     */
+    public function getSubscriptionBalanceAttribute()
+    {
+        $inv_totals = $this->invoices()->sum('total');
+        $dep_totals = $this->deposits()->sum('amount');
+        return round($inv_totals - $dep_totals);
+    }
+
+    /**
+     * Subscription Due in 3 Days
+     */
+    public function getIsSubscriptionDueAttribute()
+    {
+        $last_depo = $this->deposits()->orderBy('id', 'DESC')->first(['next_date']);
+        if (@$last_depo->next_date && $this->subscription_balance <= 0) {
+            $next_date = Carbon::parse($last_depo->next_date);
+            $diff = $next_date->diffDays(Carbon::today());
+            if ($diff >= 0 && $diff <= 3) return true;
+        }
+        return false;
     }
 }

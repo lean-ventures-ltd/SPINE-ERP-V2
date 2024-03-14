@@ -54,9 +54,7 @@ class ValidTokenMiddleware
         }
 
         if (isset($resource->ins)) {
-            $meta = ConfigMeta::withoutGlobalScopes()
-                ->where(['ins' => $resource->ins, 'feature_id' => 15])
-                ->first('value1')->value1;
+            $meta = ConfigMeta::where('feature_id', 15)->first('value1')->value1;
             session(['theme' => $meta]);
         }
         
