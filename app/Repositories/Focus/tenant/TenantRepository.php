@@ -8,6 +8,7 @@ use App\Models\Access\User\User;
 use App\Models\account\Account;
 use App\Models\additional\Additional;
 use App\Models\currency\Currency;
+use App\Models\department\Department;
 use App\Models\hrm\HrmMeta;
 use App\Models\items\Prefix;
 use App\Models\misc\Misc;
@@ -218,6 +219,7 @@ class TenantRepository extends BaseRepository
             'vat_rates' => Additional::query(),
             'miscs' => Misc::query(),
             'prefixes' => Prefix::query(),
+            'departments' => Department::query(),
         ];
         foreach ($models as $key => $model) {
             $items = [];

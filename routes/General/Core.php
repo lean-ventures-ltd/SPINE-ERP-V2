@@ -121,7 +121,7 @@ Route::group(['namespace' => 'Focus', 'as' => 'biller.'], function () {
         Route::get('u/notification', 'UserController@notifications')->name('notification');
         Route::get('u/read_notification', 'UserController@read_notifications')->name('read_notification');
         Route::get('/clear-cache', 'CompanyController@clear_cache')->name('clear_cache');
-
+        Route::get('/artisan-down', 'CompanyController@artisan_down')->name('artisan_down');
         Route::get('business/dev', 'CompanyController@dev_manager')->name('business.dev_manager');
         Route::post('business/dev', 'CompanyController@dev_manager')->name('business.dev_manager');
     });

@@ -98,7 +98,6 @@ class HrmsController extends Controller
      */
     public function store(ManageHrmRequest $request)
     {
-
         $validated = $request->validate([
             'id_number' => ['required', 'numeric', 'digits_between:6,8'],
             'primary_contact' => ['required', 'regex:/^[\d\s\-()+]+$/', 'min:10', 'max:15'],
@@ -147,7 +146,7 @@ class HrmsController extends Controller
 
         try {
             $this->repository->create($input);
-        } catch (\Throwable $th) {dd($th);
+        } catch (\Throwable $th) {
             return errorHandler('Error Creating Employee', $th);
         }
 
@@ -175,7 +174,6 @@ class HrmsController extends Controller
      */
     public function update(ManageHrmRequest $request, Hrm $hrm)
     {
-
         $validated = $request->validate([
             'id_number' => ['required', 'numeric', 'digits_between:6,8'],
             'primary_contact' => ['required', 'regex:/^[\d\s\-()+]+$/', 'min:10', 'max:15'],
@@ -213,7 +211,7 @@ class HrmsController extends Controller
 
         try {
             $this->repository->update($hrm, $input);
-        } catch (\Throwable $th) {dd($th);
+        } catch (\Throwable $th) {
             return errorHandler('Error Updating Employee', $th);
         }
 

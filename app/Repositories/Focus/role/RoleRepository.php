@@ -80,19 +80,20 @@ class RoleRepository extends BaseRepository
             throw ValidationException::withMessages([trans('exceptions.backend.access.roles.needs_permission')]);
 
         $role = Role::create([
-            'name' => $input['subscription_tier'] ? '>>>Subscription-Pack<<< ' . $input['name'] : $input['name'],
+            // 'name' => @$input['subscription_tier'] ? '>>>Subscription-Pack<<< ' . $input['name'] : $input['name'],
+            $input['name'],
             'sort' => 0,
             'all' => 0,
             'status' => @$input['status'] ?: 0,
         ]);
 
-        if($input['subscription_tier']){
+        // if($input['subscription_tier']){
 
-            $subscriptionTier = new SubscriptionTier();
-            $subscriptionTier->st_number = uniqid('ST-');
-            $subscriptionTier->role = $role->id;
-            $subscriptionTier->save();
-        }
+        //     $subscriptionTier = new SubscriptionTier();
+        //     $subscriptionTier->st_number = uniqid('ST-');
+        //     $subscriptionTier->role = $role->id;
+        //     $subscriptionTier->save();
+        // }
 
         if ($role) {
             $role->attachPermissions($input['permissions']);
