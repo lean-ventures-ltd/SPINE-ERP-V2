@@ -110,7 +110,7 @@ class BillPaymentRepository extends BaseRepository
         }
         
         // compute bill balance
-        $bill_ids = $result->items()->pluck('invoice_id')->toArray();
+        $bill_ids = $result->items()->pluck('bill_id')->toArray();
         $this->supplier_payment_balance($bill_ids);
 
         /**accounting */

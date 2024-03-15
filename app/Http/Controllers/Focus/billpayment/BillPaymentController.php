@@ -11,6 +11,7 @@ use App\Models\supplier\Supplier;
 use App\Models\utility_bill\UtilityBill;
 use App\Repositories\Focus\billpayment\BillPaymentRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class BillPaymentController extends Controller
@@ -89,10 +90,15 @@ class BillPaymentController extends Controller
     public function store(Request $request)
     {
         try {
+            DB::beginTransaction();
+
             $this->repository->create($request->except('_token', 'balance', 'unallocate_ttl'));
-        } catch (\Throwable $th) { 
-            if ($th instanceof ValidationException) throw $th;
-            return errorHandler('Error Creating Bill Payment!', $th);
+
+            DB::commit();
+
+        } catch (\Exception $e){
+            DB::rollBack();
+            return "Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine();
         }
 
         return new RedirectResponse(route('biller.billpayments.index'), ['flash_success' => 'Bill Payment Created Successfully']);
