@@ -73,8 +73,8 @@
                                                 <tr>
                                                     <td class="text-nowrap fw-bolder">{{ $package->name }}</td>
                                                     <td><input type="checkbox" class="select" name="package_id[]" value="{{ $package->id }}" {{ $package->checked }}></td>
-                                                    <td><input type="text" class="form-control col-8 ml-5 pb-0 pt-0 extra-cost" placeholder="Package Cost" name="extra_cost[]" value="{{ $package->extra_cost }}"></td>
-                                                    <td><input type="text" class="form-control col-8 pb-0 pt-0 maint-cost" placeholder="Maintenance Cost" name="maint_cost[]" value="{{ $package->maint_cost }}"></td>
+                                                    <td><input type="number" step="0.001" class="form-control col-8 ml-5 pb-0 pt-0 extra-cost" placeholder="Package Cost" name="extra_cost[]" value="{{ $package->extra_cost }}"></td>
+                                                    <td><input type="number" step="0.001" class="form-control col-8 pb-0 pt-0 maint-cost" placeholder="Maintenance Cost" name="maint_cost[]" value="{{ $package->maint_cost }}"></td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
