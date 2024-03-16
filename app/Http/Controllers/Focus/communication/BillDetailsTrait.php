@@ -7,6 +7,7 @@ use App\Models\bill\Bill;
 use App\Models\Company\Company;
 use App\Models\Company\ConfigMeta;
 use App\Models\Company\UserGateway;
+use App\Models\customer\Customer;
 use App\Models\order\Order;
 use App\Models\purchaseorder\Purchaseorder;
 use App\Models\quote\Quote;
@@ -83,17 +84,15 @@ trait BillDetailsTrait
                 // quotation
                 $resource = Quote::find($request->id);
                 $attributes = $getAttr(1, 'quote', 2, 1, $resource->customer_id, route('biller.quotes.show', $resource->id));
-                foreach($attributes as $key => $val) {
-                    $resource[$key] = $val;
+                foreach($attributes as $key => $value) {
+                    $resource[$key] = $value;
                 }
-                // assign bank
-                $resource['bank'] = Bank::find($resource->bank_id);
-
+                // rehydrate relations
+                $resource['client'] = $resource->client ?: $resource->quote_client;
+                $resource['bank'] = $resource->bank;
                 $resource['products'] = $resource->products()->orderBy('row_index')->get();
-                if ($resource->verified == 'Yes') {
-                    $resource['verified_items'] = VerifiedItem::where('quote_id', $resource->id)->orderBy('row_index')->get();
-                }
-
+                if ($resource->verified == 'Yes') $resource['verified_items'] = $resource->verified_products;
+                
                 $flag = token_validator($request->token, 'q' . $resource->id . $resource->tid);
                 $general = $getGeneral(
                     trans('quotes.quote'),
@@ -198,12 +197,12 @@ trait BillDetailsTrait
         if ($flag) {
             $company = Company::find($resource->ins);
 
-            $online_payment = ConfigMeta::where(['feature_id' => 5, 'ins' => $company->id])->first();
-            $online_pay_account = ConfigMeta::where(['feature_id' => 6, 'ins' => $company->id])->first('feature_value');
+            $online_payment = ConfigMeta::where(['feature_id' => 5])->first();
+            $online_pay_account = ConfigMeta::where(['feature_id' => 6])->first('feature_value');
 
             $gateway = UserGateway::whereHas('config', function ($q) use ($company) { $q->where('ins', $company->id); })->get();
 
-            config([ 'currency' => ConfigMeta::where(['feature_id' => 2, 'ins' => $company->id])->first()->currency ]);
+            config([ 'currency' => ConfigMeta::where(['feature_id' => 2])->first()->currency]);
 
             $general['tax_string_total'] = trans('general.total_tax');
             $general['tax_id'] = trans('general.tax_id');

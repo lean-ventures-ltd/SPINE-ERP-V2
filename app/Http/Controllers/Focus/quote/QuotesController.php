@@ -65,12 +65,9 @@ class QuotesController extends Controller
      */
     public function index(ManageQuoteRequest $request)
     {
-
-        //        return (new QuotesTableController(new QuoteRepository()))->__invoke();
-
         $customers = Customer::all(['id', 'company']);
+        $accounts = Account::whereHas('accountType', fn($q) => $q->where('system', 'income'))->get();
 
-        $accounts = bill_helper(2, 4)['income_accounts'];
         return view('focus.quotes.index', compact('customers', 'accounts'));
     }
 

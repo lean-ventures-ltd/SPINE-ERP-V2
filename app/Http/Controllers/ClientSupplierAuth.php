@@ -58,7 +58,7 @@ trait ClientSupplierAuth
             ];
             $perm_ids = Permission::whereIn('name', $perms)->pluck('id')->toArray();
         } elseif ($user->supplier_id) {
-            $perms = ['finance', 'manage-supplier', 'manage-pricelist', 'stock', 'manage-grn'];
+            $perms = ['procurement-management', 'finance', 'manage-supplier', 'manage-pricelist', 'stock', 'manage-grn'];
             $perm_ids = Permission::whereIn('name', $perms)->pluck('id')->toArray();
         } elseif ($user->client_vendor_id) {
             $perms = ['crm','manage-client','manage-crm-ticket', 'create-crm-ticket', 'edit-crm-ticket', 'delete-crm-ticket',];
@@ -127,10 +127,9 @@ trait ClientSupplierAuth
                 'manage-crm-ticket', 'create-crm-ticket', 'edit-crm-ticket', 'delete-crm-ticket',
                 'maintenance-project', 'manage-project', 'manage-equipment', 'manage-pm-contract','manage-schedule',
             ];
-            $perm_ids = Permission::whereIn('name', $perms)
-                ->pluck('id')->toArray();
+            $perm_ids = Permission::whereIn('name', $perms)->pluck('id')->toArray();
         } elseif ($user->supplier_id) {
-            $perms = ['finance', 'manage-supplier', 'manage-pricelist', 'stock', 'manage-grn'];
+            $perms = ['procurement-management', 'finance', 'manage-supplier', 'manage-pricelist', 'stock', 'manage-grn'];
             $perm_ids = Permission::whereIn('name', $perms)->pluck('id')->toArray();
         } elseif ($user->client_vendor_id) {
             $perms = ['crm','manage-client','manage-crm-ticket', 'create-crm-ticket', 'edit-crm-ticket', 'delete-crm-ticket',];

@@ -4,9 +4,10 @@ namespace App\Models\customer\Traits;
 
 use App\Models\branch\Branch;
 use App\Models\client_product\ClientProduct;
+use App\Models\Company\Company;
+use App\Models\invoice_payment\InvoicePayment;
 use App\Models\lead\Lead;
 use App\Models\manualjournal\Journal;
-use App\Models\transaction\Transaction;
 use App\Models\project\Project;
 use App\Models\quote\Quote;
 use App\Models\tenant_package\TenantPackage;
@@ -63,14 +64,9 @@ trait CustomerRelationship
         return $this->hasMany('App\Models\invoice\Invoice')->orderBy('id', 'DESC');
     }
 
-    public function amount()
+    public function deposits()
     {
-        return $this->hasMany(Transaction::class, 'payer_id');
-    }
-
-    public function project()
-    {
-        return $this->belongsTo(Project::class);
+        return $this->hasMany(InvoicePayment::class);
     }
     
     public function projects()

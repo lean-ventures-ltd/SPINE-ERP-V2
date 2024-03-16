@@ -9,6 +9,7 @@ use App\Models\account\Account;
 use App\Models\additional\Additional;
 use App\Models\currency\Currency;
 use App\Models\hrm\HrmMeta;
+use App\Models\items\Prefix;
 use App\Models\misc\Misc;
 use App\Models\productvariable\Productvariable;
 use App\Models\tenant\Tenant;
@@ -17,6 +18,7 @@ use App\Models\tenant_package\TenantPackageItem;
 use App\Models\term\Term;
 use App\Models\transactioncategory\Transactioncategory;
 use App\Repositories\BaseRepository;
+use Artisan;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Support\Arr;
@@ -105,10 +107,11 @@ class TenantRepository extends BaseRepository
         ]);
         
         // set tenant common configuration
-        $this->set_common_config($tenant, $user);
+        $this->setCommonConfig($tenant, $user);
 
         if ($tenant) {
             DB::commit();
+            $this->generateSoftwareProforma($tenant_package);
             return $tenant;
         }
     }
@@ -182,6 +185,7 @@ class TenantRepository extends BaseRepository
 
         if ($result) {
             DB::commit();
+            $this->generateSoftwareProforma($tenant_package);
             return $result;
         }
     }
@@ -201,7 +205,7 @@ class TenantRepository extends BaseRepository
     /**
      * Replicate Common Configuration
      */
-    public function set_common_config($tenant, $user)
+    public function setCommonConfig($tenant, $user)
     {
         $results = [];
         $params = ['user_id' => $user->id, 'ins' => $tenant->id];
@@ -213,14 +217,18 @@ class TenantRepository extends BaseRepository
             'terms' => Term::query(),
             'vat_rates' => Additional::query(),
             'miscs' => Misc::query(),
+            'prefixes' => Prefix::query(),
         ];
         foreach ($models as $key => $model) {
             $items = [];
             $collection = $model->get();
             foreach ($collection as $i => $item) {
                 $item->fill($params);
-                if ($key == 'accounts') unset($item['opening_balance'],$item['opening_balance_date'],$item['note']); 
-                unset($item->id, $item->created_at, $item->updated_at);
+                if ($key == 'accounts') {
+                    unset($item['opening_balance'],$item['opening_balance_date']); 
+                    if (!isset($item['system'])) unset($item['note']); 
+                }
+                unset($item['id'], $item['created_at'], $item['updated_at']);
                 $items[] = $item->toArray();
             }
             $result = $model->insert($items);
@@ -228,5 +236,23 @@ class TenantRepository extends BaseRepository
         }
 
         return $results;
+    }    
+
+    /**
+     * Generate Sotware Proforma Invoice
+     */
+    public function generateSoftwareProforma($tenant_package)
+    {
+        $first_proforma = $tenant_package->customer->quotes()->where('bank_id', '>', 0)
+            ->where('total', $tenant_package->total_cost)
+            ->orderBy('id', 'DESC')->first();
+        if (!$first_proforma) return false;
+
+        // generate proforma invoice via artisan call
+        $result = Artisan::call('software-proforma:generate');
+        $output = Artisan::output();
+        $path = storage_path('logs') . DIRECTORY_SEPARATOR . 'cron.log';
+        file_put_contents($path, $output, FILE_APPEND | LOCK_EX);
+        return $result;
     }
 }
