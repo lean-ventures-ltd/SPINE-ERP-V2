@@ -112,19 +112,19 @@
     let canSubmit = false;
 
 
-    $("#creditNoteForm").submit(function(event) {
+    {{--$("#creditNoteForm").submit(function(event) {--}}
 
-        canSubmit = $("#cuConfirmation").val() === "{{ $newCuInvoiceNo }}".slice(-3);
+    {{--    canSubmit = $("#cuConfirmation").val() === "{{ $newCuInvoiceNo }}".slice(-3);--}}
 
-        // Check if the condition is true
-        if (!canSubmit) {
-            // If the condition is not true, prevent form submission
-            event.preventDefault();
-            alert("Please confirm whether the auto-generated CU Invoice No '" + $("#cu_invoice_no").val() + "' matches with the ETR generated CU Invoice Number.\nEnter the Last 3 Digits in the Box Above the Submit Button.");
-            // You can add more logic or UI updates here based on your requirements
-        }
-        // If the condition is true, the form will be submitted
-    });
+    {{--    // Check if the condition is true--}}
+    {{--    if (!canSubmit) {--}}
+    {{--        // If the condition is not true, prevent form submission--}}
+    {{--        event.preventDefault();--}}
+    {{--        alert("Please confirm whether the auto-generated CU Invoice No '" + $("#cu_invoice_no").val() + "' matches with the ETR generated CU Invoice Number.\nEnter the Last 3 Digits in the Box Above the Submit Button.");--}}
+    {{--        // You can add more logic or UI updates here based on your requirements--}}
+    {{--    }--}}
+    {{--    // If the condition is true, the form will be submitted--}}
+    {{--});--}}
 
 
 </script>
