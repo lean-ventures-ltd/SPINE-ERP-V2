@@ -325,38 +325,6 @@ class TaxReportsController extends Controller
                 return $v_mod;
             });
         
-        // debit notes
-        $debit_notes = CreditNote::when($month, fn($q) => $q->whereMonth('date', $month)->whereYear('date', $year))
-        ->whereHas('supplier')
-        ->where(function ($q) {
-            $q->doesntHave('debit_note_tax_reports');
-            $q->orWhereHas('debit_note_tax_reports', fn($q) => $q->where('is_filed', 0));
-        })
-        ->whereNull('customer_id')->get()
-        ->map(function($v) {
-            $v_mod = clone $v;
-            $attr = [
-                'id' => $v->id,
-                'debit_note_date' => $v->date,
-                'tax_pin' => @$v->supplier->taxid ?: '',
-                'supplier' => @$v->suppliername ?: @$v->supplier->name,
-                'note' => 'Debit Note',
-                'subtotal' => $v->subtotal,
-                'total' => $v->total,
-                'tax' => $v->tax,
-                'tax_rate' => $v->subtotal > 0? round($v->tax/$v->subtotal * 100) : 0,
-                'type' => 'debit_note',
-                'purchase_date' => $v->date,
-                'invoice_no' => '',
-            ];
-            foreach ($attr as $key => $value) {
-                $v_mod[$key] = $value;
-            }
-            return $v_mod;
-        });
-           
-        $purchases = $bills->merge($debit_notes);
-
-        return response()->json($purchases->toArray());
+        return response()->json($bills->toArray());
     }    
 }
