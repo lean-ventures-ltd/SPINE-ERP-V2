@@ -96,8 +96,7 @@ class RoleController extends Controller
     {
         try {
             $this->roles->create($request->except('_token'));
-        } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
+        } catch (\Throwable $th) { 
             return errorHandler('Error Creating Role', $th);
         }
 
@@ -139,9 +138,8 @@ class RoleController extends Controller
     {
         try {
             $this->roles->update($role, $request->except('_token'));
-        } catch (\Exception $e) {
-
-            errorHandler("Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . " | & Line " . $e->getLine());
+        } catch (\Throwable $th) {
+            return errorHandler('Error Updating Role', $th);
         }
 
         return new RedirectResponse(route('biller.role.index'), ['flash_success' => trans('alerts.backend.roles.updated')]);
@@ -158,7 +156,6 @@ class RoleController extends Controller
         try {
             $this->roles->delete($role);
         } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Deleting Roles', $th);
         }
 

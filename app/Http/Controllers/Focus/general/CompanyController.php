@@ -456,6 +456,11 @@ class CompanyController extends Controller
         }
     }
 
+    public function artisan_down()
+    {
+        return Artisan::call('down');
+    }
+
     public function dev_manager(ManageCompanyRequest $request)
     {
 

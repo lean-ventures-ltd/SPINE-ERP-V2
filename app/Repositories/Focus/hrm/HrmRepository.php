@@ -112,14 +112,6 @@ class HrmRepository extends BaseRepository
         }
 
         $username = random_username();
-        $password = strval("123456");
-        $email = @$input['employee']['email'];
-        if ($email) {
-            $init = explode('@', $email);
-            if ($init[0]) $password = $init[0];
-        }
-        $input['employee'] = array_replace($input['employee'], compact('username', 'password'));
-
         $email_input = [
             'text' => 'Account Created Successfully. Username: ' . $username . ' and Password: ',
             'subject' => strtoupper('login details'),
@@ -135,35 +127,32 @@ class HrmRepository extends BaseRepository
         $role_id = $input['employee']['role'];
         $role = Role::find($role_id);
         if ($role && $role->status == 1) {
+            // create hrm
+            unset($input['employee']['role']);
             $input['employee'] = array_replace($input['employee'], [
+                'username' => $username,
+                'password' => 123456,
                 'created_by' => auth()->user()->id,
                 'confirmed' => 1,
-                'username' => substr(str_shuffle("bcdfghjklmnpqrstvwxyz" . strtoupper("bcdfghjklmnpqrstvwxyz")), 0, 5),
             ]);
-            unset($input['employee']['role']);
-            
             $hrm = Hrm::create($input['employee']);
 
+            // create hrm meta
             $input['meta']['user_id'] = $hrm->id;
             if (!$input['meta']['is_cronical']) $input['meta']['specify'] = 'none';
             HrmMeta::create($input['meta']);
 
+            // create user role and permissions
             RoleUser::create(['user_id' => $hrm->id, 'role_id' => $role_id]);
-            
             if (isset($input['permission'])) $hrm->permissions()->attach($input['permission']);
 
             if ($hrm) {
-                DB::commit();
-                // send email and text
                 // $this->messageUtil->sendMessage($input['meta']['primary_contact'], $email_input['text']);
-                $mailer = new RosemailerRepository;
-                $mailer->send($email_input['text'], $email_input);
-
+                $mailer = (new RosemailerRepository)->send($email_input['text'], $email_input);
+                DB::commit();
                 return $hrm;
             }
         }
-
-        throw new GeneralException(trans('exceptions.backend.hrms.create_error'));
     }
 
     /**
@@ -221,18 +210,20 @@ class HrmRepository extends BaseRepository
         $role_id = $input['employee']['role'];
         $role = Role::find($role_id);
         if ($role && $role->status == 1) {
-            $role_user = RoleUser::where('user_id', $hrm->id)->first();
-            if ($role_user) $role_user->update(compact('role_id'));
-
-            $hrm_meta = HrmMeta::where('user_id', $hrm->id)->first();
-            if ($hrm_meta) $hrm_meta->update($input['meta']);
-
+            // update hrm
             unset($input['employee']['role']);
             $hrm->update($input['employee']);
 
+            // update hrm meta
+            $hrm_meta = HrmMeta::where('user_id', $hrm->id)->first();
+            if ($hrm_meta) $hrm_meta->update($input['meta']);
+
+            // update role user and permissions
+            $role_user = RoleUser::where('user_id', $hrm->id)->first();
+            if ($role_user) $role_user->update(compact('role_id'));
             PermissionUser::where('user_id', $hrm->id)->delete();
             if (isset($input['permission'])) $hrm->permissions()->attach($input['permission']);
-
+            
             DB::commit();
             return true;
         }
@@ -251,22 +242,19 @@ class HrmRepository extends BaseRepository
      */
     public function delete(Hrm $hrm)
     {
-        DB::beginTransaction();
-
-        if (auth()->user()->id == $hrm->id)
+        if (auth()->user()->id == $hrm->id) 
             throw ValidationException::withMessages(['Not allowed!']);
+
+        DB::beginTransaction();
 
         $params = ['user_id' => $hrm->id];
         HrmMeta::where($params)->delete();
         RoleUser::where($params)->delete();
         UserProfile::where($params)->delete();
-
         if ($hrm->delete()) {
             DB::commit();
             return true;
         }
-
-        throw new GeneralException(trans('exceptions.backend.hrms.delete_error'));
     }
 
     /*
@@ -274,11 +262,8 @@ class HrmRepository extends BaseRepository
     */
     public function uploadPicture($logo, $path)
     {
-
         $image_name = time() . $logo->getClientOriginalName();
-
         $this->storage->put($path . $image_name, file_get_contents($logo->getRealPath()));
-
         return $image_name;
     }
 }

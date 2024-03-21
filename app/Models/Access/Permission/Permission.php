@@ -44,6 +44,28 @@ class Permission extends BaseModel
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
+
         $this->table = config('access.permissions_table');
+    }
+
+    /**
+     * model life cycle event listeners
+     * @return void
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope('module_id', function ($builder) {
+            // limit permissions based on tenant package
+            if (isset(auth()->user()->tenant)) {
+                $package = auth()->user()->tenant->package;
+                if ($package && $package->service) {
+                    $service = $package->service;
+                    $module_ids = $service? explode(',', $service->module_id) : [0];
+                    $builder->whereIn('module_id', $module_ids);
+                }
+            }
+        });
     }
 }
