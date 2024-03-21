@@ -228,7 +228,7 @@ class TenantRepository extends BaseRepository
                 $item->fill($params);
                 if ($key == 'accounts') {
                     unset($item['opening_balance'],$item['opening_balance_date']); 
-                    if (!isset($item['system'])) unset($item['note']); 
+                    if (!isset($item['system'])) $item['note'] = null; 
                 }
                 unset($item['id'], $item['created_at'], $item['updated_at']);
                 $items[] = $item->toArray();
@@ -248,7 +248,7 @@ class TenantRepository extends BaseRepository
         $first_proforma = $tenant_package->customer->quotes()->where('bank_id', '>', 0)
             ->where('total', $tenant_package->total_cost)
             ->orderBy('id', 'DESC')->first();
-        if (!$first_proforma) return false;
+        if ($first_proforma) return false;
 
         // generate proforma invoice via artisan call
         $result = Artisan::call('software-proforma:generate');
