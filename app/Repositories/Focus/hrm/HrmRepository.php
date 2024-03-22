@@ -111,34 +111,27 @@ class HrmRepository extends BaseRepository
             }
         }
 
-        $username = random_username();
-        $email_input = [
-            'text' => 'Account Created Successfully. Username: ' . $username . ' and Password: ',
-            'subject' => strtoupper('login details'),
-            'mail_to' => $input['employee']['email'],
-            'customer_name' => $input['employee']['first_name'],
-        ];
-
-        $input['meta'] = array_replace($input['meta'], [
-            'dob' => date_for_database($input['meta']['dob']),
-            'employement_date' => date_for_database($input['meta']['employement_date']),
-        ]);
-
         $role_id = $input['employee']['role'];
         $role = Role::find($role_id);
         if ($role && $role->status == 1) {
             // create hrm
-            unset($input['employee']['role']);
+            $username = random_username();
+            $password = random_password();
             $input['employee'] = array_replace($input['employee'], [
                 'username' => $username,
-                'password' => 123456,
+                'password' => $password,
                 'created_by' => auth()->user()->id,
                 'confirmed' => 1,
             ]);
+            unset($input['employee']['role']);
             $hrm = Hrm::create($input['employee']);
 
             // create hrm meta
-            $input['meta']['user_id'] = $hrm->id;
+            $input['meta'] = array_replace($input['meta'], [
+                'dob' => date_for_database($input['meta']['dob']),
+                'employement_date' => date_for_database($input['meta']['employement_date']),
+                'user_id' => $hrm->id,
+            ]);
             if (!$input['meta']['is_cronical']) $input['meta']['specify'] = 'none';
             HrmMeta::create($input['meta']);
 
@@ -148,7 +141,14 @@ class HrmRepository extends BaseRepository
 
             if ($hrm) {
                 // $this->messageUtil->sendMessage($input['meta']['primary_contact'], $email_input['text']);
-                $mailer = (new RosemailerRepository)->send($email_input['text'], $email_input);
+                $email_input = [
+                    'text' => "Account Created Successfully. Username: {$username}, Email: {$input['employee']['email']}, Password: {$password}",
+                    'subject' => 'Login Credentials',
+                    'mail_to' => $input['employee']['email'],
+                    'customer_name' => @$input['employee']['first_name'] . ' ' . @$input['employee']['last_name'],
+                ];
+                (new RosemailerRepository)->send($email_input['text'], $email_input);
+
                 DB::commit();
                 return $hrm;
             }

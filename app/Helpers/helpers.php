@@ -6,7 +6,8 @@
  **/
 if (!function_exists('errorHandler')) {
     function errorHandler($msg = '', $e = null)
-    {
+    {   
+        if (env('APP_ENV') == 'local' && env('APP_DEBUG') == true) dd($msg, $e);
         if ($e instanceof \Illuminate\Validation\ValidationException) throw $e;
         if ($e) \Illuminate\Support\Facades\Log::error($e->getMessage() .' {user_id: '. auth()->user()->id . '}' . ' at ' . $e->getFile() . ':' . $e->getLine());
         return redirect()->back()->with('flash_error', $msg ?: 'Internal Server Error! Please try again later.');
@@ -936,4 +937,9 @@ function updateStockQty($productvar_ids=[])
 function random_username()
 {
     return substr(str_shuffle("bcdfghjklmnpqrstvwxyz" . strtoupper("bcdfghjklmnpqrstvwxyz")), 0, 5);
+}
+// generate random password
+function random_password()
+{
+    return substr(str_shuffle("0123456789" . random_username()), 0, 7);
 }
