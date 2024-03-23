@@ -113,8 +113,8 @@ class RoleRepository extends BaseRepository
         // dd($input);
         DB::beginTransaction();
 
-        $role_exists = $this->query()->where('id', '!=', $role->id)->where('name', $input['name'])->first();
-        if ($role_exists) throw ValidationException::withMessages([trans('exceptions.backend.access.roles.already_exists')]);
+//        $role_exists = $this->query()->where('id', '!=', $role->id)->where('name', $input['name'])->first();
+//        if ($role_exists) throw ValidationException::withMessages([trans('exceptions.backend.access.roles.already_exists')]);
 
         // check if the role must contain a permission as per config
         $input['permissions'] = @$input['permissions'] ?: [];
