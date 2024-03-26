@@ -721,7 +721,7 @@
                                        data-toggle="dropdown"> <i class="ft-list"></i> Manage Service Kits
                                     </a>
                                 </li>
-                            </ul>
+{{--                            </ul>--}}
 
                         </li>
                         @permission('create-equipment')
