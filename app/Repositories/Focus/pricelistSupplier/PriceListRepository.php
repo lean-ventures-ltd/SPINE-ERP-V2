@@ -6,6 +6,7 @@ use App\Exceptions\GeneralException;
 use App\Models\supplier_product\SupplierProduct;
 use App\Repositories\BaseRepository;
 use DB;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Class ProductcategoryRepository.
@@ -27,7 +28,9 @@ class PriceListRepository extends BaseRepository
     {
         $q = $this->query();
 
-        $q->when(request('supplier_id') && request('contract'), function ($q) {
+        $q->when(!empty(Auth::user()->supplier_id), function ($q) {
+            $q->where(['supplier_id' => Auth::user()->supplier_id]);
+        })->when(request('supplier_id') && request('contract'), function ($q) {
             $q->where(['supplier_id' => request('supplier_id'), 'contract' => request('contract')]);
         })->when(request('supplier_id'), function ($q) {
             $q->where(['supplier_id' => request('supplier_id')]);

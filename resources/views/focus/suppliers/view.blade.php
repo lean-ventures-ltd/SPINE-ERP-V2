@@ -26,6 +26,7 @@
                     <div class="card">
                         <div class="card-content">
                             <div class="card-body">
+                                @permission('delete-pricelist')
                                 <div class="btn-group float-right">
                                     <a href="{{ route('biller.suppliers.edit', $supplier) }}" class="btn btn-blue btn-outline-accent-5 btn-sm">
                                         <i class="fa fa-pencil"></i> {{trans('buttons.general.crud.edit')}}
@@ -35,6 +36,7 @@
                                         <i class="fa fa-trash"></i> {{trans('buttons.general.crud.delete')}}
                                     </button>
                                 </div>
+                                @endauth
                                 <div class="card-body">
                                     @include('focus.suppliers.partials.tabs')
                                 </div>

@@ -39,10 +39,12 @@
                                         <option value="">-- select contract --</option>
                                     </select>
                                 </div>
+                                @permission('delete-pricelist')
                                 <div class="edit-form-btn">
                                     <label for="">&nbsp;</label>
                                     {{ Form::submit('Mass Delete', ['class' => 'form-control btn-danger mass-delete', 'disabled']) }}
                                 </div>
+                                @endauth
                             </div>
                         {{ Form::close() }}
                     </div>
