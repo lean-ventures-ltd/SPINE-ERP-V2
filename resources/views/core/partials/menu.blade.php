@@ -8,7 +8,7 @@
                                                                       href="#"><i class="ft-menu font-large-1"></i></a></li>
                 <li class="nav-item"><a class="navbar-brand" href="{{ route('biller.dashboard') }}"><img
                                 class="brand-logo" alt="Brand Logo"
-                                src="{{ Storage::disk('public')->url('app/public/img/company/theme/' . config('core.theme_logo')) }}">
+                                src="{{ Storage::disk('public')->url('app/public/img/company/theme/Screenshot14.png') }}">
                     </a></li>
                 <li class="nav-item d-md-none"><a class="nav-link open-navbar-container" data-toggle="collapse"
                                                   data-target="#navbar-mobile"><i class="fa fa-ellipsis-v"></i></a></li>
@@ -1025,34 +1025,34 @@
                     @endauth
 
                     {{-- Stock Adjustment --}}
-                    {{-- @permission('manage-opening-stock') --}}
+                     @permission('manage-opening-stock')
                     <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
                         <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-balance-scale"></i> Stock Adjustment</a>
                         <ul class="dropdown-menu">
                             <li>
                                 <a class="dropdown-item" href="{{ route('biller.stock_adjs.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Adjustments</a>
                             </li>
-                            {{-- @permission('create-opening-stock') --}}
+                             @permission('create-opening-stock')
                             <li>
                                 <a class="dropdown-item" href="{{ route('biller.stock_adjs.create')}}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Create Adjustment</a>
                             </li>
-                            {{-- @endauth --}}
+                             @endauth
                         </ul>
                     </li>
                     {{-- @endauth --}}
 
                     {{-- Project-stock issuance --}}
-                    {{-- @permission('manage-issuance') --}}
+                     @permission('manage-issuance')
                     <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
                         <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-cubes" aria-hidden="true"></i> Stock Issuing</a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ route('biller.stock_issues.index') }}" data-toggle="dropdown"><i class="ft-list"></i> Manage Stock Issues</a></li>
-                            {{-- @permission('create-issuance') --}}
+                             @permission('create-issuance')
                             <li><a class="dropdown-item" href="{{ route('biller.stock_issues.create') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Stock Issue</a></li>
-                            {{-- @endauth --}}
+                             @endauth
                         </ul>
                     </li>
-                    {{-- @endauth   --}}
+                     @endauth
 
                     {{-- Stock Transfer --}}
                     @permission('manage-stock-transfer')
