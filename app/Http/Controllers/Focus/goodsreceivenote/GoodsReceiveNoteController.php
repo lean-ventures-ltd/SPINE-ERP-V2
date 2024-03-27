@@ -70,8 +70,8 @@ class GoodsReceiveNoteController extends Controller
             $grn = $this->respository->create($request->except('_token'));
             $msg = 'Goods Received Note Created Successfully With DNote';
             if ($grn->invoice_no) $msg = 'Goods Received Note Created Successfully With Invoice';
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Goods Received Note', $th);
+        } catch (\Exception $e){
+            return ("Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine());
         }
 
         return new RedirectResponse(route('biller.goodsreceivenote.index'), ['flash_success' => $msg]);

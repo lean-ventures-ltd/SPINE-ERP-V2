@@ -171,8 +171,9 @@ class GoodsreceivenoteRepository extends BaseRepository
         $poItemsProjects = $input['itemproject_id'];
         $poItemDetails = array_combine( $poItemsIds, array_map(null, $poItemsQuantities, $poItemsProjects));
         foreach ($poItemDetails as $key => $item){
-            $productCode = PurchaseorderItem::find($key)->product_code;
-            $product = ProductVariation::where('code', $productCode)->first();
+            $productId = PurchaseorderItem::find($key)->item_id;
+            $product = ProductVariation::find($productId);
+
             if ($item[1] == 0) {
                 $product->qty += $item[0];
                 $product->save();
