@@ -122,10 +122,6 @@ class HrmsController extends Controller
 
         $request['employee_no'] = intval($employeeID) + 1 . $empYear . '-' . Str::random(6);;
 
-        $validated = $request->validate([
-            'employee_no' => ['unique:hrm_metas,employee_no'],
-        ]);
-
         $input['employee'] = $request->only(['first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role']);
         $input['meta'] = $request->except(['_token', 'first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role', 'permission', 'check_all']);
         $input = array_merge($input, $request->only(['permission']));
