@@ -37,6 +37,7 @@ use App\Http\Responses\Focus\hrm\EditResponse;
 use App\Repositories\Focus\hrm\HrmRepository;
 use App\Http\Requests\Focus\hrm\ManageHrmRequest;
 use DateTime;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -119,7 +120,7 @@ class HrmsController extends Controller
         $empYear =  (new DateTime('now'))->format('y');
         $employeeID =substr($latestEmployeeNo, 0, -2);
 
-        $request['employee_no'] = intval($employeeID) + 1 . $empYear;
+        $request['employee_no'] = intval($employeeID) + 1 . $empYear . '-' . Str::random(6);;
 
         $validated = $request->validate([
             'employee_no' => ['unique:hrm_metas,employee_no'],
