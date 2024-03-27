@@ -24,27 +24,29 @@
                     <div class="card-body">
                         {{ Form::open(['route' => array('biller.pricelistsSupplier.destroy', 0), 'method' => 'DELETE']) }}
                             <div class="row">
-                                <div class="col-4">
-                                    <label for="supplier">Supplier</label>                             
-                                    <select name="supplier_id" id="supplier" class="form-control" data-placeholder="Choose Supplier" required>
-                                        {{-- <option value="">-- select supplier --</option> --}}
-                                        @foreach ($suppliers as $supplier)
-                                            <option value="{{ $supplier->id }}">{{ $supplier->company }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                                @if(empty(Auth::user()->supplier_id))
+                                    <div class="col-4">
+                                        <label for="supplier">Supplier</label>
+                                        <select name="supplier_id" id="supplier" class="form-control" data-placeholder="Choose Supplier" required>
+                                            {{-- <option value="">-- select supplier --</option> --}}
+                                            @foreach ($suppliers as $supplier)
+                                                <option value="{{ $supplier->id }}">{{ $supplier->company }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endif
                                 <div class="col-2">
                                     <label for="contract">Contract</label>                             
                                     <select name="contract" id="contract" class="custom-select" disabled>
                                         <option value="">-- select contract --</option>
                                     </select>
                                 </div>
-                                @permission('delete-pricelist')
-                                <div class="edit-form-btn">
-                                    <label for="">&nbsp;</label>
-                                    {{ Form::submit('Mass Delete', ['class' => 'form-control btn-danger mass-delete', 'disabled']) }}
-                                </div>
-                                @endauth
+                                @if(empty(Auth::user()->supplier_id))
+                                    <div class="edit-form-btn">
+                                        <label for="">&nbsp;</label>
+                                        {{ Form::submit('Mass Delete', ['class' => 'form-control btn-danger mass-delete', 'disabled']) }}
+                                    </div>
+                                @endif
                             </div>
                         {{ Form::close() }}
                     </div>

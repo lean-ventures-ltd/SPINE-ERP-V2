@@ -26,17 +26,21 @@
                     <div class="card">
                         <div class="card-content">
                             <div class="card-body">
-                                @permission('delete-pricelist')
+
                                 <div class="btn-group float-right">
+                                    @if(empty(Auth::user()->supplier_id))
                                     <a href="{{ route('biller.suppliers.edit', $supplier) }}" class="btn btn-blue btn-outline-accent-5 btn-sm">
                                         <i class="fa fa-pencil"></i> {{trans('buttons.general.crud.edit')}}
                                     </a>&nbsp;
+                                    @endif
+                                    @permission('delete-pricelist')
                                     <button type="button" class="btn btn-danger btn-outline-accent-5 btn-sm" id="delSupplier">
                                         {{Form::open(['route' => ['biller.suppliers.destroy', $supplier], 'method' => 'DELETE'])}}{{Form::close()}}
                                         <i class="fa fa-trash"></i> {{trans('buttons.general.crud.delete')}}
                                     </button>
+                                    @endauth
                                 </div>
-                                @endauth
+
                                 <div class="card-body">
                                     @include('focus.suppliers.partials.tabs')
                                 </div>

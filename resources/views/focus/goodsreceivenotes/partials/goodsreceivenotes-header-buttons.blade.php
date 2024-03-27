@@ -2,9 +2,9 @@
     <a href="{{ route('biller.goodsreceivenote.index') }}" class="btn btn-info  btn-lighten-2">
         <i class="fa fa-list-alt"></i> {{ trans('general.list') }}
     </a>
-    @permission('create-grn')
+    @if(empty(Auth::user()->supplier_id))
     <a href="{{ route('biller.goodsreceivenote.create') }}" class="btn btn-pink  btn-lighten-3">
         <i class="fa fa-plus-circle"></i> {{ trans('general.create') }}
     </a>
-    @endauth
+    @endif
 </div>
