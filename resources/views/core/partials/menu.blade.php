@@ -248,12 +248,17 @@
                         </ul>
                     </li>
                 </ul>
+
+                <div class="nav navbar-nav float-right mr-2" style="color: white;">
+                    V.2.01 2024
+                </div>
+
                 <ul class="nav navbar-nav float-right">
                     @if (config('locale.status') && count(config('locale.languages')) > 1)
                         <li class="dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button"
                                aria-expanded="false">
-                                {{ trans('menus.language-picker.language') }}
+                                {{ trans('menus.language-picker.language') }} EGG
                                 <span class="caret"></span>
                             </a>
                             @include('includes.partials.lang_focus')

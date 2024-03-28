@@ -105,8 +105,8 @@
                                 <th>Customer - Branch</th>   
                                 <th>Title</th>                                                                       
                                 <th>Amount</th>
-                                <th>Exp Amount</th>
-                                <th>Amnt Diff (VAT Exc)</th>
+{{--                                <th>Exp Amount</th>--}}
+{{--                                <th>Amnt Diff (VAT Exc)</th>--}}
                                 <th>Approval Date</th>
                                 <th>Client Ref</th>                                
                                 <th>Ticket No</th>
@@ -214,7 +214,9 @@
                         name: 'id'
                     },
                     ...[
-                        'date', 'tid', 'customer', 'notes', 'total', 'exp_total', 'exp_diff', 'approved_date', 'client_ref', 'lead_tid', 'invoice_tid'
+                        'date', 'tid', 'customer', 'notes', 'total',
+                        // 'exp_total', 'exp_diff',
+                        'approved_date', 'client_ref', 'lead_tid', 'invoice_tid'
                     ].map(v => ({data: v, name: v})),
                     {
                         data: 'actions',

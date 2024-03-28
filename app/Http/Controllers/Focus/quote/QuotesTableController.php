@@ -93,27 +93,27 @@ class QuotesTableController extends Controller
                 
                 return numberFormat($quote->total);
             })   
-            ->addColumn('exp_total', function ($quote) {
-                $project = $quote->project;
-                if ($project) {
-                    $no_quotes = $project->quotes()->count();
-                    
-                    $issued_stock_amount = $quote->projectstock? $quote->projectstock()->sum('total') : 0;
-                    $dir_purchase_amount = $project->purchase_items->sum('amount');
-                    $grn_amount = $project->grn_items()->sum(DB::raw('rate*qty'));
-                    $labour_amount = $project->labour_allocations()->sum(DB::raw('hrs * 500'));
-                    $expense_amount = (($dir_purchase_amount + $grn_amount + $labour_amount) / $no_quotes) + $issued_stock_amount;
-                    
-                    $this->quote_expense_total = $expense_amount;
-                    if ($expense_amount > 0)
-                    return '<a href="'. route('biller.projects.show', ['project' => $project, 'tab' => 'expense']) .'" key="'. $project->id .'">'
-                        . numberFormat($expense_amount) .'</a>' ;
-                }
-            })
-            ->addColumn('exp_diff', function ($quote) {
-                if ($quote->project && $this->quote_expense_total > 0)
-                return numberFormat($this->quote_taxable_amount - $this->quote_expense_total);
-            })
+//            ->addColumn('exp_total', function ($quote) {
+//                $project = $quote->project;
+//                if ($project) {
+//                    $no_quotes = $project->quotes()->count();
+//
+//                    $issued_stock_amount = $quote->projectstock? $quote->projectstock()->sum('total') : 0;
+//                    $dir_purchase_amount = $project->purchase_items->sum('amount');
+//                    $grn_amount = $project->grn_items()->sum(DB::raw('rate*qty'));
+//                    $labour_amount = $project->labour_allocations()->sum(DB::raw('hrs * 500'));
+//                    $expense_amount = (($dir_purchase_amount + $grn_amount + $labour_amount) / $no_quotes) + $issued_stock_amount;
+//
+//                    $this->quote_expense_total = $expense_amount;
+//                    if ($expense_amount > 0)
+//                    return '<a href="'. route('biller.projects.show', ['project' => $project, 'tab' => 'expense']) .'" key="'. $project->id .'">'
+//                        . numberFormat($expense_amount) .'</a>' ;
+//                }
+//            })
+//            ->addColumn('exp_diff', function ($quote) {
+//                if ($quote->project && $this->quote_expense_total > 0)
+//                return numberFormat($this->quote_taxable_amount - $this->quote_expense_total);
+//            })
             ->addColumn('approved_date', function ($quote) {
                 return $quote->approved_date? dateFormat($quote->approved_date) : '';
             })
