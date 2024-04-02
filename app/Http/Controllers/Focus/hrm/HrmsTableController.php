@@ -89,9 +89,11 @@ class HrmsTableController extends Controller
 
                 if (!empty($dept)) $dept = $dept->department_id;
 
-                if ($dept) $deptName = Department::find($dept)->name;
-                else $deptName = '';
-                return $deptName;
+                if ($dept) $dept = Department::find($dept);
+                else $dept = '';
+
+
+                return empty($dept) ? 'NO DEPT SET' : $dept->name;
             })
             ->addColumn('dob', function ($hrm) {
                 if ($hrm->meta) return dateFormat($hrm->meta->dob);
