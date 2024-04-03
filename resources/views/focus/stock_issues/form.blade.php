@@ -86,6 +86,7 @@
         <thead>
             <tr class="bg-gradient-directional-blue white">
                 <th width="25%">Stock Item</th>
+                <th>Product Code</th>
                 <th>Unit</th>
                 <th>Qty On-Hand</th>
                 <th>Qty Rem</th>
@@ -99,7 +100,8 @@
                 @foreach ($stock_issue->items as $i => $item)
                     <tr>
                         <td><textarea id="name-{{$i+1}}" class="form-control name" cols="30" rows="1" autocomplete="off" required>{{ @$item->productvar->name }}</textarea></td>
-                        <td><span class="unit">{{ @$item->productvar->product->unit->code }}</span></td>                
+                        <td><span class="product-code">{{ @$item->productvar->code }}</span></td>
+                        <td><span class="unit">{{ @$item->productvar->product->unit->code }}</span></td>
                         <td><span class="qty-onhand">{{ +$item->qty_onhand }}</span></td>
                         <td><span class="qty-rem">{{ +$item->qty_rem }}</span></td>
                         <td><input type="text" name="issue_qty[]" value="{{ +$item->issue_qty }}" class="form-control issue-qty" autocomplete="off" required readonly></td>
@@ -139,7 +141,8 @@
             @else
                 <tr>
                     <td><textarea id="name-1" class="form-control name" cols="30" rows="1" autocomplete="off" required></textarea></td>
-                    <td><span class="unit"></span></td>                
+                    <td><span class="product-code"></span></td>
+                    <td><span class="unit"></span></td>
                     <td><span class="qty-onhand"></span></td>
                     <td><span class="qty-rem"></span></td>
                     <td><input type="text" name="issue_qty[]" class="form-control issue-qty" autocomplete="off" required></td>
