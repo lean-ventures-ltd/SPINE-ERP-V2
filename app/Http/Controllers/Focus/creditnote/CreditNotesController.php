@@ -81,9 +81,10 @@ class CreditNotesController extends Controller
         $msg = 'Debit Note created successfully';
         $route = route('biller.creditnotes.index', 'is_debit=1');
       }
-  
-    } catch (\Throwable $th) {
-      return errorHandler('Error Creating Credit Note', $th);
+
+    } catch (\Exception $e){
+
+        return ("Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine());
     }
     return new RedirectResponse($route, ['flash_success' => $msg]);
   }
@@ -115,6 +116,8 @@ class CreditNotesController extends Controller
     }
 
     $prefixes = prefixesArray(['credit_note', 'debit_note'], $creditnote->ins);
+
+//    return $creditnote;
 
     return new ViewResponse('focus.creditnotes.edit', compact('creditnote', 'is_debit', 'prefixes'));
   }

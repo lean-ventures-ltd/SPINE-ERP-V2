@@ -52,9 +52,7 @@
     </div>
     <div class="col-2">
         <label for="cu_invoice_no">CU Invoice Number</label>
-        <input type="text" id="cu_invoice_no" name="cu_invoice_no" required class="form-control box-size mb-2"
-               readonly
-        >
+        {{ Form::text('cu_invoice_no', null, ['class' => 'form-control', 'id' => 'cu_invoice_no', 'required']) }}
     </div>
 
 </div>
