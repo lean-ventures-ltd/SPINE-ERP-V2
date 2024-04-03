@@ -101,7 +101,7 @@
                                         {{ Form::label('subscr_term', 'Subscription Term', ['class' => 'col control-label']) }}
                                         <div class='col'>
                                             @php
-                                                $terms = ['12' => 'ANNUALLY', '6' => '6 MONTHS', '3' => '3 MONTHS'];
+                                                $terms = ['12' => 'ANNUALLY', '6' => '6 MONTHS', '3' => '3 MONTHS', '1' => '1 MONTH'];
                                             @endphp
                                             <select name="subscr_term" id="subscr_term" class="custom-select">
                                                 @foreach ($terms as $key => $value)
