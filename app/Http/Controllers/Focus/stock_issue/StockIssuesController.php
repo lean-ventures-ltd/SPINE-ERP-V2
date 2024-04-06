@@ -23,6 +23,7 @@ use App\Http\Responses\ViewResponse;
 use App\Models\customer\Customer;
 use App\Models\hrm\Hrm;
 use App\Models\product\ProductVariation;
+use App\Models\project\BudgetItem;
 use App\Models\project\Project;
 use App\Models\quote\Quote;
 use App\Models\stock_issue\StockIssue;
@@ -136,8 +137,21 @@ class StockIssuesController extends Controller
             ->whereNotNull('approved_method')
             ->whereNotNull('approved_by')
             ->get(['id', 'notes', 'tid', 'bank_id', 'customer_id']);
-    
-        return view('focus.stock_issues.edit', compact('stock_issue', 'customers', 'employees', 'projects', 'quotes'));
+
+        $qt = Quote::find($stock_issue->quote_id);
+        $budgetDetails = [];
+        foreach ($stock_issue->items as $item) {
+
+            $budgetItem = BudgetItem::where('budget_id', $qt->budget->id)
+                ->where('product_id', $item['productvar_id'])
+                ->first();
+
+            $bi = [$item['id'] => $budgetItem];
+
+            $budgetDetails = array_merge($budgetDetails, $bi);
+        }
+
+        return view('focus.stock_issues.edit', compact('stock_issue', 'customers', 'employees', 'projects', 'quotes', 'budgetDetails'));
     }
 
     /**
@@ -213,7 +227,19 @@ class StockIssuesController extends Controller
             }
             $productvars[$key]['warehouses'] = $warehouses;
         }
-        
-        return response()->json($productvars);
+
+        $budgetDetails = [];
+        foreach ($productvars as $key => $item) {
+
+            $budgetItem = BudgetItem::where('budget_id', $quote->budget->id)
+                ->where('product_id', $item['id'])
+                ->first();
+
+            $bi = [$item['id'] => $budgetItem];
+
+            $budgetDetails = array_merge($budgetDetails, $bi);
+        }
+
+        return response()->json(compact('productvars', 'budgetDetails'));
     }
 }
