@@ -31,7 +31,7 @@
                         <div class='form-group'>
                             {{ Form::label( 'phone', trans('customers.phone'),['class' => 'col-lg-6 control-label']) }}
                             <div class='col-md-12'>
-                                {{ Form::text('phone', null, ['class' => 'form-control box-size', 'placeholder' => trans('customers.phone')]) }}
+                                {{ Form::text('phone', null, ['class' => 'form-control box-size', 'placeholder' => trans('customers.phone'), 'required']) }}
                             </div>
                         </div>
                     </div>
@@ -139,7 +139,7 @@
                         <div class='form-group'>
                             {{ Form::label( 'phone_s', trans('customers.phone_s'),['class' => 'col-lg-12 control-label']) }}
                             <div class='col-lg-12'>
-                                {{ Form::text('phone_s', null, ['class' => 'form-control box-size', 'placeholder' => trans('customers.phone_s')]) }}
+                                {{ Form::text('phone_s', null, ['class' => 'form-control box-size', 'placeholder' => trans('customers.phone_s'), 'required']) }}
                             </div>
                         </div>
                     </div>
