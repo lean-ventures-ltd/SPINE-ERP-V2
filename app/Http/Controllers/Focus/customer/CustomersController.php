@@ -100,8 +100,9 @@ class CustomersController extends Controller
             
         try {
             $this->repository->create($request->except(['_token', 'ins', 'balance']));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Customer', $th);
+        } catch (\Exception $e){
+
+            return errorHandler("Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine());
         }
             
         return new RedirectResponse(route('biller.customers.index'), ['flash_success' => trans('alerts.backend.customers.created')]);
@@ -144,8 +145,9 @@ class CustomersController extends Controller
     
         try {
             $this->repository->update($customer, $request->except(['_token', 'ins', 'balance']));
-        } catch (\Throwable $th) { 
-            return errorHandler('Error Updating Customer', $th);
+        } catch (\Exception $e){
+
+            return errorHandler("Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine());
         }
 
         return new RedirectResponse(route('biller.customers.show', $customer), ['flash_success' => trans('alerts.backend.customers.updated')]);
