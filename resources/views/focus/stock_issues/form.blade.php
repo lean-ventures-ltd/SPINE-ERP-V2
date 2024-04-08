@@ -5,12 +5,12 @@
     </div>
     <div class="col-md-2 col-12">
         <label for="ref_no">Reference No.</label>
-        {{ Form::text('ref_no', null, ['class' => 'form-control', 'id' => 'ref_no']) }}
+        {{ Form::text('ref_no', null, ['class' => 'form-control', 'id' => 'ref_no', 'required' => 'required']) }}
     </div>
     <div class="col-md-2 col-12">
         <label for="issue_to">Issue To</label>
         <select name="issue_to" id="issue_to" class="custom-select" autocomplete="off">
-            @foreach (['Employee', 'Customer', 'Project'] as $value)
+            @foreach (['Customer', 'Employee', 'Project'] as $value)
                 <option value="{{ $value }}">
                     {{ $value }}
                 </option>
@@ -103,10 +103,10 @@
                         <td><textarea id="name-{{$i+1}}" class="form-control name" cols="30" rows="1" autocomplete="off" required>{{ @$item->productvar->name }}</textarea></td>
                         <td><span class="product-code">{{ @$item->productvar->code }}</span></td>
                         <td><span class="unit">{{ @$item->productvar->product->unit->code }}</span></td>
-                        <td><span class="unit">{{ number_format(@$budgetDetails[$i]['product_qty'], 2) }}</span></td>
+                        <td><span class="budget">{{ number_format(@$budgetDetails[$i]['product_qty'], 2) }}</span></td>
                         <td><span class="qty-onhand">{{ +$item->qty_onhand }}</span></td>
                         <td><span class="qty-rem">{{ +$item->qty_rem }}</span></td>
-                        <td><input type="text" name="issue_qty[]" value="{{ +$item->issue_qty }}" class="form-control issue-qty" autocomplete="off" required readonly></td>
+                        <td><input type="text" name="issue_qty[]" value="{{ +$item->issue_qty }}" class="form-control issue-qty" autocomplete="off" required></td>
                         <td class="td-source">
                             <input type="hidden" name="warehouse_id[]" value="{{ $item->warehouse_id }}" class="source-inp">
                             <select name="warehouse_id[]" id="source-{{$i+1}}" class="form-control source" data-placeholder="Search Location" required disabled>
