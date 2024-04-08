@@ -1091,6 +1091,14 @@ class PayrollController extends Controller
             $income_tax = bcadd($income_tax, $tax, 4);
             $paye = (float) bcsub(round($income_tax, 2, PHP_ROUND_HALF_UP), $totalRelief, 2);
 
+            if ($paye < 0){
+
+                $income_tax = 0;
+                $nhif_relief = 0;
+                $personal_relief = 0;
+                $paye = 0;
+            }
+
             return compact('income_tax', 'nhif_relief', 'personal_relief', 'paye');
         }
 
@@ -1105,6 +1113,14 @@ class PayrollController extends Controller
             $tax = bcmul($taxableBalance, 0.30, 4);
             $income_tax = bcadd($income_tax, $tax, 4);
             $paye = (float) bcsub(round($income_tax, 2, PHP_ROUND_HALF_UP), $totalRelief, 2);
+
+            if ($paye < 0){
+
+                $income_tax = 0;
+                $nhif_relief = 0;
+                $personal_relief = 0;
+                $paye = 0;
+            }
 
             return compact('income_tax', 'nhif_relief', 'personal_relief', 'paye');
         }
@@ -1121,6 +1137,14 @@ class PayrollController extends Controller
             $income_tax = bcadd($income_tax, $tax, 4);
             $paye = (float) bcsub(round($income_tax, 2, PHP_ROUND_HALF_UP), $totalRelief, 2);
 
+            if ($paye < 0){
+
+                $income_tax = 0;
+                $nhif_relief = 0;
+                $personal_relief = 0;
+                $paye = 0;
+            }
+
             return compact('income_tax', 'nhif_relief', 'personal_relief', 'paye');
         }
 
@@ -1128,6 +1152,14 @@ class PayrollController extends Controller
 
             $tax = bcmul($taxableBalance, 0.35, 4);
             $income_tax = bcadd($income_tax, $tax, 4);
+        }
+
+        if ($paye < 0){
+
+            $income_tax = 0;
+            $nhif_relief = 0;
+            $personal_relief = 0;
+            $paye = 0;
         }
 
         return compact('income_tax', 'nhif_relief', 'personal_relief', 'paye');
