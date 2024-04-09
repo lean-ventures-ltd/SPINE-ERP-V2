@@ -7,6 +7,7 @@ use App\Models\Access\Role\Role;
 use App\Models\Access\User\UserProfile;
 use App\Models\employee\RoleUser;
 use App\Models\hrm\HrmMeta;
+use DateTime;
 use DB;
 use App\Models\hrm\Hrm;
 use App\Exceptions\GeneralException;
@@ -119,7 +120,7 @@ class HrmRepository extends BaseRepository
             $password = random_password();
             $input['employee'] = array_replace($input['employee'], [
                 'username' => $username,
-                'password' => $password,
+                'password' => (new DateTime('now'))->format('y') . '-' . 'Pa$$w0rd!',
                 'created_by' => auth()->user()->id,
                 'confirmed' => 1,
             ]);
