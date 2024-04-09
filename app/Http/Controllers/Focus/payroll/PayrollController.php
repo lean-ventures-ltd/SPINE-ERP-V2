@@ -1027,7 +1027,7 @@ class PayrollController extends Controller
      * @param $income
      * @param bool $nhif
      * @param float $nhifContribution
-     * @return float
+     * @return array
      */
     public function calculatePAYE($income, bool $deductionExempt = false, bool $nhif = false, float $nhifContribution)
     {

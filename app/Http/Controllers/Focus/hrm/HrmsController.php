@@ -101,9 +101,41 @@ class HrmsController extends Controller
     {
         $validated = $request->validate([
             'id_number' => ['required', 'numeric', 'digits_between:6,8'],
+            'first_name' => ['required', 'string'],
+            'last_name' => ['required', 'string'],
+            'dob' => ['required', 'date'],
             'primary_contact' => ['required', 'regex:/^[\d\s\-()+]+$/', 'min:10', 'max:15'],
             'secondary_contact' => ['required', 'regex:/^[\d\s\-()+]+$/', 'min:10', 'max:15'],
+            'gender' => ['required', 'string'],
+            'marital_status' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'personal_email' => ['required', 'email'],
+            'home_county' => ['required', 'string'],
+            'home_address' => ['required', 'string'],
+            'residential_address' => ['required', 'string'],
+            'kin_name' => ['required', 'string'],
+            'kin_contact' => ['required', 'string'],
+            'kin_relationship' => ['required', 'string'],
+            'highest_education' => ['required', 'string'],
+            'institution' => ['required', 'string'],
+            'award' => ['required', 'string'],
+            'department' => ['required', 'string'],
+            'position' => ['required', 'string'],
+            'employement_date' => ['required', 'date'],
+            'previous_employer' => ['required', 'string'],
+            'entry_time' => ['required', 'string'],
+            'exit_time' => ['required', 'string'],
+            'commission' => ['required', 'string'],
+            'bank_name' => ['required', 'string'],
+            'account_name' => ['required', 'string'],
+            'account_number' => ['required', 'string'],
+            'nssf' => ['nullable', 'string'],
+            'nhif' => ['nullable', 'string'],
+            'blood_group' => ['nullable', 'string'],
+            'is_cronical' => ['nullable', 'string'],
+            'specify' => ['nullable', 'string'],
         ]);
+
         if (strlen($request['kra_pin']) != 11)
             throw ValidationException::withMessages(['KRA PIN should contain 11 characters']);
         if (!in_array($request['kra_pin'][0], ['P', 'A']))
@@ -143,8 +175,9 @@ class HrmsController extends Controller
 
         try {
             $this->repository->create($input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Employee', $th);
+        } catch (\Exception $e){
+
+            return errorHandler("Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine());
         }
 
         return new RedirectResponse(route('biller.hrms.index'), ['flash_success' => trans('alerts.backend.hrms.created')]);
@@ -173,9 +206,41 @@ class HrmsController extends Controller
     {
         $validated = $request->validate([
             'id_number' => ['required', 'numeric', 'digits_between:6,8'],
+            'first_name' => ['required', 'string'],
+            'last_name' => ['required', 'string'],
+            'dob' => ['required', 'date'],
             'primary_contact' => ['required', 'regex:/^[\d\s\-()+]+$/', 'min:10', 'max:15'],
             'secondary_contact' => ['required', 'regex:/^[\d\s\-()+]+$/', 'min:10', 'max:15'],
+            'gender' => ['required', 'string'],
+            'marital_status' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'personal_email' => ['required', 'email'],
+            'home_county' => ['required', 'string'],
+            'home_address' => ['required', 'string'],
+            'residential_address' => ['required', 'string'],
+            'kin_name' => ['required', 'string'],
+            'kin_contact' => ['required', 'string'],
+            'kin_relationship' => ['required', 'string'],
+            'highest_education' => ['required', 'string'],
+            'institution' => ['required', 'string'],
+            'award' => ['required', 'string'],
+            'department' => ['required', 'string'],
+            'position' => ['required', 'string'],
+            'employement_date' => ['required', 'date'],
+            'previous_employer' => ['required', 'string'],
+            'entry_time' => ['required', 'string'],
+            'exit_time' => ['required', 'string'],
+            'commission' => ['required', 'string'],
+            'bank_name' => ['required', 'string'],
+            'account_name' => ['required', 'string'],
+            'account_number' => ['required', 'string'],
+            'nssf' => ['nullable', 'string'],
+            'nhif' => ['nullable', 'string'],
+            'blood_group' => ['nullable', 'string'],
+            'is_cronical' => ['nullable', 'string'],
+            'specify' => ['nullable', 'string'],
         ]);
+
         if (strlen($request['kra_pin']) != 11)
             throw ValidationException::withMessages(['KRA PIN should contain 11 characters']);
         if (!in_array($request['kra_pin'][0], ['P', 'A']))
@@ -208,9 +273,11 @@ class HrmsController extends Controller
 
         try {
             $this->repository->update($hrm, $input);
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Employee', $th);
+        } catch (\Exception $e){
+
+            return errorHandler("Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine());
         }
+
 
         return new RedirectResponse(route('biller.hrms.index'), ['flash_success' => trans('alerts.backend.hrms.updated')]);
     }
