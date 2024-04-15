@@ -106,19 +106,33 @@
                 </div>
             </div>
             <div class="form-group row">
-                <div class="col-sm-6"><label for="reference" class="caption">Ticket No</span></label>
+                <div class="col-sm-3"><label for="reference" class="caption">Ticket No</span></label>
                     <div class="input-group">
                         <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
                         {{ Form::text('reference', gen4tid("{$prefixes[0]}-", @$lead->reference ?: $tid+1), ['class' => 'form-control round', 'disabled']) }}
                         {{ Form::hidden('reference', @$lead->reference ?: $tid+1) }}                        
                     </div>
                 </div>
-                <div class="col-sm-6"><label for="date_of_request" class="caption">Callout / Client Report Date</label>
+                <div class="col-sm-3"><label for="date_of_request" class="caption">Callout / Client Report Date</label>
                     <div class="input-group">
                         <div class="input-group-addon"><span class="icon-calendar4" aria-hidden="true"></span></div>
                         {{ Form::text('date_of_request', null, ['class' => 'form-control round datepicker', 'id' => 'date_of_request']) }}
                     </div>
                 </div>
+                <div class="col-sm-6">
+                    <label for="category" class="caption">Income Category {{@$lead->category}}</label>
+                    <select class="custom-select" id="category" name="category">
+                        <option value="">-- Select Category --</option>
+                        @foreach ($income_accounts as $row)
+
+                            <option value="{{ $row->id }}"  @if($row->id == @$lead->category) selected @endif>
+                                {{ $row->holder }}
+                            </option>
+
+                        @endforeach
+                    </select>
+                </div>
+
             </div>
 
             <div class="form-group row">

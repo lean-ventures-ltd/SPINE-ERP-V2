@@ -118,8 +118,9 @@ class LeadsController extends Controller
         $customers = Customer::get(['id', 'company']);
         $branches = Branch::get(['id', 'name', 'customer_id']);
         $prefixes = prefixesArray(['lead'], $lead->ins);
+        $income_accounts = \App\Models\account\Account::where('account_type', 'Income')->get();
 
-        return new EditResponse('focus.leads.edit', compact('lead', 'branches', 'customers', 'prefixes'));
+        return new EditResponse('focus.leads.edit', compact('lead', 'branches', 'customers', 'prefixes', 'income_accounts'));
     }
 
     /**

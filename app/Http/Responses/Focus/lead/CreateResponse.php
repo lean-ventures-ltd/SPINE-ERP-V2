@@ -24,7 +24,9 @@ class CreateResponse implements Responsable
 
         $customers = Customer::get(['id', 'company']);
         $branches = Branch::get(['id', 'name', 'customer_id']);
-    
-        return view('focus.leads.create', compact('tid', 'customers', 'branches', 'prefixes'));
+
+        $income_accounts = \App\Models\account\Account::where('account_type', 'Income')->get();
+
+        return view('focus.leads.create', compact('tid', 'customers', 'branches', 'prefixes', 'income_accounts'));
     }
 }

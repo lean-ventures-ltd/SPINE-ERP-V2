@@ -14,6 +14,7 @@
             $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
             $('#customer').select2({allowClear: true});
             $('#branch').select2({allowClear: true});
+            $('#category').select2({allowClear: true});
 
             $('.client-type').change(this.clientTypeChange);
             $('#customer').change(this.customerChange);
