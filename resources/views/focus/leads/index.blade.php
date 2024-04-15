@@ -44,6 +44,7 @@
                                         <th>Ticket No</th>
                                         <th>Client & Branch</th>
                                         <th>Title</th>
+                                        <th>Status</th>
                                         <th>New/Existing</th>
                                         <th>Source</th>
                                         <th>{{ trans('general.createdat') }}</th>
@@ -102,6 +103,10 @@
                 {
                     data: 'title',
                     name: 'title'
+                },
+                {
+                    data: 'status',
+                    name: 'status'
                 },
                 {
                     data: 'client_status',

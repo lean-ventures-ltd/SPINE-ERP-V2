@@ -65,7 +65,7 @@ class LeadsTableController extends Controller
                 $client_name = $lead->client_name;
                 if ($lead->customer) $client_name = $lead->customer->company;
                 if ($client_name && $lead->branch) $client_name .= " - {$lead->branch->name}";
-                return $client_name;
+                return $client_name . " EGG";
             })
             ->addColumn('exact_date', function ($lead) {
                 $days = '';
@@ -80,9 +80,17 @@ class LeadsTableController extends Controller
             ->addColumn('created_at', function ($lead) {
                 return dateFormat($lead->created_at);
             })
+            ->addColumn('status', function ($lead) {
+                if ($lead->status) {
+                    return '<div class="round" style="padding: 8px; color: white; background-color: #16D39A"> Closed </div>';
+                } else {
+                    return '<div class="round" style="padding: 8px; color: white; background-color: #00B5B8"> Open </div>';
+                }
+            })
             ->addColumn('actions', function ($lead) {
                 return $lead->action_buttons;
             })
+            ->rawColumns(['actions', 'status'])
             ->make(true);
     }
 }
