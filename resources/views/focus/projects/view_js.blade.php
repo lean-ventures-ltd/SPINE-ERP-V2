@@ -388,8 +388,8 @@
     }
     
     // fetch expenses
-    ['accountLedger', 'supplier'].forEach(v => $('#'+v).select2({allowClear: true}));
-    ['expCategory', 'accountLedger', 'supplier'].forEach(v => $('#'+v).change(() =>  expenses(render=true)));
+    ['accountLedger', 'supplier', 'product_name'].forEach(v => $('#'+v).select2({allowClear: true}));
+    ['expCategory', 'accountLedger', 'supplier', 'product_name'].forEach(v => $('#'+v).change(() =>  expenses(render=true)));
     function expenses(render=false) {
         if (!render) {
             if ($('#expItems tbody tr').length) return;   
@@ -408,6 +408,7 @@
                     exp_category: $('#expCategory').val(),
                     ledger_id: $('#accountLedger').val(),
                     supplier_id: $('#supplier').val(),
+                    product_name: $('#product_name').val(),
                 },
                 dataSrc: ({data}) => {
                     if (data.length) {

@@ -24,7 +24,9 @@ use App\Models\items\PurchaseItem;
 use App\Models\items\PurchaseorderItem;
 use App\Models\items\VerifiedItem;
 use App\Models\project\BudgetSkillset;
+use App\Models\project\Project;
 use App\Models\project\ProjectMileStone;
+use App\Models\stock_issue\StockIssue;
 use Yajra\DataTables\Facades\DataTables;
 use App\Repositories\Focus\project\ProjectRepository;
 use App\Models\items\GoodsreceivenoteItem;
@@ -106,18 +108,27 @@ class ExpensesTableController extends Controller
      */
     public function request_filter($expenses)
     {
-        $params = request()->only(['exp_category', 'ledger_id', 'supplier_id']);
+        $params = request()->only(['exp_category', 'ledger_id', 'supplier_id', 'product_name']);
         $params = array_filter($params);
         if (!$params) return $expenses;
 
         return $expenses->filter(function ($item) use ($params) {
             $eval = 0;
             foreach ($params as $key => $value) {
-                if ($item->$key == $value) $eval += 1;
+                // Check if the parameter is 'product_name'
+                if ($key == 'product_name') {
+                    // Use strpos() to check if $value is contained within $item->$key
+                    if (strpos($item->$key, $value) !== false) $eval += 1;
+                } else {
+                    // Regular check for exact match
+                    if ($item->$key == $value) $eval += 1;
+                }
             }
             return count($params) == $eval;
         });
     }
+
+
 
     /**
      * Expense Group Totals
@@ -140,7 +151,7 @@ class ExpensesTableController extends Controller
      */
     public function get_expenses()
     {
-        $indx = 0;
+        $index = 0;
         $expenses = collect();
 
         // direct purchase
@@ -148,12 +159,12 @@ class ExpensesTableController extends Controller
             ->with('purchase', 'account')
             ->get();
         foreach ($dir_purchase_items as $item) {
-            $indx++;
+            $index++;
 
             $projectMilestone = ProjectMileStone::where('id',$item->purchase->project_milestone)->first();
 
             $data = (object) [
-                'id' => $indx,
+                'id' => $index,
                 'exp_category' => $item->type == 'Stock' ? 'dir_purchase_stock' : ($item->type == 'Expense' ? 'dir_purchase_service' : ''),
                 'milestone' => empty($projectMilestone) ? 'No Budget Line Selected' : $projectMilestone->name,
                 'ledger_id' => @$item->account->id,
@@ -170,38 +181,71 @@ class ExpensesTableController extends Controller
             $expenses->add($data);
         }
 
-        // inventory stock (issued)
-        $issued_items = ProjectstockItem::whereHas('project_stock', function ($q) {
-            $q->whereHas('quote', function ($q) {
-                $q->whereHas('project', fn ($q) => $q->where('projects.id', request('project_id')));
-            });
-        })
-        ->get();
-        foreach ($issued_items as $item) {
-            $indx++;
-            $product_variation = $item->product_variation;
-            $data = (object) [
-                'id' => $indx,
-                'exp_category' => 'inventory_stock',
-                'milestone' => 'No Budget Line Selected',
-                'ledger_id' => '',
-                'ledger_account' => '',
-                'supplier_id' => '',
-                'supplier' => '',
-                'product_name' => @$product_variation->name,
-                'date' => $item->project_stock? dateFormat($item->project_stock->date) : '',
-                'uom' => $item->unit,
-                'qty' => $item->qty,
-                'rate' => @$product_variation->purchase_price ?: 0,
-                'amount' => @$product_variation ? $product_variation->purchase_price * $item->qty : 0,
-            ];
-            $expenses->add($data);
+
+        $projectQuotes = Project::where('id', request('project_id'))->first()->quotes->pluck('id');
+
+        $stockIssues = StockIssue::whereIn('quote_id', $projectQuotes)->with('items.productvar.product.unit')->get();
+
+        foreach ($stockIssues as $sI){
+
+            $index++;
+
+            $siItems = $sI->items;
+
+            foreach ($siItems as $item){
+
+                $data = (object) [
+                    'id' => $index++,
+                    'exp_category' => 'inventory_stock',
+                    'milestone' => 'No Budget Line Selected',
+                    'ledger_id' => '',
+                    'ledger_account' => '',
+                    'supplier_id' => '',
+                    'supplier' => 'Stock Issuance',
+                    'product_name' => $item->productvar->name . ' | ' . $item->productvar->code,
+                    'date' => $sI->date,
+                    'uom' => $item->productvar->product->unit->title,
+                    'qty' => $item->issue_qty,
+                    'rate' => $item->cost,
+                    'amount' => $item->amount,
+                ];
+                $expenses->add($data);
+            }
+
         }
+
+//        // inventory stock (issued)
+//        $issued_items = ProjectstockItem::whereHas('project_stock', function ($q) {
+//            $q->whereHas('quote', function ($q) {
+//                $q->whereHas('project', fn ($q) => $q->where('projects.id', request('project_id')));
+//            });
+//        })
+//        ->get();
+//        foreach ($issued_items as $item) {
+//            $index++;
+//            $product_variation = $item->product_variation;
+//            $data = (object) [
+//                'id' => $index,
+//                'exp_category' => 'inventory_stock',
+//                'milestone' => 'No Budget Line Selected',
+//                'ledger_id' => '',
+//                'ledger_account' => '',
+//                'supplier_id' => '',
+//                'supplier' => '',
+//                'product_name' => @$product_variation->name,
+//                'date' => $item->project_stock? dateFormat($item->project_stock->date) : '',
+//                'uom' => $item->unit,
+//                'qty' => $item->qty,
+//                'rate' => @$product_variation->purchase_price ?: 0,
+//                'amount' => @$product_variation ? $product_variation->purchase_price * $item->qty : 0,
+//            ];
+//            $expenses->add($data);
+//        }
 
         // purchase order goods received
         $goods_receive_items = GoodsreceivenoteItem::whereHas('project', fn($q) => $q->where('itemproject_id', request('project_id')))->get();
         foreach ($goods_receive_items as $item) {
-            $indx++;
+            $index++;
             $grn = $item->goodsreceivenote;
             $po_item = $item->purchaseorder_item;
             $po = @$po_item->purchaseorder;
@@ -214,7 +258,7 @@ class ExpensesTableController extends Controller
             $projectMilestone = ProjectMileStone::where('id',$item->purchaseorder_item->purchaseorder->project_milestone)->first();
 
             $data = (object) [
-                'id' => $indx,
+                'id' => $index,
                 'exp_category' => 'purchase_order_stock',
                 'milestone' => empty($projectMilestone) ? 'No Budget Line Selected' : $projectMilestone->name,
                 'ledger_id' => @$item->account->id,
@@ -244,9 +288,9 @@ class ExpensesTableController extends Controller
 
             $projectMilestone = ProjectMileStone::where('id',$item->project_milestone)->first();
 
-            $indx++;
+            $index++;
             $data = (object) [
-                'id' => $indx,
+                'id' => $index,
                 'exp_category' => 'labour_service',
                 'milestone' => empty($projectMilestone) ? 'No Budget Line Selected' : $projectMilestone->name,
                 'ledger_id' => '',

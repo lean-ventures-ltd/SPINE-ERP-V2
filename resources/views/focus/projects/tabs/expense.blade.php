@@ -39,6 +39,17 @@
                     @endforeach
                 </select>
             </div>
+
+            <div class="col-3">
+                <label for="product_name">Product</label>
+                <select class="custom-select" id="product_name" data-placeholder="Choose Product">
+                    <option value=""></option>
+                    @foreach ($productNames as $pName)
+                        <option value="{{ $pName }}">{{ $pName }}</option>
+                    @endforeach
+                </select>
+            </div>
+
         </div>
 
         <table id="expTotals" class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">

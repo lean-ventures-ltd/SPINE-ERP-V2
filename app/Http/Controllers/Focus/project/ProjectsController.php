@@ -26,6 +26,7 @@ use App\Models\note\Note;
 use App\Models\account\Account;
 use App\Models\project\ProjectLog;
 use App\Models\project\ProjectMileStone;
+use App\Models\stock_issue\StockIssue;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
@@ -175,6 +176,15 @@ class ProjectsController extends Controller
         $suppliers = Supplier::get(['id', 'name']);
         $last_tid = Project::where('ins', auth()->user()->ins)->max('tid');
 
+        $projectQuotes = Project::where('id', $project->id)->first()->quotes->pluck('id');
+        $stockIssues = StockIssue::whereIn('quote_id', $projectQuotes)->with('items.productvar.product.unit')->get();
+
+        $productNames = collect($stockIssues)->map(function ($stockIssue) {
+            return collect($stockIssue['items'])->map(function ($item) {
+                return $item['productvar']['name'] . ' | ' . $item['productvar']['code'];
+            });
+        })->flatten();
+
         // temp properties
         $project->customer = $project->customer_project;
         $project->creator = auth()->user();
@@ -183,7 +193,7 @@ class ProjectsController extends Controller
         $employees = User::all();
         $expensesByMilestone = $this->getExpensesByMilestone($project->id);
 
-        return new ViewResponse('focus.projects.view', compact('project', 'accounts', 'exp_accounts', 'suppliers', 'last_tid', 'mics', 'employees', 'expensesByMilestone' ));
+        return new ViewResponse('focus.projects.view', compact('project', 'accounts', 'exp_accounts', 'suppliers', 'last_tid', 'mics', 'employees', 'expensesByMilestone', 'productNames'));
     }
 
     /**
