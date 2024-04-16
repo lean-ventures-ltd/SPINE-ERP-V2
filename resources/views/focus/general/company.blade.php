@@ -61,7 +61,7 @@
                                                 {{ Form::text('taxid', @$company['taxid'], ['class' => 'form-control box-size', 'placeholder' => trans('hrms.tax_id')]) }}
                                             </div>
                                             <div class='col'>
-                                                {{ Form::label('etr_code', 'ETR Code', ['class' => 'col control-label']) }}
+                                                {{ Form::label('etr_code', 'CU Serial Number', ['class' => 'col control-label']) }}
                                                 {{ Form::text('etr_code', @$company['etr_code'], ['class' => 'form-control box-size', 'placeholder' => 'ETR Code']) }}
                                             </div>
                                         </div>
