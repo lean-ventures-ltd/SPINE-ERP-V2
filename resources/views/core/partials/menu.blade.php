@@ -946,7 +946,7 @@
                                 </a>
                             </li>
                             @endauth
-                            @permission('manage-edl-categories')
+                            @permission('delete-purchase')
                             <li><a class="dropdown-item" href="{{ route('biller.purchase-classes.index') }}"
                                    data-toggle="dropdown"> <i class="fa fa-plus-circle"></i>Purchase Classes
                                 </a>
