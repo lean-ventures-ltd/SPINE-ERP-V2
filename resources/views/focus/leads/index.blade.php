@@ -32,6 +32,49 @@
                             <div class="col-sm-2 col-md-1 h4 text-success font-weight-bold">{{ $closed_lead }}</div>
                             <div class="col-sm-12 col-md-1 h4 text-success font-weight-bold">{{ numberFormat(div_num($closed_lead, $total_lead) * 100) }}%</div>
                         </div>
+
+                        <div class="row mt-2" id="filters">
+
+                            <div class="col-3">
+                                <label for="status">Status</label>
+                                <select name="status" class="custom-select" id="status" data-placeholder="Filter by status">
+                                    @foreach (['Open' => 0, 'Closed' => 1] as $key => $value)
+                                        <option value="{{ $value }}">{{ $key }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-3">
+                                <label for="category" class="caption">Category</label>
+                                <select class="custom-select" name="account_id" id="category" data-placeholder="Filter by Income Category">
+                                    @foreach ($income_accounts as $row)
+                                        <option value="{{ $row->id }}"  @if($row->id == @$quote->account_id) selected @endif>
+                                            {{ $row->holder }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-2">
+                                <label for="from_date">From Date</label>
+                                <input type="text" id="from_date" name="from_date" required placeholder="Filter From..." class="datepicker form-control box-size mb-2">
+                            </div>
+
+                            <div class="col-2">
+                                <label for="to_date">To Date</label>
+                                <input type="text" id="to_date" name="to_date" required placeholder="Filter To..." class="datepicker form-control box-size mb-2">
+                            </div>
+
+                            <div class="col-2">
+
+                                <button id="clear_filters" class="btn btn-secondary round mt-2" > Clear Filters </button>
+
+                            </div>
+
+                        </div>
+
+
+
                     </div>
                 </div>
                 <div class="card">
@@ -46,6 +89,7 @@
                                         <th>Title</th>
                                         <th>Status</th>
                                         <th>New/Existing</th>
+                                        <th>Category</th>
                                         <th>Source</th>
                                         <th>{{ trans('general.createdat') }}</th>
                                         <th>Client Ref</th>
@@ -73,12 +117,40 @@
 
 @section('after-scripts')
 {{ Html::script(mix('js/dataTable.js')) }}
+{{ Html::script('focus/js/select2.min.js') }}
 <script>
     setTimeout(() => draw_data(), "{{ config('master.delay') }}");
     $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': "{{ csrf_token() }}" } });
 
-    function draw_data() {
-        const dataTable = $('#leads-table').dataTable({
+    $('.datepicker').datepicker({format: "{{ config('core.user_date_format') }}", autoHide: true})
+
+    $('#status').select2({allowClear: true}).val('').trigger('change');
+    $('#category').select2({allowClear: true}).val('').trigger('change');
+
+    // $('#status, #category, #from_date, #to_date').change(redrawTable());
+    $('#filters').on('change', '#status, #category, #from_date, #to_date', () => {
+        try {
+            $('#leads-table').DataTable().destroy();
+            draw_data();
+        } catch (error) {
+            console.error('An error occurred:', error);
+        }
+    });
+
+
+
+    $('#clear_filters').click( () => {
+
+        $('#status, #category').val('').trigger('change');
+        $('#from_date, #to_date').val('');
+        $('#leads-table').DataTable().destroy();
+        draw_data();
+    });
+
+
+
+    function draw_data(filters = {}) {
+        $('#leads-table').dataTable({
             stateSave: true,
             processing: true,
             responsive: true,
@@ -86,6 +158,12 @@
             ajax: {
                 url: '{{ route("biller.leads.get") }}',
                 type: 'post',
+                data: {
+                    status: $('#status').val(),
+                    category: $('#category').val(),
+                    from_date: $('#from_date').val(),
+                    to_date: $('#to_date').val(),
+                },
             },
             columns: [
                 {
@@ -111,6 +189,10 @@
                 {
                     data: 'client_status',
                     name: 'client_status'
+                },
+                {
+                    data: 'category',
+                    name: 'category'
                 },
                 {
                     data: 'source',

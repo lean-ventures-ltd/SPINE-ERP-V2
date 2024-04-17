@@ -19,6 +19,9 @@
 namespace App\Http\Controllers\Focus\lead;
 
 use App\Http\Controllers\Controller;
+use App\Models\account\Account;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 use App\Repositories\Focus\lead\LeadRepository;
 use Carbon\Carbon;
@@ -48,12 +51,15 @@ class LeadsTableController extends Controller
      * This method return the data of the model
      * @return mixed
      */
-    public function __invoke()
+    public function __invoke(Request $request)
     {
         $core = $this->lead->getForDataTable();
 
         $ins = auth()->user()->ins;
         $prefixes = prefixesArray(['lead'], $ins);
+
+        Storage::disk('local')->put('leads/Request.json', json_encode($request->all()));
+
 
         return Datatables::of($core)
             ->escapeColumns(['id'])
@@ -86,6 +92,14 @@ class LeadsTableController extends Controller
                 } else {
                     return '<div class="round" style="padding: 8px; color: white; background-color: #00B5B8"> Open </div>';
                 }
+            })
+            ->addColumn('category', function ($lead) {
+
+                $account = Account::where('account_type', 'Income')
+                    ->where('id', $lead->category)
+                    ->first();
+
+                return empty($account) ? 'N/A' : $account->holder;
             })
             ->addColumn('actions', function ($lead) {
                 return $lead->action_buttons;

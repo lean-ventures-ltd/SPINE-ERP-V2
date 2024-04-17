@@ -18,6 +18,7 @@
 
 namespace App\Http\Controllers\Focus\lead;
 
+use App\Models\account\Account;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
@@ -63,8 +64,9 @@ class LeadsController extends Controller
         $open_lead = Lead::where('status', 0)->count();
         $closed_lead = Lead::where('status', 1)->count();
         $total_lead = Lead::count();
+        $income_accounts = Account::where('account_type', 'Income')->get();
 
-        return new ViewResponse('focus.leads.index', compact('open_lead', 'closed_lead', 'total_lead'));
+        return new ViewResponse('focus.leads.index', compact('open_lead', 'closed_lead', 'total_lead', 'income_accounts'));
     }
 
     /**
@@ -118,7 +120,7 @@ class LeadsController extends Controller
         $customers = Customer::get(['id', 'company']);
         $branches = Branch::get(['id', 'name', 'customer_id']);
         $prefixes = prefixesArray(['lead'], $lead->ins);
-        $income_accounts = \App\Models\account\Account::where('account_type', 'Income')->get();
+        $income_accounts = Account::where('account_type', 'Income')->get();
 
         return new EditResponse('focus.leads.edit', compact('lead', 'branches', 'customers', 'prefixes', 'income_accounts'));
     }

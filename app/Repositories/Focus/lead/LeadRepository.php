@@ -2,11 +2,14 @@
 
 namespace App\Repositories\Focus\lead;
 
+use App\Http\Requests\Request;
 use App\Models\lead\Lead;
 use App\Exceptions\GeneralException;
 use App\Models\items\Prefix;
 use App\Repositories\BaseRepository;
+use DateTime;
 use DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -28,6 +31,20 @@ class LeadRepository extends BaseRepository
     public function getForDataTable()
     {
         $q = $this->query();
+
+
+        $q->when((request('status') == 1), fn($q) => $q->where('status', 1));
+        $q->when((request('status') == 0), fn($q) => $q->where('status', 0));
+
+        $q->when(request('category'), fn($q) => $q->where('category', request('category')));
+
+        $q->when(request('from_date') && request('to_date'), function ($q) {
+            $q->whereBetween('date_of_request', array_map(fn($v) => date_for_database($v), [request('from_date'), request('to_date')]));
+        });
+
+        $q->when(request('from_date') && empty(request('to_date')), function ($q) {
+            $q->whereBetween('date_of_request', array_map(fn($v) => date_for_database($v), [request('from_date'), (new DateTime())->format('Y-m-d')]));
+        });
 
         return $q->get();
     }
