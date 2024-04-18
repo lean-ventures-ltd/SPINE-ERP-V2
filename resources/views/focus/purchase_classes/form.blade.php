@@ -1,5 +1,5 @@
 <head>
-    <script src="https://cdn.tiny.cloud/1/4do69iegy8gdo10luhw47dgizr05tlp11q66osjli88uaf6e/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.tiny.cloud/1/ewcb9ttdxkr6mv3uyc8ueykuqz06aja4t3e7wuqyfqfwq17z/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 </head>
 
 
