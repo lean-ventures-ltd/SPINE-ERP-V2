@@ -63,8 +63,8 @@ class CustomerRepository extends BaseRepository
         $q = $this->query();
 
         // customer user filter
-        $customer_id = auth()->user()->customer_id;
-        $q->when($customer_id, fn($q) => $q->where('id', $customer_id));
+//        $customer_id = auth()->user()->customer_id;
+//        $q->when($customer_id, fn($q) => $q->where('id', $customer_id));
         
         return $q->get(['id','name','company','email','address','picture','active','created_at']);
     }
