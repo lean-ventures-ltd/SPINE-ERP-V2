@@ -76,7 +76,12 @@ class PurchaseClassController extends Controller
             // Add other validation rules as needed
         ]);
 
-        PurchaseClass::create($request->all());
+//        return $request;
+
+        $p = new PurchaseClass();
+        $p->name = $request->name;
+        $p->ins = auth()->user()->ins;
+        $p->save();
 
         return redirect()->route('biller.purchase-classes.index')
             ->with('success', 'Purchase class created successfully');
