@@ -79,16 +79,12 @@
                 <select class="custom-select" name="account_id">
                     <option value="">-- Select Category --</option>                                        
                     @foreach ($income_accounts as $row)
-                        @php
-                            $account_type = $row->accountType;
-                            if ($account_type->name != 'Income') continue;
-                        @endphp
-                        <optgroup label="{{ $account_type->name }}">
-                            <option value="{{ $row->id }}"  @if($row->id == @$quote->account_id) selected @endif>
-                                {{ $row->holder }}
-                            </option>                    
-                        </optgroup>
-                    @endforeach                                        
+
+                        <option value="{{ $row->id }}"  @if($row->id == @$quote->account_id) selected @endif>
+                            {{ $row->holder }}
+                        </option>
+
+                    @endforeach
                 </select>
             </div>
 

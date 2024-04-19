@@ -58,13 +58,12 @@
                             <label for="income_category" class="caption">Income Category</label>
                             <select class="custom-select" name="account_id" id="account_id">
                                 <option value="">-- Select Category --</option>  
-                                <optgroup label="Income">
-                                    @foreach ($accounts as $row)
-                                        <option value="{{ $row->id }}" {{ $row->id == @$invoice->account_id ? 'selected' : '' }}>
-                                            {{ $row->holder }}
-                                        </option>                    
-                                    @endforeach                                        
-                                </optgroup>
+
+                                @foreach ($accounts as $row)
+                                    <option value="{{ $row->id }}" {{ $row->id == @$invoice->account_id ? 'selected' : '' }}>
+                                        {{ $row->holder }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-3">

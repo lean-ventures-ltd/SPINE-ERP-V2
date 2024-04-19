@@ -70,16 +70,12 @@
         <select class="custom-select" name="account_id" required>
             <option value="">-- Select Category --</option>                                        
             @foreach ($accounts as $row)
-                @php
-                    $account_type = $row->accountType;
-                    if ($account_type->name != 'Income') continue;
-                @endphp
-                <optgroup label="{{ $account_type->name }}">
-                    <option value="{{ $row->id }}" {{ $row->id == @$invoice->account_id ? 'selected' : '' }}>
-                        {{ $row->holder }}
-                    </option>                    
-                </optgroup>
-            @endforeach                                        
+
+                <option value="{{ $row->id }}" {{ $row->id == @$invoice->account_id ? 'selected' : '' }}>
+                    {{ $row->holder }}
+                </option>
+
+            @endforeach
         </select>
     </div>
 
