@@ -18,6 +18,7 @@
 
 namespace App\Http\Controllers\Focus\purchase;
 
+use App\Models\project\ProjectMileStone;
 use App\Models\purchase\Purchase;
 use App\Models\supplier\Supplier;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ use App\Http\Requests\Focus\purchase\ManagePurchaseRequest;
 use App\Http\Requests\Focus\purchase\StorePurchaseRequest;
 use App\Http\Responses\RedirectResponse;
 use DirectoryIterator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -60,6 +62,31 @@ class PurchasesController extends Controller
      */
     public function index(ManagePurchaseRequest $request)
     {
+        // import purchases
+        // foreach (new DirectoryIterator(base_path() . '/main_creditors') as $file) {
+        //     if ($file->isDot()) continue;
+        //     $expense_data = $this->repository->expense_import_data($file->getFilename());
+        //     $expense_data = array_slice($expense_data, 0, 500);
+        //     $expense_data = array_slice($expense_data, 500, 500);
+        //     $expense_data = array_slice($expense_data, 1000, 500);
+        //     $expense_data = array_slice($expense_data, 1500, 500);
+        //     $expense_data = array_slice($expense_data, 2000, 500);
+        //     $expense_data = array_slice($expense_data, 2500, 500);
+        //     $expense_data = array_slice($expense_data, 3000, 500);
+        //     if (isset($expense_data[3500])) $expense_data = array_slice($expense_data, 3500, count($expense_data));
+
+        //     // dd($expense_data);
+        //     foreach ([] as $row) {
+        //         // $this->repository->create($row);
+        //     }
+        // }
+
+        // delete purchases (frontfreeze, sahara)
+        // $purchases = Purchase::whereIn('supplier_id', [8])->get();
+        // foreach ($purchases as $key => $purchase) {
+        //     // $this->repository->delete($purchase);
+        // }
+
         $suppliers = Supplier::whereHas('bills')->get();
 
         return new ViewResponse('focus.purchases.index', compact('suppliers'));
@@ -86,31 +113,33 @@ class PurchasesController extends Controller
     {
         // extract input details
         $data = $request->only([
-            'supplier_type', 'supplier_id', 'suppliername', 'supplier_taxid', 'transxn_ref', 'date', 'due_date', 'doc_ref_type', 'doc_ref', 
+            'supplier_type', 'supplier_id', 'suppliername', 'supplier_taxid', 'transxn_ref', 'date', 'due_date', 'doc_ref_type', 'doc_ref',
             'tax', 'tid', 'project_id', 'note', 'stock_subttl', 'stock_tax', 'stock_grandttl', 'expense_subttl', 'expense_tax', 'expense_grandttl',
-            'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'is_tax_exc'
+            'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'is_tax_exc', 'project_milestone', 'purchase_class', 'cu_invoice_no'
         ]);
         $data_items = $request->only([
-            'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom'
+            'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom', 'item_milestone', 'item_purchase_class', 'asset_purchase_class'
         ]);
+
+        if (!empty($data['cu_invoice_no'])){
+
+            $refBackup = ['doc_ref_backup' => $data['doc_ref']];
+            $data['doc_ref'] = $data['cu_invoice_no'];
+            $data = array_merge($data, $refBackup);
+        }
 
         $data['ins'] = auth()->user()->ins;
         $data['user_id'] = auth()->user()->id;
 
         $data_items = modify_array($data_items);
         $data_items = array_filter($data_items, fn($v) => $v['item_id']);
-        if (!$data_items) throw ValidationException::withMessages(['Item Name / Ledger Name should be selected from pre-defined system options']);
-        
-        try {
-            $purchase = $this->repository->create(compact('data', 'data_items'));
-        } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
-            return errorHandler('Error Creating Direct Purchase', $th);
-        }
+        if (!$data_items) throw ValidationException::withMessages(['Please use suggested options for input within a row!']);
+
+        $purchase = $this->repository->create(compact('data', 'data_items'));
 
         $msg = 'Direct Purchase Created Successfully.'
-        .' <span class="pl-5 font-weight-bold h5"><a href="'. route('biller.billpayments.create', ['src_id' => $purchase->id, 'src_type' => 'direct_purchase']) .'" target="_blank" class="btn btn-purple">
-        <i class="fa fa-money"></i> Direct Payment</a></span>';
+            .' <span class="pl-5 font-weight-bold h5"><a href="'. route('biller.billpayments.create', ['src_id' => $purchase->id, 'src_type' => 'direct_purchase']) .'" target="_blank" class="btn btn-purple">
+            <i class="fa fa-money"></i> Direct Payment</a></span>';
 
         return new RedirectResponse(route('biller.purchases.index'), ['flash_success' => $msg]);
     }
@@ -138,31 +167,42 @@ class PurchasesController extends Controller
     {
         // extract input details
         $data = $request->only([
-            'supplier_type', 'supplier_id', 'suppliername', 'supplier_taxid', 'transxn_ref', 'date', 'due_date', 'doc_ref_type', 'doc_ref', 
-            'tax', 'project_id', 'note', 'stock_subttl', 'stock_tax', 'stock_grandttl', 'expense_subttl', 'expense_tax', 'expense_grandttl',
-            'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'is_tax_exc'
+            'supplier_type', 'supplier_id', 'suppliername', 'supplier_taxid', 'transxn_ref', 'date', 'due_date', 'doc_ref_type', 'doc_ref',
+            'tax', 'tid', 'project_id', 'note', 'stock_subttl', 'stock_tax', 'stock_grandttl', 'expense_subttl', 'expense_tax', 'expense_grandttl',
+            'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'is_tax_exc', 'project_milestone', 'purchase_class', 'cu_invoice_no'
         ]);
         $data_items = $request->only([
-            'id', 'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom'
+            'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom', 'item_milestone', 'item_purchase_class', 'asset_purchase_class'
         ]);
+
+        if (!empty($data['cu_invoice_no'])){
+
+            $refBackup = ['doc_ref_backup' => $data['doc_ref']];
+            $data['doc_ref'] = $data['cu_invoice_no'];
+            $data = array_merge($data, $refBackup);
+        }
+
 
         $data['ins'] = auth()->user()->ins;
         $data['user_id'] = auth()->user()->id;
 
         $data_items = modify_array($data_items);
         $data_items = array_filter($data_items, fn($v) => $v['item_id']);
-        if (!$data_items) throw ValidationException::withMessages(['Item Name / Ledger Name should be selected from pre-defined system options']);
+        if (!$data_items) throw ValidationException::withMessages(['Please use suggested options for input within a row!']);
 
-        try {
-            $purchase = $this->repository->update($purchase, compact('data', 'data_items'));
-            $payment_params = "src_id={$purchase->id}&src_type=direct_purchase";
-            
-            $msg = 'Direct Purchase Updated Successfully.';
-            $msg .= ' <span class="pl-5 font-weight-bold h5"><a href="'. route('biller.billpayments.create', $payment_params) .'" target="_blank" class="btn btn-purple"><i class="fa fa-money"></i> Direct Payment</a></span>';
-        } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
-            return errorHandler('Error Updating Direct Purchase', $th);
-        }
+        $purchase = $this->repository->update($purchase, compact('data', 'data_items'));
+        $payment_params = "src_id={$purchase->id}&src_type=direct_purchase";
+//
+//            DB::commit();
+//
+//        } catch (Exception $e){
+//            DB::rollBack();
+//            return redirect()->back()->with('flash_error', 'SQL ERROR : ' . $e->getMessage());
+//        }
+
+
+        $msg = 'Direct Purchase Updated Successfully.';
+        $msg .= ' <span class="pl-5 font-weight-bold h5"><a href="'. route('biller.billpayments.create', $payment_params) .'" target="_blank" class="btn btn-purple"><i class="fa fa-money"></i> Direct Payment</a></span>';
 
         return new RedirectResponse(route('biller.purchases.index'), ['flash_success' => $msg]);
     }
@@ -182,7 +222,7 @@ class PurchasesController extends Controller
             if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Deleting Direct Purchase', $th);
         }
-        
+
         return new RedirectResponse(route('biller.purchases.index'), ['flash_success' => 'Direct Purchase deleted successfully']);
     }
 
@@ -203,7 +243,7 @@ class PurchasesController extends Controller
         $q = $request->get('id');
 
         $suppliers = array();
-        if ($q == 'supplier') 
+        if ($q == 'supplier')
             $suppliers = Supplier::select('id', 'suppliers.company AS name')->get();
 
         return response()->json($suppliers);
