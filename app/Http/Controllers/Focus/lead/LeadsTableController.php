@@ -71,7 +71,7 @@ class LeadsTableController extends Controller
                 $client_name = $lead->client_name;
                 if ($lead->customer) $client_name = $lead->customer->company;
                 if ($client_name && $lead->branch) $client_name .= " - {$lead->branch->name}";
-                return $client_name . " EGG";
+                return $client_name;
             })
             ->addColumn('exact_date', function ($lead) {
                 $days = '';
