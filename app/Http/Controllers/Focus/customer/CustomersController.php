@@ -84,20 +84,55 @@ class CustomersController extends Controller
      */
     public function store(CreateCustomerRequest $request)
     {
+
         $request->validate([
-            'company' => 'required',
-            'password' => request('password') ? 'required_with:user_email | min:7' : '',
-            'password_confirmation' => 'required_with:password | same:password'
+            'company' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:20'],
+            'email' => ['required', 'email', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
+            'address' => ['required', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:255'],
+            'region' => ['required', 'string', 'max:255'],
+            'country' => ['required', 'string', 'max:255'],
+            'postbox' => ['nullable', 'string', 'max:255'],
+            'taxid' => ['required', 'string', 'size:11',
+                function ($attribute, $value, $fail) {
+                    if (strlen($value) != 11) {
+                        $fail('KRA PIN should contain 11 characters');
+                    }
+                    if (!in_array($value[0], ['P', 'A'])) {
+                        $fail('First character of KRA PIN must be letter "P" or "A"');
+                    }
+                    $pattern = "/^[0-9]+$/i";
+                    if (!preg_match($pattern, substr($value, 1, 9))) {
+                        $fail('Characters between 2nd and 10th letters must be numbers');
+                    }
+                    if (!preg_match("/^[a-zA-Z]+$/i", substr($value, -1))) {
+                        $fail('Last character of KRA PIN must be a letter');
+                    }
+                }
+            ],
+            'is_tax_exempt' => ['nullable', 'boolean'],
+            'name_s' => ['nullable', 'string', 'max:255'],
+            'phone_s' => ['nullable', 'string', 'max:20'],
+            'email_s' => ['nullable', 'email', 'max:255'],
+            'address_s' => ['nullable', 'string', 'max:255'],
+            'city_s' => ['nullable', 'string', 'max:255'],
+            'region_s' => ['nullable', 'string', 'max:255'],
+            'country_s' => ['nullable', 'string', 'max:255'],
+            'postbox_s' => ['nullable', 'string', 'max:255'],
+            'open_balance' => ['required', 'numeric'],
+            'open_balance_date' => ['required', 'date'],
+            'open_balance_note' => ['nullable', 'string'],
+            'contact_person_info' => ['nullable', 'string'],
+            'docid' => ['nullable', 'string', 'max:255'],
+            'custom1' => ['nullable', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'user_email' => ['required', 'email', 'unique:users,email', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
         ]);
-        if (request('password')) {
-            if (!preg_match("/[a-z][A-Z]|[A-Z][a-z]/i", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain Upper and Lowercase letters']);
-            if (!preg_match("/[0-9]/", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain At Least One Number']);
-            if (!preg_match("/[^A-Za-z 0-9]/", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain A Symbol']);
-        }
-            
+
         try {
             $this->repository->create($request->except(['_token', 'ins', 'balance']));
         } catch (\Exception $e){
@@ -129,19 +164,54 @@ class CustomersController extends Controller
      */
     public function update(EditCustomerRequest $request, Customer $customer)
     {
+        
         $request->validate([
-            'company' => 'required',
-            'password' => request('password') ? 'required_with:user_email | min:7' : '',
-            'password_confirmation' => 'required_with:password | same:password'
+            'company' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:20'],
+            'email' => ['required', 'email', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
+            'address' => ['required', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:255'],
+            'region' => ['required', 'string', 'max:255'],
+            'country' => ['required', 'string', 'max:255'],
+            'postbox' => ['nullable', 'string', 'max:255'],
+            'taxid' => ['required', 'string', 'size:11',
+                function ($attribute, $value, $fail) {
+                    if (strlen($value) != 11) {
+                        $fail('KRA PIN should contain 11 characters');
+                    }
+                    if (!in_array($value[0], ['P', 'A'])) {
+                        $fail('First character of KRA PIN must be letter "P" or "A"');
+                    }
+                    $pattern = "/^[0-9]+$/i";
+                    if (!preg_match($pattern, substr($value, 1, 9))) {
+                        $fail('Characters between 2nd and 10th letters must be numbers');
+                    }
+                    if (!preg_match("/^[a-zA-Z]+$/i", substr($value, -1))) {
+                        $fail('Last character of KRA PIN must be a letter');
+                    }
+                }
+            ],
+            'is_tax_exempt' => ['nullable', 'boolean'],
+            'name_s' => ['nullable', 'string', 'max:255'],
+            'phone_s' => ['nullable', 'string', 'max:20'],
+            'email_s' => ['nullable', 'email', 'max:255'],
+            'address_s' => ['nullable', 'string', 'max:255'],
+            'city_s' => ['nullable', 'string', 'max:255'],
+            'region_s' => ['nullable', 'string', 'max:255'],
+            'country_s' => ['nullable', 'string', 'max:255'],
+            'postbox_s' => ['nullable', 'string', 'max:255'],
+            'open_balance' => ['required', 'numeric'],
+            'open_balance_date' => ['required', 'date'],
+            'open_balance_note' => ['nullable', 'string'],
+            'contact_person_info' => ['nullable', 'string'],
+            'docid' => ['nullable', 'string', 'max:255'],
+            'custom1' => ['nullable', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'user_email' => ['required', 'email', 'unique:users,email', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
         ]);
-        if (request('password')) {
-            if (!preg_match("/[a-z][A-Z]|[A-Z][a-z]/i", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain Upper and Lowercase letters']);
-            if (!preg_match("/[0-9]/", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain At Least One Number']);
-            if (!preg_match("/[^A-Za-z 0-9]/", $request->password)) 
-                throw ValidationException::withMessages(['password' => 'Password Must Contain A Symbol']);
-        }
     
         try {
             $this->repository->update($customer, $request->except(['_token', 'ins', 'balance']));
