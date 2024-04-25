@@ -162,10 +162,10 @@
 			<td width="45%">
 				<span class="customer-dt-title">SHIPPING DETAILS:</span><br><br>
 				<b>PO Number :</b> {{ gen4tid('PO-', $resource->tid) }}<br><br>				
-				<b>Branch :</b> Head Office<br>		
-				<b>Client :</b> Lean Ventures Ltd<br>		
-				<b>Address :</b> P.O Box 36082-00200, Nairobi <br>
-				<b>Email :</b> info@leanventures.co.ke
+				<b>Branch :</b> Head Office <br>
+				<b>Client :</b> {{ auth()->user()->business->cname }} <br>
+				<b>Address :</b> {{ auth()->user()->business->address }} <br>
+				<b>Email :</b> {{ auth()->user()->business->email }}
 			</td>
 		</tr>
 	</table><br>
@@ -214,7 +214,7 @@
                 <td class="align-r">{{ number_format($resource->grandtax, 2) }}</td>
 			</tr>
 			<tr>
-				<td colspan="4"><em>Approved By : </em><b>{{ 'Sheila.M' }}</b></td>
+{{--				<td colspan="4"><em>Approved By : </em><b>{{ 'Sheila.M' }}</b></td>--}}
 				<td class="bd align-r"><b>Grand Total:</b></td>
 				<td class="bd align-r">{{ number_format($resource->grandttl, 2) }}</td>
 			</tr>
