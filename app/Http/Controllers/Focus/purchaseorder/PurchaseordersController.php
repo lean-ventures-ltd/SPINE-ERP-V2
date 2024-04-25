@@ -18,6 +18,7 @@
 
 namespace App\Http\Controllers\Focus\purchaseorder;
 
+use App\Models\PurchaseClass\PurchaseClass;
 use App\Models\purchaseorder\Purchaseorder;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ViewResponse;
@@ -138,7 +139,7 @@ class PurchaseordersController extends Controller
         $order = $request->only([
             'supplier_id', 'tid', 'date', 'due_date', 'term_id', 'project_id', 'note', 'tax',
             'stock_subttl', 'stock_tax', 'stock_grandttl', 'expense_subttl', 'expense_tax', 'expense_grandttl',
-            'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'project_milestone',
+            'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'project_milestone', 'purchase_class',
         ]);
         $order_items = $request->only([
             'id', 'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type','product_code','warehouse_id'

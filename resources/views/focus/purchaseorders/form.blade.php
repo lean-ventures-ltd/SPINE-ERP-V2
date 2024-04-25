@@ -164,7 +164,7 @@
                     <select id="purchase_class" name="purchase_class" class="custom-select round" >
                         <option value="">-- Select Purchase Class --</option>
                         @foreach ($purchaseClasses as $pc)
-                            <option value="{{ $pc->id }}" @if(@$purchase->purchase_class == $pc->id) selected @endif>
+                            <option value="{{ $pc->id }}" @if(@$po->purchase_class == $pc->id) selected @endif>
                                 {{ $pc->name }}
                             </option>
                         @endforeach
