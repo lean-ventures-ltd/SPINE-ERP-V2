@@ -17,7 +17,10 @@
             <!-- layout -->
             <tr>
                 <td><input type="text" class="form-control increment" value="1" id="increment-0" disabled></td>
-                <td><input type="text" class="form-control stockname" name="name[]" placeholder="Product Name" id='stockname-0'></td>
+                <td>
+                    <input type="text" class="form-control stockname" name="name[]" placeholder="Product Name" id='stockname-0'>
+                    <input type="hidden" id="stockitemid-0" name="item_id[]">
+                </td>
                 <td><input type="text" class="form-control qty" name="qty[]" id="qty-0" value="1"></td>  
                 <td><select name="uom[]" id="uom-0" class="form-control uom" ></select></td> 
                 <td><input type="text" class="form-control price" name="rate[]" id="price-0" readonly></td>
@@ -33,7 +36,7 @@
                 <td><input type="text" class="form-control taxable" value="0"></td>
                 <td class="text-center">{{config('currency.symbol')}} <b><span class='amount' id="result-0">0</span></b></td> 
                 <td><button type="button" class="btn btn-danger remove"><i class="fa fa-minus-square" aria-hidden="true"></i></button></td>
-                <input type="hidden" id="stockitemid-0" name="item_id[]">
+{{--                <input type="text" id="stockitemid-0" name="item_id[]">--}}
                 <input type="hidden" class="stocktaxr" name="taxrate[]">
                 <input type="hidden" class="stockamountr" name="amount[]">
                 {{-- <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="0"> --}}
@@ -93,7 +96,7 @@
                             <td><input type="text" class="form-control taxable" value="{{ (float) $item->taxrate }}" readonly></td>
                             <td class="text-center">{{config('currency.symbol')}} <b><span class='amount' id="result-{{$i}}">{{ (float) $item->amount }}</span></b></td>              
                             <td><button type="button" class="btn btn-danger remove"><i class="fa fa-minus-square" aria-hidden="true"></i></button></td>
-                            <input type="hidden" id="stockitemid-{{$i}}" name="item_id[]" value="{{ $item->item_id }}">
+                            <input type="text" id="stockitemid-{{$i}}" name="item_id[]" value="{{ $item->item_id }}">
                             <input type="hidden" class="stocktaxr" name="taxrate[]" value="{{ (float) $item->taxrate }}">
                             <input type="hidden" class="stockamountr" name="amount[]" value="{{ (float) $item->amount }}">
                             <!--<input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="0">-->
