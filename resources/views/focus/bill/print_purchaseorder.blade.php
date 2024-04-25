@@ -214,7 +214,7 @@
                 <td class="align-r">{{ number_format($resource->grandtax, 2) }}</td>
 			</tr>
 			<tr>
-{{--				<td colspan="4"><em>Approved By : </em><b>{{ 'Sheila.M' }}</b></td>--}}
+				<td colspan="4"><em>Approved </td>
 				<td class="bd align-r"><b>Grand Total:</b></td>
 				<td class="bd align-r">{{ number_format($resource->grandttl, 2) }}</td>
 			</tr>
