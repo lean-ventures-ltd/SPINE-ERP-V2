@@ -4,7 +4,7 @@
  * Client Vendor
  *
  */
-Route::group(['namespace' => 'client_vendor'], function () {
+Route::middleware(['check_admin_status'])->namespace('client_vendor')->group(function () {
     Route::resource('client_vendors', 'ClientVendorsController');
     //For Datatable
     Route::post('client_vendors/get', 'ClientVendorsTableController')->name('client_vendors.get');
@@ -19,12 +19,12 @@ Route::group(['namespace' => 'client_vendor_ticket'], function () {
     //For Datatable
     Route::post('client_vendor_tickets/get', 'ClientVendorTicketsTableController')->name('client_vendor_tickets.get');
 });
-Route::group(['namespace' => 'client_vendor_tag'], function () {
+Route::middleware('check_admin_status')->namespace('client_vendor_tag')->group(function () {
     Route::resource('client_vendor_tags', 'ClientVendorTagsController');
     //For Datatable
     Route::post('client_vendor_tags/get', 'ClientVendorTagsTableController')->name('client_vendor_tags.get');
 });
-Route::group(['namespace' => 'client_user'], function () {
+Route::middleware('check_admin_status')->namespace('client_user')->group(function () {
     Route::resource('client_users', 'ClientUsersController');
     //For Datatable
     Route::post('client_users/get', 'ClientUsersTableController')->name('client_users.get');

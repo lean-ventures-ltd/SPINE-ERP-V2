@@ -476,36 +476,37 @@
 
                         {{-- Client Vendor Management --}}
 
-                        <hr>
-                        <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-users" aria-hidden="true"></i> Client Users</a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ route('biller.client_users.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Manage Users </a></li>
+                        @if(auth()->user()->ins == 2)
+                            <hr>
+                            <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-users" aria-hidden="true"></i> Client Users</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ route('biller.client_users.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Manage Users </a></li>
 
-                                <li><a class="dropdown-item" href="{{ route('biller.client_users.create') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create User</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('biller.client_users.create') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create User</a></li>
 
-                            </ul>
-                        </li>
-
-
-                        <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-ship" aria-hidden="true"></i> Vendor Management</a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ route('biller.client_vendors.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Manage Vendors </a></li>
-
-                                <li><a class="dropdown-item" href="{{ route('biller.client_vendors.create') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Vendor</a></li>
-
-                            </ul>
-                        </li>
+                                </ul>
+                            </li>
 
 
-                        <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-sun-o"></i> Ticket Tags</a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ route('biller.client_vendor_tags.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Manage Tags </a></li>
+                            <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-ship" aria-hidden="true"></i> Vendor Management</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ route('biller.client_vendors.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Manage Vendors </a></li>
 
-                                <li><a class="dropdown-item" href="{{ route('biller.client_vendor_tags.create') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Tag</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('biller.client_vendors.create') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Vendor</a></li>
 
-                            </ul>
-                        </li>
+                                </ul>
+                            </li>
 
+
+                            <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-sun-o"></i> Ticket Tags</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ route('biller.client_vendor_tags.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Manage Tags </a></li>
+
+                                    <li><a class="dropdown-item" href="{{ route('biller.client_vendor_tags.create') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Tag</a></li>
+
+                                </ul>
+                            </li>
+                        @endif
 
                         <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-comments-o" aria-hidden="true"></i> Support Tickets</a>
                             <ul class="dropdown-menu">
