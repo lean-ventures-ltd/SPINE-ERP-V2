@@ -246,23 +246,41 @@
     // stock select autocomplete
     let stockNameRowId = 0;
     function stockSelect(event, ui) {
-        const {data} = ui.item;
+        const { data } = ui.item;
         const i = stockNameRowId;
-        $('#stockitemid-'+i).val(data.id);
-        $('#stockdescr-'+i).val(data.name);
 
-        const purchasePrice = parseFloat(data.purchase_price);
+        // Check if the necessary properties exist in the data object before accessing them
+        const stockItemId = data?.id || '';
+        const stockDescr = data?.name || '';
+        const productCode = data?.code || '';
+
+        $('#stockitemid-'+i).val(stockItemId);
+        $('#stockdescr-'+i).val(stockDescr);
+        $('#product_code-'+i).val(productCode);
+
+        // console.table(data);
+        //
+        console.table({
+            rowId: stockNameRowId,
+            id: $('#stockitemid-'+i).val(),
+            description: $('#stockdescr-'+i).val(),
+            code: $('#product_code-'+i).val()
+        });
+
+        const purchasePrice = accounting.unformat(data.purchase_price);
         $('#price-'+i).val(accounting.formatNumber(purchasePrice)).change();
 
         $('#uom-'+i).html('');
         if(data.units)
-        data.units.forEach(v => {
-            const rate = parseFloat(v.base_ratio) * purchasePrice;
-            const option = `<option value="${v.code}" purchase_price="${rate}" >${v.code}</option>`;
+            data.units.forEach(v => {
+                const rate = accounting.unformat(v.base_ratio) * purchasePrice;
+                const option = `<option value="${v.code}" purchase_price="${rate}" >${v.code}</option>`;
+                $('#uom-'+i).append(option);
+            });
+        if(data.uom){
+            const option = `<option value="${data.uom}"  >${data.uom}</option>`;
             $('#uom-'+i).append(option);
-        });
-        const option = `<option value="${data.uom}" >${data.uom}</option>`;
-        $('#uom-'+i).append(option);
+        }
     }
     $('#stockTbl').on('mouseup', '.stockname', function() {
         const id = $(this).attr('id').split('-')[1];

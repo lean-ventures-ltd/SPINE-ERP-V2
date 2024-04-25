@@ -76,7 +76,10 @@
                     @if ($item->type == 'Stock')
                         <tr>
                             <td><input type="text" class="form-control increment" value="{{$i+1}}" id="increment-0" disabled></td>
-                            <td><input type="text" class="form-control stockname" name="name[]" value="{{ $item->description }}" placeholder="Product Name" id='stockname-{{$i}}'></td>
+                            <td>
+                                <input type="text" class="form-control stockname" name="name[]" value="{{ $item->description }}" placeholder="Product Name" id='stockname-{{$i}}'>
+                                <input type="hidden" id="stockitemid-{{$i}}" name="item_id[]" value="{{ $item->item_id }}">
+                            </td>
                             <td><input type="text" class="form-control qty" name="qty[]" value="{{ number_format($item->qty, 1) }}" id="qty-{{$i}}"></td>                    
                             <td>
                                 <select name="uom[]" id="uom-{{ $i }}" class="form-control uom">
@@ -96,7 +99,6 @@
                             <td><input type="text" class="form-control taxable" value="{{ (float) $item->taxrate }}" readonly></td>
                             <td class="text-center">{{config('currency.symbol')}} <b><span class='amount' id="result-{{$i}}">{{ (float) $item->amount }}</span></b></td>              
                             <td><button type="button" class="btn btn-danger remove"><i class="fa fa-minus-square" aria-hidden="true"></i></button></td>
-                            <input type="text" id="stockitemid-{{$i}}" name="item_id[]" value="{{ $item->item_id }}">
                             <input type="hidden" class="stocktaxr" name="taxrate[]" value="{{ (float) $item->taxrate }}">
                             <input type="hidden" class="stockamountr" name="amount[]" value="{{ (float) $item->amount }}">
                             <!--<input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="0">-->

@@ -74,6 +74,23 @@ class RoleController extends Controller
 
         $permissionDisplayNames = Permission::all()->pluck('display_name');
 
+        $exclusions = [
+            'CRM Ticket Tag',
+            'CRM Client Vendor',
+            'Client Area',
+            'Business Account',
+            'Account Service',
+        ];
+
+        if (auth()->user()->ins != 2){
+
+            foreach ($exclusions as $exclusion) {
+                $permissionDisplayNames = $permissionDisplayNames->reject(function ($displayName) use ($exclusion) {
+                    return strpos($displayName, $exclusion) !== false;
+                });
+            }
+        }
+
         $permissionClassNames = [];
         foreach ($permissionDisplayNames as $name){
             array_push($permissionClassNames, strtolower(explode(' ', $name)[0]));
@@ -114,6 +131,23 @@ class RoleController extends Controller
         if (auth()->user()->ins == $role->ins) {
 
             $permissionDisplayNames = Permission::all()->pluck('display_name');
+
+            $exclusions = [
+                'CRM Ticket Tag',
+                'CRM Client Vendor',
+                'Client Area',
+                'Business Account',
+                'Account Service',
+            ];
+
+            if (auth()->user()->ins != 2){
+
+                foreach ($exclusions as $exclusion) {
+                    $permissionDisplayNames = $permissionDisplayNames->reject(function ($displayName) use ($exclusion) {
+                        return strpos($displayName, $exclusion) !== false;
+                    });
+                }
+            }
 
             $permissionClassNames = [];
             foreach ($permissionDisplayNames as $name){
