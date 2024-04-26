@@ -113,7 +113,7 @@ class PurchasesController extends Controller
     {
 
         $request->validate([
-            'cu_invoice_no' => ['required', 'numeric', 'regex:/^0*[1-9]\d{16,18}$/'],
+            'cu_invoice_no' => ['nullable', 'numeric', 'regex:/^0*[1-9]\d{16,18}$/'],
         ], [
             'cu_invoice_no.regex' => 'The :attribute must be numeric and have a length between 17 and 19 digits.',
         ]);
@@ -174,7 +174,7 @@ class PurchasesController extends Controller
     {
 
         $request->validate([
-            'cu_invoice_no' => ['required', 'numeric', 'regex:/^0*[1-9]\d{16,18}$/'],
+            'cu_invoice_no' => ['nullable', 'numeric', 'regex:/^0*[1-9]\d{16,18}$/'],
         ], [
             'cu_invoice_no.regex' => 'The :attribute must be numeric and have a length between 17 and 19 digits.',
         ]);
