@@ -2,10 +2,17 @@
 
 namespace App\Models\purchase;
 
+use App\Models\Access\User\User;
 use App\Models\ModelTrait;
+use App\Models\project\Project;
+use App\Models\project\ProjectMileStone;
+use App\Models\purchaseorder\Purchaseorder;
+use App\Models\supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\purchase\Traits\PurchaseAttribute;
 use App\Models\purchase\Traits\PurchaseRelationship;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Purchase extends Model
 {
@@ -81,4 +88,26 @@ class Purchase extends Model
             $builder->where('ins', auth()->user()->ins);
         });
     }
+
+    public function project(): BelongsTo{
+
+        return $this->belongsTo(Project::class, 'project_id', 'id');
+    }
+
+    public function budgetLine(): BelongsTo{
+
+        return $this->belongsTo(ProjectMileStone::class, 'project_milestone', 'id');
+    }
+
+    public function supplier(): BelongsTo{
+
+        return $this->belongsTo(Supplier::class, 'supplier_id', 'id');
+    }
+
+    public function creator(): BelongsTo {
+
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+
 }

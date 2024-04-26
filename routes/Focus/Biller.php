@@ -465,6 +465,8 @@ Route::group(['namespace' => 'purchase'], function () {
 Route::group(['namespace' => 'PurchaseClass'], function () {
 
     Route::resource('purchase-classes', 'PurchaseClassController');
+    Route::post('purchase-class/{id}/get-purchases-data', 'PurchaseClassController@getPurchasesData')->name('purchase_classes.get-purchases-data');
+    Route::post('purchase-class/{id}/get-purchase-orders-data', 'PurchaseClassController@getPurchaseOrdersData')->name('purchase_classes.get-purchase-orders-data');
 
 });
 
