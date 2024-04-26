@@ -118,7 +118,7 @@ class PurchasesController extends Controller
             'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'is_tax_exc', 'project_milestone', 'purchase_class', 'cu_invoice_no'
         ]);
         $data_items = $request->only([
-            'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom', 'item_milestone', 'item_purchase_class', 'asset_purchase_class'
+            'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom', 'asset_purchase_class'
         ]);
 
         if (!empty($data['cu_invoice_no'])){
@@ -172,7 +172,7 @@ class PurchasesController extends Controller
             'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'is_tax_exc', 'project_milestone', 'purchase_class', 'cu_invoice_no'
         ]);
         $data_items = $request->only([
-            'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom', 'item_milestone', 'item_purchase_class', 'asset_purchase_class'
+            'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom', 'asset_purchase_class'
         ]);
 
         if (!empty($data['cu_invoice_no'])){

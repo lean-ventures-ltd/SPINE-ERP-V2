@@ -43,27 +43,13 @@
                 <input type="hidden" name="warehouse_id[]">
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="4">
                     <textarea id="expdescr-0" class="form-control descr" name="description[]" placeholder="Enter Description"></textarea>
                 </td>
-                <td colspan="2">
-                    <select id="item_purchase_class-0" name="item_purchase_class[]" class="custom-select item-purchase-class">
-                        <option value="">-- Select Purchase Class --</option>
-                        @foreach ($purchaseClasses as $pc)
-                            <option value="{{ $pc->id }}" @if(@$purchase->purchase_class == $pc->id) selected @endif>
-                                {{ $pc->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </td>
-                <td colspan="3">
+
+                <td colspan="5">
                     <input type="text" class="form-control projectexp" id="projectexptext-0" placeholder="Search Project By Name">
                     <input type="hidden" name="itemproject_id[]" id="projectexpval-0">
-                </td>
-                <td colspan="2">
-                    <select id="item_milestone-0" name="item_milestone[]" class="form-control item-milestone item-milestone-0">
-                        <option value="">Select a Budget Line</option>
-                    </select>
                 </td>
             </tr>
             <!-- end layout -->
@@ -99,27 +85,12 @@
                             <input type="hidden" name="warehouse_id[]">
                         </tr>
                         <tr>
-                            <td colspan="2">
+                            <td colspan="4">
                                 <textarea id="expdescr-{{$i}}" class="form-control descr" name="description[]" placeholder="Enter Description">{{ $item->description }}</textarea>
                             </td>
-                            <td colspan="2">
-                                <select id="item_purchase_class-0" name="item_purchase_class[]" class="custom-select item-purchase-class">
-                                    <option value="">-- Select Purchase Class --</option>
-                                    @foreach ($purchaseClasses as $pc)
-                                        <option value="{{ $pc->id }}" @if(@$purchase->purchase_class == $pc->id) selected @endif>
-                                            {{ $pc->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </td>
-                            <td colspan="3">
+                            <td colspan="5">
                                 <input type="text" class="form-control projectexp" value="{{ $item->project ? $item->project->name : '' }}" id="projectexptext-{{$i}}" placeholder="Enter Project">
                                 <input type="hidden" name="itemproject_id[]" value="{{ $item->itemproject_id }}" id="projectexpval-{{$i}}">
-                            </td>
-                            <td colspan="2">
-                                <select id="item_milestone-0" name="item_milestone[]" class="form-control item-milestone">
-                                    <option value="">Select a Budget Line</option>
-                                </select>
                             </td>
 
                         </tr>

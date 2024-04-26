@@ -25,9 +25,11 @@ class PurchaseClassController extends Controller
                 ->addColumn('action', function ($model) {
 
                     $route = route('biller.purchase-classes.edit', $model->id);
+                    $routeShow = route('biller.purchase-classes.show', $model->id);
                     $routeDelete = route('biller.purchase-classes.destroy', $model->id);
 
-                    return '<a href="'.$route.'" class="btn btn-secondary round mr-1">Edit</a>'
+                    return '<a href="'.$routeShow.'" class="btn btn-secondary round mr-1">View</a>'
+                        .'<a href="'.$route.'" class="btn btn-secondary round mr-1">Edit</a>'
                         . '<a href="' .$routeDelete . '" 
                             class="btn btn-danger round" data-method="delete"
                             data-trans-button-cancel="' . trans('buttons.general.cancel') . '"
@@ -96,9 +98,13 @@ class PurchaseClassController extends Controller
      */
     public function show($id)
     {
-        $purchaseClass = PurchaseClass::find($id);
 
-        return view('focus.purchase_classes.show', compact('purchaseClass'));
+        $purchaseClass = PurchaseClass::where('id', $id)->first();
+
+        $purchases = $purchaseClass->purchases;
+        $purchaseOrders = $purchaseClass->purchaseOrders;
+
+        return view('focus.purchase_classes.show', compact('purchases', 'purchaseOrders'));
     }
 
     /**
@@ -142,12 +148,24 @@ class PurchaseClassController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy($id)
     {
 
         $purchaseClass = PurchaseClass::find($id);
+
+        $directsAndOrders = PurchaseClass::where('id', $id)->with('purchases', 'purchaseOrders')->first();
+
+        if (count($directsAndOrders->purchases) > 0){
+            return redirect()->route('biller.purchase-classes.index')
+                ->with('flash_error', 'Delete Blocked as Purchase Class is Allocated to ' . count($directsAndOrders->purchases) . ' purchases');
+        }
+        else if (count($directsAndOrders->purchaseOrders) > 0){
+            return redirect()->route('biller.purchase-classes.index')
+                ->with('flash_error', 'Delete Blocked as Purchase Class is Allocated to ' . count($directsAndOrders->purchases) . ' purchase orders');
+        }
+
         $purchaseClass->delete();
 
         return redirect()->route('biller.purchase-classes.index')
