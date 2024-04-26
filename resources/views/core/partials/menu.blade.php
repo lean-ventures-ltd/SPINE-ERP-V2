@@ -250,7 +250,7 @@
                 </ul>
 
                 <div class="nav navbar-nav float-right mr-2" style="color: white;">
-                    V.2.01 2024
+                    V2.01 2024
                 </div>
 
                 <ul class="nav navbar-nav float-right">
