@@ -81,13 +81,11 @@ class PurchaseorderRepository extends BaseRepository
         }
         $order_items = array_map(function ($v) use($result) {
 
-            $productVariation = ProductVariation::find($v['item_id']);
-
             return array_replace($v, [
                 'ins' => $result->ins,
                 'user_id' => $result->user_id,
                 'purchaseorder_id' => $result->id,
-                'product_code' => empty($v['product_code']) ? $v['product_code'] : (empty($productVariation) ? 'P.Code N/A' : $productVariation->code),
+                'product_code' => ProductVariation::find($v['item_id'])->code,
                 'rate' => numberClean($v['rate']),
                 'taxrate' => numberClean($v['taxrate']),
                 'amount' => numberClean($v['amount'])

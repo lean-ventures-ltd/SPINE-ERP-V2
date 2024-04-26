@@ -111,6 +111,13 @@ class PurchasesController extends Controller
      */
     public function store(StorePurchaseRequest $request)
     {
+
+        $request->validate([
+            'cu_invoice_no' => ['required', 'numeric', 'regex:/^0*[1-9]\d{16,18}$/'],
+        ], [
+            'cu_invoice_no.regex' => 'The :attribute must be numeric and have a length between 17 and 19 digits.',
+        ]);
+
         // extract input details
         $data = $request->only([
             'supplier_type', 'supplier_id', 'suppliername', 'supplier_taxid', 'transxn_ref', 'date', 'due_date', 'doc_ref_type', 'doc_ref',
@@ -165,6 +172,14 @@ class PurchasesController extends Controller
      */
     public function update(StorePurchaseRequest $request, Purchase $purchase)
     {
+
+        $request->validate([
+            'cu_invoice_no' => ['required', 'numeric', 'regex:/^0*[1-9]\d{16,18}$/'],
+        ], [
+            'cu_invoice_no.regex' => 'The :attribute must be numeric and have a length between 17 and 19 digits.',
+        ]);
+
+
         // extract input details
         $data = $request->only([
             'supplier_type', 'supplier_id', 'suppliername', 'supplier_taxid', 'transxn_ref', 'date', 'due_date', 'doc_ref_type', 'doc_ref',
