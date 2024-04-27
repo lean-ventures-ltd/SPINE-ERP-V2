@@ -120,7 +120,7 @@ class PurchaseClassController extends Controller
             ->with('purchases.project', 'purchases.budgetLine', 'purchases.supplier', 'purchases.creator')
             ->first();
 
-        return Datatables::of($purchases['purchases'])
+        return Datatables::of($purchases->purchases)
             ->escapeColumns(['id'])
             ->addIndexColumn()
             ->addColumn('p_number', function ($purchases) {
@@ -160,7 +160,7 @@ class PurchaseClassController extends Controller
 
         try {
 
-            return Datatables::of($purchaseOrders['purchases'])
+            return Datatables::of($purchaseOrders->purchaseOrders)
                 ->escapeColumns(['id'])
                 ->addIndexColumn()
                 ->addColumn('po_number', function ($purchaseOrders) {
