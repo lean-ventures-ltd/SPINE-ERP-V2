@@ -1786,71 +1786,71 @@
         </li>
         @endauth
         {{-- miscellaneous module --}}
-        @if (access()->allowMultiple(['manage-note', 'manage-event', 'manage-project', 'manage-invoice']))
-            <li class="dropdown nav-item" data-menu="dropdown"><a class="dropdown-toggle nav-link"
-                                                                  href="#" data-toggle="dropdown"><i class="icon-star"></i><span>Library</span></a>
-                <ul class="dropdown-menu">
-                    @permission('manage-note')
-                    <li><a class="dropdown-item" href="{{ route('biller.notes.index') ? '#' : '#' }}"
-                           data-toggle="dropdown"><i class="icon-note"></i> {{ trans('general.notes') }}</a>
-                    </li>
-                    @endauth
-                    @permission('manage-invoice')
-                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a
-                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
-                                    class="icon-umbrella"></i> Fault Management</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('biller.faults.index') }}"
-                                   data-toggle="dropdown"><i class="ft-file-text"></i> Manage Fault
-                                </a>
-                            </li>
-                            <li><a class="dropdown-item" href="{{ route('biller.faults.create') }}"
-                                   data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Create Fault
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @endauth
-                    @permission('manage-event')
-                    <li><a class="dropdown-item" href="{{ route('biller.events.index') }}"
-                           data-toggle="dropdown"><i class="icon-calendar"></i>
-                            {{ trans('features.calendar') }}</a>
-                    </li>
-                    @endauth
+{{--        @if (access()->allowMultiple(['manage-note', 'manage-event', 'manage-project', 'manage-invoice']))--}}
+{{--            <li class="dropdown nav-item" data-menu="dropdown"><a class="dropdown-toggle nav-link"--}}
+{{--                                                                  href="#" data-toggle="dropdown"><i class="icon-star"></i><span>Library</span></a>--}}
+{{--                <ul class="dropdown-menu">--}}
+{{--                    @permission('manage-note')--}}
+{{--                    <li><a class="dropdown-item" href="{{ route('biller.notes.index') ? '#' : '#' }}"--}}
+{{--                           data-toggle="dropdown"><i class="icon-note"></i> {{ trans('general.notes') }}</a>--}}
+{{--                    </li>--}}
+{{--                    @endauth--}}
+{{--                    @permission('manage-invoice')--}}
+{{--                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a--}}
+{{--                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i--}}
+{{--                                    class="icon-umbrella"></i> Fault Management</a>--}}
+{{--                        <ul class="dropdown-menu">--}}
+{{--                            <li><a class="dropdown-item" href="{{ route('biller.faults.index') }}"--}}
+{{--                                   data-toggle="dropdown"><i class="ft-file-text"></i> Manage Fault--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                            <li><a class="dropdown-item" href="{{ route('biller.faults.create') }}"--}}
+{{--                                   data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Create Fault--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                        </ul>--}}
+{{--                    </li>--}}
+{{--                    @endauth--}}
+{{--                    @permission('manage-event')--}}
+{{--                    <li><a class="dropdown-item" href="{{ route('biller.events.index') }}"--}}
+{{--                           data-toggle="dropdown"><i class="icon-calendar"></i>--}}
+{{--                            {{ trans('features.calendar') }}</a>--}}
+{{--                    </li>--}}
+{{--                    @endauth--}}
 
-                    @permission('manage-project')
-                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a
-                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
-                                    class="icon-tag"></i> IRD Jobcard</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ '#' }}" data-toggle="dropdown"> <i
-                                            class="fa fa-compass"></i> IRD Report</a></li>
-                            <li><a class="dropdown-item" href="{{ '#' }}" data-toggle="dropdown"> <i
-                                            class="fa fa-plus-circle"></i> Create IRD Report</a></li>
-                        </ul>
-                    </li>
-                    @endauth
+{{--                    @permission('manage-project')--}}
+{{--                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a--}}
+{{--                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i--}}
+{{--                                    class="icon-tag"></i> IRD Jobcard</a>--}}
+{{--                        <ul class="dropdown-menu">--}}
+{{--                            <li><a class="dropdown-item" href="{{ '#' }}" data-toggle="dropdown"> <i--}}
+{{--                                            class="fa fa-compass"></i> IRD Report</a></li>--}}
+{{--                            <li><a class="dropdown-item" href="{{ '#' }}" data-toggle="dropdown"> <i--}}
+{{--                                            class="fa fa-plus-circle"></i> Create IRD Report</a></li>--}}
+{{--                        </ul>--}}
+{{--                    </li>--}}
+{{--                    @endauth--}}
 
-                    @permission('manage-invoice')
-                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a
-                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
-                                    class="icon-umbrella"></i> {{ trans('invoices.subscriptions') }}</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item"
-                                   href="{{ route('biller.invoices.index') ? '#' : '#' }}?md=sub"
-                                   data-toggle="dropdown"><i class="ft-file-text"></i>
-                                    {{ trans('invoices.subscriptions') }}
-                                </a>
-                            </li>
-                            <li><a class="dropdown-item"
-                                   href="{{ route('biller.invoices.create') ? '#' : '#' }}?sub=true"
-                                   data-toggle="dropdown"><i class="fa fa-plus-circle"></i>
-                                    {{ trans('invoices.create_subscription') }}
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @endauth
+{{--                    @permission('manage-invoice')--}}
+{{--                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a--}}
+{{--                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i--}}
+{{--                                    class="icon-umbrella"></i> {{ trans('invoices.subscriptions') }}</a>--}}
+{{--                        <ul class="dropdown-menu">--}}
+{{--                            <li><a class="dropdown-item"--}}
+{{--                                   href="{{ route('biller.invoices.index') ? '#' : '#' }}?md=sub"--}}
+{{--                                   data-toggle="dropdown"><i class="ft-file-text"></i>--}}
+{{--                                    {{ trans('invoices.subscriptions') }}--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                            <li><a class="dropdown-item"--}}
+{{--                                   href="{{ route('biller.invoices.create') ? '#' : '#' }}?sub=true"--}}
+{{--                                   data-toggle="dropdown"><i class="fa fa-plus-circle"></i>--}}
+{{--                                    {{ trans('invoices.create_subscription') }}--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                        </ul>--}}
+{{--                    </li>--}}
+{{--                    @endauth--}}
 
                     <!-- Refill Service Management -->
                     {{-- @if (access()->allowMultiple(['manage-refill', 'manage-refill-product-category', 'manage-refill-product', 'manage-refill-customer']))
@@ -1884,9 +1884,9 @@
                             </ul>
                         </li>
                         @endauth --}}
-                </ul>
-            </li>
-        @endif
+{{--                </ul>--}}
+{{--            </li>--}}
+{{--        @endif--}}
 
 
         {{-- Client Area Module --}}
