@@ -125,7 +125,7 @@ class PurchaseClassController extends Controller
             ->addIndexColumn()
             ->addColumn('p_number', function ($purchases) {
 
-                return '<a href="'.route('biller.purchases.show', $purchases->tid).'"><b>'. 'DP-' . $purchases->tid .'</b></a>';
+                return '<a href="'.route('biller.purchases.show', $purchases->id).'"><b>'. 'DP-' . $purchases->tid .'</b></a>';
             })
             ->addColumn('supplier', function ($purchases) {
                 return $purchases->supplier->name;
@@ -135,7 +135,8 @@ class PurchaseClassController extends Controller
             })
             ->addColumn('project', function ($purchases) {
 
-                return '<a href="'.route('biller.projects.show', $purchases->project->id).'"><b>'. 'PRJ-' . $purchases->project->tid .'</b></a>';
+                if(empty($purchases->project)) return 'No Project Selected';
+                else return '<a href="'.route('biller.projects.show', $purchases->project->id).'"><b>'. 'PRJ-' . $purchases->project->tid .'</b></a>';
             })
             ->addColumn('budget_line', function ($purchases) {
                 if (empty($purchases->budgetLine)) return 'Not Selected';
@@ -164,7 +165,7 @@ class PurchaseClassController extends Controller
                 ->addIndexColumn()
                 ->addColumn('po_number', function ($purchaseOrders) {
 
-                    return '<a href="'.route('biller.purchaseorders.show', $purchaseOrders->tid).'"><b>'. 'PO-' . $purchaseOrders->tid .'</b></a>';
+                    return '<a href="'.route('biller.purchaseorders.show', $purchaseOrders->id).'"><b>'. 'PO-' . $purchaseOrders->tid .'</b></a>';
                 })
                 ->addColumn('supplier', function ($purchaseOrders) {
                     return $purchaseOrders->supplier->name;
@@ -174,7 +175,8 @@ class PurchaseClassController extends Controller
                 })
                 ->addColumn('project', function ($purchaseOrders) {
 
-                    return '<a href="'.route('biller.projects.show', $purchaseOrders->project->id).'"><b>'. 'PRJ-' . $purchaseOrders->project->tid .'</b></a>';
+                    if(empty($purchaseOrders->project)) return 'No Project Selected';
+                    else return '<a href="'.route('biller.projects.show', $purchaseOrders->project->id).'"><b>'. 'PRJ-' . $purchaseOrders->project->tid .'</b></a>';
                 })
                 ->addColumn('budget_line', function ($purchaseOrders) {
                     if (empty($purchaseOrders->budgetLine)) return 'Not Selected';
