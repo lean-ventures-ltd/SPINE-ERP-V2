@@ -99,14 +99,16 @@
                 </div>                
             </div>   
             <div class="form-group row">
-                <div class="col-6">
+                <div class="{{ $quote->quote_type == 'project'? 'col-6' : 'col-12' }}">
                     <label for="gen_remark" class="caption">General Remark</label>
                     {{ Form::text('gen_remark', null, ['class' => 'form-control', 'id' => 'gen_remark']) }}
                 </div>
-                <div class="col-6">
-                    <label for="project_closure_date" class="caption">Project Closure Date</label>
-                    {{ Form::text('project_closure_date', null, ['class' => 'form-control datepicker', 'id' => 'project_closure_date', 'required']) }}
-                </div>
+                @if ($quote->quote_type == 'project')
+                    <div class="col-6">
+                        <label for="project_closure_date" class="caption">Project Closure Date</label>
+                        {{ Form::text('project_closure_date', null, ['class' => 'form-control datepicker', 'id' => 'project_closure_date', 'required' => 'required']) }}
+                    </div>
+                @endif
             </div>   
         </div>
     </div>                        
