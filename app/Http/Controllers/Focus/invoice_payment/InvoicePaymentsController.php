@@ -10,7 +10,6 @@ use App\Models\customer\Customer;
 use App\Models\invoice_payment\InvoicePayment;
 use App\Repositories\Focus\invoice_payment\InvoicePaymentRepository;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class InvoicePaymentsController extends Controller
 {
@@ -84,7 +83,6 @@ class InvoicePaymentsController extends Controller
         try {
             $result = $this->repository->create(compact('data', 'data_items'));
         } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Creating Invoice Payment', $th);
         }
 

@@ -456,7 +456,7 @@ class CompanyController extends Controller
         }
     }
 
-    public function artisan_down()
+    public function site_down()
     {
         return Artisan::call('down');
     }
