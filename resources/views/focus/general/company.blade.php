@@ -125,7 +125,7 @@
                                     80x80. Use small size file - it will load quickly.
                                 </small>
                                 <hr>
-                                {{ Form::label('logo', trans('business.invoice_logo'), ['class' => 'control-label']) }}
+                                {{ Form::label('logo', 'Company Invoice & Quote Letterhead', ['class' => 'control-label']) }}
                                 <p class="mb-2"><br><img class="img-fluid avatar-lg"
                                         src="{{ Storage::disk('public')->url('app/public/img/company/' . @$company['logo']) }}"
                                         alt="Business Logo"></p>
