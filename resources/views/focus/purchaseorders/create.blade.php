@@ -550,6 +550,7 @@
 
     // stock select autocomplete
     let stockNameRowId = 0;
+
     function stockSelect(event, ui) {
         const { data } = ui.item;
         const i = stockNameRowId;
@@ -557,20 +558,22 @@
         // Check if the necessary properties exist in the data object before accessing them
         const stockItemId = data?.id || '';
         const stockDescr = data?.name || '';
-        const productCode = data?.code || '';
+        let productCode = '';
+        if(data.hasOwnProperty('code')) productCode = data.code;
+        else productCode = data.product_code;
 
         $('#stockitemid-'+i).val(stockItemId);
         $('#stockdescr-'+i).val(stockDescr);
         $('#product_code-'+i).val(productCode);
 
-        // console.table(data);
-        //
-        // console.table({
-        //     rowId: stockNameRowId,
-        //     id: $('#stockitemid-'+i).val(),
-        //     description: $('#stockdescr-'+i).val(),
-        //     code: $('#product_code-'+i).val()
-        // });
+        console.table(data);
+
+        console.table({
+            rowId: stockNameRowId,
+            id: $('#stockitemid-'+i).val(),
+            description: $('#stockdescr-'+i).val(),
+            code: $('#product_code-'+i).val()
+        });
 
         const purchasePrice = accounting.unformat(data.purchase_price);
         $('#price-'+i).val(accounting.formatNumber(purchasePrice)).change();
