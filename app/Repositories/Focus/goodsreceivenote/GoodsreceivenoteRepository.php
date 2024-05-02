@@ -65,9 +65,6 @@ class GoodsreceivenoteRepository extends BaseRepository
      */
     public function create(array $input)
     {
-        // dd($input);
-        DB::beginTransaction();
-        
         foreach ($input as $key => $val) {
             if (in_array($key, ['date', 'invoice_date'])) $input[$key] = date_for_database($val);
             if (in_array($key, ['tax_rate', 'subtotal', 'tax', 'total'])) 
@@ -82,6 +79,8 @@ class GoodsreceivenoteRepository extends BaseRepository
             throw ValidationException::withMessages(['invoice_no' => 'Invoice No. should contain 11 characters']);
         }
 
+        DB::beginTransaction();
+        
         $tid = Goodsreceivenote::max('tid');
         if ($input['tid'] <= $tid) $input['tid'] = $tid+1;
         $result = Goodsreceivenote::create($input);
@@ -106,9 +105,11 @@ class GoodsreceivenoteRepository extends BaseRepository
             if (!$po_item) throw ValidationException::withMessages(['Line ' . strval($i+1) . ' related purchase order item does not exist!']);
             $po_item->increment('qty_received', $item->qty);
 
-            // check if is default product variation or supplier product 
+            // check if is default product variation or is supplier product 
             $prod_variation = $item->productvariation;
             if (@$result->purchaseorder->pricegroup_id && $item->supplier_product) {
+                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            } elseif ($item->supplier_product) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
             }
         
@@ -131,20 +132,20 @@ class GoodsreceivenoteRepository extends BaseRepository
                         $new_product->save();
                         $prod_variation = $new_product;
                     }
-                    
-                    if (isset($prod_variation->product->units)) {
-                        foreach ($prod_variation->product->units as $unit) {
-                            if ($unit->code == $po_item['uom']) {
-                                if ($unit->unit_type == 'base') {
-                                    $prod_variation->increment('qty', $item->qty);
-                                } else {
-                                    $prod_variation->increment('qty', $item->qty * $unit->base_ratio);
-                                }
+                }
+                if (isset($prod_variation->product->units)) {
+                    foreach ($prod_variation->product->units as $unit) {
+                        if ($unit->code == $po_item['uom']) {
+                            if ($unit->unit_type == 'base') {
+                                $prod_variation->increment('qty', $item->qty);
+                            } else {
+                                $prod_variation->increment('qty', $item->qty * $unit->base_ratio);
                             }
                         }
-                    } elseif ($prod_variation) $prod_variation->increment('qty', $item->qty);
-                    else throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);
-                }
+                    }
+                } 
+                elseif ($prod_variation) $prod_variation->increment('qty', $item->qty);
+                else throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);
             }
         }
 
@@ -165,20 +166,6 @@ class GoodsreceivenoteRepository extends BaseRepository
             $this->post_uninvoiced_grn($result); 
         }
 
-        /** Updating the Inventory */
-        $poItemsIds = $input['purchaseorder_item_id'];
-        $poItemsQuantities = $input['qty'];
-        $poItemsProjects = $input['itemproject_id'];
-        $poItemDetails = array_combine( $poItemsIds, array_map(null, $poItemsQuantities, $poItemsProjects));
-        foreach ($poItemDetails as $key => $item){
-            $productCode = PurchaseorderItem::find($key)->product_code;
-            $product = ProductVariation::where('code', $productCode)->first();
-            if ($item[1] == 0) {
-                $product->qty += $item[0];
-                $product->save();
-            }
-        }
-
         if ($result) {
             DB::commit();
             return $result;
@@ -195,8 +182,6 @@ class GoodsreceivenoteRepository extends BaseRepository
      */
     public function update(Goodsreceivenote $goodsreceivenote, array $input)
     {
-        // dd($input);
-        DB::beginTransaction();
         // sanitize
         foreach ($input as $key => $val) {
             if (in_array($key, ['date', 'invoice_date'])) $input[$key] = date_for_database($val);
@@ -212,6 +197,8 @@ class GoodsreceivenoteRepository extends BaseRepository
             throw ValidationException::withMessages(['invoice_no' => 'Invoice No. should contain 11 characters']);
         }
 
+        DB::beginTransaction();
+        
         $result = $goodsreceivenote->update($input);
 
         // reverse previous stock qty
@@ -224,7 +211,10 @@ class GoodsreceivenoteRepository extends BaseRepository
             $prod_variation = $item->productvariation;
             if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            } elseif ($item->supplier_product) {
+                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
             }
+            
             // apply unit conversion
             if (isset($prod_variation->product->units)) {
                 foreach ($prod_variation->product->units as $unit) {
@@ -238,7 +228,8 @@ class GoodsreceivenoteRepository extends BaseRepository
                         }
                     }
                 }   
-            } elseif ($prod_variation) $prod_variation->decrement('qty', $item->qty);      
+            } 
+            elseif ($prod_variation) $prod_variation->decrement('qty', $item->qty);      
             else throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order No. ' . $po_item->purchaseorder->tid]);
         }
         
@@ -265,7 +256,10 @@ class GoodsreceivenoteRepository extends BaseRepository
             $prod_variation = $item->productvariation;
             if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            } elseif ($item->supplier_product) {
+                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
             }
+            
             // apply unit conversion
             if (isset($prod_variation->product->units)) {
                 foreach ($prod_variation->product->units as $unit) {
@@ -279,7 +273,8 @@ class GoodsreceivenoteRepository extends BaseRepository
                         }
                     }
                 }   
-            } elseif ($prod_variation) $prod_variation->increment('qty', $item->qty);
+            } 
+            elseif ($prod_variation) $prod_variation->increment('qty', $item->qty);
             else throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);  
         }
 
@@ -349,7 +344,8 @@ class GoodsreceivenoteRepository extends BaseRepository
                             }
                         }
                     }   
-                } elseif ($prod_variation) $prod_variation->decrement('qty', $item['qty']);
+                } 
+                elseif ($prod_variation) $prod_variation->decrement('qty', $item['qty']);
             }
         }
 
