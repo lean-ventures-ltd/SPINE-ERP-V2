@@ -40,21 +40,11 @@
                 <input type="hidden" name="id[]" value="0">
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="4">
                     <textarea id="expdescr-0" class="form-control descr" name="description[]" placeholder="Enter Description"></textarea>
                 </td>
-                <td colspan="3">
-                    <select id="item_purchase_class-0" name="item_purchase_class[]" class="custom-select item-purchase-class">
-                        <option value="">-- Select Purchase Class --</option>
-                        @foreach ($purchaseClasses as $pc)
-                            <option value="{{ $pc->id }}" @if(@$purchase->purchase_class == $pc->id) selected @endif>
-                                {{ $pc->name }}
-                            </option>
-                        @endforeach
-                    </select>
 
-                </td>
-                <td colspan="4">
+                <td colspan="5">
                     <input type="text" class="form-control projectexp" id="projectexptext-0" placeholder="Search Project by Name, Customer, Branch">
                     <input type="hidden" name="itemproject_id[]" id="projectexpval-0">
                 </td>
@@ -91,21 +81,11 @@
                             <input type="hidden" name="id[]" value="{{ $item->id }}">
                         </tr>
                         <tr>
-                            <td colspan="3">
+                            <td colspan="5">
                                 <textarea id="expdescr-{{$i}}" class="form-control descr" name="description[]" placeholder="Enter Description">{{ $item->description }}</textarea>
                             </td>
-                            <td colspan="3">
-                                <select id="item_purchase_class-{{$i}}" name="item_purchase_class[]" class="custom-select item-purchase-class">
-                                    <option value="">-- Select Purchase Class --</option>
-                                    @foreach ($purchaseClasses as $pc)
-                                        <option value="{{ $pc->id }}" @if(@$purchase->purchase_class == $pc->id) selected @endif>
-                                            {{ $pc->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
 
-                            </td>
-                            <td colspan="4">
+                            <td colspan="5">
                                 <input type="text" class="form-control projectexp" value="{{ $item->project ? $item->project->name : '' }}" id="projectexptext-{{$i}}" placeholder="Enter Project">
                                 <input type="hidden" name="itemproject_id[]" value="{{ $item->itemproject_id }}" id="projectexpval-{{$i}}">
                             </td>

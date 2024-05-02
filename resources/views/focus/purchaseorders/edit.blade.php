@@ -101,6 +101,114 @@
         taxIndx++;
     });
 
+
+
+
+    function getProjectMilestones(projectId){
+
+        let select = $('#project_milestone');
+
+        $.ajax({
+            url: "{{ route('biller.getProjectMileStones') }}",
+            method: 'GET',
+            data: { projectId: projectId },
+            dataType: 'json', // Adjust the data type accordingly
+            success: function(data) {
+                // This function will be called when the AJAX request is successful
+
+                // Clear any existing options
+                select.empty();
+
+                if(data.length === 0){
+
+                    select.append($('<option>', {
+                        value: null,
+                        text: 'No Milestones Created For This Project'
+                    }));
+
+                } else {
+
+                    select.append($('<option>', {
+                        value: null,
+                        text: 'Select a Budget Line'
+                    }));
+
+                    // Add new options based on the received data
+                    for (var i = 0; i < data.length; i++) {
+
+                        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                        const date = new Date(data[i].due_date);
+
+                        select.append($('<option>', {
+                            value: data[i].id,
+                            text: data[i].name + ' | Balance: ' +  parseFloat(data[i].balance).toFixed(2) + ' | Due on ' + date.toLocaleDateString('en-US', options)
+                        }));
+                    }
+
+                    let selectedOptionValue = "{{ @$po->project_milestone }}";
+                    if (selectedOptionValue) {
+                        select.val(selectedOptionValue);
+                    }
+
+                    checkMilestoneBudget(select.find('option:selected').text());
+
+                }
+
+            },
+            error: function() {
+                // Handle errors here
+                console.log('Error loading data');
+            }
+        });
+
+
+    }
+
+    function checkMilestoneBudget(milestoneString){
+
+        // Get the value of the input field
+        let selectedMilestone = milestoneString;
+
+        // Specify the start and end strings
+        let startString = 'Balance: ';
+        let endString = ' | Due on';
+
+        // Find the index of the start and end strings
+        let startIndex = selectedMilestone.indexOf(startString);
+        let endIndex = selectedMilestone.indexOf(endString, startIndex + startString.length);
+
+        // Extract the string between start and end
+        let milestoneBudget = parseFloat(selectedMilestone.substring(startIndex + startString.length, endIndex)).toFixed(2);
+
+        // console.log("Milestone Budget is " + milestoneBudget + " and purchase total is " + purchaseGrandTotal);
+
+        if(purchaseGrandTotal > milestoneBudget){
+
+            // console.log( "Milestone Budget is " + milestoneBudget );
+            // console.log( "Milestone Budget Exceeded" );
+            $("#milestone_warning").text("Milestone Budget of " + milestoneBudget + " Exceeded!");
+        }
+        else {
+
+            $("#milestone_warning").text("");
+        }
+
+    }
+
+    $('#project').change(function() {
+
+        getProjectMilestones($(this).val())
+    });
+
+    $('#project_milestone').change(function() {
+
+        checkMilestoneBudget($(this).find('option:selected').text());
+    });
+
+
+
+
+
     // On project change
     $("#project").change(function() {
         const projectText = $("#project option:selected").text().replace(/\s+/g, ' ');
@@ -111,6 +219,8 @@
     const projectId = "{{ $po->project_id }}";
     if (projectId) $('#project').append(new Option(projectName, projectId, true, true)).change();
 
+
+    let purchaseGrandTotal = 0;
     // Update transaction table
     const sumLine = (...values) => values.reduce((prev, curr) => prev + curr.replace(/,/g, '')*1, 0);
     function transxnCalc() {
@@ -122,6 +232,7 @@
                     $(this).find('td:eq(2)').text($('#exp_subttl').val());
                     $(this).find('td:eq(3)').text($('#asset_subttl').val());
                     total = sumLine($('#stock_subttl').val(), $('#exp_subttl').val(), $('#asset_subttl').val());
+                    purchaseGrandTotal = total;
                     $('#paidttl').val(total.toLocaleString());
                     $(this).find('td:eq(4)').text($('#paidttl').val());
                     break;
@@ -130,6 +241,7 @@
                     $(this).find('td:eq(2)').text($('#exp_tax').val());
                     $(this).find('td:eq(3)').text($('#asset_tax').val());
                     total = sumLine($('#stock_tax').val(), $('#exp_tax').val(), $('#asset_tax').val());
+                    purchaseGrandTotal = total;
                     $('#grandtax').val(total.toLocaleString());
                     $(this).find('td:eq(4)').text($('#grandtax').val());
                     break;
@@ -138,6 +250,7 @@
                     $(this).find('td:eq(2)').text($('#exp_grandttl').val());
                     $(this).find('td:eq(3)').text($('#asset_grandttl').val());
                     total = sumLine($('#stock_grandttl').val(), $('#exp_grandttl').val(), $('#asset_grandttl').val());
+                    purchaseGrandTotal = total;
                     $('#grandttl').val(total.toLocaleString());
                     $(this).find('td:eq(4)').text($('#grandttl').val());
                     break;
@@ -246,23 +359,32 @@
     // stock select autocomplete
     let stockNameRowId = 0;
     function stockSelect(event, ui) {
-        const {data} = ui.item;
+        const { data } = ui.item;
         const i = stockNameRowId;
-        $('#stockitemid-'+i).val(data.id);
-        $('#stockdescr-'+i).val(data.name);
 
-        const purchasePrice = parseFloat(data.purchase_price);
+        // Check if the necessary properties exist in the data object before accessing them
+        const stockItemId = data?.id || '';
+        const stockDescr = data?.name || '';
+        const productCode = data?.code || data?.product_code || '';
+
+        $('#stockitemid-'+i).val(stockItemId);
+        $('#stockdescr-'+i).val(stockDescr);
+        $('#product_code-'+i).val(productCode);
+
+        const purchasePrice = accounting.unformat(data.purchase_price);
         $('#price-'+i).val(accounting.formatNumber(purchasePrice)).change();
 
         $('#uom-'+i).html('');
         if(data.units)
-        data.units.forEach(v => {
-            const rate = parseFloat(v.base_ratio) * purchasePrice;
-            const option = `<option value="${v.code}" purchase_price="${rate}" >${v.code}</option>`;
+            data.units.forEach(v => {
+                const rate = accounting.unformat(v.base_ratio) * purchasePrice;
+                const option = `<option value="${v.code}" purchase_price="${rate}" >${v.code}</option>`;
+                $('#uom-'+i).append(option);
+            });
+        if(data.uom){
+            const option = `<option value="${data.uom}"  >${data.uom}</option>`;
             $('#uom-'+i).append(option);
-        });
-        const option = `<option value="${data.uom}" >${data.uom}</option>`;
-        $('#uom-'+i).append(option);
+        }
     }
     $('#stockTbl').on('mouseup', '.stockname', function() {
         const id = $(this).attr('id').split('-')[1];

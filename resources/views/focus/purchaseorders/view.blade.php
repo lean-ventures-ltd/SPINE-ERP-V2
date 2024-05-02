@@ -24,9 +24,11 @@
                 <i class="fa fa-print" aria-hidden="true"></i> Print
             </a>
             &nbsp;
+            @permission('delete-purchase')
             <a href="#" class="btn btn-danger btn-sm mr-1" data-toggle="modal" data-target="#statusModal">
                 <i class="fa fa-times" aria-hidden="true"></i> Close Order
             </a>
+            @endauth
         </div>  
         <div class="card-body">            
             <ul class="nav nav-tabs nav-top-border no-hover-bg nav-justified" role="tablist">

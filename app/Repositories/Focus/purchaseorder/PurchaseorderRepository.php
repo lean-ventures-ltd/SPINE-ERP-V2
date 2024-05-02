@@ -2,15 +2,10 @@
 
 namespace App\Repositories\Focus\purchaseorder;
 
-use App\Models\product\ProductVariation;
 use App\Models\project\ProjectMileStone;
 use App\Models\purchaseorder\Purchaseorder;
 use App\Exceptions\GeneralException;
-use App\Models\account\Account;
-use App\Models\assetequipment\Assetequipment;
 use App\Models\items\PurchaseorderItem;
-use App\Models\transaction\Transaction;
-use App\Models\transactioncategory\Transactioncategory;
 use App\Repositories\BaseRepository;
 use App\Models\queuerequisition\QueueRequisition;
 
@@ -56,9 +51,6 @@ class PurchaseorderRepository extends BaseRepository
      */
     public function create(array $input)
     {
-         
-        DB::beginTransaction();
-       // dd($input);
         $order = $input['order'];
         foreach ($order as $key => $val) {
             $rate_keys = [
@@ -70,6 +62,9 @@ class PurchaseorderRepository extends BaseRepository
             if (in_array($key, $rate_keys, 1)) 
                 $order[$key] = numberClean($val);
         }
+        
+        DB::beginTransaction();
+        
         $tid = Purchaseorder::where('ins', $order['ins'])->max('tid');
         if ($order['tid'] <= $tid) $order['tid'] = $tid+1;
         $result = Purchaseorder::create($order);
@@ -80,14 +75,11 @@ class PurchaseorderRepository extends BaseRepository
             throw ValidationException::withMessages(['Unit of Measure (uom) required for Inventory Items']);
         }
         $order_items = array_map(function ($v) use($result) {
-
-            $productVariation = ProductVariation::find($v['item_id']);
-
             return array_replace($v, [
                 'ins' => $result->ins,
                 'user_id' => $result->user_id,
                 'purchaseorder_id' => $result->id,
-                'product_code' => empty($v['product_code']) ? $v['product_code'] : (empty($productVariation) ? 'P.Code N/A' : $productVariation->code),
+                'product_code' => @$v['product_code'],
                 'rate' => numberClean($v['rate']),
                 'taxrate' => numberClean($v['taxrate']),
                 'amount' => numberClean($v['amount'])
@@ -95,19 +87,16 @@ class PurchaseorderRepository extends BaseRepository
         }, $order_items);
         
         foreach ($order_items as $order_item) {
-            
             if ($order_item['type'] == 'Requisit') {
                 $queuerequisition = QueueRequisition::where('product_code', $order_item['product_code'])->where('status', '1')->update(['status'=>$order['tid']]);
                 $order_item['type'] = 'Stock';
             }
-            //dd($order_item['type']);
             PurchaseorderItem::insert($order_item);
         }
 
 
         /** Updating Budget Line Balance **/
         $budgetLine = ProjectMileStone::find($input['order']['project_milestone']);
-
         if(!empty($budgetLine)){
             $budgetLine->balance -= floatval(str_replace(',', '', $input['order']['grandttl']));
             $budgetLine->save();
@@ -117,9 +106,6 @@ class PurchaseorderRepository extends BaseRepository
             DB::commit();
             return $result;   
         }
-
-        DB::rollBack();
-        throw new GeneralException(trans('exceptions.backend.purchaseorders.create_error'));
     }
 
     /**
@@ -132,9 +118,6 @@ class PurchaseorderRepository extends BaseRepository
      */
     public function update($purchaseorder, array $input)
     {
-        // dd($input);
-        DB::beginTransaction();
-
         $order = $input['order'];
 
         /** Handling milestone changes */
@@ -146,15 +129,14 @@ class PurchaseorderRepository extends BaseRepository
         $newMilestoneZero = intval($input['order']['project_milestone']) === 0;
         $oldMilestoneZero = intval($purchaseorder->project_milestone) === 0;
 
+        DB::beginTransaction();
 
         /** If the milestone HAS CHANGED and grand total HAS CHANGED  */
         if($milestoneChanged && $grandTotalChanged){
-
             if (!$oldMilestoneZero) {
                 $budgetLine->balance = $budgetLine->balance + $purchaseorder->grandttl;
                 $budgetLine->save();
             }
-
             if (!$newMilestoneZero){
 
                 $newBudgetLine->balance -= floatval(str_replace(',', '', $input['order']['grandttl']));
@@ -163,30 +145,22 @@ class PurchaseorderRepository extends BaseRepository
         }
         /** If the milestone has NOT changed but grand total HAS CHANGED */
         else if (!$milestoneChanged && $grandTotalChanged){
-
             if (!$oldMilestoneZero) {
                 $budgetLine->balance = ($budgetLine->balance + $purchaseorder->grandttl) - floatval(str_replace(',', '', $input['order']['grandttl']));
                 $budgetLine->save();
             }
-
         }
         /** If the milestone HAS CHANGED but grand total HAS NOT CHANGED */
         else if($milestoneChanged && !$grandTotalChanged){
-
             if (!$oldMilestoneZero) {
                 $budgetLine->balance = $budgetLine->balance + $purchaseorder->grandttl;
                 $budgetLine->save();
             }
-
             if (!$newMilestoneZero) {
-
                 $newBudgetLine->balance -= $purchaseorder->grandttl;
                 $newBudgetLine->save();
             }
         }
-
-
-
 
         foreach ($order as $key => $val) {
             $rate_keys = [
@@ -215,9 +189,10 @@ class PurchaseorderRepository extends BaseRepository
                 'ins' => $order['ins'],
                 'user_id' => $order['user_id'],
                 'purchaseorder_id' => $purchaseorder->id,
+                'product_code' => @$item['product_code'],
                 'rate' => numberClean($item['rate']),
                 'taxrate' => numberClean($item['taxrate']),
-                'amount' => numberClean($item['amount'])
+                'amount' => numberClean($item['amount']),
             ]);
             $order_item = PurchaseorderItem::firstOrNew(['id' => $item['id']]);
             $order_item->fill($item);
@@ -229,9 +204,6 @@ class PurchaseorderRepository extends BaseRepository
             DB::commit();
             return true;
         }
-
-        DB::rollBack();
-        throw new GeneralException(trans('exceptions.backend.purchaseorders.update_error'));
     }
 
     /**
@@ -243,87 +215,13 @@ class PurchaseorderRepository extends BaseRepository
      */
     public function delete($purchaseorder)
     {
-        if ($purchaseorder->grn_items->count()) 
-            throw ValidationException::withMessages(['Purchase order has attached Goods Receive Note']);
-
-        DB::beginTransaction();
-        try {
-            $purchaseorder->transactions()->delete();
-            aggregate_account_transactions();
+        if ($purchaseorder->grn_items->count()) throw ValidationException::withMessages(['Purchase order has attached Goods Receive Note']);
             
-            if ($purchaseorder->delete()) {
-                DB::commit();
-                return true;
-            }
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            throw new GeneralException(trans('exceptions.backend.purchaseorders.delete_error'));
-        }     
-    }
-
-
-    /**
-     * Post Account Transaction
-     */
-    protected function post_transaction($bill) 
-    {
-        // credit Accounts Payable (Creditors) 
-        $account = Account::where('system', 'payable')->first(['id']);
-        $tr_category = Transactioncategory::where('code', 'bill')->first(['id', 'code']);
-        $tid = Transaction::where('ins', auth()->user()->ins)->max('tid') + 1;
-        $cr_data = [
-            'tid' => $tid,
-            'account_id' => $account->id,
-            'trans_category_id' => $tr_category->id,
-            'credit' => $bill->grandttl,
-            'tr_date' => $bill->date,
-            'due_date' => $bill->due_date,
-            'user_id' => $bill->user_id,
-            'note' => $bill->note,
-            'ins' => $bill->ins,
-            'tr_type' => $tr_category->code,
-            'tr_ref' => $bill->id,
-            'user_type' => 'supplier',
-            'is_primary' => 1
-        ];
-        Transaction::create($cr_data);
-
-        $dr_data = array();
-        // debit Inventory/Stock Account
-        unset($cr_data['credit'], $cr_data['is_primary']);
-        $is_stock = $bill->items()->where('type', 'Stock')->count();
-        if ($is_stock) {
-            $account = Account::where('system', 'stock')->first(['id']);
-            $dr_data[] = array_replace($cr_data, [
-                'account_id' => $account->id,
-                'debit' => $bill->stock_subttl,
-            ]);    
+        DB::beginTransaction();
+        $purchaseorder->items()->delete();
+        if ($purchaseorder->delete()) {
+            DB::commit();
+            return true;
         }
-        // debit Expense and Asset Account
-        foreach ($bill->items as $item) {
-            $subttl = $item->amount - $item->taxrate;
-            if ($item->type == 'Expense') {
-                $dr_data[] = array_replace($cr_data, [
-                    'account_id' => $item->item_id,
-                    'debit' => $subttl,
-                ]);
-            } elseif ($item->type == 'Asset') {
-                $asset = Assetequipment::find($item->item_id);
-                $dr_data[] = array_replace($cr_data, [
-                    'account_id' => $asset->account_id,
-                    'debit' => $subttl,
-                ]);
-            }
-        }
-        // debit Tax
-        if ($bill->grandtax > 0) {
-            $account = Account::where('system', 'tax')->first(['id']);
-            $dr_data[] = array_replace($cr_data, [
-                'account_id' => $account->id, 
-                'debit' => $bill->grandtax,
-            ]);
-        }
-        Transaction::insert($dr_data); 
-        aggregate_account_transactions();
     }
 }
