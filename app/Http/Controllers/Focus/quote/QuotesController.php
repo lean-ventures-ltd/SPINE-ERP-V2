@@ -272,8 +272,7 @@ class QuotesController extends Controller
      */
     public function storeverified(ManageQuoteRequest $request)
     {
-        //filter request input fields
-        $data = $request->only(['id', 'verify_no', 'gen_remark','project_closure_date', 'total', 'tax', 'subtotal']);
+        $data = $request->only(['id', 'verify_no', 'gen_remark', 'project_closure_date', 'total', 'tax', 'subtotal']);
         $data_items = $request->only([
             'remark', 'row_index', 'item_id', 'a_type', 'numbering', 'product_id', 
             'product_name', 'product_qty', 'product_price', 'product_subtotal', 'unit'
@@ -293,8 +292,7 @@ class QuotesController extends Controller
             else $tid = gen4tid('QT-', $tid);
             return new RedirectResponse(route('biller.quotes.get_verify_quote'), ['flash_success' => $tid . ' verified successfully']);
         } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
-            return errorHandler('Error Verifying record', $th);
+            return errorHandler('Error Verifying', $th);
         }
     }
 

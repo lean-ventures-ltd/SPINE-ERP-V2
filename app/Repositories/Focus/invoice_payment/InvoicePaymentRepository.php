@@ -3,11 +3,13 @@
 namespace App\Repositories\Focus\invoice_payment;
 
 use App\Exceptions\GeneralException;
+use App\Models\customer\Customer;
 use App\Models\invoice_payment\InvoicePayment;
 use App\Models\items\InvoicePaymentItem;
 use App\Repositories\Accounting;
 use App\Repositories\BaseRepository;
 use App\Repositories\CustomerSupplierBalance;
+use Carbon\Carbon;
 use DB;
 use Illuminate\Validation\ValidationException;
 
@@ -76,6 +78,7 @@ class InvoicePaymentRepository extends BaseRepository
         // create payment
         $tid = InvoicePayment::max('tid');
         if ($data['tid'] <= $tid) $data['tid'] = $tid+1;
+        $data['next_date'] = $this->computeNextDate($data['customer_id'], $data['date'], $data['amount']);
         $result = InvoicePayment::create($data);
         foreach ($data_items as $key => $val) {
             $data_items[$key]['paidinvoice_id'] = $result->id;
@@ -158,7 +161,9 @@ class InvoicePaymentRepository extends BaseRepository
         DB::beginTransaction(); 
 
         // update payment
+        $data['next_date'] = $this->computeNextDate($invoice_payment->customer_id, $data['date'], $data['amount']);
         $result = $invoice_payment->update($data);
+
         foreach ($invoice_payment->items as $pmt_item) {
             $is_allocated = false;
             foreach ($data_items as $data_item) {
@@ -258,5 +263,50 @@ class InvoicePaymentRepository extends BaseRepository
         }      
         
         DB::rollBack();
+    }
+
+    /**
+     * Compute Next Payment Date
+     */
+    public function computeNextDate($customer_id=null, $curr_date=null, $amount=0)
+    {
+        $next_date = null;
+        $customer = Customer::find($customer_id);
+        $tenant_package = @$customer->tenant_package;
+        if ($tenant_package && $curr_date && $amount > 0) {
+            $subscr_term = $tenant_package->subscr_term;
+            $maint_cost = round($tenant_package->maintenance_cost);
+            $total_cost = round($tenant_package->total_cost);
+
+            $curr_date = Carbon::parse($curr_date);
+            $amount = round($amount);
+            $count = $this->query()->where('customer_id', $customer_id)->count();
+            // initial pay
+            if ($count == 0) {
+                if ($amount > $total_cost) {
+                    $amount -= $total_cost;
+                    $months = floor(($amount * $subscr_term)/$maint_cost);
+                    $next_date = $curr_date->addMonths($subscr_term + $months);
+                } else {
+                    $next_date = $curr_date->addMonths($subscr_term);
+                }
+                $next_date = $next_date->format('Y-m-d');
+            } else {
+                // consecutive pays
+                $depo_total = $this->query()->where('customer_id', $customer_id)->sum('amount');
+                $depo_total = round($depo_total);
+
+                // earlier pay
+                $last_depo = $this->query()->where('customer_id', $customer_id)->orderBy('id', 'DESC')->first(['next_date']);
+                $last_next_date = Carbon::parse($last_depo->next_date);
+                if ($last_next_date->gt($curr_date)) $curr_date = $last_next_date;
+            
+                if ($depo_total < $total_cost) $amount = $depo_total + $amount - $total_cost;
+                $months = floor(($amount * $subscr_term)/$maint_cost);
+                $next_date = $curr_date->addMonths($months);
+                $next_date = $next_date->format('Y-m-d');
+            }
+        }
+        return $next_date;
     }
 }

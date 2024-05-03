@@ -76,10 +76,11 @@ class SoftwareProforma extends Command
                 $tid = Quote::where('ins', $ins)->where('bank_id', '>', 0)->max('tid')+1;
                 $amount = $first_proforma? round($tenant_package->maintenance_cost) : round($tenant_package->total_cost);
                 $note = $first_proforma? 'Maintenance Service' : 'Software Service Package';
+                $date = $date->format('Y-m-d');
 
                 $quote = Quote::create([
                     'tid' => $tid,
-                    'date' => $date->format('Y-m-d'),
+                    'date' => $date,
                     'taxable' => $amount,
                     'subtotal' => $amount,
                     'total' => $amount,
@@ -90,7 +91,11 @@ class SoftwareProforma extends Command
                     'currency_id' => $currency->id,
                     'quote_type' => 'standard',
                     'bank_id' => $bank->id,
-                    'user_id' => $customer->user_id,
+                    'approved_date' => $date,
+                    'approved_method' => 'other',
+                    'approved_by' => 'System',
+                    'status' => 'approved',
+                    'user_id' => 0,
                     'ins' => $customer->ins,
                 ]);
                 QuoteItem::create([

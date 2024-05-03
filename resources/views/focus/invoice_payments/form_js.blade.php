@@ -24,7 +24,7 @@
 
         init() {
             $.ajaxSetup(config.ajax);
-            $('.datepicker').datepicker(config.date);
+            $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
             $('#person').select2(config.select2);
 
             $('#person').change(this.customerChange);
