@@ -138,8 +138,8 @@ class LabourAllocationController extends Controller
         $tmlaMetrics = [
             'tmlaCount' => $tmlaCount,
             'tmlaTotalManHours' => $tmlaTotalManHours,
-            'entriesTarget' => bcmul($daysInMonth, 12),
-            'monthHoursTarget' => bcmul($daysInMonth, 72),
+            'entriesTarget' => round($daysInMonth * 12),
+            'monthHoursTarget' => round($daysInMonth * 72),
         ];
 
 
