@@ -53,6 +53,29 @@ class PurchaseClassController extends Controller
         return view('focus.purchase_classes.index');
     }
 
+    public function reportIndex(Request $request)
+    {
+
+        if ($request->ajax()) {
+
+            $purchaseClasses = PurchaseClass::all();
+
+            return Datatables::of($purchaseClasses)
+                ->addColumn('action', function ($model) {
+
+                    $routeShow = route('biller.purchase-classes.show', $model->id);
+
+                    return '<a href="'.$routeShow.'" class="btn btn-secondary round mr-1">Reports</a>';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+
+        }
+
+
+        return view('focus.purchase_classes.reports');
+    }
+
     /**
      * Show the form for creating a new resource.
      *

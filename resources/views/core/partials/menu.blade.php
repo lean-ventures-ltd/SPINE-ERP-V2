@@ -2111,6 +2111,10 @@
                                                     href="{{ route('biller.reports.summary', ['products']) }}"><i
                                                 class="ft-layers"></i> {{ trans('meta.products_summary') }}</a>
                                 </li>
+                                <li data-menu=""><a class="dropdown-item"
+                                                    href="{{ route('biller.purchase_classes.get-reports', ['purchase']) }}"><i
+                                                class="ft-layers"></i> Purchase Class Reports </a>
+                                </li>
                             </ul>
                         </li>
                     </ul>
