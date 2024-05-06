@@ -24,7 +24,8 @@ class FocusMiddleware
             $meta = ConfigMeta::where('feature_id', 2)->first();
             config(['core' => $company, 'app.timezone' => $company->zone, 'currency' => $meta->currency]);
         } catch (\Throwable $th) {
-            abort(500, 'Something went wrong! Check System Configurations');
+            \Illuminate\Support\Facades\Log::error($th->getMessage() .' {user_id: '. auth()->user()->id . '}' . ' at ' . $th->getFile() . ':' . $th->getLine());
+            abort(500, 'Check company and meta configurations');
         }
 
         return $next($request);
