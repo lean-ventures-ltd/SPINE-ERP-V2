@@ -623,7 +623,10 @@
                                        data-toggle="dropdown"><i class="ft-list"></i>Manage
                                         {{ trans('projects.projects') }}</a>
                                 </li>
-
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('biller.miscs.index') }}"
+                                       data-toggle="dropdown"><i class="ft-list"></i>Manage Project Tags</a>
+                                </li>
                             </ul>
                         </li>
                         @endauth
