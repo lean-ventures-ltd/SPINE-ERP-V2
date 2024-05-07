@@ -86,7 +86,9 @@ class ProjectsController extends Controller
 
         $mics = Misc::all();
         $statuses = Misc::where('section', 2)->get();
-        $tags = Misc::where('section', 1)->get();
+        $tags = Misc::where('section', 1);
+
+        return $tags->getBindings();
 
         $employees = Hrm::all();
         $project = new Project;
