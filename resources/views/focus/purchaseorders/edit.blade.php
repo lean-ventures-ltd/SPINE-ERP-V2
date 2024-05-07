@@ -56,6 +56,37 @@
     $('#date').datepicker('setDate', new Date("{{ $po->date }}"));
     $('#due_date').datepicker('setDate', new Date("{{ $po->due_date }}"));
 
+
+    $(document).ready(function () {
+
+        $("#purchase_class").on('input', function(){
+
+            if($(this).val() !== '') {
+
+                $("#project").attr('disabled', 'disabled');
+                $("#project").val('');
+            }
+            else {
+
+                $("#project").removeAttr('disabled');
+            }
+        });
+
+        $("#project").on('change', function(){
+
+            if ($(this).val() == null) {
+
+                $("#purchase_class").removeAttr('disabled');
+            }
+            else {
+
+                $("#purchase_class").attr('disabled', 'disabled');
+                $("#purchase_class").val('');
+            }
+        });
+
+    });
+
     // On searching supplier
     $('#supplierbox').change(function() {
         const name = $('#supplierbox option:selected').text().split(' : ')[0];

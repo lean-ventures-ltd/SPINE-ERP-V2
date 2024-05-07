@@ -16,6 +16,32 @@
         });
 
 
+        $("#purchase_class").on('input', function(){
+
+            if($(this).val() !== '') {
+
+                $("#project").attr('disabled', 'disabled');
+                $("#project").val('');
+            }
+            else {
+
+                $("#project").removeAttr('disabled');
+            }
+        });
+
+        $("#project").on('change', function(){
+
+            if ($(this).val() == null) {
+
+                $("#purchase_class").removeAttr('disabled');
+            }
+            else {
+
+                $("#purchase_class").attr('disabled', 'disabled');
+                $("#purchase_class").val('');
+            }
+        });
+
 
     });
 
@@ -30,7 +56,8 @@
                 quietMillis: 50,
                 data: ({term}) => ({q: term, keyword: term}),
                 processResults: callback
-            }
+            },
+            allowClear: true,
         }
     }
     function select2Config2(url, callback) {

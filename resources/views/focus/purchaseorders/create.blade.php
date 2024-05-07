@@ -80,6 +80,32 @@
             // Update the values of all other select elements with class 'item-purchase-class'
             $('.item-purchase-class').val(selectedValue);
         });
+
+        $("#purchase_class").on('input', function(){
+
+            if($(this).val() !== '') {
+
+                $("#project").attr('disabled', 'disabled');
+                $("#project").val('');
+            }
+            else {
+
+                $("#project").removeAttr('disabled');
+            }
+        });
+
+        $("#project").on('change', function(){
+
+            if ($(this).val() == null) {
+
+                $("#purchase_class").removeAttr('disabled');
+            }
+            else {
+
+                $("#purchase_class").attr('disabled', 'disabled');
+                $("#purchase_class").val('');
+            }
+        });
     });
 
 
