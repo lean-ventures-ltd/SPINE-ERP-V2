@@ -13,11 +13,9 @@
                 <label for="ticket">Ticket</label>
                 <div class="input-group">
                     <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
-                    <select class="form-control" name="lead_id" id="lead_id" data-placeholder="Search by Ticket No, Subject, Client, Branch" required> 
-                        <option value=""></option>                                                
+                    <select class="form-control" name="lead_id" id="lead_id" required>                                                 
                         @foreach ($leads as $lead)
                             @php
-                                if (!$lead) continue;
                                 $customer_name = '';
                                 if ($lead->customer) {
                                     $customer_name .= $lead->customer->company;
