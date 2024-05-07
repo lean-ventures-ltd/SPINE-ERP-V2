@@ -151,7 +151,7 @@
                         <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
                         <select id="source" name="source" class="custom-select round" required>
                             <option value="">-- Select Source --</option>
-                            @foreach (['Emergency Call', 'RFQ', 'Site Survey', 'Existing SLA', 'Tender', 'Broker', 'Aircon Experts','Other'] as $val)
+                            @foreach (['Emergency Call', 'RFQ', 'Site Survey', 'Existing SLA', 'Tender', 'Broker','Other'] as $val)
                                 <option value="{{ $val }}" {{ @$lead->source == $val? 'selected' : '' }}>
                                     {{ $val }}
                                 </option>
