@@ -34,7 +34,7 @@ class EditResponse implements Responsable
     {
         $mics = Misc::all();
         $statuses = Misc::where('section', 2)->get();
-        $tags = Misc::where('section', 1)->get();
+        $tags = Misc::where('section', 1)->where('ins', auth()->user()->business->id)->get();
         $employees = Hrm::all();
         $project = $this->project;
 
