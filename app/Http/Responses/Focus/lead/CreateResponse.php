@@ -5,6 +5,7 @@ namespace App\Http\Responses\Focus\lead;
 use App\Models\branch\Branch;
 use App\Models\customer\Customer;
 use App\Models\lead\Lead;
+use App\Models\lead\LeadSource;
 use Illuminate\Contracts\Support\Responsable;
 
 class CreateResponse implements Responsable
@@ -26,7 +27,9 @@ class CreateResponse implements Responsable
         $branches = Branch::get(['id', 'name', 'customer_id']);
 
         $income_accounts = \App\Models\account\Account::where('account_type', 'Income')->get();
+        $leadSources = LeadSource::select('id', 'name')->get();
 
-        return view('focus.leads.create', compact('tid', 'customers', 'branches', 'prefixes', 'income_accounts'));
+
+        return view('focus.leads.create', compact('tid', 'customers', 'branches', 'prefixes', 'income_accounts', 'leadSources'));
     }
 }

@@ -277,6 +277,7 @@ Route::group(['namespace' => 'lead'], function () {
     Route::patch('leads/update_reminder/{lead}', 'LeadsController@update_reminder')->name('leads.update_reminder');
     Route::post('leads/lead_search', 'LeadsController@lead_search')->name('leads.lead_search');
     Route::resource('leads', 'LeadsController');
+    Route::resource('lead-sources', 'LeadSourceController');
 
     //For Datatable
     Route::post('leads/get', 'LeadsTableController')->name('leads.get');

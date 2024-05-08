@@ -98,7 +98,7 @@ class PurchaseClassController extends Controller
 
 
         $request->validate([
-            'name' => 'required|unique:purchase_classes|max:255',
+            'name' => ['required'],
             // Add other validation rules as needed
         ]);
 
@@ -245,7 +245,7 @@ class PurchaseClassController extends Controller
         $purchaseClass = PurchaseClass::find($id);
 
         $request->validate([
-            'name' => 'required|max:255|unique:purchase_classes,name,' . $purchaseClass->id,
+            'name' => 'required',
             // Add other validation rules as needed
         ]);
 
