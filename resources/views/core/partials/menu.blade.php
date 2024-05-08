@@ -542,6 +542,10 @@
                                        data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Ticket</a>
                                 </li>
                                 @endauth
+                                @permission('manage-lead-sources')
+                                <li><a class="dropdown-item" href="{{ route('biller.lead-sources.index') }}"
+                                       data-toggle="dropdown"> <i class="fa fa-compass"></i> Manage Ticket Sources</a></li>
+                                @endauth
                             </ul>
                         </li>
                         @endauth

@@ -18,7 +18,9 @@
 
 namespace App\Http\Controllers\Focus\lead;
 
+use App\Http\Controllers\Focus\employeeDailyLog\EmployeeDailyLogController;
 use App\Models\account\Account;
+use App\Models\lead\LeadSource;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
@@ -65,8 +67,9 @@ class LeadsController extends Controller
         $closed_lead = Lead::where('status', 1)->count();
         $total_lead = Lead::count();
         $income_accounts = Account::where('account_type', 'Income')->get();
+        $leadSources = LeadSource::select('id', 'name')->get();
 
-        return new ViewResponse('focus.leads.index', compact('open_lead', 'closed_lead', 'total_lead', 'income_accounts'));
+        return new ViewResponse('focus.leads.index', compact('open_lead', 'closed_lead', 'total_lead', 'income_accounts', 'leadSources'));
     }
 
     /**
@@ -92,7 +95,7 @@ class LeadsController extends Controller
             'reference' => 'required',
             'date_of_request' => 'required',
             'title' => 'required',
-            'source' => 'required',
+            'lead_source_id' => 'required',
             'assign_to' => 'required'
 
         ]);
@@ -121,8 +124,10 @@ class LeadsController extends Controller
         $branches = Branch::get(['id', 'name', 'customer_id']);
         $prefixes = prefixesArray(['lead'], $lead->ins);
         $income_accounts = Account::where('account_type', 'Income')->get();
+        $leadSources = LeadSource::select('id', 'name')->get();
 
-        return new EditResponse('focus.leads.edit', compact('lead', 'branches', 'customers', 'prefixes', 'income_accounts'));
+
+        return new EditResponse('focus.leads.edit', compact('lead', 'branches', 'customers', 'prefixes', 'income_accounts', 'leadSources'));
     }
 
     /**
@@ -139,7 +144,7 @@ class LeadsController extends Controller
             'reference' => 'required',
             'date_of_request' => 'required',
             'title' => 'required',
-            'source' => 'required',
+            'lead_source_id' => 'required',
             'assign_to' => 'required',
         ];
         $request->validate($fields);
