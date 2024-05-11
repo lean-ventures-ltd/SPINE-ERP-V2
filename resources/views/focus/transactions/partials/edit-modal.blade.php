@@ -19,7 +19,10 @@
                         <div class="col-6">
                             <label for="account">Account</label>
                             <select name="account_id" class="form-control" id="account" data-id="{{ $tr->account_id }}" data-placeholder="Search Account">
-                                <option value="{{ $tr->account->id }}" selected>{{ $tr->account->holder }}</option>
+
+                                @if($row->holder !== 'Stock Gain' && $row->holder !== 'Others' && $row->holder !== 'Point of Sale' && $row->holder !== 'Loan Penalty Receivable' && $row->holder !== 'Loan Interest Receivable')
+                                    <option value="{{ $tr->account->id }}" selected>{{ $tr->account->holder }}</option>
+                                @endif
                             </select>                        
                         </div>
                         <div class="col-6">
