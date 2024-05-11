@@ -2153,30 +2153,30 @@
                                         <i class="fa fa-file-excel-o"></i> Prospects
                                     </a>
                                 </li>
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="{{ route('biller.import.general', ['customer']) }}">
-                                        <i class="fa fa-file-excel-o"></i> Customers
-                                    </a>
-                                </li>
+{{--                                <li>--}}
+{{--                                    <a class="dropdown-item"--}}
+{{--                                       href="{{ route('biller.import.general', ['customer']) }}">--}}
+{{--                                        <i class="fa fa-file-excel-o"></i> Customers--}}
+{{--                                    </a>--}}
+{{--                                </li>--}}
                                 <li>
                                     <a class="dropdown-item"
                                        href="{{ route('biller.import.general', ['products']) }}">
                                         <i class="fa fa-file-excel-o"></i> Products
                                     </a>
                                 </li>
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="{{ route('biller.import.general', ['accounts']) }}">
-                                        <i class="fa fa-file-excel-o"></i> Accounts
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="{{ route('biller.import.general', ['transactions']) }}">
-                                        <i class="fa fa-file-excel-o"></i> Transactions
-                                    </a>
-                                </li>
+{{--                                <li>--}}
+{{--                                    <a class="dropdown-item"--}}
+{{--                                       href="{{ route('biller.import.general', ['accounts']) }}">--}}
+{{--                                        <i class="fa fa-file-excel-o"></i> Accounts--}}
+{{--                                    </a>--}}
+{{--                                </li>--}}
+{{--                                <li>--}}
+{{--                                    <a class="dropdown-item"--}}
+{{--                                       href="{{ route('biller.import.general', ['transactions']) }}">--}}
+{{--                                        <i class="fa fa-file-excel-o"></i> Transactions--}}
+{{--                                    </a>--}}
+{{--                                </li>--}}
                                 <li>
                                     <a class="dropdown-item"
                                        href="{{ route('biller.import.general', ['equipments']) }}">
