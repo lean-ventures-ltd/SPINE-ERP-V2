@@ -299,7 +299,6 @@
     // initialize datepicker
     $('.datepicker')
     .datepicker({format: "{{ config('core.user_date_format') }}", autoHide: true})
-    .datepicker('setDate', new Date());
 
     // on delete Quote
     $('.quote-delete').click(function() {
