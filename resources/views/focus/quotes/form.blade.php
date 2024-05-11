@@ -79,9 +79,11 @@
                     <option value="">-- Select Category --</option>                                        
                     @foreach ($income_accounts as $row)
 
-                        <option value="{{ $row->id }}"  @if($row->id == @$quote->account_id) selected @endif>
-                            {{ $row->holder }}
-                        </option>
+                        @if($row->holder !== 'Stock Gain' && $row->holder !== 'Others' && $row->holder !== 'Point of Sale' && $row->holder !== 'Loan Penalty Receivable' && $row->holder !== 'Loan Interest Receivable')
+                            <option value="{{ $row->id }}"  @if($row->id == @$quote->account_id) selected @endif>
+                                {{ $row->holder }}
+                            </option>
+                        @endif
 
                     @endforeach
                 </select>

@@ -6,9 +6,11 @@
                 <select name="account_id" class='form-control round' required>
                     <option value="">-- select account --</option>
                     @foreach($accounts as $row)
-                        <option value="{{ $row->id }}" {{ @$banktransfer->account_id == $row->id? 'selected' : '' }}>
-                            {{ $row->holder }}
-                        </option>
+                        @if($row->holder !== 'Stock Gain' && $row->holder !== 'Others' && $row->holder !== 'Point of Sale' && $row->holder !== 'Loan Penalty Receivable' && $row->holder !== 'Loan Interest Receivable')
+                            <option value="{{ $row->id }}" {{ @$banktransfer->account_id == $row->id? 'selected' : '' }}>
+                                {{ $row->holder }}
+                            </option>
+                        @endif
                     @endforeach
                 </select>
             </div>

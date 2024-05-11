@@ -87,12 +87,13 @@
                                                     <div class="form-group">
                                                         <label for="account_id"
                                                                class="caption">Ledger Account(Debited)*</label>
-                                                        <select  name="account_id" class="form-control round required"
-                                                                id="account_id">
-                                                             <option value="">Select Ledger Account</option>
-                                                @foreach($accounts as $account)
-                                    <option value="{{$account->id}}"> {{$account->holder}}</option>
-                                                @endforeach
+                                                        <select  name="account_id" class="form-control round required" id="account_id">
+                                                            <option value="">Select Ledger Account</option>
+                                                            @foreach($accounts as $account)
+                                                                @if($account->holder !== 'Stock Gain' && $account->holder !== 'Others' && $account->holder !== 'Point of Sale' && $account->holder !== 'Loan Penalty Receivable' && $account->holder !== 'Loan Interest Receivable')
+                                                                    <option value="{{$account->id}}"> {{$account->holder}}</option>
+                                                                @endif
+                                                            @endforeach
 
                                                         </select>
                                                     </div>
