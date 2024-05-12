@@ -72,7 +72,7 @@
             skill_total
         } = profitState;
         const profit = sp_total - (bp_total + skill_total);
-        let pcent_profit = profit / (bp_total + skill_total) * 100;
+        let pcent_profit = profit / (sp_total + skill_total) * 100;
         pcent_profit = isFinite(pcent_profit) ? Math.round(pcent_profit) : 0;
 
         const profitText = bp_total > 0 ?
