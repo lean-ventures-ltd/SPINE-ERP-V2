@@ -42,11 +42,9 @@
         <label for="account">Receive Payment On (Ledger Account)</label>
         <select name="account_id" id="account" class="custom-select" required>
             <option value="">-- Select Account --</option>
-            @if($row->holder !== 'Stock Gain' && $row->holder !== 'Others' && $row->holder !== 'Point of Sale' && $row->holder !== 'Loan Penalty Receivable' && $row->holder !== 'Loan Interest Receivable')
-                @foreach ($accounts as $row)
-                    <option value="{{ $row->id }}">{{ $row->holder }}</option>
-                @endforeach
-            @endif
+            @foreach ($accounts as $row)
+                <option value="{{ $row->id }}">{{ $row->holder }}</option>
+            @endforeach
         </select>
     </div>     
     

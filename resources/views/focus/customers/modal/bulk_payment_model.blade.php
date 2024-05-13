@@ -59,11 +59,8 @@
 
                             <select name="account_id" class="form-control">
                                 @foreach($accounts as $account)
-                                    @if($account['holder'] !== 'Stock Gain' && $account['holder'] !== 'Others' && $account['holder'] !== 'Point of Sale' && $account['holder'] !== 'Loan Penalty Receivable' && $account['holder'] !== 'Loan Interest Receivable')
-                                        <option value="{{$account['id']}}">{{$account['number']}}
-                                            - {{$account['holder']}}
-                                        </option>
-                                    @endif
+                                    <option value="{{$account['id']}}">{{$account['number']}}
+                                        - {{$account['holder']}}</option>
                                 @endforeach
                             </select></div>
                     </div>
