@@ -37,9 +37,8 @@
                             <label for="account_id">{{trans('accounts.account')}}</label>
                             <select name="account_id" class="form-control">
                                 @foreach($accounts as $account)
-                                    @if($row->holder !== 'Stock Gain' && $row->holder !== 'Others' && $row->holder !== 'Point of Sale' && $row->holder !== 'Loan Penalty Receivable' && $row->holder !== 'Loan Interest Receivable')
-                                        <option value="{{$account['id']}}">{{$account['number']}} - {{$account['holder']}}</option>
-                                    @endif
+                                <option value="{{$account['id']}}">{{$account['number']}}
+                                    - {{$account['holder']}}</option>
                                 @endforeach
                             </select>
                         </div>
