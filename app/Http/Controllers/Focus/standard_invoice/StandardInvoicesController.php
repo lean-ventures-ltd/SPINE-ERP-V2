@@ -83,7 +83,7 @@ class StandardInvoicesController extends Controller
         $tax_rates = Additional::all();
         $currencies = Currency::all();
 
-        $latestCuInvoiceNo = Invoice::latest()->first()->cu_invoice_no;
+        $latestCuInvoiceNo = Invoice::latest()->first()->cu_invoice_no ?? '';
 
         $newCuInvoiceNo = (new CuInvoiceNumberController())->getNext();
 
