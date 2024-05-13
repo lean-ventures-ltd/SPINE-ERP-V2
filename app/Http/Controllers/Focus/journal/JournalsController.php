@@ -65,7 +65,11 @@ class JournalsController extends Controller
 
         $data_items = modify_array($data_items);
 
-        $this->repository->create(compact('data', 'data_items'));
+        try {
+            $this->repository->create(compact('data', 'data_items'));
+        } catch (\Throwable $th) {
+            return errorHandler('Error Creating Manual Journal', $th);
+        }
 
         return new RedirectResponse(route('biller.journals.index'), ['flash_success' => 'Manual Journal created successfully']);
     }
@@ -89,15 +93,15 @@ class JournalsController extends Controller
      */
     public function destroy(Journal $journal)
     {
+        if ($journal->reconciliation_items()->exists()) 
+            return errorHandler('Not Allowed! Journal Entry is attached to a Reconciliation record');
+        
         try {
-            if ($journal->reconciliation_items()->exists()) 
-                return errorHandler('Not Allowed! Journal Entry is attached to a Reconciliation record');
-            
             $this->repository->delete($journal);
         } catch (\Throwable $th) {
-            return errorHandler('Error Deleting Journal Entry', $th);
+            return errorHandler('Error Deleting Manual Journal', $th);
         }
-        
+
         return new RedirectResponse(route('biller.journals.index'), ['flash_success' => 'Manual Journal deleted successfully']);
     }
 

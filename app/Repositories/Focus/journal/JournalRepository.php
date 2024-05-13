@@ -60,6 +60,7 @@ class JournalRepository extends BaseRepository
                 'credit' => numberClean($v['credit']),
             ]);
         }, $data_items);
+        $data_items = array_filter($data_items, fn($v) => @$v['journal_id'] && ($v['debit'] || $v['credit']));
         JournalItem::insert($data_items);
         
         /** accounting */ 
