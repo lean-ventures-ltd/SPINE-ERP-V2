@@ -18,6 +18,7 @@
 
 namespace App\Http\Controllers\Focus\invoice;
 
+use App\Http\Controllers\Focus\cuInvoiceNumber\ControlUnitInvoiceNumberController;
 use App\Http\Controllers\Focus\printer\RegistersController;
 use App\Http\Requests\Focus\invoice\ManagePosRequest;
 use App\Models\account\Account;
@@ -273,8 +274,10 @@ class InvoicesController extends Controller
         $last_tid = Invoice::where('ins', $ins)->max('tid');
         $prefixes = prefixesArray(['invoice', 'quote', 'proforma_invoice', 'purchase_order', 'delivery_note', 'jobcard'], $ins);
 
+        $newCuInvoiceNo = explode('KRAMW', auth()->user()->business->etr_code)[1] . (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
+
         return new ViewResponse('focus.invoices.create_project_invoice',
-            compact('quotes', 'customer', 'last_tid', 'banks', 'accounts', 'terms', 'quote_ids', 'additionals', 'currency', 'prefixes'),
+            compact('quotes', 'customer', 'last_tid', 'banks', 'accounts', 'terms', 'quote_ids', 'additionals', 'currency', 'prefixes', 'newCuInvoiceNo'),
         );
     }
 
@@ -286,7 +289,7 @@ class InvoicesController extends Controller
         // extract request input fields
         $bill = $request->only([
             'customer_id', 'bank_id', 'tax_id', 'tid', 'invoicedate', 'validity', 'notes', 'term_id', 'account_id',
-            'taxable', 'subtotal', 'tax', 'total', 'estimate_id', 'fx_curr_rate',
+            'taxable', 'subtotal', 'tax', 'total', 'estimate_id', 'fx_curr_rate', 'cu_invoice_no',
         ]);
         $bill_items = $request->only([
             'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 'product_subtotal', 'product_price', 
@@ -296,6 +299,7 @@ class InvoicesController extends Controller
         $bill['user_id'] = auth()->user()->id;
         $bill['ins'] = auth()->user()->ins;
         $bill_items = modify_array($bill_items);
+        $bill['cu_invoice_no'] = explode('KRAMW', auth()->user()->business->etr_code)[1] . (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
 
         try {
             $result = $this->repository->create_project_invoice(compact('bill', 'bill_items'));

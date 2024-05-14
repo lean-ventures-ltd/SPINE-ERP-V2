@@ -19,6 +19,7 @@
 namespace App\Http\Controllers\Focus\standard_invoice;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Focus\cuInvoiceNumber\ControlUnitInvoiceNumberController;
 use App\Http\Controllers\Focus\cuInvoiceNumber\CuInvoiceNumberController;
 use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
@@ -32,7 +33,6 @@ use App\Models\invoice\Invoice;
 use App\Models\term\Term;
 use App\Repositories\Focus\standard_invoice\StandardInvoiceRepository;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -83,9 +83,8 @@ class StandardInvoicesController extends Controller
         $tax_rates = Additional::all();
         $currencies = Currency::all();
 
-        $latestCuInvoiceNo = Invoice::latest()->first()->cu_invoice_no ?? '';
 
-        $newCuInvoiceNo = (new CuInvoiceNumberController())->getNext();
+        $newCuInvoiceNo = explode('KRAMW', auth()->user()->business->etr_code)[1] . (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
 
         return new ViewResponse('focus.standard_invoices.create', compact('tid', 'customers', 'banks', 'accounts', 'terms', 'tax_rates', 'currencies', 'newCuInvoiceNo'));
     }
@@ -104,7 +103,7 @@ class StandardInvoicesController extends Controller
 //            ['cu_invoice_no.unique' => 'The Specified CU Invoice Number is Already Taken']
 //        )->validate();
 
-        $request['cu_invoice_no'] = (new CuInvoiceNumberController())->allocate();
+        $request['cu_invoice_no'] = explode('KRAMW', auth()->user()->business->etr_code)[1] . (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
 
         $data = $request->only([
             'customer_id', 'tid', 'invoicedate', 'tax_id', 'bank_id', 'validity', 'account_id', 'currency_id', 'term_id', 'notes', 

@@ -122,7 +122,7 @@
     <div class="col-md-2">
         <label for="cu_invoice_no">CU Invoice No.</label>
 {{--        {{ Form::text('cu_invoice_no', null, ['class' => 'form-control']) }}--}}
-        <input type="text" id="cu_invoice_no" name="cu_invoice_no" required readonly class="form-control box-size" @if(!empty($newCuInvoiceNo)) value="{{substr_replace($newCuInvoiceNo, 'XXX', -3)}}" @endif>
+        <input type="text" id="cu_invoice_no" name="cu_invoice_no" required readonly class="form-control box-size" @if(!empty($newCuInvoiceNo)) value="{{ $newCuInvoiceNo }}" @endif>
 
     </div>
 </div>
@@ -203,10 +203,10 @@
     <div class="row form-group">
         <div class="col-6 col-sm-3 ml-auto mr-auto">
 
-            <div class="d-flex flex-row">
-                <label for="cuConfirmation" style="color: red;">Confirm Last 3 Digits Of CU Invoice No:</label>
-                <input type="number" id="cuConfirmation" class="form-control w-50 ml-2 mb-1">
-            </div>
+{{--            <div class="d-flex flex-row">--}}
+{{--                <label for="cuConfirmation" style="color: red;">Confirm Last 3 Digits Of CU Invoice No:</label>--}}
+{{--                <input type="number" id="cuConfirmation" class="form-control w-50 ml-2 mb-1">--}}
+{{--            </div>--}}
 
             <div class="input-group">
                 <div class="col-sm-6">

@@ -1,16 +1,24 @@
 <?php
 
-namespace App\Models\cuInvoiceNumber;
+namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CuInvoiceNumber extends Model
+class ControlUnitInvoiceNumber extends Model
 {
 
-    use SoftDeletes;
+    protected $table = 'control_unit_invoice_numbers';
 
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'cuin_number';
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    protected $fillable = [
+        'cu_no',
+        'ins'
+    ];
 
     protected static function boot()
     {
@@ -30,5 +38,6 @@ class CuInvoiceNumber extends Model
             }
         });
     }
+
 
 }
