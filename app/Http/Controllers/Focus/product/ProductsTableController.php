@@ -77,7 +77,7 @@ class ProductsTableController extends Controller
              ->addColumn('productcategory_id', function ($product) {
                 $this->standard_product = $product->standard ?: $product;
                 $name = Productcategory::where('id',$product->productcategory_id)->first();
-                return  $name->title;
+                return  empty($name) ? 'MISSING PRODUCT CATEGORY' : $name->title;
             })
             ->addColumn('code', function ($product) {
                 $code = $this->standard_product->code;
