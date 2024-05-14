@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Focus\creditnote;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Focus\cuInvoiceNumber\ControlUnitInvoiceNumberController;
 use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
 use App\Models\Company\Company;
@@ -54,8 +55,11 @@ class CreditNotesController extends Controller
     $last_tid = CreditNote::where('ins', $ins)->max('tid');
     if ($is_debit == 1) $last_tid = CreditNote::where('ins', $ins)->where('is_debit', 1)->max('tid');
 
-    return new ViewResponse('focus.creditnotes.create', compact('last_tid', 'is_debit', 'prefixes'));
+      $newCuInvoiceNo = explode('KRAMW', auth()->user()->business->etr_code)[1] . (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
+
+      return new ViewResponse('focus.creditnotes.create', compact('last_tid', 'is_debit', 'prefixes', 'newCuInvoiceNo'));
   }
+
 
   /**
    * Store a newly created resource in storage.

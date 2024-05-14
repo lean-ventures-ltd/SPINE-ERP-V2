@@ -79,7 +79,9 @@ class CuInvoiceNumberController extends Controller
     public function getNext(): string
     {
 
-        $cuInvoiceNumber = CuInvoiceNumber::first()->value;
+        $etrCode = explode('KRAMW', auth()->user()->business->etr_code)[1];
+
+        $cuInvoiceNumber = empty(CuInvoiceNumber::first()) ? $etrCode . '001' : CuInvoiceNumber::first()->value;
 
         return $this->findClearNumber($cuInvoiceNumber);
     }
@@ -113,7 +115,7 @@ class CuInvoiceNumberController extends Controller
     public function findClearNumber(string $cuInvoiceNumber): string
     {
 
-        $unclearedNumbers = ['EGG'];
+        $unclearedNumbers = [];
 
         while ($this->clearForUse($cuInvoiceNumber) === false){
             $cuInvoiceNumber = '0' . (intval($cuInvoiceNumber) + 1);

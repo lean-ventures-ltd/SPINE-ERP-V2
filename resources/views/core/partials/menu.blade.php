@@ -1153,6 +1153,10 @@
                             <li><a class="dropdown-item" href="{{ route('biller.estimates.create') }}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Invoice Estimate</a></li>
                             @endauth
                             <li><a class="dropdown-item" href="{{ route('biller.estimates.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Estimates</a></li>
+
+                            @permission('manage-cu-invoice-number')
+                            <li><a class="dropdown-item" href="{{ route('biller.control-unit-invoice-number.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage CU Invoice Number </a></li>
+                            @endauth
                         </ul>
                     </li>
                     @endauth
