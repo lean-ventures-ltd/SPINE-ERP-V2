@@ -57,8 +57,18 @@ class ProjectsTableController extends Controller
             ->escapeColumns(['id'])
             ->addIndexColumn()
             ->addColumn('name', function ($project) {
+
+                $customer = '';
+                $branch = '';
+
+                if (empty($project->customer)) $customer = 'N/A';
+                else $customer = $project->customer->name;
+
+                if (empty($project->branch)) $branch = 'N/A';
+                else $branch = $project->branch->name;
+
                 return
-                    '<p> ' . $project->name . '<br> <b> Client: </b> ' . $project->customer->name . '<br> <b> Branch: </b> ' . $project->branch->name . '</p>';
+                    '<p> ' . $project->name . '<br> <b> Client: </b> ' . $customer . '<br> <b> Branch: </b> ' . $branch . '</p>';
             })
             ->addColumn('customer', function($project) {
                 $name = '';
