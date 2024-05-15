@@ -20,7 +20,7 @@ class ControlUnitInvoiceNumberController extends Controller
      * Retrieves the current Cu Invoice Number
      * @return string
      */
-    public function retrieveCuInvoiceNumber()
+    public function retrieveCuInvoiceNumber(bool $getCurrent = false)
     {
 
         $cuInvoiceNo = empty(ControlUnitInvoiceNumber::first()) ? '' : ControlUnitInvoiceNumber::first()->cu_no;
@@ -46,6 +46,7 @@ class ControlUnitInvoiceNumberController extends Controller
             $cuInvoiceNo = $newCuInvoiceNumber->cu_no;
         }
 
+        if ($getCurrent) return $cuInvoiceNo;
 
         return $this->findClearNumber($cuInvoiceNo);
     }
@@ -140,7 +141,7 @@ class ControlUnitInvoiceNumberController extends Controller
      * @return array
      * @throws Exception
      */
-    public function setCuInvoiceNumber(int $cuInvoiceNumber)//: array
+    public function setCuInvoiceNumber(int $cuInvoiceNumber): array
     {
 
         try {
@@ -189,7 +190,9 @@ class ControlUnitInvoiceNumberController extends Controller
     {
         $cuPrefix = explode('KRAMW', auth()->user()->business->etr_code)[1];
 
-        return new ViewResponse('focus.cu_invoice_number.set', compact('cuPrefix'));
+        $currentCuInvNo = $this->retrieveCuInvoiceNumber(true);
+
+        return new ViewResponse('focus.cu_invoice_number.set', compact('cuPrefix', 'currentCuInvNo'));
 
 //        return view('focus.cu_invoice_number.set');
     }

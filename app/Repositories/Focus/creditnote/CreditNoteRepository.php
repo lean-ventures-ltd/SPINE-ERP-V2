@@ -3,6 +3,7 @@
 namespace App\Repositories\Focus\creditnote;
 
 use App\Exceptions\GeneralException;
+use App\Http\Controllers\Focus\cuInvoiceNumber\ControlUnitInvoiceNumberController;
 use App\Repositories\BaseRepository;
 use App\Models\creditnote\CreditNote;
 use App\Models\transaction\Transaction;
@@ -51,7 +52,17 @@ class CreditNoteRepository extends BaseRepository
 
         DB::beginTransaction();
 
+        $cuPrefix = explode('KRAMW', auth()->user()->business->etr_code)[1];
+        $setCu = explode($cuPrefix, $input['cu_invoice_no'])[1];
+        $cuResponse = (new ControlUnitInvoiceNumberController())->setCuInvoiceNumber($setCu);
+
+        if (!$cuResponse['isSet']){
+            DB::rollBack();
+            throw new GeneralException($cuResponse['message']);
+        }
+
         $result = CreditNote::create($input);
+
         // compute invoice balance
         $this->customer_deposit_balance([$result->invoice->id]);
         /** accounts  */

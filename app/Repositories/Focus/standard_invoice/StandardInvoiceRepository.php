@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Focus\standard_invoice;
 
+use App\Http\Controllers\Focus\cuInvoiceNumber\ControlUnitInvoiceNumberController;
 use DB;
 use App\Exceptions\GeneralException;
 use App\Models\account\Account;
@@ -70,8 +71,9 @@ class StandardInvoiceRepository extends BaseRepository
      * For Creating the respective model in storage
      *
      * @param array $input
-     * @throws GeneralException
      * @return bool
+     * @throws \Exception
+     * @throws GeneralException
      */
     public function create(array $input)
     {
@@ -86,6 +88,15 @@ class StandardInvoiceRepository extends BaseRepository
             if ($key == 'invoicedate') $data[$key] = date_for_database($val);
             if (in_array($key, ['total', 'subtotal', 'taxable', 'tax'])) 
                 $data[$key] = numberClean($val);
+        }
+
+        $cuPrefix = explode('KRAMW', auth()->user()->business->etr_code)[1];
+        $setCu = explode($cuPrefix, $data['cu_invoice_no'])[1];
+        $cuResponse = (new ControlUnitInvoiceNumberController())->setCuInvoiceNumber($setCu);
+
+        if (!$cuResponse['isSet']){
+            DB::rollBack();
+            throw new GeneralException($cuResponse['message']);
         }
 
         $result = Invoice::create($data);

@@ -52,7 +52,14 @@
     </div>
     <div class="col-2">
         <label for="cu_invoice_no">CU Invoice Number</label>
-        {{ Form::text('cu_invoice_no', null, ['class' => 'form-control', 'id' => 'cu_invoice_no', 'required']) }}
+{{--        {{ Form::text('cu_invoice_no', null, ['class' => 'form-control', 'id' => 'cu_invoice_no', 'required']) }}--}}
+        <input type="text" id="cu_invoice_no" name="cu_invoice_no"
+               @if(empty($creditnote))
+                   value="{{ $newCuInvoiceNo }}"
+               @else
+                   value="{{ $creditnote->cu_invoice_no}}"
+               @endif
+               required readonly class="form-control box-size"/>
     </div>
 
 </div>
