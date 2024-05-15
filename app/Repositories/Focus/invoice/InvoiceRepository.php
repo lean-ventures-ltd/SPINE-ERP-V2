@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Focus\invoice;
 
+use App\Http\Controllers\Focus\cuInvoiceNumber\ControlUnitInvoiceNumberController;
 use App\Models\items\InvoiceItem;
 use App\Models\invoice\Invoice;
 use App\Exceptions\GeneralException;
@@ -84,6 +85,7 @@ class InvoiceRepository extends BaseRepository
 
     /**
      * Create project invoice
+     * @throws \Exception
      */
     public function create_project_invoice(array $input)
     {
@@ -98,7 +100,17 @@ class InvoiceRepository extends BaseRepository
             if (in_array($key, ['total', 'subtotal', 'tax'])) 
                 $bill[$key] = numberClean($val);
         }
-        
+
+
+        $cuPrefix = explode('KRAMW', auth()->user()->business->etr_code)[1];
+        $setCu = explode($cuPrefix, $input['bill']['cu_invoice_no'])[1];
+        $cuResponse = (new ControlUnitInvoiceNumberController())->setCuInvoiceNumber($setCu);
+
+        if (!$cuResponse['isSet']){
+            DB::rollBack();
+            throw new GeneralException($cuResponse['message']);
+        }
+
         $tid = Invoice::where('ins', auth()->user()->ins)->max('tid');
         if ($bill['tid'] <= $tid) $bill['tid'] = $tid+1;
         $result = Invoice::create($bill);

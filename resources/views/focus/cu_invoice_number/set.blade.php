@@ -35,7 +35,7 @@
 
                                         <div class="d-flex align-items-baseline">
                                             <h3 class="mr-1"> {{ $cuPrefix }} </h3>
-                                            <input type="number" step="1" id="cu_no" name="cu_no" required class="form-control box-size text-lg">
+                                            <input type="number" step="1" id="cu_no" name="cu_no" value="{{ $currentCuInvNo }}" required class="form-control box-size text-lg"/>
                                         </div>
 
 
