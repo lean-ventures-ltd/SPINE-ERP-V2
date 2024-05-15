@@ -5,7 +5,9 @@ namespace App\Models\lead\Traits;
 use App\Models\branch\Branch;
 use App\Models\customer\Customer;
 use App\Models\djc\Djc;
+use App\Models\lead\LeadSource;
 use App\Models\quote\Quote;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class ProductcategoryRelationship
@@ -30,5 +32,9 @@ trait LeadRelationship
      public function customer()
      {
           return $this->belongsTo(Customer::class, 'client_id');
+     }
+
+     public function LeadSource():BelongsTo{
+         return $this->belongsTo(LeadSource::class, 'lead_source_id', 'id');
      }
 }

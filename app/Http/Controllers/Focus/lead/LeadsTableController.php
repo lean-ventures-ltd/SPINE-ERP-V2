@@ -83,6 +83,11 @@ class LeadsTableController extends Controller
                 }
                 return $days;
             })
+            ->addColumn('source', function ($lead) {
+
+                if (!empty($lead->LeadSource)) return $lead->LeadSource->name;
+                else return 'UPDATE SOURCE SELECTION...';
+            })
             ->addColumn('created_at', function ($lead) {
                 return dateFormat($lead->created_at);
             })
