@@ -52,17 +52,17 @@
                             </a>
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link" id="tab3" data-toggle="tab" href="#tab_data3" aria-controls="tab_data3" role="tab" aria-selected="true">
-                                <i class="icon-directions"></i> {{trans('tasks.tasks')}}
-                            </a>
-                        </li>
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" id="tab3" data-toggle="tab" href="#tab_data3" aria-controls="tab_data3" role="tab" aria-selected="true">--}}
+{{--                                <i class="icon-directions"></i> {{trans('tasks.tasks')}}--}}
+{{--                            </a>--}}
+{{--                        </li>--}}
 
-                        <li class="nav-item">
-                            <a class="nav-link" id="tab11" data-toggle="tab" href="#tab_data11" aria-controls="tab_data11" role="tab" aria-selected="true">
-                                <i class="ft-users"></i> {{trans('projects.users')}}
-                            </a>
-                        </li>
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" id="tab11" data-toggle="tab" href="#tab_data11" aria-controls="tab_data11" role="tab" aria-selected="true">--}}
+{{--                                <i class="ft-users"></i> {{trans('projects.users')}}--}}
+{{--                            </a>--}}
+{{--                        </li>--}}
 
                         @if($project->creator->id==auth()->user()->id)
                             <li class="nav-item">
@@ -72,17 +72,17 @@
                             </li> 
                         @endif
 
-                        <li class="nav-item">
-                            <a class="nav-link" id="tab6" data-toggle="tab" href="#tab_data6" aria-controls="tab_data6" role="tab" aria-selected="true">
-                                <i class="icon-note"></i> {{trans('general.notes')}}
-                            </a>
-                        </li>
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" id="tab6" data-toggle="tab" href="#tab_data6" aria-controls="tab_data6" role="tab" aria-selected="true">--}}
+{{--                                <i class="icon-note"></i> {{trans('general.notes')}}--}}
+{{--                            </a>--}}
+{{--                        </li>--}}
 
-                        <li class="nav-item">
-                            <a class="nav-link" id="tab5" data-toggle="tab" href="#tab_data5" aria-controls="tab_data5" role="tab" aria-selected="true">
-                                <i class="fa fa-paperclip"></i> {{trans('general.files')}}
-                            </a>
-                        </li>
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" id="tab5" data-toggle="tab" href="#tab_data5" aria-controls="tab_data5" role="tab" aria-selected="true">--}}
+{{--                                <i class="fa fa-paperclip"></i> {{trans('general.files')}}--}}
+{{--                            </a>--}}
+{{--                        </li>--}}
                         
                         <li class="nav-item">
                             <a class="nav-link" id="tab10" data-toggle="tab" href="#tab_data10" aria-controls="tab_data10" role="tab" aria-selected="true">
