@@ -1496,6 +1496,8 @@
                         </ul>
                     </li>
                     @endauth
+
+
                     @permission('manage-holiday')
                     <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
                         <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
@@ -1537,89 +1539,89 @@
                     </li>
                     @endauth
 
-                    @permission('manage-leave')
-                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
-                        <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
-                                    class="fas fa-hotel"></i> Leave Category</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('biller.leave_category.index') }}"
-                                   data-toggle="dropdown"> <i class="ft-list"></i> Manage Category
-                                </a>
-                            </li>
-                            @permission('create-leave')
-                            <li><a class="dropdown-item" href="{{ route('biller.leave_category.create') }}"
-                                   data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Category
-                                </a>
-                            </li>
-                            @endauth
-                        </ul>
-                    </li>
-                    @endauth
+{{--                    @permission('manage-leave')--}}
+{{--                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">--}}
+{{--                        <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i--}}
+{{--                                    class="fas fa-hotel"></i> Leave Category</a>--}}
+{{--                        <ul class="dropdown-menu">--}}
+{{--                            <li><a class="dropdown-item" href="{{ route('biller.leave_category.index') }}"--}}
+{{--                                   data-toggle="dropdown"> <i class="ft-list"></i> Manage Category--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                            @permission('create-leave')--}}
+{{--                            <li><a class="dropdown-item" href="{{ route('biller.leave_category.create') }}"--}}
+{{--                                   data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Category--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                            @endauth--}}
+{{--                        </ul>--}}
+{{--                    </li>--}}
+{{--                    @endauth--}}
 
 
-                    @permission('manage-leave')
-                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
-                        <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
-                                    class="fas fa-hotel"></i> Leave Application</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('biller.leave.index') }}"
-                                   data-toggle="dropdown"> <i class="ft-list"></i> Manage Leave Application
-                                </a>
-                            </li>
-                            @permission('create-leave')
-                            <li><a class="dropdown-item" href="{{ route('biller.leave.create') }}"
-                                   data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Leave
-                                </a>
-                            </li>
-                            @endauth
-                        </ul>
-                    </li>
-                    @endauth
+{{--                    @permission('manage-leave')--}}
+{{--                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">--}}
+{{--                        <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i--}}
+{{--                                    class="fas fa-hotel"></i> Leave Application</a>--}}
+{{--                        <ul class="dropdown-menu">--}}
+{{--                            <li><a class="dropdown-item" href="{{ route('biller.leave.index') }}"--}}
+{{--                                   data-toggle="dropdown"> <i class="ft-list"></i> Manage Leave Application--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                            @permission('create-leave')--}}
+{{--                            <li><a class="dropdown-item" href="{{ route('biller.leave.create') }}"--}}
+{{--                                   data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Leave--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                            @endauth--}}
+{{--                        </ul>--}}
+{{--                    </li>--}}
+{{--                    @endauth--}}
 
-                    @permission('manage-attendance')
-                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a
-                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
-                                    class="fa ft-activity"></i> {{ trans('hrms.attendance') }}</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('biller.attendances.index') }}"
-                                   data-toggle="dropdown"> <i class="ft-list"></i> Manage
-                                    {{ trans('attendances') }}
-                                </a>
-                            </li>
-                            @permission('create-attendance')
-                            <li><a class="dropdown-item" href="{{ route('biller.attendances.create') }}"
-                                   data-toggle="dropdown"> <i class="fa fa-plus-circle"></i>
-                                    {{ trans('hrms.attendance_add') }}
-                                </a>
-                            </li>
-                            @endauth
-                        </ul>
-                    </li>
-                    @endauth
+{{--                    @permission('manage-attendance')--}}
+{{--                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a--}}
+{{--                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i--}}
+{{--                                    class="fa ft-activity"></i> {{ trans('hrms.attendance') }}</a>--}}
+{{--                        <ul class="dropdown-menu">--}}
+{{--                            <li><a class="dropdown-item" href="{{ route('biller.attendances.index') }}"--}}
+{{--                                   data-toggle="dropdown"> <i class="ft-list"></i> Manage--}}
+{{--                                    {{ trans('attendances') }}--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                            @permission('create-attendance')--}}
+{{--                            <li><a class="dropdown-item" href="{{ route('biller.attendances.create') }}"--}}
+{{--                                   data-toggle="dropdown"> <i class="fa fa-plus-circle"></i>--}}
+{{--                                    {{ trans('hrms.attendance_add') }}--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                            @endauth--}}
+{{--                        </ul>--}}
+{{--                    </li>--}}
+{{--                    @endauth--}}
 
-                    @permission('manage-loan')
-                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a
-                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
-                                    class="fa fa-briefcase"></i>Loan Management
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('biller.loans.index') }}"
-                                   data-toggle="dropdown"> <i class="ft-list"></i>Manage Loans
-                                </a>
-                            </li>
-                            @permission('create-loan')
-                            <li><a class="dropdown-item" href="{{ route('biller.loans.create') }}"
-                                   data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Loan
-                                </a>
-                            </li>
-                            @endauth
-                            <li><a class="dropdown-item" href="{{ route('biller.loans.pay_loans') }}"
-                                   data-toggle="dropdown"> <i class="fa fa-money"></i> Pay Loans
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @endauth
+{{--                    @permission('manage-loan')--}}
+{{--                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a--}}
+{{--                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i--}}
+{{--                                    class="fa fa-briefcase"></i>Loan Management--}}
+{{--                        </a>--}}
+{{--                        <ul class="dropdown-menu">--}}
+{{--                            <li><a class="dropdown-item" href="{{ route('biller.loans.index') }}"--}}
+{{--                                   data-toggle="dropdown"> <i class="ft-list"></i>Manage Loans--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                            @permission('create-loan')--}}
+{{--                            <li><a class="dropdown-item" href="{{ route('biller.loans.create') }}"--}}
+{{--                                   data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Loan--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                            @endauth--}}
+{{--                            <li><a class="dropdown-item" href="{{ route('biller.loans.pay_loans') }}"--}}
+{{--                                   data-toggle="dropdown"> <i class="fa fa-money"></i> Pay Loans--}}
+{{--                                </a>--}}
+{{--                            </li>--}}
+{{--                        </ul>--}}
+{{--                    </li>--}}
+{{--                    @endauth--}}
 
                     @permission('manage-advance-payment')
                     <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
