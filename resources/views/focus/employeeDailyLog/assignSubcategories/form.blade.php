@@ -28,16 +28,17 @@
 
         <h3 class="font-weight-bolder mb-2 mt-2">{{ $dept['name'] }}</h3>
 
-        <div class="mb-1">
-        <input type="checkbox"
-               id="{{$dept['id']}}master"
-               style="width: 16px; height: 16px;"
-               class="round {{$dept['id']}}master"
-        >
-        <label for="{{$dept['id']}}master"> Allocate All '{{ $dept['name'] }}' Task Categories </label>
-        </div>
-
         @if(!empty($deptEdlSubcategories[$dept['name']]))
+            <div class="mb-1">
+                <input type="checkbox"
+                       id="{{$dept['id']}}master"
+                       style="width: 16px; height: 16px;"
+                       class="round {{$dept['id']}}master"
+                >
+                <label for="{{$dept['id']}}master"> Allocate All '{{ $dept['name'] }}' Task Categories </label>
+            </div>
+
+
             <div class="row">
                 @foreach($deptEdlSubcategories[$dept['name']] as $deptSubcat)
 
