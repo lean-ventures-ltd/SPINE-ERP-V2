@@ -54,7 +54,7 @@
                                 </div>
                             @endforeach
 
-                            <h2 class="font-weight-bold mb-2">EDL Tasks</h2>
+                            <h2 class="font-weight-bold mb-2">Tasks</h2>
 
                             @php
                                 $i = 1;
@@ -64,20 +64,22 @@
 
                                 <div class="row mb-2">
 
-                                    <div class="col-12 mb-1">{{ 'Task ' . $i }}</div>
+                                    <h3 class="col-12 mb-1">Task #{{ $i }}</h3>
 
                                     <div class="col-8 col-lg-8">
                                         <label for="subcategory{{$task['et_number']}}" >Category:</label>
-                                        @if(empty($taskCategories[0]))
-                                            <h5> No Task Categories Allocated to You </h5>
-                                        @endif
+
                                         <select id="subcategory{{$task['et_number']}}" @if($i === 1) required @endif class="form-control box-size" name="subcategory{{$task['et_number']}}">
-                                            <option value="">-- Select Category --</option>
-                                            @foreach ($taskCategories as $cat)
-                                                <option value="{{ $cat['value'] }}" @if ($cat['value'] === $task['subcategory']) selected @endif>
-                                                    {{ array_search($cat ,$taskCategories) + 1 . '. ' . $cat['label'] . '  |  ' . $cat['frequency'] }}
-                                                </option>
-                                            @endforeach
+                                            @if(empty($taskCategories[0]))
+                                                <option value=""> No Task Categories Allocated to You </option>
+                                            @else
+                                                <option value="">-- Select Category --</option>
+                                                @foreach ($taskCategories as $cat)
+                                                    <option value="{{ $cat['value'] }}" @if ($cat['value'] === $task['subcategory']) selected @endif>
+                                                        {{ array_search($cat ,$taskCategories) + 1 . '. ' . $cat['label'] . '  |  ' . $cat['frequency'] }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
                                         </select>
                                         <code>{{$task['category']}}</code>
                                     </div>
@@ -94,7 +96,7 @@
 
                                 </div>
 
-                                <hr>
+                                <hr class="col-10 mt-2 mb-3 ml-2">
 
                                 @php
                                     $i++;
@@ -104,7 +106,7 @@
                             @endforeach
 
 
-                            <div>
+                            <div class="mb-3">
                                 @for($i = 0; $i < 20; $i++)
                                     <div class="row" id="task{{$i}}">
 
@@ -151,7 +153,7 @@
 
 
                             <a href="{{ route('biller.employee-daily-log.index') }}" class="btn btn-secondary mr-2">Cancel</a>
-                                <button type="submit" class="btn btn-primary">Update EDL</button>
+                            <button type="submit" class="btn btn-primary">Update EDL</button>
 
                             {{ Form::close() }}
 
