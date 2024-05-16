@@ -179,7 +179,7 @@ class EdlSubcategoryAllocationController extends Controller
         }
 
         $deptNames = Department::orderBy('name', 'asc')->pluck('name');
-        return $deptEdlSubcategories = array_combine($deptNames->toArray(), $edlSubcats);
+        $deptEdlSubcategories = array_combine($deptNames->toArray(), $edlSubcats);
 
         $employee = [
             'details' => User::find($employeeId),
