@@ -27,8 +27,8 @@
                             <div class="form-group">
                                 {{-- Including Form blade file --}}
                                 @include("focus.employeeDailyLog.form")
-                                <div class="edit-form-btn">
-                                    {{ link_to_route('biller.employee-daily-log.index', trans('buttons.general.cancel'), [], ['class' => 'btn btn-secondary btn-md']) }}
+                                <div class="mt-2">
+                                    {{ link_to_route('biller.employee-daily-log.index', trans('buttons.general.cancel'), [], ['class' => 'btn btn-secondary btn-md mr-2']) }}
                                     {{ Form::submit(trans('buttons.general.crud.create'), ['class' => 'btn btn-primary btn-md']) }}
                                     <div class="clearfix"></div>
                                 </div>                                    

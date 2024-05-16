@@ -17,22 +17,24 @@
 
     <div class="col-12 mt-3">
 
-        <h3>Tasks:</h3>
+        <h2>Tasks:</h2>
 
         <hr>
 
         @for($i = 0; $i < 20; $i++)
             <div class="row" id="task{{$i}}">
 
-                <div class="col-12 mb-1">Task {{$i + 1}}</div>
+                <h3 class="col-12 mb-1">Task #{{$i + 1}}</h3>
 
                 <div class="col-8">
                     <label for="subcategory{{$i}}">Category:</label>
-                    @if(empty($taskCategories[0]))
-                        <h5> No Task Categories Allocated to You </h5>
-                    @endif
                     <select class="form-control box-size" id="subcategory{{$i}}" name="subcategory{{$i}}" >
-                        <option value="">-- Select Category --</option>
+                        @if(empty($taskCategories[0]))
+                            <option value=""> No Task Categories Allocated to You </option>
+                        @else
+                            <option value="">-- Select Category --</option>
+                        @endif
+
                         @foreach ($taskCategories as $cat)
                             <option value="{{ $cat['value'] }}">
                                 {{ array_search($cat ,$taskCategories) + 1 . '. ' . $cat['label'] . '  |  ' . $cat['frequency'] }}
@@ -55,7 +57,7 @@
                     <button type="button" class="btn btn-danger"> Remove </button>
                 </div>
 
-                <hr class="col-10 mt-2 ml-2">
+                <hr class="col-10 mt-2 mb-3 ml-2">
 
             </div>
         @endfor

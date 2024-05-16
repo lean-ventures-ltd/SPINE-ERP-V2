@@ -40,7 +40,7 @@ class EmployeeDailyLogController extends Controller
         }
 
         $edlEmployeeIds = EmployeeDailyLog::all()->pluck('employee')->unique()->values();
-        $edlDates = Auth::user()->hasPermission('manage-daily-logs') ?
+        $edlDates = Auth::user()->hasPermission('review-daily-logs') ?
             EmployeeDailyLog::all()->pluck('date')->unique()->values() :
             EmployeeDailyLog::where('employee', Auth::user()->id)->pluck('date')->unique()->values();
 
