@@ -328,7 +328,7 @@
     })
 
     $('#clear_filters').click( () => {
-        $('#employee').val('');
+        $('#employee').select2().val('').trigger('change');
         $('#date').val('');
         $('#month').val('');
         $('#year').val('');

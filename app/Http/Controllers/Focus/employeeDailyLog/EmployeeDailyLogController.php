@@ -71,6 +71,8 @@ class EmployeeDailyLogController extends Controller
             array_push($employees, $employeeDetails[0]->toArray());
         }
 
+        $employees = collect($employees)->sortBy('full_name')->values()->all();
+
         $months = [
             ['label' => 'January', 'value' => 1],
             ['label' => 'February', 'value' => 2],
