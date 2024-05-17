@@ -104,8 +104,15 @@ class InvoiceRepository extends BaseRepository
 
 
         $cuPrefix = explode('KRAMW', auth()->user()->business->etr_code)[1];
-        $setCu = explode($cuPrefix, $input['bill']['cu_invoice_no'])[1];
-        $cuResponse = (new ControlUnitInvoiceNumberController())->setCuInvoiceNumber($setCu);
+        if (empty($data['cu_invoice_no'])){
+
+            $cuResponse =['isSet' => true,];
+        }
+        else {
+
+            $setCu = explode($cuPrefix, $input['bill']['cu_invoice_no'])[1];
+            $cuResponse = (new ControlUnitInvoiceNumberController())->setCuInvoiceNumber($setCu);
+        }
 
         if (!$cuResponse['isSet']){
             DB::rollBack();

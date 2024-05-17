@@ -33,13 +33,36 @@
 
                                     <div class="col-10 col-lg-7">
 
+                                        <h3 class="mb-1">Current Control Unit Invoice Number is <b> {{ $currentCuInvNo }} </b></h3>
+
                                         <div class="d-flex align-items-baseline">
                                             <h3 class="mr-1"> {{ $cuPrefix }} </h3>
-                                            <input type="number" step="1" id="cu_no" name="cu_no" value="{{ $currentCuInvNo }}" required class="form-control box-size text-lg"/>
+                                            <input type="number" step="1" id="cu_no" name="cu_no"  required class="form-control box-size text-lg"/>
+                                        </div>
+                                        <label id="response" class="text-red"></label>
+
+                                        <div class="row mt-1">
+                                            <div class="col-8 col-lg-4 d-flex align-items-baseline">
+                                                <label for="nhif">Status</label>
+                                                <select name="cuActive" id="cuActive" class="form-control round ml-1" required >
+                                                    <option value="">-- Select CUIN Status --</option>
+                                                    @php
+                                                        $cuActiveOptions = [
+                                                            'Active' => 1,
+                                                            'Deactivated' => 0
+                                                        ];
+                                                    @endphp
+
+                                                    @foreach ($cuActiveOptions as $option => $value)
+                                                        <option value="{{ $value }}" @if($cuActive === $value) selected @endif>{{ $option }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
                                         </div>
 
 
-                                        <label id="response" class="text-red"></label>
+
                                     </div>
 
                                 </div>
@@ -49,9 +72,10 @@
 {{--                                    {{ Form::submit(trans('buttons.general.crud.create'), ['class' => 'btn btn-primary btn-md', 'id']) }}--}}
                                     <div class="d-flex align-items-baseline">
                                         {{ link_to_route('biller.dashboard', trans('buttons.general.cancel'), [], ['class' => 'btn btn-secondary btn-md']) }}
-                                        <button class="btn btn-primary btn-md ml-1" id="setNumber" disabled> Set CU Invoice Number </button>
+                                        <button class="btn btn-primary btn-md ml-1" id="setNumber"> Set CU Invoice Number </button>
                                         <label id="result" class="ml-2"></label>
                                     </div>
+
 
 
                                     <div class="clearfix"></div>
@@ -79,7 +103,8 @@
         var timer;
         $('#cu_no').on('keyup', function() {
             clearTimeout(timer);
-            var no = $(this).val();
+            let no = $(this).val();
+            let isActive = $('#cuActive').val();
 
             timer = setTimeout(function() {
                 $.ajax({
@@ -88,20 +113,38 @@
                     data: { cuNo: no },
                     success: function(data) {
 
-                        console.log(data);
+                        console.table({cuNo: no})
+                        console.table(data);
 
                         if (data.isClear) {
                             // If the response is 'true'
                             $('#cu_no').css('border', '3px solid green');
                             $('#response').css('color', 'green');
-                            $('#setNumber').prop('disabled', false); // enable button
-                        } else {
+                            $('#setNumber').prop('disabled', false);
+                            $('#response').text(data.message);
+                        }
+                        else if (!data.isClear && data.message.length !== 0) {
                             // If the response is 'false'
                             $('#cu_no').css('border', '3px solid red');
                             $('#response').css('color', 'red');
+                            $('#setNumber').prop('disabled', true);
+                            $('#response').text(data.message);
+                        }
+                        else if (!data.isClear && data.message.length === 0 && parseInt(no) === 0) {
+
+                            $('#cu_no').css('border', '3px solid red');
+                            $('#response').css('color', 'red');
+                            $('#setNumber').prop('disabled', true);
+                            $('#response').text('Zero is not allowed...');
+                        }
+                        else if (!data.isClear && data.message.length === 0 && no === '') {
+
+                            $('#setNumber').prop('disabled', false);
+                            $('#response').text('');
+                            $('#cu_no').css('border', '1px solid gray');
                         }
 
-                        $('#response').text(data.message);
+
 
                     },
                     error: function(error) {
@@ -118,18 +161,38 @@
         $('#setNumber').on('click', function() {
             let cuNoValue = $('#cu_no').val(); // assuming '#cu_no' is an input field
             $.ajax({
-                url: '{{ route("biller.set-control-unit-invoice-number", "") }}/' + cuNoValue, // <-- named route
+                url: '{{ route("biller.set-control-unit-invoice-number", "") }}', // <-- named route
                 type: 'GET',
+                data: {
+                    cuNo: cuNoValue,
+                    cuActive: $('#cuActive').val()
+                },
+
                 success: function(data) {
                     console.log(data);
-                    if (data.isSet) {
+
+                    if (data.isSet && data.cu !== false) {
+
+                        console.log('ACTIVATED AND SET');
                         // Handle the success case here
                         $('#result').css('color', 'green');
-                        $('#setNumber').prop('disabled', true);
-                    } else {
+                    }
+                    if (data.isSet && data.cu === 'DEACTIVATED') {
+                        // Handle the success case here
+
+                        console.log('DEACTIVATED');
+
+                        $('#result').css('color', 'green');
+                        $('#response').text('');
+                        $('#cu_no').css('border', '1px solid gray');
+                    }
+                    else if (!data.isSet && data.cu === false) {
+                        console.log('ACTIVATED AND SET');
+
                         // Handle the failure case here
                         $('#result').css('color', 'red');
                     }
+
                     $('#result').text(data.message);
                 },
                 error: function(error) {
