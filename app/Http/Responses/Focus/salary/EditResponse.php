@@ -33,7 +33,8 @@ class EditResponse implements Responsable
     {
         $workshifts = Workshift::all(['id','name']);
 
-        $employees = User::select(
+        $employees = User::where('ins', auth()->user()->ins)
+        ->select(
             'id',
             DB::raw('CONCAT(first_name, " ", last_name) as full_name')
         )
