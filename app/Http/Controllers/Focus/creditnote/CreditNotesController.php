@@ -55,7 +55,10 @@ class CreditNotesController extends Controller
     $last_tid = CreditNote::where('ins', $ins)->max('tid');
     if ($is_debit == 1) $last_tid = CreditNote::where('ins', $ins)->where('is_debit', 1)->max('tid');
 
-      $newCuInvoiceNo = explode('KRAMW', auth()->user()->business->etr_code)[1] . (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
+      $cuNo = (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
+
+      if(!empty($cuNo)) $newCuInvoiceNo = explode('KRAMW', auth()->user()->business->etr_code)[1] . $cuNo;
+      else $newCuInvoiceNo = '';
 
       return new ViewResponse('focus.creditnotes.create', compact('last_tid', 'is_debit', 'prefixes', 'newCuInvoiceNo'));
   }

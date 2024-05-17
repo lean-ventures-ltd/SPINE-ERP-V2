@@ -83,9 +83,10 @@ class StandardInvoicesController extends Controller
         $tax_rates = Additional::all();
         $currencies = Currency::all();
 
-//        return (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
+        $cuNo = (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
 
-        $newCuInvoiceNo = explode('KRAMW', auth()->user()->business->etr_code)[1] . (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
+        if(!empty($cuNo)) $newCuInvoiceNo = explode('KRAMW', auth()->user()->business->etr_code)[1] . $cuNo;
+        else $newCuInvoiceNo = '';
 
         return new ViewResponse('focus.standard_invoices.create', compact('tid', 'customers', 'banks', 'accounts', 'terms', 'tax_rates', 'currencies', 'newCuInvoiceNo'));
     }
@@ -104,7 +105,11 @@ class StandardInvoicesController extends Controller
 //            ['cu_invoice_no.unique' => 'The Specified CU Invoice Number is Already Taken']
 //        )->validate();
 
-        $request['cu_invoice_no'] = explode('KRAMW', auth()->user()->business->etr_code)[1] . (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
+        $cuNo = (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
+
+        if(empty(!$cuNo)) $request['cu_invoice_no'] = explode('KRAMW', auth()->user()->business->etr_code)[1] . $cuNo;
+        else $request['cu_invoice_no'] = '';
+
 
         $data = $request->only([
             'customer_id', 'tid', 'invoicedate', 'tax_id', 'bank_id', 'validity', 'account_id', 'currency_id', 'term_id', 'notes', 

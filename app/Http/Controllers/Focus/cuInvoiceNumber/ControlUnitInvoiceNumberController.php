@@ -23,7 +23,15 @@ class ControlUnitInvoiceNumberController extends Controller
     public function retrieveCuInvoiceNumber(bool $getCurrent = false)
     {
 
-        $cuInvoiceNo = empty(ControlUnitInvoiceNumber::first()) ? '' : ControlUnitInvoiceNumber::first()->cu_no;
+        $controlUnitInvoiceNumber = ControlUnitInvoiceNumber::first();
+
+        if (!empty($controlUnitInvoiceNumber)){
+
+            $isActive = $controlUnitInvoiceNumber->active;
+            if (!boolval($isActive)) return '';
+        }
+
+        return $cuInvoiceNo = empty($controlUnitInvoiceNumber) ? '' : $controlUnitInvoiceNumber->cu_no;
 
         if (empty($cuInvoiceNo)){
 
@@ -56,23 +64,18 @@ class ControlUnitInvoiceNumberController extends Controller
      * @param Request $request
      * @return array
      */
-    public function checkCuInvoiceNumber(Request $request){
+    public function checkCuInvoiceNumber(Request $request): array
+    {
 
         $proposedNumber = intval(request('cuNo'));
 
         if (empty($proposedNumber)) return [
             'isClear' => false,
-            'message' => 'Please provide a number'
+            'message' => ''
         ];
 
-//        try {
 
-            $isNumberClearForUse = $this->clearForUse($proposedNumber);
-//        }
-//        catch (Exception $e){
-//
-//            return "Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine();
-//        }
+        $isNumberClearForUse = $this->clearForUse($proposedNumber);
 
         if ($isNumberClearForUse) return [
             'isClear' => $isNumberClearForUse,
@@ -141,15 +144,31 @@ class ControlUnitInvoiceNumberController extends Controller
      * @return array
      * @throws Exception
      */
-    public function setCuInvoiceNumber(int $cuInvoiceNumber): array
+    public function setCuInvoiceNumber(int $cuInvoiceNumber = 0)
     {
+
+        if ($cuInvoiceNumber === 0) $cuInvoiceNumber = request('cuNo');
+
+        $controlUnitInvoiceNumber = ControlUnitInvoiceNumber::first();
+        $controlUnitInvoiceNumber->active = request('cuActive');
+        $controlUnitInvoiceNumber->save();
+
+        if (!request('cuActive')){
+
+            return [
+                'isSet' => true,
+                'cu' => 'DEACTIVATED',
+                'message' => "CU invoice Number Feature is Now Deactivated"
+            ];
+        }
+
 
         try {
             DB::beginTransaction();
 
             if (empty(ControlUnitInvoiceNumber::first())) $this->retrieveCuInvoiceNumber();
 
-            if ($this->findClearNumber($cuInvoiceNumber) === $cuInvoiceNumber){
+            if ($this->findClearNumber($cuInvoiceNumber) >= $cuInvoiceNumber){
 
                 $controlUnitInvoiceNumber = ControlUnitInvoiceNumber::first();
                 $controlUnitInvoiceNumber->cu_no = $cuInvoiceNumber;
@@ -177,7 +196,7 @@ class ControlUnitInvoiceNumberController extends Controller
         return [
             'isSet' => true,
             'cu' => $cuInvoiceNumber,
-            'message' => "CU invoice Number set successfully to " . $cuInvoiceNumber
+            'message' => "CU invoice Number is Activated and set successfully to " . $cuInvoiceNumber
             ];
     }
 
@@ -190,9 +209,12 @@ class ControlUnitInvoiceNumberController extends Controller
     {
         $cuPrefix = explode('KRAMW', auth()->user()->business->etr_code)[1];
 
-        $currentCuInvNo = $this->retrieveCuInvoiceNumber(true);
+        $this->retrieveCuInvoiceNumber(true);
+        $currentCuInvNo = ControlUnitInvoiceNumber::first()->cu_no;
 
-        return new ViewResponse('focus.cu_invoice_number.set', compact('cuPrefix', 'currentCuInvNo'));
+        $cuActive = ControlUnitInvoiceNumber::first()->active;
+
+        return new ViewResponse('focus.cu_invoice_number.set', compact('cuPrefix', 'currentCuInvNo', 'cuActive'));
 
 //        return view('focus.cu_invoice_number.set');
     }

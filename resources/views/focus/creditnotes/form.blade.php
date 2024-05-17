@@ -59,7 +59,7 @@
                @else
                    value="{{ $creditnote->cu_invoice_no}}"
                @endif
-               required readonly class="form-control box-size"/>
+               readonly class="form-control box-size"/>
     </div>
 
 </div>
