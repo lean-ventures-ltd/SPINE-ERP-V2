@@ -26,7 +26,8 @@ class CreateResponse implements Responsable
 
         $salariedEmployees = Salary::all()->pluck('employee_id');
 
-        $employees = User::whereNotIn('id', $salariedEmployees)
+        $employees = User::where('ins', auth()->user()->ins)
+        ->whereNotIn('id', $salariedEmployees)
             ->select(
                 'id',
                 DB::raw('CONCAT(first_name, " ", last_name) as full_name')
