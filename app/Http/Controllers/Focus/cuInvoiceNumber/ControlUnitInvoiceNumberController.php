@@ -31,7 +31,7 @@ class ControlUnitInvoiceNumberController extends Controller
             if (!boolval($isActive)) return '';
         }
 
-        return $cuInvoiceNo = empty($controlUnitInvoiceNumber) ? '' : $controlUnitInvoiceNumber->cu_no;
+        $cuInvoiceNo = empty($controlUnitInvoiceNumber) ? '' : $controlUnitInvoiceNumber->cu_no;
 
         if (empty($cuInvoiceNo)){
 
