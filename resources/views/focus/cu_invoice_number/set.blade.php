@@ -45,7 +45,6 @@
                                             <div class="col-8 col-lg-4 d-flex align-items-baseline">
                                                 <label for="nhif">Status</label>
                                                 <select name="cuActive" id="cuActive" class="form-control round ml-1" required >
-                                                    <option value="">-- Select CUIN Status --</option>
                                                     @php
                                                         $cuActiveOptions = [
                                                             'Active' => 1,
