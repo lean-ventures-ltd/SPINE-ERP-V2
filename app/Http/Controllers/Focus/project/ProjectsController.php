@@ -709,9 +709,10 @@ class ProjectsController extends Controller
 
             foreach ($goods_receive_items as $grnItem) {
 
-                if ($grnItem->purchaseorder_item->purchaseorder->project_milestone !== 0) {
+                $projectMilestone = ProjectMileStone::where('id', $grnItem->purchaseorder_item->purchaseorder->project_milestone)->first();
 
-                    $projectMilestone = ProjectMileStone::where('id', $grnItem->purchaseorder_item->purchaseorder->project_milestone)->first();
+                if ($grnItem->purchaseorder_item->purchaseorder->project_milestone !== 0 && !empty($projectMilestone)) {
+
                     $milestoneTotals[$projectMilestone->name] += $grnItem->rate * $grnItem->qty;
                 } else {
 
@@ -723,9 +724,10 @@ class ProjectsController extends Controller
             $labour = LabourAllocation::whereHas('project', fn($q) => $q->where('project_id', $projectId))->get();
             foreach ($labour as $lab) {
 
-                if ($lab->project_milestone !== 0) {
+                $projectMilestone = ProjectMileStone::where('id', $lab->project_milestone)->first();
 
-                    $projectMilestone = ProjectMileStone::where('id', $lab->project_milestone)->first();
+                if ($lab->project_milestone !== 0 && !empty($projectMilestone)) {
+
                     $milestoneTotals[$projectMilestone->name] += $lab->hrs * 500;
                 } else {
 
