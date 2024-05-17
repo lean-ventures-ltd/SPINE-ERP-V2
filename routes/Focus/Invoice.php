@@ -13,7 +13,7 @@ Route::group(['namespace' => 'estimate'], function () {
     Route::post('estimates/get', 'EstimatesTableController')->name('estimates.get');
 });
 
-Route::prefix('cu')->namespace('cuInvoiceNumbe')->group(function () {
+Route::prefix('cu')->namespace('cuInvoiceNumber')->group(function () {
     Route::get('set', 'CuInvoiceNumberController@set');
     Route::resource('control-unit-invoice-number', 'ControlUnitInvoiceNumberController');
     Route::get('check-control-unit-invoice-number', 'ControlUnitInvoiceNumberController@checkCuInvoiceNumber')->name('check-control-unit-invoice-number');
