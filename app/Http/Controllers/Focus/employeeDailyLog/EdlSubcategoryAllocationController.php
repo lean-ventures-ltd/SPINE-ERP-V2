@@ -31,9 +31,11 @@ class EdlSubcategoryAllocationController extends Controller
         }
 
         $employees = User::select(
-            'id',
-            DB::raw('CONCAT(first_name, " ", last_name) AS employee_name'),
-        )->get();
+                'id',
+                DB::raw('CONCAT(first_name, " ", last_name) AS employee_name'),
+            )
+            ->where('ins', auth()->user()->ins)
+            ->get();
 
         if ($request->ajax()) {
 
@@ -88,9 +90,11 @@ class EdlSubcategoryAllocationController extends Controller
         }
 
         $employees = User::select(
-            'id',
-            DB::raw('CONCAT(first_name, " ", last_name) AS employee_name'),
-        )->get();
+                'id',
+                DB::raw('CONCAT(first_name, " ", last_name) AS employee_name'),
+            )
+            ->where('ins', auth()->user()->ins)
+            ->get();
 
         if ($request->ajax()) {
 

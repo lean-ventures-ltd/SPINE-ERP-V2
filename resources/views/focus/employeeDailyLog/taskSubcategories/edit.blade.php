@@ -1,12 +1,12 @@
 @extends ('core.layouts.app')
 
-@section ('title', 'Edit Task Subcategory')
+@section ('title', 'Edit EDL Task')
 
 @section('content')
 <div class="content-wrapper">
     <div class="content-header row mb-1">
         <div class="content-header-left col-6">
-            <h3 class="mb-0">Edit Task</h3>
+            <h3 class="mb-0">Edit EDL Task</h3>
         </div>
     </div>
 
@@ -35,7 +35,7 @@
                                     </div>
 
                                     <div class="col-10 col-lg-7">
-                                        <label for="name" class="mt-2">Subcategory Name:</label>
+                                        <label for="name" class="mt-2">Task Name:</label>
                                         <input type="text" id="name" name="name" required class="form-control box-size mb-2" value="{{ $taskSubcategory->name }}">
                                     </div>
 
