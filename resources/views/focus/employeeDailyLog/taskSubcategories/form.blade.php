@@ -18,7 +18,7 @@
     </div>
 
     <div class="col-10 col-lg-7">
-        <label for="name" class="mt-2">Subcategory Name:</label>
+        <label for="name" class="mt-2">Task Name:</label>
         <input type="text" id="name" name="name" required class="form-control box-size mb-2">
     </div>
 

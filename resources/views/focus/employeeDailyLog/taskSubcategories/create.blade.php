@@ -1,12 +1,12 @@
 @extends ('core.layouts.app')
 
-@section ('title',  'Create Task Subcategory')
+@section ('title',  'Create EDL Task')
 
 @section('content')
 <div class="content-wrapper">
     <div class="content-header row mb-1">
         <div class="content-header-left col-6">
-            <h3 class="mb-0">Create Task</h3>
+            <h3 class="mb-0">Create EDL Task</h3>
         </div>
     </div>
     

@@ -1,12 +1,12 @@
 @extends ('core.layouts.app')
 
-@section ('title', 'Employee Task Subcategories')
+@section ('title', 'Employee Log Tasks')
 
 @section('content')
 <div class="content-wrapper">
     <div class="content-header row mb-1">
         <div class="content-header-left col-6">
-            <h2 class=" mb-0">Employee Tasks </h2>
+            <h2 class=" mb-0">Employee Log Tasks </h2>
         </div>
     </div>
 
@@ -19,7 +19,7 @@
 
                             <div class="">
                                 <div class="media float-right">
-                                    <a href="{{ route('biller.employee-task-subcategories.create') }}" class="btn btn-primary"> Create Subcategory </a>
+                                    <a href="{{ route('biller.employee-task-subcategories.create') }}" class="btn btn-primary"> Create EDL Task </a>
                                 </div>
                             </div>
 
