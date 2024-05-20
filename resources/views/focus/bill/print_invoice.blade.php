@@ -301,7 +301,7 @@
 			@endfor
 			<!--  -->
 			<tr>
-				<td colspan="3" class="bd-t" rowspan="3">
+				<td colspan="3" class="bd-t" rowspan="4">
 					@if ($resource->bank)
 						<span class="customer-dt-title">BANK DETAILS:</span><br>
 						<b>Account Name :</b> {{ $resource->bank->name }}<br>
@@ -316,6 +316,17 @@
 					{{-- Storage::path("public{$dir_sep}qr{$dir_sep}{$resource->etr_qrcode}") --}}
 					{{-- <img src="{{ '' }}" style="object-fit:contain" width="10%"/> --}}
 				</td>
+				
+				@php
+                    $products = $resource->products->filter(fn($v) => @$v->product_tax == 0);
+                    $non_taxable_amount = $products->sum('product_price');
+                    $products = $resource->products->filter(fn($v) => @$v->product_tax > 0);
+                    $taxable_amount = $products->sum('product_price');
+                @endphp
+                <td class="bd align-r">Taxable Total:</td>
+				<td class="bd align-r">{{ numberFormat($taxable_amount) }}</td>
+			</tr>
+			<tr>
 				<td class="bd align-r">Sub Total:</td>
 				@if ($resource->print_type == 'inclusive')
 					<td class="bd align-r">{{ numberFormat($resource->total) }}</td>
@@ -333,6 +344,7 @@
 				@endif
 			</tr>
 			<tr>
+			    <td colspan="2"></td>
 				<td class="bd align-r"><b>Grand Total:</b></td>
 				<td class="bd align-r">{{ numberFormat($resource->total) }}</td>
 			</tr>
