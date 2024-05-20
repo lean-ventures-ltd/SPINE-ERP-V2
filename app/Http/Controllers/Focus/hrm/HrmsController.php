@@ -153,7 +153,7 @@ class HrmsController extends Controller
         $empYear =  (new DateTime('now'))->format('y');
         $employeeID =substr($latestEmployeeNo, 0, -2);
 
-        $request['employee_no'] = auth()->user()->ins . $empYear . '-' . Str::random(8);;
+        $request['employee_no'] = auth()->user()->ins . $empYear . '-' . Str::random(8);
 
         $input['employee'] = $request->only(['first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role']);
         $input['meta'] = $request->except(['_token', 'first_name', 'last_name', 'email', 'picture', 'signature','cv','personal_email', 'role', 'permission', 'check_all']);
