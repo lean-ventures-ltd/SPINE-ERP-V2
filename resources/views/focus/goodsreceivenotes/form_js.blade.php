@@ -193,6 +193,10 @@
                 row.find('.projectstock').val('').attr('disabled', true);
                 row.find('.stockitemprojectid').val(0);
             }
+
+            if(el.val() == ''){
+                row.find('.projectstock').val('').attr('disabled', false);
+            }
         },
         
         onQtyChange() {
