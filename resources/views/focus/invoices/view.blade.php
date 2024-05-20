@@ -175,8 +175,8 @@
                             </div>
                         </div>
                     </div>
+
                     <!--/ Invoice Customer Details -->
-                    
                     <!-- Invoice Items Details -->
                     <div id="invoice-items-details" class="pt-2">
                         <div class="row">
@@ -204,10 +204,15 @@
                                                 </td>
                                                 <td class="text-right">{{amountFormat($product['product_price'])}}</td>
                                                 <td class="text-right">{{numberFormat($product['product_qty'])}} {{$product['unit']}}</td>
+                                                @if ($product->product_amount > 0)
                                                 <td class="text-right">{{amountFormat($product->product_tax)}} <span class="font-size-xsmall">({{ round($product->product_tax / $product->product_price * 100)}}%)</span>
                                                 </td>
-                                                
                                                 <td class="text-right">{{amountFormat($product->product_amount)}}</td>
+                                                @else
+                                                    <td class="text-right">{{amountFormat(0)}} <span class="font-size-xsmall">(0%)</span>
+                                                    </td>
+                                                    <td class="text-right">{{amountFormat($product->product_price)}}</td>
+                                                @endif
                                             </tr>
                                             <tr>
                                                 <td colspan="7">{!! custom_fields_view(3,$product['product_id'],false) !!}</td>
