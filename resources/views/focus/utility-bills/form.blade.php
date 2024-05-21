@@ -6,7 +6,7 @@
     <div class="col-2">
         <label for="type">Parent Document</label>
         <select name="document_type" id="document_type" class="custom-select">
-            @foreach (['goods_receive_note', 'kra_bill'] as $val)
+            @foreach (['goods_receive_note', 'kra_bill', 'contract', 'other'] as $val)
                 <option value="{{ $val }}" {{ @$utility_bill && $utility_bill->document_type == $val? 'selected' : '' }}>
                     {{ strtoupper(str_replace('_', ' ', $val)) }}
                 </option>
