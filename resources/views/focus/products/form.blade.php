@@ -184,10 +184,13 @@
             </div>
             <div class="col-md-4">
                 <div class='form-group'>
-                    {{ Form::label( 'expiry', trans('products.expiry'),['class' => 'col control-label']) }}
-                    <div class='col'>
-                        {{ Form::text('expiry[]', dateFormat(@$product->standard['expiry']), ['class' => 'form-control datepicker']) }}
-                    </div>
+{{--                    <label for="expiry" >Hours:</label>--}}
+{{--                    <input type="number" name="expiry[]" class="form-control box-size">--}}
+
+                    {{--                    {{ Form::label( 'expiry', trans('products.expiry'),['class' => 'col control-label']) }}--}}
+{{--                    <div class='col'>--}}
+{{--                        {{ Form::text('expiry[]', dateFormat(@$product->standard['expiry']), ['class' => 'form-control datepicker']) }}--}}
+{{--                    </div>--}}
                 </div>
             </div>
         </div>
@@ -319,12 +322,12 @@
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class='form-group'>
-                            {{ Form::label( 'expiry', trans('products.expiry'),['class' => 'col control-label']) }}
-                            <div class='col'>
-                                {{ Form::text('expiry[]', dateFormat(@$row->expiry), ['class' => 'form-control box-size', 'placeholder' => trans('products.expiry')]) }}
-                            </div>
-                        </div>
+{{--                        <div class='form-group'>--}}
+{{--                            {{ Form::label( 'expiry', trans('products.expiry'),['class' => 'col control-label']) }}--}}
+{{--                            <div class='col'>--}}
+{{--                                {{ Form::text('expiry[]', dateFormat(@$row->expiry), ['class' => 'form-control box-size', 'placeholder' => trans('products.expiry')]) }}--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
                     </div>
                 </div>
                 <div class="row">
