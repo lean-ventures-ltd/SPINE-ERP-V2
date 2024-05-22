@@ -71,7 +71,11 @@ class InvoicePaymentsTableController extends Controller
             ->addColumn('account', function ($payment) {
                 if ($payment->account)
                 return $payment->account->holder;
-            })        
+            })
+            ->addColumn('client', function ($payment) {
+                if ($payment->account)
+                    return $payment->customer->company;
+            })
             ->addColumn('date', function ($payment) {
                 return dateFormat($payment->date);
             })

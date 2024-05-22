@@ -53,6 +53,7 @@
                                     <th>#</th>
                                     <th>PMT No</th>                                    
                                     <th>Account</th>
+                                    <th>Client</th>
                                     <th>Date</th>
                                     <th>Amount</th>
                                     <th>Unallocated</th>
@@ -122,7 +123,7 @@
                 columns: [
                     {data: 'DT_Row_Index', name: 'id'},
                     ...[
-                        'tid', 'account', 'date', 'amount', 'unallocated', 'payment_mode', 'invoice_tid', 
+                        'tid', 'account', 'client', 'date', 'amount', 'unallocated', 'payment_mode', 'invoice_tid',
                     ].map(v => ({data: v, name: v})),
                     {data: 'actions',name: 'actions',searchable: false,sortable: false }
                 ],
