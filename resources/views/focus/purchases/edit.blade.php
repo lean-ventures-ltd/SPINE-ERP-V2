@@ -47,7 +47,7 @@
 
     // supplier
     const supplierText = "{{ $purchase->suppliername? $purchase->suppliername : $purchase->supplier->name }} : ";
-    const supplierVal = "{{ $purchase->supplier_id }}-{{ $purchase->supplier_taxid? $purchase->supplier_taxid : $purchase->supplier->taxid }}";
+    const supplierVal = "{{ $purchase->supplier_id }}-{{ $purchase->supplier_taxid? $purchase->supplier_taxid : @$purchase->supplier->taxid }}";
     if (supplierType == 'supplier') $('#supplierbox').append(new Option(supplierText, supplierVal, true, true)).change();
 
     // project
