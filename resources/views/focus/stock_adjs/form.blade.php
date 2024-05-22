@@ -16,10 +16,15 @@
     <div class="col-md-6 col-12">
         <label for="account_id">Adjustment Account</label>
         <select name="account_id" id="account" class="custom-select" required>
+
             @foreach ($accounts as $key => $account)
-                <option value="{{ $account->id }}" account_type="{{ $account->account_type }}">
-                    {{ $account->number }} - {{ $account->holder }}
-                </option>
+
+                @if($row->holder !== 'Stock Gain' && $row->holder !== 'Others' && $row->holder !== 'Point of Sale' && $row->holder !== 'Loan Penalty Receivable' && $row->holder !== 'Loan Interest Receivable')
+                    <option value="{{ $account->id }}" account_type="{{ $account->account_type }}">
+                        {{ $account->number }} - {{ $account->holder }}
+                    </option>
+                @endif
+
             @endforeach
         </select>
     </div>
