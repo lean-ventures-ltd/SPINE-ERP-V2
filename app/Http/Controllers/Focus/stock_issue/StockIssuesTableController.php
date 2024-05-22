@@ -62,6 +62,14 @@ class StockIssuesTableController extends Controller
                 if ($stock_issue->project_id) $issue_to = $stock_issue->project->name;
                 return $issue_to;
             })
+            ->addColumn('quote', function ($stock_issue) {
+
+                $quote = $stock_issue->quote;
+
+                if (!empty($quote)) {
+                    return   '<a href="' . route('biller.stock_issues.show', $stock_issue->id) . '">' . '<i>' . gen4tid('QT-', $quote->tid) . '</i> ' . '</a> <b> | </b>' . $quote->notes;
+                } else return '<b> QUOTE NOT FOUND </b>';
+            })
             ->editColumn('total', function ($stock_issue) {
                 return numberFormat($stock_issue->total);
             })

@@ -24,6 +24,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Date</th>
+                                <th>Quote</th>
                                 <th>Issue To</th>
                                 <th>Reference No.</th>
                                 <th>Note</th>                                                     
@@ -73,7 +74,7 @@
                 },
                 columns: [
                     {data: 'DT_Row_Index', name: 'id'},
-                    ...['date', 'issue_to', 'ref_no', 'note', ].map(v => ({data: v, name: v})),
+                    ...['date', 'quote', 'issue_to', 'ref_no', 'note', ].map(v => ({data: v, name: v})),
                     {data: 'actions', name: 'actions', searchable: false, sortable: false}
                 ],
                 order: [[0, "desc"]],

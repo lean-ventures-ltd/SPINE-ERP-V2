@@ -5,6 +5,7 @@ namespace App\Models\stock_issue\Traits;
 use App\Models\customer\Customer;
 use App\Models\hrm\Hrm;
 use App\Models\project\Project;
+use App\Models\quote\Quote;
 use App\Models\stock_issue\StockIssueItem;
 use App\Models\transaction\Transaction;
 
@@ -33,6 +34,11 @@ trait StockIssueRelationship
     public function items()
     {
         return $this->hasMany(StockIssueItem::class);
+    }
+
+    public function quote()
+    {
+        return $this->belongsTo(Quote::class, 'quote_id', 'id');
     }
 
 }
