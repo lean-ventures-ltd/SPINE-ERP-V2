@@ -29,9 +29,11 @@
                                     <select name="account_id" class="custom-select" id="account" data-placeholder="Choose Account">
                                         <option value="">-- Select Account --</option>
                                         @foreach ($accounts as $row)
-                                            <option value="{{ $row->id }}">
-                                                {{ $row->holder }}
-                                            </option>
+                                            @if($row->holder !== 'Stock Gain' && $row->holder !== 'Others' && $row->holder !== 'Point of Sale' && $row->holder !== 'Loan Penalty Receivable' && $row->holder !== 'Loan Interest Receivable')
+                                                <option value="{{ $row->id }}">
+                                                    {{ $row->holder }}
+                                                </option>
+                                            @endif
                                         @endforeach
                                     </select>
                                 </div>
