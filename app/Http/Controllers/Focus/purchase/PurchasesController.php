@@ -129,7 +129,7 @@ class PurchasesController extends Controller
             'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom', 'asset_purchase_class'
         ]);
 
-        $purchaseSupplier = Supplier::find($data['supplier_id']);
+        $purchaseSupplier = Supplier::find($data['supplier']);
         if (empty($purchaseSupplier)) throw ValidationException::withMessages(['Please Create and Assign a Suitable supplier']);
 
         if (!empty($data['cu_invoice_no'])){
@@ -194,7 +194,7 @@ class PurchasesController extends Controller
             'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom', 'asset_purchase_class'
         ]);
 
-        $purchaseSupplier = Supplier::find($data['supplier_id']);
+        $purchaseSupplier = Supplier::find($data['supplier']);
         if (empty($purchaseSupplier)) throw ValidationException::withMessages(['Please Create and Assign a Suitable supplier']);
 
 
