@@ -3,23 +3,23 @@
         <div id="customerpanel" class="inner-cmp-pnl">
             <h3 class="title">Bill </h3>                                                                
             <div class="form-group row">
-                <div class="col-5">
-                    <div><label for="supplier-type">Select Supplier Type</label></div>
-                    <div class="d-inline-block custom-control custom-checkbox mr-1">
-                        <input type="radio" class="custom-control-input bg-primary" name="supplier_type" id="colorCheck1" value="walk-in" checked>
-                        <label class="custom-control-label" for="colorCheck1">Walkin</label>
-                    </div>
-                    <div class="d-inline-block custom-control custom-checkbox mr-1">
-                        <input type="radio" class="custom-control-input bg-purple" name="supplier_type" value="supplier" id="colorCheck3">
-                        <label class="custom-control-label" for="colorCheck3">{{trans('suppliers.supplier')}}</label>
-                    </div>
-                </div>
-                <div class="col-7">
+{{--                <div class="col-5">--}}
+{{--                    <div><label for="supplier-type">Select Supplier Type</label></div>--}}
+{{--                    <div class="d-inline-block custom-control custom-checkbox mr-1">--}}
+{{--                        <input type="radio" class="custom-control-input bg-primary" name="supplier_type" id="colorCheck1" value="walk-in" checked>--}}
+{{--                        <label class="custom-control-label" for="colorCheck1">Walkin</label>--}}
+{{--                    </div>--}}
+{{--                    <div class="d-inline-block custom-control custom-checkbox mr-1">--}}
+{{--                        <input type="radio" class="custom-control-input bg-purple" name="supplier_type" value="supplier" id="colorCheck3" checked disabled>--}}
+{{--                        <label class="custom-control-label" for="colorCheck3">{{trans('suppliers.supplier')}}</label>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+                <div class="col-12">
                     <label for="payer" class="caption">Search Supplier</label> 
                     <a href="{{ route('biller.suppliers.create') }}" class="btn btn-blue btn-sm round float-right add-supplier">
                         <i class="fa fa-plus-circle"></i> supplier
                     </a>                                     
-                    <select class="form-control" id="supplierbox" data-placeholder="Search Supplier" disabled></select>
+                    <select class="form-control" id="supplierbox" data-placeholder="Search Supplier"></select>
                     <input type="hidden" name="supplier_id" value="{{ @$purchase->supplier_id ?: 1 }}" id="supplierid">
                 </div>
             </div>
@@ -29,13 +29,13 @@
                     <label for="payer" class="caption">Supplier Name*</label>
                     <div class="input-group ">
                         <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>                                            
-                        {{ Form::text('suppliername', null, ['class' => 'form-control round', 'placeholder' => 'Supplier Name', 'id' => 'supplier', 'required']) }}
+                        {{ Form::text('suppliername', null, ['class' => 'form-control round', 'placeholder' => 'Supplier Name', 'id' => 'supplier', 'required', 'disabled']) }}
                     </div>
                 </div>
                 <div class="col-sm-4"><label for="taxid" class="caption">Tax ID</label>
                     <div class="input-group">
                         <div class="input-group-addon"><span class="icon-bookmark-o" aria-hidden="true"></span></div>
-                        {{ Form::text('supplier_taxid', null, ['class' => 'form-control round', 'placeholder' => 'Tax Id', 'id'=>'taxid']) }}
+                        {{ Form::text('supplier_taxid', null, ['class' => 'form-control round', 'placeholder' => 'Tax Id', 'id'=>'taxid', 'disabled']) }}
                     </div>
                 </div>
             </div>
