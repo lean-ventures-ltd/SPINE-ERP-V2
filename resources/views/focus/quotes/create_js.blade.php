@@ -252,7 +252,7 @@
             // row item % profit
             let price = rate * (taxrate / 100 + 1);
             let profit = (qty * rate) - (estqty * buyprice);
-            let pcent_profit = profit / (estqty * buyprice) * 100;
+            let pcent_profit = profit / (qty * rate) * 100;
             pcent_profit = isFinite(pcent_profit) ? Math.round(pcent_profit) : 0;
 
             row.find('.buyprice').val(accounting.formatNumber(buyprice, 4));
