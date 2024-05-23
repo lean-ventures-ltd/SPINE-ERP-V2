@@ -80,6 +80,9 @@ class InvoicesTableController extends Controller
             ->addColumn('invoicedate', function ($invoice) {
                 return dateFormat($invoice->invoicedate);
             })
+            ->addColumn('ledgerAccount', function ($invoice) {
+                return $invoice->ledgerAccount->holder;
+            })
             ->addColumn('total', function ($invoice) {
                 // return $invoice->currency? amountFormat($invoice->total, $invoice->currency->id) : numberFormat($invoice->total);
                 return numberFormat($invoice->total);
