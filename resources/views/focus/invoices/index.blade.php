@@ -87,6 +87,7 @@
                                         <th>#</th>
                                         <th>Customer</th>
                                         <th>#Inv No</th>                                        
+                                        <th>Category</th>
                                         <th>Subject</th>
                                         <th>Inv Date</th>
                                         <th>Due Date</th>
@@ -219,6 +220,10 @@
                     {
                         data: 'tid',
                         name: 'tid'
+                    },
+                    {
+                        data: 'ledgerAccount',
+                        name: 'ledgerAccount'
                     },
                     {
                         data: 'notes',
