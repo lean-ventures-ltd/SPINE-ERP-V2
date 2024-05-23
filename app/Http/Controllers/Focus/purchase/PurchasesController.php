@@ -33,6 +33,7 @@ use App\Http\Responses\RedirectResponse;
 use DirectoryIterator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use function Matrix\cofactors;
 
 /**
  * PurchaseordersController
@@ -128,6 +129,9 @@ class PurchasesController extends Controller
             'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom', 'asset_purchase_class'
         ]);
 
+        $purchaseSupplier = Supplier::find($data['supplier']);
+        if (empty($purchaseSupplier)) throw ValidationException::withMessages(['Please Create and Assign a Suitable supplier']);
+
         if (!empty($data['cu_invoice_no'])){
 
             $refBackup = ['doc_ref_backup' => $data['doc_ref']];
@@ -189,6 +193,10 @@ class PurchasesController extends Controller
         $data_items = $request->only([
             'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom', 'asset_purchase_class'
         ]);
+
+        $purchaseSupplier = Supplier::find($data['supplier']);
+        if (empty($purchaseSupplier)) throw ValidationException::withMessages(['Please Create and Assign a Suitable supplier']);
+
 
         if (!empty($data['cu_invoice_no'])){
 
