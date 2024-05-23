@@ -180,7 +180,7 @@
                             <td>{{ numberFormat($actual_amount) }}</td>
                             <td>{{ numberFormat($expense_amount) }}</td>
                             <td>{{ numberFormat($balance) }}</td>
-                            <td>{{ round(div_num($balance, $expense_amount) * 100) }} %</td>
+                            <td>{{ round(div_num($balance, $actual_amount) * 100) }} %</td>
                         </tr>
                     @endforeach
                     <tr>
@@ -188,7 +188,7 @@
                         <td style="font-size: 20px;"> <b>{{ numberFormat($total_actual) }} </b></td>
                         <td style="font-size: 20px;"> <b>{{ numberFormat($total_estimate) }} </b></td>
                         <td style="font-size: 20px;"> <b>{{ numberFormat($total_balance) }} </b></td>
-                        <td style="font-size: 20px;"> <b>{{ round(div_num($total_balance, $total_estimate) * 100) }} % </b></td>
+                        <td style="font-size: 20px;"> <b>{{ round(div_num($total_balance, $total_actual) * 100) }} % </b></td>
                     </tr>
                 </tbody>
             </table>
@@ -267,7 +267,7 @@
                             <td>{{ numberFormat($actual_amount) }}</td>
                             <td>{{ numberFormat($expense_amount) }}</td>
                             <td>{{ numberFormat($balance) }}</td>
-                            <td>{{ round(div_num($balance, $expense_amount) * 100) }} %</td>
+                            <td>{{ round(div_num($balance, $actual_amount) * 100) }} %</td>
                         </tr>
                     @endforeach
                     <tr>
@@ -275,7 +275,7 @@
                         <td style="font-size: 18px;"><b>{{ numberFormat($total_actual) }} </b></td>
                         <td style="font-size: 18px;"><b>{{ numberFormat($total_estimate) }} </b></td>
                         <td style="font-size: 18px;"><b>{{ numberFormat($total_balance) }} </b></td>
-                        <td style="font-size: 18px;"><b>{{ round(div_num($total_balance, $total_estimate) * 100) }} % </b> </td>
+                        <td style="font-size: 18px;"><b>{{ round(div_num($total_balance, $total_actual) * 100) }} % </b> </td>
                     </tr>
                 </tbody>
             </table>
