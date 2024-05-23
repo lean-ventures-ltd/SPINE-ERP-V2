@@ -115,7 +115,7 @@ class FiledTaxReportsTableController extends Controller
                 elseif ($this->invoice) $cuInvoiceNo = $this->invoice->cu_invoice_no ?? '';
 
                 if (!empty($cuInvoiceNo)){
-                    if ($cuInvoiceNo[0] != 0 && is_numeric($cuInvoiceNo[0])) return "'" . $cuInvoiceNo;
+                    return "|" . $cuInvoiceNo;
                 }
 
                 return $cuInvoiceNo;
