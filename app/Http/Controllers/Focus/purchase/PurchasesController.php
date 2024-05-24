@@ -18,7 +18,6 @@
 
 namespace App\Http\Controllers\Focus\purchase;
 
-use App\Models\project\ProjectMileStone;
 use App\Models\purchase\Purchase;
 use App\Models\supplier\Supplier;
 use Illuminate\Http\Request;
@@ -30,8 +29,6 @@ use App\Repositories\Focus\purchase\PurchaseRepository;
 use App\Http\Requests\Focus\purchase\ManagePurchaseRequest;
 use App\Http\Requests\Focus\purchase\StorePurchaseRequest;
 use App\Http\Responses\RedirectResponse;
-use DirectoryIterator;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -62,31 +59,6 @@ class PurchasesController extends Controller
      */
     public function index(ManagePurchaseRequest $request)
     {
-        // import purchases
-        // foreach (new DirectoryIterator(base_path() . '/main_creditors') as $file) {
-        //     if ($file->isDot()) continue;
-        //     $expense_data = $this->repository->expense_import_data($file->getFilename());
-        //     $expense_data = array_slice($expense_data, 0, 500);
-        //     $expense_data = array_slice($expense_data, 500, 500);
-        //     $expense_data = array_slice($expense_data, 1000, 500);
-        //     $expense_data = array_slice($expense_data, 1500, 500);
-        //     $expense_data = array_slice($expense_data, 2000, 500);
-        //     $expense_data = array_slice($expense_data, 2500, 500);
-        //     $expense_data = array_slice($expense_data, 3000, 500);
-        //     if (isset($expense_data[3500])) $expense_data = array_slice($expense_data, 3500, count($expense_data));
-
-        //     // dd($expense_data);
-        //     foreach ([] as $row) {
-        //         // $this->repository->create($row);
-        //     }
-        // }
-
-        // delete purchases (frontfreeze, sahara)
-        // $purchases = Purchase::whereIn('supplier_id', [8])->get();
-        // foreach ($purchases as $key => $purchase) {
-        //     // $this->repository->delete($purchase);
-        // }
-
         $suppliers = Supplier::whereHas('bills')->get();
 
         return new ViewResponse('focus.purchases.index', compact('suppliers'));
