@@ -16,7 +16,6 @@ use App\Models\transaction\Transaction;
 use App\Models\transactioncategory\Transactioncategory;
 use App\Models\utility_bill\UtilityBill;
 use App\Repositories\BaseRepository;
-use Error;
 use Illuminate\Support\Facades\DB;
 use App\Models\queuerequisition\QueueRequisition;
 use Illuminate\Validation\ValidationException;
@@ -44,98 +43,10 @@ class PurchaseRepository extends BaseRepository
         if (request('supplier_id')) {
             $q->where('supplier_id', request('supplier_id'));
             // imported records
-            $q->whereNotBetween('tid', [3558, 7216]);
+            // $q->whereNotBetween('tid', [3558, 7216]);
         } else $q->limit(500);
 
         return $q->latest()->get();
-    }
-
-    /**
-     * Import Expenses from external array data
-     */
-    function expense_import_data($file_name = '') {
-        try {
-            $expense_data = [];
-
-            $file = base_path() . '/main_creditors/' . $file_name;
-            if (!file_exists($file)) return $expense_data;
-            // dd($file);
-
-            // convert csv to array
-            $export = [];
-            $csv_file = fopen($file, 'r');
-            while ($row = fgetcsv($csv_file)) $export[] = $row;
-            fclose($csv_file);
-            // dd($export);
-
-            // compatible database array
-            $import = [];
-            $headers = current($export);
-            $data_rows = array_slice($export, 1, count($export));
-            foreach ($data_rows as $i => $row) {
-                if (count($headers) != count($row)) {
-                    throw ValidationException::withMessages([
-                        'Unequal column count on line '. strval($i+1). ' on file '.$file_name
-                    ]);
-                }
-
-                $new_row = [];
-                foreach ($row as $key => $val) {
-                    if (stripos($val, 'null') !== false) $val = null;
-                    $new_row[$headers[$key]] = $val;
-                }
-                $import[] = $new_row;
-            }
-            // dd($import);
-
-            // expense and expense_items
-            foreach ($import as $key => $data) {
-                // sanitize data
-                $supplier = Supplier::find($data['supplier_id'], ['id', 'taxid']);
-                if ($supplier) $data['supplier_taxid'] = $supplier->taxid;
-                if ($data['grandtax'] == 0) $data['tax'] = 0;
-
-                foreach ($data as $key => $value) {
-                    if (in_array($key, ['date', 'due_date'])) {
-                        $data[$key] = date_for_database($value);
-                    }
-                    $data[$key] = trim($value);
-                }
-
-
-                if (stripos($data['status'], 'paid') !== false) $data['status'] = 'paid';
-                elseif (stripos($data['status'], 'partly paid') !== false) $data['status'] = 'partial';
-                else $data['status'] = 'pending';
-
-                // skip payments
-                if (stripos($data['status'], 'pmt') !== false) continue;
-
-                // expense items
-                $data_items = array_map(fn($v) => [
-                    'item_id' => @$data['ledger_id']? $data['ledger_id'] : 103, // cog account
-                    'description' => $v['note'],
-                    'itemproject_id' => $v['project_id'],
-                    'qty' => 1,
-                    'rate' => $v['paidttl'],
-                    'taxrate' => $v['grandtax'],
-                    'itemtax' => $v['tax'],
-                    'amount' => $v['grandttl'],
-                    'type' => 'Expense',
-                    'warehouse_id' => null,
-                    'uom' => 'Lot',
-                ], [$data]);
-
-                unset($data['id'], $data['po_id'], $data['created_at'], $data['updated_at'], $data['ledger_id']);
-                $data_keys = array_filter(array_keys($data));
-                $data = array_intersect_key($data, array_flip($data_keys));
-                // dd(compact('data', 'data_items'));
-                $expense_data[] = compact('data', 'data_items');
-            }
-            return $expense_data;
-        } catch (\Throwable $th) {
-            $err = $th->getMessage();
-            throw new Error("{$err} on file {$file_name}");
-        }
     }
 
 
@@ -195,6 +106,27 @@ class PurchaseRepository extends BaseRepository
         }
         if(@$data['tax'] > 0){
             if(@$data['supplier_taxid'] == '')  throw ValidationException::withMessages(['Tax Pin is Required!!']);
+        }
+
+        // create walkin supplier if none exists
+        if (@$data['supplier_type'] == 'walk-in') {
+            $supplier = Supplier::where('name', 'LIKE', '%walk-in%')->orWhere('company', 'LIKE', '%walk-in%')->first();
+            if (!$supplier) {
+                $company = Company::find(auth()->user()->ins);
+                $supplier = Supplier::create([
+                    'name' => 'Walk-In',
+                    'phone' => 0,
+                    'address' => 'N/A',
+                    'city' => @$company->city,
+                    'region' => @$company->region,
+                    'country' => @$company->country,
+                    'email' => 'walkin@sample.com',
+                    'company' => 'Walk-In',
+                    'taxid' => 'N/A',
+                    'role_id' => 0,
+                ]);
+            }
+            $data['supplier_id'] = $supplier->id;
         }
 
         $tid = Purchase::where('ins', $data['ins'])->max('tid');
@@ -390,6 +322,27 @@ class PurchaseRepository extends BaseRepository
             $letter_pattern = "/^[a-zA-Z]+$/i";
             if (!preg_match($letter_pattern, $data['supplier_taxid'][-1]))
                 throw ValidationException::withMessages(['Last character of Tax Pin must be a letter']);
+        }
+
+        // create walkin supplier if none exists
+        if (@$data['supplier_type'] == 'walk-in') {
+            $supplier = Supplier::where('name', 'LIKE', '%walk-in%')->orWhere('company', 'LIKE', '%walk-in%')->first();
+            if (!$supplier) {
+                $company = Company::find(auth()->user()->ins);
+                $supplier = Supplier::create([
+                    'name' => 'Walk-In',
+                    'phone' => 0,
+                    'address' => 'N/A',
+                    'city' => @$company->city,
+                    'region' => @$company->region,
+                    'country' => @$company->country,
+                    'email' => 'walkin@sample.com',
+                    'company' => 'Walk-In',
+                    'taxid' => 'N/A',
+                    'role_id' => 0,
+                ]);
+            }
+            $data['supplier_id'] = $supplier->id;
         }
 
         $prev_note = $purchase->note;
