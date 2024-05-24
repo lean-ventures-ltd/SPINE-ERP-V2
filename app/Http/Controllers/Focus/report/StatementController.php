@@ -547,7 +547,7 @@ class StatementController extends Controller
                         $productvars[$key]['avg_cost'] = $item['purchase_price'];
                         $productvars[$key]['amount'] = $productvars[$key]['qty_onhand'] * $item['purchase_price'];
                     }
-                    $account_details = $productvars;
+                    $account_details = $productvars->filter(fn($v) => @$v['qty_in'] || @$v['qty_out']);
                 }
 
                 $lang['title'] = 'Product Movement Statement';
