@@ -636,12 +636,21 @@
                                 <li><a class="dropdown-item" href="{{ route('biller.quotes.get_verify_quote') }}"
                                        data-toggle="dropdown"><i class="ft-list"></i>Manage Verification</a></li>
                                 <hr>
-                                <li><a class="dropdown-item" href="{{ route('biller.verifications.index') }}"
+                                {{-- <li><a class="dropdown-item" href="{{ route('biller.verifications.index') }}"
                                        data-toggle="dropdown"><i class="ft-list"></i>Manage Partial Verification</a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" href="{{ route('biller.verifications.quote_index') }}"
                                        data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Partial
+                                        Verification
+                                    </a>
+                                </li> --}}
+                                <li><a class="dropdown-item" href="{{ route('biller.estimates.index') }}"
+                                    data-toggle="dropdown"><i class="ft-list"></i>Manage Partial Verification</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('biller.estimates.create') }}"
+                                        data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Partial
                                         Verification
                                     </a>
                                 </li>
@@ -1141,11 +1150,11 @@
                             <li><a class="dropdown-item" href="{{ route('biller.standard_invoices.create') }}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Detached Invoice</a></li>
                             @endauth
                             <li><a class="dropdown-item" href="{{ route('biller.invoices.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Invoices</a></li>
-                            <hr>
+                            {{-- <hr>
                             @permission('create-invoice')
                             <li><a class="dropdown-item" href="{{ route('biller.estimates.create') }}" data-toggle="dropdown"><i class="fa fa-plus-circle"></i> Invoice Estimate</a></li>
                             @endauth
-                            <li><a class="dropdown-item" href="{{ route('biller.estimates.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Estimates</a></li>
+                            <li><a class="dropdown-item" href="{{ route('biller.estimates.index') }}" data-toggle="dropdown"><i class="ft-file-text"></i> Manage Estimates</a></li> --}}
                         </ul>
                     </li>
                     @endauth
