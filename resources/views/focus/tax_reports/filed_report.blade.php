@@ -75,7 +75,7 @@
                                                 <th>Description</th>
                                                 <th>Taxable Amount</th>
                                                 <th>&nbsp;</th>
-{{--                                                <th>Invoice No.</th>--}}
+                                                <th>Invoice No.</th>
                                                 <th>CN Invoice Date</th>
                                             </tr>
                                         </thead>
@@ -184,7 +184,7 @@
                 },
                 columns: [
                     ...['pin', 'customer', 'etr_code', 'invoice_date', 'cu_invoice_no', 'note', 'subtotal',
-                        'empty_col', 'cn_invoice_date',
+                        'empty_col', 'invoice_no', 'cn_invoice_date',
                     ].map(v => ({data: v, name: v})),
                 ],
                 order: [[3, "desc"]],
