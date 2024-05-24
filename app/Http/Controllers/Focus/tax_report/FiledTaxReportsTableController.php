@@ -134,19 +134,11 @@ class FiledTaxReportsTableController extends Controller
             ->addColumn('empty_col', function ($item) {
                 return '';
             })
-//            ->addColumn('invoice_no', function ($item) {
-////                $cn_invoice_no = '';
-////                if ($this->credit_note) {
-////                    $invoice = $this->credit_note->invoice;
-////                    if ($invoice) $cn_invoice_no .= ($invoice->cu_invoice_no ?: $invoice->tid);
-////                }
-////                return $cn_invoice_no;
-//
-//                if ($this->credit_note) return $this->credit_note->tid;
-//                elseif ($this->invoice) return $this->invoice->tid;
-//
-//
-//            })
+            ->addColumn('invoice_no', function ($item) {
+
+                if ($this->credit_note) return gen4tid('CN-', $this->credit_note->tid);
+                elseif ($this->invoice) return gen4tid('INV-', $this->invoice->tid);
+            })
             ->addColumn('cn_invoice_date', function ($item) {
                 $cn_invoice_date = '';
                 if ($this->credit_note) {
