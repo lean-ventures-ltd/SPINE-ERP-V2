@@ -915,7 +915,34 @@ function updateStockQty($productvar_ids=[])
         // qty in
         $op_stock_qty = \App\Models\items\OpeningStockItem::where('productvar_id', $id)->sum('qty');
         $dir_purchase_qty = \App\Models\items\PurchaseItem::where('item_id', $id)->where('type', 'Stock')->sum('qty');
-        $grn_qty = \App\Models\items\GoodsreceivenoteItem::whereHas('purchaseorder_item', fn($q) => $q->where('item_id', $id))->sum('qty');
+        
+        $grn_qty = 0;
+        \App\Models\items\GoodsreceivenoteItem::whereHas('purchaseorder_item', fn($q) => $q->where('item_id', $id))->get()
+        ->each(function($v) use($grn_qty) {
+            // check if is default product variation or supplier product 
+            $prod_variation = $v->productvariation;
+            if (@$v->goodsreceivenote->purchaseorder->pricegroup_id && $v->supplier_product) {
+                $prod_variation = \App\Models\product\ProductVariation::where('code', $v->supplier_product->product_code)->first();
+            } elseif ($v->supplier_product) {
+                $prod_variation = \App\Models\product\ProductVariation::where('code', $v->supplier_product->product_code)->first();
+            }
+            // apply unit conversion
+            $units = @$prod_variation->product->units;
+            if ($units) {
+                $po_item = $v->purchaseorder_item;
+                foreach ($units as $unit) {
+                    if ($unit->code == @$po_item['uom']) {
+                        if ($prod_variation->warehouse_id > 0) {
+                            if ($unit->unit_type == 'base') $grn_qty += $v->qty;
+                            else $grn_qty += ($v->qty * $unit->base_ratio);
+                        }
+                    }
+                }   
+            } elseif ($prod_variation) {
+                $grn_qty += $v->qty;
+            }
+        });
+            
         $pos_adj_qty = \App\Models\stock_adj\StockAdjItem::where('productvar_id', $id)->where('qty_diff', '>', 0)->sum('qty_diff');
         $total_in = $op_stock_qty + $dir_purchase_qty + $grn_qty + $pos_adj_qty;
         // qty out
