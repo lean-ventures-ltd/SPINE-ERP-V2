@@ -162,7 +162,8 @@ class TenantRepository extends BaseRepository
         if (!$user) throw ValidationException::withMessages(['Default User must be created under customer module']);
         $user->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);
         $role = Role::where('created_by', $user->id)->first();
-        $role->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);            
+        if ($role) $role->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);            
+        
         $user_meta = HrmMeta::where('user_id', $user->id)->first();
         if (!$user_meta) {
             HrmMeta::create([
