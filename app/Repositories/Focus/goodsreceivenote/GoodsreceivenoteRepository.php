@@ -113,7 +113,7 @@ class GoodsreceivenoteRepository extends BaseRepository
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
             }
         
-            if($item->warehouse_id){    
+            if($item->warehouse_id && $prod_variation){    
                 if ($prod_variation->warehouse_id != $item['warehouse_id']) {   
                     $is_similar = false;
                     $similar_products = ProductVariation::where('id', '!=', $prod_variation->id)
@@ -136,6 +136,8 @@ class GoodsreceivenoteRepository extends BaseRepository
 
                 if ($prod_variation) updateStockQty([$prod_variation->id]);
                 else throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);
+            } elseif (!$prod_variation) {
+                throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);
             }
         }
 
@@ -218,7 +220,7 @@ class GoodsreceivenoteRepository extends BaseRepository
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
             }
 
-            if($item->warehouse_id){    
+            if($item->warehouse_id && $prod_variation){    
                 if ($prod_variation->warehouse_id != $item['warehouse_id']) {   
                     $is_similar = false;
                     $similar_products = ProductVariation::where('id', '!=', $prod_variation->id)
@@ -241,7 +243,9 @@ class GoodsreceivenoteRepository extends BaseRepository
 
                 if ($prod_variation) updateStockQty([$prod_variation->id]);
                 else throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);
-            }            
+            } elseif (!$prod_variation) {
+                throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);
+            }        
         }
 
         // update purchase order status
