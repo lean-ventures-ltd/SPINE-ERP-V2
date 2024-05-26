@@ -58,8 +58,8 @@ class StockIssueRepository extends BaseRepository
         $data_items = array_diff_key($input, $data);
         $data_items['stock_issue_id'] = array_fill(0, count($data_items['issue_qty']), $stock_issue->id);
         $data_items = modify_array($data_items);
-        $data_items = array_filter($data_items, fn($v) => $v['issue_qty'] > 0);
-        if (!$data_items) throw ValidationException::withMessages(['Issue Qty field is required!']);
+        $data_items = array_filter($data_items, fn($v) => $v['warehouse_id'] && $v['issue_qty'] > 0);
+        if (!$data_items) throw ValidationException::withMessages(['issue qty field and location field are required!']);
         StockIssueItem::insert($data_items);
         
         // update stock Qty
@@ -102,8 +102,8 @@ class StockIssueRepository extends BaseRepository
         $data_items = array_diff_key($input, $data);
         $data_items['stock_issue_id'] = array_fill(0, count($data_items['issue_qty']), $stock_issue->id);
         $data_items = modify_array($data_items);
-        $data_items = array_filter($data_items, fn($v) => $v['issue_qty'] > 0);
-        if (!$data_items) throw ValidationException::withMessages(['Issue Qty field is required!']);
+        $data_items = array_filter($data_items, fn($v) => $v['warehouse_id'] && $v['issue_qty'] > 0);
+        if (!$data_items) throw ValidationException::withMessages(['issue qty field and location field are required!']);
         $stock_issue->items()->delete();
         StockIssueItem::insert($data_items);
         
