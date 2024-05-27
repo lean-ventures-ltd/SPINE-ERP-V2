@@ -208,7 +208,7 @@
                                 <div class="text-center">
                                     <p>{{trans('general.authorized_person')}}</p>
                                     <img src="{{ Storage::disk('public')->url('app/public/img/signs/' . @$quote->user->signature) }}" alt="signature" class="height-100 m-2" />
-                                    <h6>{{$quote->user->first_name}} {{$quote->user->last_name}}</h6>
+                                    <h6>{{ @$quote->user->first_name }} {{ @$quote->user->last_name }}</h6>
                                 </div>
                             </div>
                         </div>
