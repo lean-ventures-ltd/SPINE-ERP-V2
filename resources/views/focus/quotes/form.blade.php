@@ -13,7 +13,8 @@
                 <label for="ticket">Ticket</label>
                 <div class="input-group">
                     <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
-                    <select class="form-control" name="lead_id" id="lead_id" required>                                                 
+                    <select class="form-control" name="lead_id" id="lead_id" data-placeholder="Search Ticket" required> 
+                        <option value=""></option>                                                
                         @foreach ($leads as $lead)
                             @php
                                 $customer_name = '';
