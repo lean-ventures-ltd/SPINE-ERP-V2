@@ -119,7 +119,7 @@ class HrmRepository extends BaseRepository
             $password = random_password();
             $input['employee'] = array_replace($input['employee'], [
                 'username' => $username,
-                'password' => (new DateTime('now'))->format('y') . '-' . 'Pa$$w0rd!',
+                'password' => $password, //(new DateTime('now'))->format('y') . '-' . 'Pa$$w0rd!',
                 'created_by' => auth()->user()->id,
                 'confirmed' => 1,
             ]);
