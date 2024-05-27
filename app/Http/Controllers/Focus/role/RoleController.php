@@ -128,7 +128,6 @@ class RoleController extends Controller
      */
     public function edit(Role $role, ManageHrmRequest $request)
     {
-        if (auth()->user()->ins == $role->ins) {
 
             $permissionDisplayNames = Permission::all()->pluck('display_name');
 
@@ -161,7 +160,6 @@ class RoleController extends Controller
                 ->withRole($role)
                 ->withRolePermissions($role->permissions->pluck('id')->all())
                 ->withPermissions($this->permissions->getAll()->sortBy('display_name'));
-        }
     }
 
     /**
