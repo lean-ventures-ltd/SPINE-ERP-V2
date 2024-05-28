@@ -75,7 +75,7 @@ class StockIssue extends Model
         });
 
         static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', auth()->user()->ins);
+            $builder->where('stock_issues.ins', auth()->user()->ins);
         });
     }
 }

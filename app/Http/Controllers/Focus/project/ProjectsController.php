@@ -148,7 +148,7 @@ class ProjectsController extends Controller
      * Remove the specified resource from storage.
      *
      * @param DeleteProjectRequestNamespace $request
-     * @param \App\Models\project\Project $project
+     * @param Project $project
      * @return \App\Http\Responses\RedirectResponse
      */
     public function destroy(Project $project)
@@ -189,11 +189,20 @@ class ProjectsController extends Controller
         $project->customer = $project->customer_project;
         $project->creator = auth()->user();
 
+
+        $stockIssues = Project::find($project->id)
+            ->join('stock_issues', 'stock_issues.quote_id', 'projects.main_quote_id')
+            ->select(
+                "stock_issues.*"
+            )
+            ->get();
+
+
         $mics = Misc::all();
         $employees = User::all();
         $expensesByMilestone = $this->getExpensesByMilestone($project->id);
 
-        return new ViewResponse('focus.projects.view', compact('project', 'accounts', 'exp_accounts', 'suppliers', 'last_tid', 'mics', 'employees', 'expensesByMilestone', 'productNames'));
+        return new ViewResponse('focus.projects.view', compact('project', 'accounts', 'exp_accounts', 'suppliers', 'last_tid', 'mics', 'employees', 'expensesByMilestone', 'productNames', 'stockIssues'));
     }
 
     /**
