@@ -17,6 +17,7 @@
                         <option value=""></option>                                                
                         @foreach ($leads as $lead)
                             @php
+                                if (!@$lead->id) continue;
                                 $customer_name = '';
                                 if ($lead->customer) {
                                     $customer_name .= $lead->customer->company;
