@@ -22,6 +22,8 @@ use App\Models\quote\Quote;
 use App\Models\rjc\Rjc;
 use App\Models\items\GoodsreceivenoteItem;
 use App\Models\labour_allocation\LabourAllocation;
+use App\Models\stock_issue\StockIssue;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 
 /**
@@ -147,5 +149,17 @@ trait ProjectRelationship
     public function labour_allocations()
     {
         return $this->hasmany(LabourAllocation::class, 'project_id');
+    }
+
+    public function stockIssues()
+    {
+        return $this->hasManyThrough(
+            StockIssue::class,  // The distant relation (StockIssue)
+            Quote::class,  // The intermediate relation (Quote)
+            'id', // Foreign key on the Quote model. If this isn't defined, it defaults to project_id
+            'quote_id',  // Foreign key on the StockIssue model. If this isn't defined, it defaults to quote_id
+            'quote_id',  // Local primary key on Project
+            'id'  // Local primary key on Quote
+        );
     }
 }

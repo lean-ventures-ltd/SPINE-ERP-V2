@@ -19,9 +19,13 @@ use App\Models\project\BudgetSkillset;
 use App\Models\project\Project;
 use App\Models\project\ProjectQuote;
 use App\Models\projectstock\Projectstock;
+use App\Models\quote\Quote;
+use App\Models\stock_issue\StockIssue;
 use App\Models\term\Term;
 use App\Models\verifiedjcs\VerifiedJc;
 use App\Models\quote\EquipmentQuote;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class QuoteRelationship
@@ -150,5 +154,10 @@ trait QuoteRelationship
     }
     public function preparedBy(){
         return $this->belongsTo(User::class, 'prepared_by_user');
+    }
+
+    public function stockIssues(): HasMany {
+
+        return $this->hasMany(StockIssue::class, 'quote_id', 'id');
     }
 }
