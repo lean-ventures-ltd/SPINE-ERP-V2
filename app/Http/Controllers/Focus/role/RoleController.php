@@ -72,7 +72,7 @@ class RoleController extends Controller
     public function create(ManageHrmRequest $request)
     {
 
-        return auth()->user()->tenant->package->service;
+//        return auth()->user()->tenant->package->service;
 
         $permissionDisplayNames = Permission::all()->pluck('display_name');
 
