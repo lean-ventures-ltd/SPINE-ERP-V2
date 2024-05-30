@@ -27,16 +27,6 @@
                                 <div class="box box-info">
                                     <div class="box-body">
 
-                                        <div class="form-group">
-                                            <input type="checkbox"
-                                                   id="subscription_tier"
-                                                   style="width: 20px; height: 20px;"
-                                                   class="round subscription_tier"
-                                                   name="subscription_tier"
-                                                   value="1"
-                                            >
-                                            <label for="subscription_tier" style="font-size: 22px;"> Subscription Tier </label>
-                                        </div>
 
                                         <div class="form-group">
                                             {{ Form::label('name', trans('validation.attributes.backend.access.roles.name'), ['class' => 'col-lg-2 control-label required']) }}
