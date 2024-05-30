@@ -130,7 +130,7 @@
             $.post(url, {sale_month: $('#record_month').val()}, data => {
                 // sort by date
                 data.sort((a, b) => new Date(b.invoice_date) - new Date(a.invoice_date)); 
-                data = data.filter(v => (v['tax_pin'] != 0 && v['tax_pin'] != 'null'));
+                // data = data.filter(v => (v['tax_pin'] != 0 && v['tax_pin'] != 'null'));
                 
                 this.salesData = data;
                 this.renderSalesRow(data);
