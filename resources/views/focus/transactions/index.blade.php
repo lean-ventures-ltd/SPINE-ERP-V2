@@ -113,6 +113,11 @@
                                         <th>Tr No.</th>
                                         <th>Type</th>
                                         <th>{{ $is_tax? 'Customer PIN' : 'Ledger Account' }}</th>
+                                        @if (request('system') == 'receivable')
+                                            <th>Payer</th>
+                                        @elseif (request('system') == 'payable')
+                                            <th>Payee</th>
+                                        @endif   
                                         <th>Note</th>
                                         @if ($is_tax)
                                             <th>VAT %</th>
@@ -169,11 +174,8 @@
         },
 
         drawDataTable() {
-            let obj = [];
             const system = @json(request('system'));
-            if (system == 'tax') obj = ['vat_rate', 'vat_amount'];
             const input = @json(@$input);
-
             $('#transactionsTbl').dataTable({
                 processing: true,
                 responsive: true,
@@ -196,24 +198,37 @@
                         return data;
                     },
                 },
-                columns: [{
-                        data: 'DT_Row_Index',
-                        name: 'id'
-                    },
+                columns: [
+                    {data: 'DT_Row_Index',name: 'id'},
                     ...[
-                        'tid', 'tr_type', 'reference', 'note', ...obj, 'debit', 'credit',
-                        'balance', 'tr_date'
+                        'tid', 
+                        'tr_type', 
+                        'reference', 
+                        @if (request('system') == 'receivable')
+                            'payer',
+                        @elseif (request('system') == 'payable')
+                            'payee',
+                        @endif
+                        'note', 
+                        @if (request('system') == 'tax')
+                            'vat_rate', 
+                            'vat_amount',
+                        @endif
+                        'debit', 
+                        'credit',
+                        'balance', 
+                        'tr_date'
                     ].map(v => ({data: v, name: v})),
-                    {
-                        data: 'actions',
-                        name: 'actions',
-                        searchable: false,
-                        sortable: false
-                    }
+                    {data: 'actions', name: 'actions', searchable: false, sortable: false}
                 ],
                 columnDefs: [
-                    { type: "custom-number-sort", targets: [5,6,7] },
-                    { type: "custom-date-sort", targets: 8 }
+                    @if (in_array(request('system'), ['receivable', 'payable']))
+                        { type: "custom-number-sort", targets: [6,7,8] },
+                        { type: "custom-date-sort", targets: 9 }
+                    @else
+                        { type: "custom-number-sort", targets: [5,6,7] },
+                        { type: "custom-date-sort", targets: 8 }
+                    @endif
                 ],
                 order: [[0, "desc"]],
                 searchDelay: 500,
