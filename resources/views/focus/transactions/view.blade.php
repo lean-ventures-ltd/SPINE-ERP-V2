@@ -106,7 +106,7 @@
                         <tr>
                             <th>{{ trans('labels.backend.transactions.table.id') }}</th>  
                             <th>Type</th>
-                            <th>Reference</th>                                      
+                            <th>Ledger Account</th>  
                             <th>Note</th>
                             <th>{{ trans('transactions.debit') }}</th>
                             <th>{{ trans('transactions.credit') }}</th>
@@ -166,87 +166,34 @@
         }
     });
 
-    const language = {@lang('datatable.strings')};
     const dataTable = $('#transactionsTbl').dataTable({
         processing: true,
         serverSide: true,
         responsive: true,
         stateSave: true,
-        language,
+        language: {@lang('datatable.strings')},
         ajax: {
             url: '{{ route("biller.transactions.get") }}',
             type: 'post',
             data: {tr_tid: "{{ $tr->tid }}", tr_id: "{{ $tr->id }}"},
         },
-        columns: [{
-                data: 'DT_Row_Index',
-                name: 'id'
-            },
-            {
-                data: 'tr_type',
-                name: 'tr_type'
-            },
-            {
-                data: 'reference',
-                name: 'reference'
-            },
-            {
-                data: 'note',
-                name: 'note'
-            },
-            {
-                data: 'debit',
-                name: 'debit'
-            },
-            {
-                data: 'credit',
-                name: 'credit'
-            },
-            {
-                data: 'tr_date',
-                name: 'tr_date'
-            },
-            {
-                data: 'created_at',
-                name: 'created_at'
-            },
-            {
-                data: 'actions',
-                name: 'actions',
-                searchable: false,
-                sortable: false
-            }
+        columns: [
+            {data: 'DT_Row_Index', name: 'id'},
+            ...[
+                'tr_type', 
+                'reference', 
+                'note', 
+                'debit', 
+                'credit', 
+                'tr_date', 
+                'created_at'
+            ].map(v => ({data: v, name: v})),
+            {data: 'actions', name: 'actions', searchable: false, sortable: false}
         ],
-        order: [
-            [0, "desc"]
-        ],
+        order: [[0, "desc"]],
         searchDelay: 500,
         dom: 'Blfrtip',
-        buttons: {
-            buttons: [
-                {
-                    extend: 'csv',
-                    footer: true,
-                    exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6]
-                    }
-                },
-                {
-                    extend: 'excel',
-                    footer: true,
-                    exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6]
-                    }
-                },
-                {
-                    extend: 'print',
-                    footer: true,
-                    exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6]
-                    }
-                }
-            ]
-        }
+        buttons: ['csv', 'excel', 'print']
     });    
 </script>
 @endsection

@@ -107,6 +107,16 @@ class TransactionsTableController extends Controller
             ->addColumn('vat_amount', function ($tr) {
                 return $this->tax_transaction('vat_amount', $tr);
             })
+            ->addColumn('payer', function ($tr) {
+                $customer = @$tr->deposit->customer;
+                if ($customer) $customer = @$customer->company ?: @$customer->name;
+                return $customer;
+            })
+            ->addColumn('payee', function ($tr) {
+                $supplier = @$tr->bill_payment->supplier;
+                if ($supplier) $supplier = @$supplier->name ?: @$supplier->company;
+                return $supplier;
+            })
             ->addColumn('debit', function ($tr) {
                 return numberFormat($tr->debit);
             })
