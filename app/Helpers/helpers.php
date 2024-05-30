@@ -911,7 +911,7 @@ function sqlQuery($builder)
 // update Stock Quantity
 function updateStockQty($productvar_ids=[])
 {
-    foreach ($productvar_ids as $key => $id) {
+    foreach ($productvar_ids as $id) {
         // qty in        
         $grn_qty = 0;
         \App\Models\items\GoodsreceivenoteItem::whereHas('purchaseorder_item')
