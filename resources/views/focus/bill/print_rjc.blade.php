@@ -227,12 +227,12 @@
 			<tr class="dotted">
 				<td>
 					@isset($resource->image_one)
-						<img src="{{ Storage::disk('public')->url('app/public/img/djcreport/' . $resource->image_one) }}" alt="image_one" border=3 height=300 width=300></img>
+						<img src="{{ Storage::disk('public')->url('app/public/img/rjcreport/' . $resource->image_one) }}" alt="image_one" border=3 height=300 width=300></img>
 					@endisset
 				</td>
 				<td>
 					@isset($resource->image_two)
-						<img src="{{ Storage::disk('public')->url('app/public/img/djcreport/' . $resource->image_two) }}" alt="image_two" border=3 height=300 width=300></img>
+						<img src="{{ Storage::disk('public')->url('app/public/img/rjcreport/' . $resource->image_two) }}" alt="image_two" border=3 height=300 width=300></img>
 					@endisset
 				</td>
 			</tr>
@@ -243,12 +243,12 @@
 			<tr class="dotted">
 				<td>
 					@isset($resource->image_three)
-						<img src="{{ Storage::disk('public')->url('app/public/img/djcreport/' . $resource->image_three) }}" alt="image_three" border=3 height=300 width=300></img>
+						<img src="{{ Storage::disk('public')->url('app/public/img/rjcreport/' . $resource->image_three) }}" alt="image_three" border=3 height=300 width=300></img>
 					@endisset
 				</td>
 				<td>
 					@isset($resource->image_four)
-						<img src="{{ Storage::disk('public')->url('app/public/img/djcreport/' . $resource->image_four) }}" alt="image_four" border=3 height=300 width=300></img>
+						<img src="{{ Storage::disk('public')->url('app/public/img/rjcreport/' . $resource->image_four) }}" alt="image_four" border=3 height=300 width=300></img>
 					@endisset
 				</td>
 			</tr>
