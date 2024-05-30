@@ -5,8 +5,8 @@
         $product = $account_details->last();
     @endphp
     <div style="font-size:.7em; text-align:left">
-        <b>{{$product->name}}</b> <br> 
-        {{$product->location}}
+        <b>{{@$product->name}}</b> <br> 
+        {{@$product->location}}
     </div>
     
     <table class="plist" cellpadding="0" cellspacing="0">
@@ -48,7 +48,7 @@
                 </tr>
                 <tr>
                     <td>{{trans('general.total')}}:</td>
-                    <td style="text-align:right;">{{ numberFormat($product->amount) }}</td>
+                    <td style="text-align:right;">{{ numberFormat(@$product->amount) }}</td>
                 </tr>
             </tbody>
         </table>
