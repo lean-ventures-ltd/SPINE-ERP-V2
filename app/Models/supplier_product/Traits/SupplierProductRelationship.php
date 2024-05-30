@@ -2,6 +2,7 @@
 
 namespace App\Models\supplier_product\Traits;
 
+use App\Models\product\ProductVariation;
 use App\Models\supplier\Supplier;
 
 trait SupplierProductRelationship
