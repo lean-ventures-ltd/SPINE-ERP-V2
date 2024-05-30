@@ -455,10 +455,24 @@ class StatementController extends Controller
                         ]);
                         $account_details->add((object) $struct_rep);
                     }
-                    $grn_items = GoodsreceivenoteItem::whereHas('purchaseorder_item', fn($q) => $q->where('item_id', $item_id))
-                    ->whereHas('goodsreceivenote', function($q) use($reports) {
+                    
+                    $grn_items = GoodsreceivenoteItem::whereHas('purchaseorder_item')
+                    ->whereHas('goodsreceivenote', function($q) use($reports, $item_id) {
                         $q->whereBetween('date', [date_for_database($reports->from_date), date_for_database($reports->to_date)]);
-                    })->get();
+                        $q->where(function($q) use($item_id) {
+                            $q->whereHas('supplier', function($q) use($item_id) {
+                                $q->whereHas('supplier_products', function($q) use($item_id) {
+                                    $q->whereHas('product', fn($q) => $q->where('product_variations.id', $item_id));
+                                });
+                            })
+                            ->orWhere(function($q) use($item_id) {
+                                $q->whereHas('items', function($q) use($item_id) {
+                                    $q->whereHas('productvariation', fn($q) => $q->where('product_variations.id', $item_id));
+                                });
+                            });
+                        });
+                    })
+                    ->get();
                     foreach ($grn_items as $item) {
                         $struct_rep = array_replace($struct, [
                             'date' => @$item->goodsreceivenote->date,
@@ -520,9 +534,21 @@ class StatementController extends Controller
                             $q->whereBetween('date', [date_for_database($reports->from_date), date_for_database($reports->to_date)]);
                         })->sum('qty');
                         
-                        $grn_qty = GoodsreceivenoteItem::whereHas('purchaseorder_item', fn($q) => $q->where('item_id', $item->id))
-                        ->whereHas('goodsreceivenote', function($q) use($reports) {
+                        $grn_qty = GoodsreceivenoteItem::whereHas('purchaseorder_item')
+                        ->whereHas('goodsreceivenote', function($q) use($reports, $item) {
                             $q->whereBetween('date', [date_for_database($reports->from_date), date_for_database($reports->to_date)]);
+                            $q->where(function($q) use($item) {
+                                $q->whereHas('supplier', function($q) use($item) {
+                                    $q->whereHas('supplier_products', function($q) use($item) {
+                                        $q->whereHas('product', fn($q) => $q->where('product_variations.id', $item->id));
+                                    });
+                                })
+                                ->orWhere(function($q) use($item) {
+                                    $q->whereHas('items', function($q) use($item) {
+                                        $q->whereHas('productvariation', fn($q) => $q->where('product_variations.id', $item->id));
+                                    });
+                                });
+                            });
                         })->sum('qty');
                         
                         $pos_adj_qty = StockAdjItem::where('productvar_id', $item->id)->where('qty_diff', '>', 0)

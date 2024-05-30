@@ -90,6 +90,8 @@ class GoodsreceivenoteRepository extends BaseRepository
         $data_items = modify_array($data_items);
         $data_items = array_filter($data_items, fn($v) => $v['qty'] > 0);
         if (!$data_items) throw ValidationException::withMessages(['Cannot generate GRN without product qty!']);
+        $data_items = array_filter($data_items, fn($v) => $v['warehouse_id'] || $v['itemproject_id']);
+        if (!$data_items) throw ValidationException::withMessages(['Cannot generate GRN without project or location!']);
         
         foreach ($data_items as $i => $item) {
             $data_items[$i] = array_replace($item, [
@@ -196,6 +198,9 @@ class GoodsreceivenoteRepository extends BaseRepository
         // update goods receive note items
         $data_items = Arr::only($input, ['qty', 'rate', 'id','warehouse_id', 'itemproject_id']);
         $data_items = modify_array($data_items);
+        $data_items = array_filter($data_items, fn($v) => $v['warehouse_id'] || $v['itemproject_id']);
+        if (!$data_items) throw ValidationException::withMessages(['Cannot generate GRN without project or location!']);
+
         foreach ($data_items as $item) {
             $grn_item = GoodsreceivenoteItem::find($item['id']);
             if (!$grn_item) throw ValidationException::withMessages(['GRN item does not exist!']);

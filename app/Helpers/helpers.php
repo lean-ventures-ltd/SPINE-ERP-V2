@@ -917,7 +917,22 @@ function updateStockQty($productvar_ids=[])
         $dir_purchase_qty = \App\Models\items\PurchaseItem::where('item_id', $id)->where('type', 'Stock')->sum('qty');
         
         $grn_qty = 0;
-        \App\Models\items\GoodsreceivenoteItem::whereHas('purchaseorder_item', fn($q) => $q->where('item_id', $id))->get()
+        \App\Models\items\GoodsreceivenoteItem::whereHas('purchaseorder_item')
+        ->whereHas('goodsreceivenote', function($q) use($id) {
+            $q->where(function($q) use($id) {
+                $q->whereHas('supplier', function($q) use($id) {
+                    $q->whereHas('supplier_products', function($q) use($id) {
+                        $q->whereHas('product', fn($q) => $q->where('product_variations.id', $id));
+                    });
+                })
+                ->orWhere(function($q) use($id) {
+                    $q->whereHas('items', function($q) use($id) {
+                        $q->whereHas('productvariation', fn($q) => $q->where('product_variations.id', $id));
+                    });
+                });
+            });
+        })
+        ->get()
         ->each(function($v) use($grn_qty) {
             // check if is default product variation or supplier product 
             $prod_variation = $v->productvariation;
