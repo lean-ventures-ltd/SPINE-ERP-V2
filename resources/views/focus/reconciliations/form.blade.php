@@ -139,7 +139,7 @@
                                         <td class="date">{{ dateFormat($deposit->date) }}</td>
                                         <td class="type">{{ 'cash-in' }}</td>
                                         <td class="trans-ref">{{ gen4tid('PMT-', $deposit->tid) }}</td>
-                                        <td class="client-suppler">{{ @$deposit->customer->company }}</td>
+                                        <td class="client-supplier">{{ @$deposit->customer->company }}</td>
                                         <td class="note">{{ $deposit->note }}</td>
                                         <td class="mr-0 pr-0"><span class="cash">{{ numberFormat($deposit->amount) }}</span></td>
                                         <td class="ml-0 pl-0"><input class="check" type="checkbox" autocomplete="off"></td>
@@ -156,7 +156,7 @@
                                 <td class="date"></td>
                                 <td class="type"></td>
                                 <td class="trans-ref"></td>
-                                <td class="client-suppler"></td>
+                                <td class="client-supplier"></td>
                                 <td class="note"></td>
                                 <td class="mr-0 pr-0"><span class="cash"></span></td>
                                 <td class="ml-0 pl-0"><input class="check" type="checkbox" autocomplete="off"></td>
