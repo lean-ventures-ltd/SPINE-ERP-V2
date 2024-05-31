@@ -61,6 +61,7 @@ class ReconciliationsController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate(['end_date' => 'required']);
         try {
             $this->repository->create($request->except('_token'));
         } catch (\Throwable $th) {
@@ -93,6 +94,7 @@ class ReconciliationsController extends Controller
      */
     public function update(Request $request, Reconciliation $reconciliation)
     {
+        $request->validate(['end_date' => 'required']);
         try {
             $this->repository->update($reconciliation, $request->except('_token', '_method'));
         } catch (\Throwable $th) {
@@ -133,13 +135,13 @@ class ReconciliationsController extends Controller
     {
         $account_items = collect();
         $struct = ['journal_item_id' => null, 'man_journal_id' => null, 'payment_id' => null, 'deposit_id' => null, 'client_supplier' => null];
-        $date = date_for_database(request('end_date'));
-        $date = [date('m', strtotime($date)), date('Y', strtotime($date))];
-        $journal_items = JournalItem::whereHas('journal', function($q) use($date) {
-            $q->whereMonth('date', $date[0])->whereYear('date', $date[1]);
-        })
-        ->where('account_id', request('account_id'))->get();
-        foreach ($journal_items as $key => $item) {
+        $date_parts = explode('-', request('end_date'));
+        $date = [current($date_parts), end($date_parts)];
+
+        $journal_items = JournalItem::where('account_id', request('account_id'))
+        ->whereHas('journal', fn($q) => $q->whereMonth('date', $date[0])->whereYear('date', $date[1]))
+        ->get()
+        ->each(function($item) use($account_items, $struct) {
             $acc_item = array_replace($struct, [
                 'journal_item_id' => $item->id,
                 'man_journal_id' => $item->journal_id,
@@ -150,13 +152,14 @@ class ReconciliationsController extends Controller
                 'amount' => $item->debit == 0? $item->credit : $item->debit,
             ]);
             $account_items->add($acc_item); 
-        }
+        });
+
         $payments = Billpayment::whereHas('supplier')
         ->where('account_id', request('account_id'))
         ->whereMonth('date', $date[0])
         ->whereYear('date', $date[1])
-        ->get();
-        foreach ($payments as $key => $item) {
+        ->get()
+        ->each(function($item) use($account_items, $struct) {
             $acc_item = array_replace($struct, [
                 'payment_id' => $item->id,
                 'date' => $item->date,
@@ -167,13 +170,14 @@ class ReconciliationsController extends Controller
                 'amount' => $item->amount,
             ]);
             $account_items->add($acc_item); 
-        }
+        });
+
         $deposits = InvoicePayment::whereHas('customer')
         ->where('account_id', request('account_id'))
         ->whereMonth('date', $date[0])
         ->whereYear('date', $date[1])
-        ->get();
-        foreach ($deposits as $key => $item) {
+        ->get()
+        ->each(function($item) use($account_items, $struct) {
             $acc_item = array_replace($struct, [
                 'deposit_id' => $item->id,
                 'date' => $item->date,
@@ -184,7 +188,8 @@ class ReconciliationsController extends Controller
                 'amount' => $item->amount,
             ]);
             $account_items->add($acc_item); 
-        }
+        });
+        
         $sorted_items = $account_items->sortBy('date');
         
         // set beginning balance

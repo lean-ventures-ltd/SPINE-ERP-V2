@@ -42,14 +42,13 @@ class ReconciliationRepository extends BaseRepository
     {
         DB::beginTransaction();
 
-        $input['end_date'] = date_for_database($input['end_date']);
         foreach ($input as $key => $value) {
             if (in_array($key, ['end_balance', 'begin_balance', 'cash_in', 'cash_out', 'cleared_balance', 'balance_diff']))
                 $input[$key] = numberClean($value);
         }
 
         $dates = explode('-', $input['end_date']);
-        $exists = Reconciliation::whereYear('end_date', $dates[0])->whereMonth('end_date', $dates[1])->exists();
+        $exists = Reconciliation::whereYear('end_date', end($dates))->whereMonth('end_date', current($dates))->exists();
         if ($exists) throw ValidationException::withMessages(['end_date' => 'Reconciliation For The Same Month already Exists']);
 
         $data_items = Arr::only($input, ['checked', 'man_journal_id', 'journal_item_id', 'payment_id', 'deposit_id']);

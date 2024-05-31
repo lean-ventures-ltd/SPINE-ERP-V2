@@ -14,7 +14,7 @@
                     </select>
                 </div>
                 <div class="col-2">
-                    <label for="end_date" class="caption">Ending Date</label>
+                    <label for="end_date" class="caption">Ending Month</label>
                     {{ Form::text('end_date', null, ['class' => 'form-control datepicker', 'id' => 'end_date', 'required' => 'required']) }}
                 </div>   
                 <div class="col-2">
@@ -191,7 +191,18 @@
 
         init() {
             $.ajaxSetup(config.ajax);
-            $('.datepicker').datepicker(config.date).datepicker('setDate', "{{ dateFormat($last_day) }}");
+            // month picker
+            $('.datepicker').datepicker({
+                autoHide: true,
+                changeMonth: true,
+                changeYear: true,
+                showButtonPanel: true,
+                format: 'MM-yyyy',
+                onClose: function(dateText, inst) { 
+                    $(this).datepicker('setDate', new Date(inst.selectedYear, inst.selectedMonth, 1));
+                }
+            }).datepicker('setDate', "{{ date('m-Y') }}");
+        
             Index.initRow = $('#transactions tbody tr:first');
 
             $('#recon-form').submit(Index.onFormSubmit);
