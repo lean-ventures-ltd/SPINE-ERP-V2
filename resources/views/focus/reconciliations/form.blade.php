@@ -218,7 +218,7 @@
             const data_items = @json(@$reconciliation->items);
             if (data && data_items.length) {
                 $('#account').attr('disabled', true);
-                $('#end_date').attr('disabled', true);
+                $('#end_date').datepicker('setDate', data.end_date).attr('disabled', true);
                 $('#end_balance').keyup().change();
                 $('#transactions tbody tr').each(function() {
                     const row = $(this);
