@@ -236,7 +236,10 @@
 
         onAccountChange() {
             $('#transactions tbody tr').remove();
+            $('#begin_balance').val('0.00');
+            $('.begin-bal').text('0.00');
             if (!this.value) return;
+
             const url = "{{ route('biller.reconciliations.account_items') }}";
             const params = {account_id: $(this).val(), end_date: $('#end_date').val()};
             $.post(url, params, data => {
