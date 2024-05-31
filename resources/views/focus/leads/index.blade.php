@@ -38,7 +38,8 @@
                             <div class="col-3">
                                 <label for="status">Status</label>
                                 <select name="status" class="custom-select" id="status" data-placeholder="Filter by status">
-                                    @foreach (['Open' => 0, 'Closed' => 1] as $key => $value)
+                                    <option value=""> Filter by Status </option>
+                                    @foreach (['Open' => 'OPEN', 'Closed' => 'CLOSED'] as $key => $value)
                                         <option value="{{ $value }}">{{ $key }}</option>
                                     @endforeach
                                 </select>
