@@ -118,7 +118,7 @@ class ProjectGrossProfitTableController extends Controller
                 return numberFormat($profit);
             })
             ->addColumn('percent_profit', function($project) {                
-                return round(div_num($this->profit, $this->expense) * 100);
+                return round(div_num($this->profit, $this->income) * 100);
             })
             ->make(true);
     }
