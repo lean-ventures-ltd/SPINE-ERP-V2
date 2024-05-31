@@ -219,7 +219,8 @@ class LeadsController extends Controller
         // dd($lead);
         $status = $request->status;
         $reason = $request->reason;
-        $lead->update(compact('status', 'reason'));
+        $note = $request->note;
+        $lead->update(compact('status', 'reason', 'note'));
 
         return redirect()->back();
     }
