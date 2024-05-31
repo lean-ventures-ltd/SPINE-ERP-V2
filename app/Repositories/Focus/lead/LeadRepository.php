@@ -33,8 +33,8 @@ class LeadRepository extends BaseRepository
         $q = $this->query();
 
 
-        $q->when((request('status') == 1), fn($q) => $q->where('status', 1));
-        $q->when((request('status') == 0), fn($q) => $q->where('status', 0));
+        $q->when((request('status') === 'CLOSED'), fn($q) => $q->where('status', 1));
+        $q->when((request('status') === 'OPEN'), fn($q) => $q->where('status', 0));
 
         $q->when(request('category'), fn($q) => $q->where('category', request('category')));
 
