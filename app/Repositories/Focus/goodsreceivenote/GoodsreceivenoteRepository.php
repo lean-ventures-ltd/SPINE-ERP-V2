@@ -5,7 +5,6 @@ namespace App\Repositories\Focus\goodsreceivenote;
 use App\Exceptions\GeneralException;
 use App\Models\goodsreceivenote\Goodsreceivenote;
 use App\Models\items\GoodsreceivenoteItem;
-use App\Models\items\PurchaseorderItem;
 use App\Models\items\UtilityBillItem;
 use App\Models\product\ProductVariation;
 use App\Models\utility_bill\UtilityBill;
@@ -111,7 +110,8 @@ class GoodsreceivenoteRepository extends BaseRepository
             $prod_variation = $item->productvariation;
             if (@$result->purchaseorder->pricegroup_id && $item->supplier_product) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            } elseif ($item->supplier_product) {
+            } 
+            elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
             }
         
@@ -221,7 +221,7 @@ class GoodsreceivenoteRepository extends BaseRepository
             $prod_variation = $item->productvariation;
             if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            } elseif ($item->supplier_product) {
+            } elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
             }
 
