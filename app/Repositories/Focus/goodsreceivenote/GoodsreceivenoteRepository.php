@@ -111,10 +111,11 @@ class GoodsreceivenoteRepository extends BaseRepository
             $prod_variation = $item->productvariation;
             if (@$result->purchaseorder->pricegroup_id && $item->supplier_product) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            } elseif ($item->supplier_product) {
+            } 
+            elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
             }
-        
+    
             if($item->warehouse_id){    
                 if ($prod_variation->warehouse_id != $item['warehouse_id']) {   
                     $is_similar = false;
@@ -138,16 +139,19 @@ class GoodsreceivenoteRepository extends BaseRepository
                 if (isset($prod_variation->product->units)) {
                     foreach ($prod_variation->product->units as $unit) {
                         if ($unit->code == $po_item['uom']) {
+                            // dd($prod_variation->product->units, $unit, $po_item['uom']);
                             if ($unit->unit_type == 'base') {
                                 $prod_variation->increment('qty', $item->qty);
                             } else {
                                 $prod_variation->increment('qty', $item->qty * $unit->base_ratio);
+                                // dd($prod_variation);
                             }
                         }
                     }
                 } 
                 elseif ($prod_variation) $prod_variation->increment('qty', $item->qty);
                 else throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);
+                // dd($prod_variation);
             }
         }
 
@@ -213,10 +217,10 @@ class GoodsreceivenoteRepository extends BaseRepository
             $prod_variation = $item->productvariation;
             if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            } elseif ($item->supplier_product) {
+            } 
+            elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
             }
-            
             // apply unit conversion
             if (isset($prod_variation->product->units)) {
                 foreach ($prod_variation->product->units as $unit) {
@@ -261,7 +265,7 @@ class GoodsreceivenoteRepository extends BaseRepository
             $prod_variation = $item->productvariation;
             if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            } elseif ($item->supplier_product) {
+            } elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
                 $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
             }
             
@@ -334,6 +338,9 @@ class GoodsreceivenoteRepository extends BaseRepository
                 // check if is default product variation or supplier product 
                 $prod_variation = $item->productvariation;
                 if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
+                    $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+                } 
+                elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
                     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
                 }
                 // apply unit conversion
