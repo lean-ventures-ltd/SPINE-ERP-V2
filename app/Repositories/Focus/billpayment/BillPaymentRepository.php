@@ -59,16 +59,7 @@ class BillPaymentRepository extends BaseRepository
                 $input[$key] = array_map(fn($v) => numberClean($v), $val);
         }
 
-        if ($input['amount'] == 0) throw ValidationException::withMessages(['amount is required']);
-        // check duplicate Reference No.
         $is_allocation = isset($input['rel_payment_id']);
-        if (!$is_allocation && @$input['reference'] && @$input['account_id']) {
-            $is_duplicate_ref = Billpayment::where('account_id', $input['account_id'])
-            ->where('reference', 'LIKE', "%{$input['reference']}%")  
-            ->whereNull('rel_payment_id')
-            ->exists();            
-            if ($is_duplicate_ref) throw ValidationException::withMessages(['Duplicate reference no.']);
-        }
 
         // payment line items
         $data_items = Arr::only($input, ['bill_id', 'paid']);
