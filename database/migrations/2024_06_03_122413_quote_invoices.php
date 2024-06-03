@@ -13,11 +13,18 @@ class QuoteInvoices extends Migration
      */
     public function up()
     {
-        Schema::table('quote_invoices', function (Blueprint $table) {
+        Schema::create('quote_invoices', function (Blueprint $table) {
+
             $table->unsignedBigInteger('id');
+
             $table->unsignedBigInteger('quote_id')->nullable();
+            $table->foreign('quote_id')->references('id')->on('quotes');
+
             $table->unsignedBigInteger('invoice_id')->nullable();
+            $table->foreign('invoice_id')->references('id')->on('invoices');
+
             $table->timestamps();
+
         });
     }
 

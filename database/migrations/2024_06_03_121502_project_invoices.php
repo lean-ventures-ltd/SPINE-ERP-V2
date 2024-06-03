@@ -13,10 +13,14 @@ class ProjectInvoices extends Migration
      */
     public function up()
     {
-        Schema::table('project_invoices', function (Blueprint $table) {
+        Schema::create('project_invoices', function (Blueprint $table) {
             $table->unsignedBigInteger('id');
+
             $table->unsignedBigInteger('project_id')->nullable();
+            $table->foreign('project_id')->references('id')->on('projects');
+
             $table->unsignedBigInteger('invoice_id')->nullable();
+            $table->foreign('invoice_id')->references('id')->on('invoices');
             $table->timestamps();
         });
     }
