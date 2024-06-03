@@ -10,6 +10,7 @@ use App\Models\billpayment\Billpayment;
 use App\Models\supplier\Supplier;
 use App\Models\utility_bill\UtilityBill;
 use App\Repositories\Focus\billpayment\BillPaymentRepository;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -89,6 +90,33 @@ class BillPaymentController extends Controller
      */
     public function store(Request $request)
     {
+
+        $request->validate([
+            'amount' => [
+                function (string $attribute, $value, Closure $fail) {
+
+                    if (floatval($value) <= 0) $fail('A non-zero amount is required');
+                }
+            ],
+            'reference' => [
+
+                function (string $attribute, $value, Closure $fail) use ($request) {
+
+                    if (!isset($request['rel_payment_id']) && $request['reference'] && $request['account_id']) {
+                        $is_duplicate_ref = Billpayment::where('account_id', $request['account_id'])
+                            ->where('reference', 'LIKE', "%{$request['reference']}%")
+                            ->whereNull('rel_payment_id')
+                            ->exists();
+                        if ($is_duplicate_ref) {
+                            $fail('Duplicate reference no.');
+                        }
+                    }
+                },
+            ],
+        ]);
+
+
+
         try {
             DB::beginTransaction();
 
