@@ -136,6 +136,7 @@ class QuotesTableController extends Controller
             ->addColumn('invoice_tid', function ($quote) use($prefixes) {
                 $inv_product = $quote->invoice_product;
                 if (@$inv_product->invoice) return gen4tid("{$prefixes[3]}-", $inv_product->invoice->tid);
+                elseif(@$quote->invoice_quote) return gen4tid("{$prefixes[3]}-", $quote->invoice_quote->tid);
             })
             ->filterColumn('invoice_tid', function($query, $tid) use($prefixes) {
                 $arr = explode('-', $tid);

@@ -24,6 +24,7 @@ use App\Models\stock_issue\StockIssue;
 use App\Models\term\Term;
 use App\Models\verifiedjcs\VerifiedJc;
 use App\Models\quote\EquipmentQuote;
+use App\Models\quote\QuoteInvoice;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -159,5 +160,9 @@ trait QuoteRelationship
     public function stockIssues(): HasMany {
 
         return $this->hasMany(StockIssue::class, 'quote_id', 'id');
+    }
+    public function invoice_quote()
+    {
+        return $this->hasOneThrough(Invoice::class, QuoteInvoice::class, 'quote_id', 'id', 'id', 'invoice_id');
     }
 }

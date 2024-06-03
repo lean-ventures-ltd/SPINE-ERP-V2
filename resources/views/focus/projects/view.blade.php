@@ -125,6 +125,8 @@
     @include('focus.projects.modal.task_view')
     @include('focus.projects.modal.milestone_new')
     @include('focus.projects.modal.quote_new')
+    @include('focus.projects.modal.detached_invoice')
+    @include('focus.projects.modal.attach_di_quote')
     @include('focus.projects.modal.note_new')
     @include('focus.projects.modal.delete_2')
     @if(access()->allow('create-task')) 

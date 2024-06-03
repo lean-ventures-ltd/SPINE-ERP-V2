@@ -40,6 +40,9 @@
             case 8:
                 $("#data_form_budget").trigger('reset');
                 break;                
+            case 9:
+                $("#data_form_invoice").trigger('reset');
+                break;                
         }
         return;
     }
@@ -222,6 +225,66 @@
             }
         });
     });
+    // detached invoice show modal
+    $('#AddDetachedInvoiceModal').on('shown.bs.modal', function () {
+        const dt = "{{ dateFormat() }}";
+        $('.from_date').val(dt);
+        $('.to_date').val(dt);
+
+        $("#invoice").select2({
+            allowClear: true,
+            dropdownParent: $('#AddDetachedInvoiceModal'),
+            ajax: {
+                url: "{{ route('biller.projects.invoices_select') }}",
+                dataType: 'json',
+                type: 'POST',
+                data: ({term}) => ({search: term, customer_id: @json(@$project->customer_id) }),
+                processResults: (data) => {
+                    return {
+                        results: $.map(data, (item) => ({
+                            text: `${item.name}`,
+                            id: item.id
+                        }))
+                    };
+                },
+            }
+        });
+    });
+
+    //Attach DI to Quote
+    $('#quotesTbl tbody').on('click', '.attach_di', function () {
+        const el = $(this);
+        const row = el.parents('tr:first');
+        let quote_id = row.find('.attach_di').attr('data-id');
+        $('#quote_id_val').val(quote_id);
+        console.log(row.find('.attach_di').attr('data-id'));
+    });
+
+    // invoices show modal
+    $('#AttachDIModal').on('shown.bs.modal', function () {
+        const dt = "{{ dateFormat() }}";
+        $('.from_date').val(dt);
+        $('.to_date').val(dt);
+
+        $("#dinvoice").select2({
+            allowClear: true,
+            dropdownParent: $('#AttachDIModal'),
+            ajax: {
+                url: "{{ route('biller.projects.select_detached_invoices') }}",
+                dataType: 'json',
+                type: 'POST',
+                data: ({term}) => ({search: term, project_id: @json(@$project->id) }),
+                processResults: (data) => {
+                    return {
+                        results: $.map(data, (item) => ({
+                            text: `${item.name}`,
+                            id: item.id
+                        }))
+                    };
+                },
+            }
+        });
+    });
     
     // task show modal
     $('#AddTaskModal').on('shown.bs.modal', function () {
@@ -280,6 +343,17 @@
         addObject(form_data, true);
         $('#AddNoteModal').modal('toggle');
     });
+
+    // on quote submit
+    $("#submit-data_invoice").on("click", function (e) {
+        e.preventDefault();
+        var form_data = {};
+        form_data['form_name'] = 'data_form_invoice';
+        form_data['form'] = $("#data_form_invoice").serialize();
+        form_data['url'] = $('#action-url_9').val();
+        addObject(form_data, true);
+        $('#AddDetachedInvoiceModal').modal('toggle');
+    });
     // projects notes textarea ext
     $('.summernote').summernote({
         height: 300,
@@ -314,11 +388,40 @@
                     data = data.map(v => {
                         if (v.budget_status.includes('budgeted')) {
                             v.actions = '';
+                            if(v.invoice_tid == null){
+                                v.actions += `
+                                <button type="button" class="btn btn-success btn-sm attach_di" id="attach_di" data-toggle="modal" data-id='${v.id}'
+                                        data-target="#AttachDIModal">
+                                        <i class="fa fa-plus-circle"></i> Attach DI
+                                </button>
+                                `;
+                            }
                             return v;
                         }
+                        
                         const create_budget_url = @json(route('biller.budgets.create', 'quote_id=')) + v.id;
                         const detach_quote_url = @json(route('biller.projects.detach_quote', ['project_id' => $project->id])) + '&quote_id=' + v.id;
-                        v.actions = `
+                        const id_quote = v.id;
+                        
+                        if(v.invoice_tid == null){
+                            // console.log(v.id);
+                            v.actions = `
+                                <div class="dropdown">
+                                        <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            Action
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <a class="dropdown-item create" href="${create_budget_url}"><i class="fa fa-plus-square-o" aria-hidden="true"></i> Budget</a>
+                                            <a class="dropdown-item qt-detach text-danger" href="${detach_quote_url}"><i class="fa fa-trash text-danger" aria-hidden="true"></i> Detach</a>
+                                        </div>
+                                    </div> 
+                                <button type="button" class="btn btn-success btn-sm attach_di" id="attach_di" data-toggle="modal" data-id='${id_quote}'
+                                        data-target="#AttachDIModal">
+                                        <i class="fa fa-plus-circle"></i> Attach DI
+                                </button>
+                            `;
+                        }else{
+                            v.actions = `
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         Action
@@ -329,6 +432,8 @@
                                     </div>
                                 </div> 
                         `;
+
+                        }
                         return v;
                     });
 
@@ -451,11 +556,38 @@
             ajax: {
                 url: "{{ route('biller.invoices.get') }}",
                 type: 'POST',
-                data: {project_id: "{{ $project->id }}"}
+                data: {project_id: "{{ $project->id }}"},
+                dataSrc: ({data}) => {
+                    
+                    data = data.map(v => {
+                        const detach_quote_url = @json(route('biller.projects.detach_invoice', ['project_id' => $project->id])) + '&invoice_id=' + v.id;
+                        // console.log(v.is_standard);
+                        if(v.is_standard == 1){
+                            v.actions = `
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Action
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        
+                                        <a class="dropdown-item qt-detach text-danger" href="${detach_quote_url}"><i class="fa fa-trash text-danger" aria-hidden="true"></i> Detach</a>
+                                    </div>
+                                </div> 
+                        `;
+                        }else{
+                            v.actions = ``;
+                        }
+                        
+                        return v;
+                    });
+
+                    return data;
+                }
             },
             columns: [
                 {data: 'DT_Row_Index', name: 'id'},
                 ...['tid', 'customer', 'invoicedate', 'total', 'status', 'invoiceduedate'].map(v => ({data:v, name:v})),
+                {data: 'actions', name: 'actions', searchable: false, sortable: false}
             ],
             order: [[0, "desc"]],
             searchDelay: 500,
