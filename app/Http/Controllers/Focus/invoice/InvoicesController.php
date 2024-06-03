@@ -91,8 +91,10 @@ class InvoicesController extends Controller
     public function index(ManageInvoiceRequest $request)
     {
         $customers = Customer::whereHas('invoices')->get(['id', 'company']);
+        $accounts = Account::whereHas('accountType', fn($q) => $q->whereIn('name', ['Income', 'Other Income']))->get();
+
         
-        return new ViewResponse('focus.invoices.index', compact('customers'));
+        return new ViewResponse('focus.invoices.index', compact('customers', 'accounts'));
     }
 
     /**

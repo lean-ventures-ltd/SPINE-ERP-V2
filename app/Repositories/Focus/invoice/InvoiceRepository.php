@@ -42,6 +42,11 @@ class InvoiceRepository extends BaseRepository
             ]);
         }
 
+        // Invoice Category
+        $q->when(!empty(request('invoice_category')), function($q) {
+            $q->where('account_id', request('invoice_category'));
+        });
+
         // project filter (project view)
         $q->when(request('project_id'), function($q) {
             $q->whereHas('quotes', function($q) {

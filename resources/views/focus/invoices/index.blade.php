@@ -46,7 +46,26 @@
                                         <option value="{{ $status }}">{{ ucfirst($status) }}</option>
                                     @endforeach
                                 </select>
-                            </div>                            
+                            </div>
+                            <div class="col-2">
+                                <label for="invoice_category">Invoice Category</label>
+                                <select class="custom-select" id="invoice_category">
+                                <option value="">-- Select Category --</option>
+                                @foreach ($accounts as $row)
+                                    @php
+                                        $account_type = $row->accountType;
+                                        if ($account_type->name != 'Income') continue;
+                                    @endphp
+
+                                    @if($row->holder !== 'Stock Gain' && $row->holder !== 'Others' && $row->holder !== 'Point of Sale' && $row->holder !== 'Loan Penalty Receivable' && $row->holder !== 'Loan Interest Receivable')
+                                        <option value="{{ $row->id }}" {{ $row->id == @$invoice->account_id ? 'selected' : '' }}>
+                                            {{ $row->holder }}
+                                        </option>
+                                    @endif
+
+                                @endforeach
+                            </select>
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-2">
@@ -130,6 +149,7 @@
         customerId: '',
         invoiceStatus: '',
         paymentStatus: '',
+        invoiceCategory: '',
 
         init() {
             $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
@@ -137,6 +157,7 @@
 
             $('#inv_status').change(this.invoiceStatusChange);
             $('#pmt_status').change(this.paymentStatusChange);
+            $('#invoice_category').change(this.invoiceCategoryChange);
             $('#customer').select2({allowClear: true}).val('').trigger('change')
             .change(this.customerChange);
 
@@ -175,6 +196,13 @@
             return Index.drawDataTable();
         },
 
+        invoiceCategoryChange() {
+
+            Index.invoiceCategory = $(this).val();
+            $('#invoiceTbl').DataTable().destroy();
+            return Index.drawDataTable();
+        },
+
         customerChange() {
             Index.customerId = $(this).val();
             $('#invoiceTbl').DataTable().destroy();
@@ -182,6 +210,16 @@
         },
 
         drawDataTable() {
+
+            console.table({
+                start_date: this.startDate,
+                end_date: this.endDate,
+                customer_id: this.customerId,
+                invoice_status: this.invoiceStatus,
+                payment_status: this.paymentStatus,
+                invoice_category: this.invoiceCategory,
+            });
+
             $('#invoiceTbl').dataTable({
                 processing: true,
                 stateSave: true,
@@ -196,7 +234,8 @@
                         end_date: this.endDate, 
                         customer_id: this.customerId,
                         invoice_status: this.invoiceStatus,
-                        payment_status: this.paymentStatus
+                        payment_status: this.paymentStatus,
+                        invoice_category: this.invoiceCategory,
                     },
                     dataSrc: ({data}) => {
                         $('#amount_total').val('');
