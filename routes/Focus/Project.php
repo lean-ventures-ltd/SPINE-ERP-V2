@@ -20,8 +20,12 @@ Route::group(['namespace' => 'project', 'middleware' => 'project'], function () 
   Route::post('projects/notes', 'ProjectsController@notes')->name('projects.notes');
   Route::post('projects/project_budget', 'ProjectsController@project_budget')->name('projects.project_budget');
   Route::post('projects/quotes_select', 'ProjectsController@quotes_select')->name('projects.quotes_select');
+  Route::post('projects/invoices_select', 'ProjectsController@invoices_select')->name('projects.invoices_select');
+  Route::post('projects/select_detached_invoices', 'ProjectsController@select_detached_invoices')->name('projects.select_detached_invoices');
   Route::post('projects/detach_quote', 'ProjectsController@detach_quote')->name('projects.detach_quote');
   Route::post('projects/detach_budget', 'ProjectsController@detach_budget')->name('projects.detach_budget');
+  Route::post('projects/detach_invoice', 'ProjectsController@detach_invoice')->name('projects.detach_invoice');
+  Route::post('projects/store_quote_invoice', 'ProjectsController@store_quote_invoice')->name('projects.store_quote_invoice');
 
   // project budget
   Route::get('projects/budget/{quote}', 'ProjectsController@create_project_budget')->name('projects.create_project_budget');
