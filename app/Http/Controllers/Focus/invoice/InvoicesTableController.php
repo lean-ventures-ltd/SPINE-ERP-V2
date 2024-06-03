@@ -51,6 +51,7 @@ class InvoicesTableController extends Controller
     public function __invoke(ManageInvoiceRequest $request)
     {
         $core = $this->invoice->getForDataTable();
+        // dd($core->get());
 
         $ins = auth()->user()->ins;
         $prefixes = prefixesArray(['invoice', 'quote', 'proforma_invoice'], $ins);

@@ -14,6 +14,9 @@ use App\Models\items\TaxReportItem;
 use App\Models\items\WithholdingItem;
 use App\Models\quote\Quote;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\project\Project;
+use App\Models\project\ProjectInvoice;
+use App\Models\quote\QuoteInvoice;
 
 /**
  * Class InvoiceRelationship
@@ -79,10 +82,10 @@ trait InvoiceRelationship
         return $this->hasMany('App\Models\items\MetaEntry', 'rel_id')->where('rel_type', '=', 1)->withoutGlobalScopes();
     }
 
-    public function project()
-    {
-        return $this->belongsTo(ProjectRelations::class, 'id',  'rid')->where('related', '=', 7);
-    }
+    // public function project()
+    // {
+    //     return $this->belongsTo(ProjectRelations::class, 'id',  'rid')->where('related', '=', 7);
+    // }
 
     public function client()
     {
@@ -102,5 +105,15 @@ trait InvoiceRelationship
     public function ledgerAccount(): BelongsTo {
 
         return $this->belongsTo(Account::class, 'account_id', 'id');
+    }
+    public function project()
+    {
+        // return $this->hasOne(Project::class, 'main_quote_id');
+        return $this->hasOneThrough(Project::class, ProjectInvoice::class, 'invoice_id', 'id', 'id', 'project_id')->withoutGlobalScopes();
+    }
+    public function quote()
+    {
+        // return $this->hasOne(Project::class, 'main_quote_id');
+        return $this->hasOneThrough(Quote::class, QuoteInvoice::class, 'invoice_id', 'id', 'id', 'quote_id')->withoutGlobalScopes();
     }
 }

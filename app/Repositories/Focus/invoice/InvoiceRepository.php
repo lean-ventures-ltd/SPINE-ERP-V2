@@ -53,8 +53,12 @@ class InvoiceRepository extends BaseRepository
                 $q->whereHas('project', function($q) {
                     $q->where('projects.id', request('project_id'));
                 });
-            });
+            })->orWhereHas('project', fn($q) => $q->where('projects.id', request('project_id')));
         });
+
+        // $q->when(request('project_id'), function($q) {
+        //     $q->whereHas('project', fn($q) => $q->where('projects.id', request('project_id')));
+        // });
 
 
         // customer and status filter

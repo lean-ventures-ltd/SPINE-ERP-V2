@@ -192,11 +192,28 @@ class ReconciliationsController extends Controller
         
         $sorted_items = $account_items->sortBy('date');
         
-        // set beginning balance
+        $begin_balance = 0;
+        // use opening balance if month-year are equal
         $account = Account::find(request('account_id'));
-        $begin_balance = $account->opening_balance;
-        $last_recon =  Reconciliation::where('account_id', request('id'))->orderBy('id', 'DESC')->first();
-        if ($last_recon) $begin_balance = $last_recon->end_balance;
+        if ($account->opening_balance_date) {
+            $ob_date = explode('-', $account->opening_balance_date);
+            if ($ob_date[0] == $date[1] && $ob_date[1] == $date[0]) {
+                $begin_balance = $account->opening_balance;
+            }
+        }
+        // use last reconciliation if months are consecutive
+        $month = $date[0] - 1 ?: 12;
+        $year = $date[1] - 1;
+        if (strlen("{$month}") == 1) $month = "0{$month}";
+        $last_recon =  Reconciliation::where('account_id', request('id'))
+        ->where('end_date', 'LIKE', "%{$month}-{$year}%")
+        ->orderBy('id', 'DESC')
+        ->first();
+        if ($last_recon) {
+            $last_recon_date = explode('-', $last_recon->end_date);
+            $month_diff = intval($date[0]) - intval($last_recon_date[0]);
+            if ($month_diff == 1) $begin_balance = $last_recon->end_balance;
+        }
 
         $account_items = [];
         foreach ($sorted_items as $key => $value) {
