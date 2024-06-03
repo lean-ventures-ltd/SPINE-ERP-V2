@@ -8,6 +8,7 @@ use App\Models\customer\Customer;
 use App\Models\event\Event;
 use App\Models\event\EventRelation;
 use App\Models\hrm\Hrm;
+use App\Models\invoice\Invoice;
 use App\Models\items\PurchaseItem;
 use App\Models\misc\Misc;
 use App\Models\note\Note;
@@ -22,6 +23,7 @@ use App\Models\quote\Quote;
 use App\Models\rjc\Rjc;
 use App\Models\items\GoodsreceivenoteItem;
 use App\Models\labour_allocation\LabourAllocation;
+use App\Models\project\ProjectInvoice;
 use App\Models\stock_issue\StockIssue;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
@@ -161,5 +163,9 @@ trait ProjectRelationship
             'quote_id',  // Local primary key on Project
             'id'  // Local primary key on Quote
         );
+    }
+    public function invoices()
+    {
+        return $this->hasManyThrough(Invoice::class, ProjectInvoice::class, 'project_id', 'id', 'id', 'invoice_id');
     }
 }

@@ -39,6 +39,7 @@ use App\Http\Requests\Focus\project\UpdateProjectRequest;
 use App\Models\Access\User\User;
 use App\Models\customer\Customer;
 use App\Models\hrm\Hrm;
+use App\Models\invoice\Invoice;
 use App\Models\misc\Misc;
 use App\Models\project\Budget;
 use App\Models\project\Project;
@@ -51,6 +52,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Log;
 use Yajra\DataTables\Facades\DataTables;
+use App\Models\project\ProjectInvoice;
+use App\Models\quote\QuoteInvoice;
 
 /**
  * ProjectsController
@@ -318,6 +321,45 @@ class ProjectsController extends Controller
 
         return response()->json($quotes);
     }
+    public function invoices_select()
+    {   
+        $invoice = Invoice::where(['customer_id' => request('customer_id')])
+            ->where('is_standard', 1)
+            ->get()
+            ->map(fn($v) => [
+                'id' => $v->id,
+                'name' => gen4tid('INV-', $v->tid) . ' - ' . $v->notes,
+            ]);
+
+        return response()->json($invoice);
+    }
+    public function select_detached_invoices()
+    {   
+        $invoice = ProjectInvoice::where(['project_id' => request('project_id')])
+            ->get()
+            ->map(fn($v) => [
+                'id' => $v->invoice_id,
+                'name' => gen4tid('INV-', @$v->invoice->tid) . ' - ' . @$v->invoice->notes,
+            ]);
+
+        return response()->json($invoice);
+    }
+    public function store_quote_invoice(Request $request)
+    {   
+        // dd($request->all());
+        try {
+            DB::beginTransaction();
+            QuoteInvoice::create([
+                'invoice_id' => $request->invoice_id,
+                'quote_id' => $request->quote_id
+            ]);
+            DB::commit();
+        } catch (\Throwable $th) {
+            //throw $th;
+            return errorHandler('Error Attaching Quote to Detached Invoice', $th);
+        }
+        return redirect()->back()->with('flash_success', 'Attached Successfully!!');
+    }
 
 
     /**
@@ -465,6 +507,20 @@ class ProjectsController extends Controller
 
                 $response = array_replace($response, ['status' => 'Success', 't_type' => 7, 'meta' => '', 'refresh' => 1]);
             }
+            else if ($input['obj_type'] == 9){
+
+                $project = Project::find($input['project_id']);
+
+                foreach($input['invoice_ids'] as $val) {
+                    $item = ProjectInvoice::firstOrCreate(
+                        ['project_id' => $project->id, 'invoice_id' => $val],
+                        ['project_id' => $project->id, 'invoice_id' => $val]
+                    );
+                    // $item->quote->update(['project_quote_id' => $item->id]);
+                }
+
+                $response = array_replace($response, ['status' => 'Success', 't_type' => 9, 'meta' => '', 'refresh' => 1]);
+            }
 
 
         } catch (\Throwable $th) {
@@ -608,6 +664,28 @@ class ProjectsController extends Controller
                 if ($other_project_quote) $project->update(['main_quote_id' => $other_project_quote->quote_id]);
                 else $project->update(['main_quote_id' => null]);
             }
+
+            DB::commit();
+            return response()->json(['status' => 'Success', 'message' => 'Resource Detached Successfully', 't_type' => 7]);
+        } catch (\Throwable $th) {
+            \Log::error($th->getMessage());
+            if (!$error_data) $error_data = ['status' => 'Error', 'message' => 'Something went wrong!'];
+            return response()->json($error_data, 500);
+        }
+    }
+    public function detach_invoice(Request $request)
+    {
+        $input = $request->except('_token');
+        $error_data = [];
+
+        DB::beginTransaction();
+    
+        try {
+            $project = Project::find($input['project_id']);
+            $invoice = Invoice::find($input['invoice_id']);
+
+
+            ProjectInvoice::where(['project_id' => $input['project_id'], 'invoice_id' => $input['invoice_id']])->delete();
 
             DB::commit();
             return response()->json(['status' => 'Success', 'message' => 'Resource Detached Successfully', 't_type' => 7]);
