@@ -118,7 +118,7 @@
                         row.find('.prodvar-id').val(v.id); 
                         row.find('.name').val(v.name); 
                         row.find('.product-code').text(v.code);
-                        row.find('.budget').text(parseFloat(data.budgetDetails[i].product_qty).toFixed(2));
+                        row.find('.budget').text(parseFloat(data.budgetDetails[i].new_qty).toFixed(2));
                         // console.table({product_code: v.code});
                         row.find('.qty-onhand').text(accounting.unformat(v.qty));
                         row.find('.qty-onhand-inp').val(accounting.unformat(v.qty));
