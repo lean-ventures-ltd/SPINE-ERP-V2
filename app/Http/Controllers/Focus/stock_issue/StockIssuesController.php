@@ -211,7 +211,9 @@ class StockIssuesController extends Controller
         if ($quote->budget) {
             $quote_product_ids = $quote->budget->items()->pluck('product_id')->toArray();
         }
-        $productvars = ProductVariation::whereIn('id', array_filter($quote_product_ids))->get()
+        $productvars = ProductVariation::whereIn('id', array_filter($quote_product_ids))
+        ->whereHas('product', fn($q) => $q->where('stock_type', '!=', 'service'))
+        ->get()
         ->map(function($v) {
             $v->unit = @$v->product->unit;
             unset($v->product);
