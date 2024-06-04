@@ -19,7 +19,7 @@
 
             @foreach ($accounts as $key => $account)
 
-                @if($row->holder !== 'Stock Gain' && $row->holder !== 'Others' && $row->holder !== 'Point of Sale' && $row->holder !== 'Loan Penalty Receivable' && $row->holder !== 'Loan Interest Receivable')
+                @if($account->holder !== 'Stock Gain' && $account->holder !== 'Others' && $account->holder !== 'Point of Sale' && $account->holder !== 'Loan Penalty Receivable' && $account->holder !== 'Loan Interest Receivable')
                     <option value="{{ $account->id }}" account_type="{{ $account->account_type }}">
                         {{ $account->number }} - {{ $account->holder }}
                     </option>
