@@ -118,7 +118,7 @@ class ProductcategoriesController extends Controller
             'title' => 'required'
         ]);
         //Input received from the request
-        $input = $request->only(['title', 'extra']);
+        $input = $request->only(['title', 'extra','code_initials']);
         //Update the model using repository update method
         $this->repository->update($productcategory, $input);
         //return with successfull message
@@ -153,6 +153,13 @@ class ProductcategoriesController extends Controller
 
         //returning with successfull message
         return new ViewResponse('focus.productcategories.view', compact('productcategory'));
+    }
+
+    public function search_code($code){
+
+        $code_exist = ProductCategory::where('code_initials', $code)->exists();
+        
+        return response()->json(['exists'=> $code_exist]);
     }
 
 }

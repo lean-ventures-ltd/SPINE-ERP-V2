@@ -53,6 +53,14 @@
                                             <p>   {{$productcategory->extra}}</p>
                                         </div>
                                     </div>
+                                    <div class="row">
+                                        <div class="col-3 border-blue-grey border-lighten-5  p-1">
+                                            <p>Code Initials</p>
+                                        </div>
+                                        <div class="col border-blue-grey border-lighten-5  p-1 font-weight-bold">
+                                            <p>   {{$productcategory->code_initials}}</p>
+                                        </div>
+                                    </div>
                                     @if(!$productcategory['c_type'])
                                         <div class="row">
                                             <div class="col-3 border-blue-grey border-lighten-5  p-1">
