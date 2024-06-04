@@ -38,6 +38,7 @@
                                         <tr>
                                             <th>#</th>
                                             <th>{{ trans('productcategories.title') }}</th>
+                                            <th>Code Initials</th>
                                             <th>{{ trans('productcategories.total_products') }}</th>
                                             <th>{{ trans('productcategories.total_worth') }}</th>
                                             <th>{{ trans('general.createdat') }}</th>
@@ -98,6 +99,7 @@
                 columns: [
                     {data: 'DT_Row_Index', name: 'id'},
                     {data: 'name', name: 'name'},
+                    {data: 'code_initials', name: 'code_initials'},
                     {data: 'total', name: 'total'},
                     {data: 'worth', name: 'worth'},
                     {data: 'created_at', name: '{{config('module.productcategories.table')}}.created_at'},

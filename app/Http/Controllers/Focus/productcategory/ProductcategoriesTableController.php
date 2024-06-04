@@ -62,6 +62,9 @@ class ProductcategoriesTableController extends Controller
             ->addColumn('total', function ($productcategory) {
                 return $productcategory->products->count();
             })
+            ->addColumn('code_initials', function ($productcategory) {
+                return $productcategory->code_initials;
+            })
             ->addColumn('worth', function ($productcategory) {
                 return amountFormat($productcategory->products->sum('purchase_price'));
             })
