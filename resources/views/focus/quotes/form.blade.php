@@ -175,7 +175,7 @@
                         @php
                             $selected = '';
                         @endphp
-                        @foreach ([0, 14, 30, 45, 60, 90] as $val)
+                        @foreach ([0, 14, 30, 45, 60, 90, 120] as $val)
                             @php
                                 if (isset($quote)) $selected =  $val == @$quote->validity? 'selected' : '';
                                 else $selected = $val == 0? 'selected' : '';
