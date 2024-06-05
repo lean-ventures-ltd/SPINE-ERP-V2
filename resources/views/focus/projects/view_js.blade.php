@@ -174,12 +174,14 @@
             const form_data = {};
             form_data['form'] = $("#data_form_mile_stone").serialize();
             form_data['url'] = $('#action-url').val();
+            // console.log(form_data);
             addObject(form_data, true);
             $('#AddMileStoneModal').modal('toggle');
             $('#data_form_mile_stone')[0].reset();
         });        
     });
     $('#addMilestone').click(function() { milestoneState = 'create'; });
+    
     // on edit milestone
     $(document).on('click', ".milestone-edit", function() {
         const obj = $(this);
@@ -199,6 +201,8 @@
         const url = $(this).attr('data-url');
         $.post(url, {object_id: $(this).attr('data-id'), obj_type: 2}, data => obj.parents('li').remove());
     });  
+
+    
 
     // quote show modal
     $('#AddQuoteModal').on('shown.bs.modal', function () {
@@ -333,17 +337,55 @@
         $('#AddQuoteModal').modal('toggle');
     });
 
-    // on submit note
-    $("#submit-data_note").on("click", function(e) {
-        e.preventDefault();
-        const form_data = {};
-        form_data['form_name'] = 'data_form_note';
-        form_data['form'] = $("#data_form_note").serialize();
-        form_data['url'] = $('#action-url_6').val();
-        addObject(form_data, true);
-        $('#AddNoteModal').modal('toggle');
-    });
+     // milestone show modal
+     let noteState;
+    const addNoteForm = $('#data_form_note')[0].outerHTML;
+    $('#AddNoteModal').on('shown.bs.modal', function() {
+        if (noteState == 'create') {
+            $(this).find('.modal-content').html(addNoteForm);
+            $('[data-toggle="datepicker"]').datepicker(config.date);
+            $('.from_date').datepicker(config.date).datepicker('setDate', '{{dateFormat(date('Y-m-d', strtotime('-30 days', strtotime(date('Y-m-d')))))}}');
+            $('.to_date').datepicker(config.date).datepicker('setDate', 'today');
+            $('#color').colorpicker();        
+        }   
 
+        
+       // on submit note
+        $("#submit-data_note").on("click", function(e) {
+            e.preventDefault();
+            const form_data = {};
+            form_data['form_name'] = 'data_form_note';
+            form_data['form'] = $("#data_form_note").serialize();
+            form_data['url'] = $('#action-url_6').val();
+            // console.log(form_data);
+            addObject(form_data, true);
+            $('#AddNoteModal').modal('toggle');
+            // window.location.reload();
+        });        
+    });
+    
+    $('#addNote').click(function() { noteState = 'create'; });
+
+    // on edit note
+    $(document).on('click', ".note-edit", function() {
+        const obj = $(this);
+        const url = $(this).attr('data-url');
+        $.get(url, {object_id: $(this).attr('data-id'), obj_type: 6}, data => {
+            noteState = 'edit';
+            const div = $(document.createElement('div'));
+            div.html(data);
+            let form = div.find('.modal-content').html();
+            $('#AddNoteModal').find('.modal-content').html(form);
+            $('#AddNoteModal').modal('toggle');
+        });
+    }); 
+
+    // on delete note
+    $(document).on('click', ".note-del", function() {
+        const obj = $(this);
+        const url = $(this).attr('data-url');
+        $.post(url, {object_id: $(this).attr('data-id'), obj_type: 6}, data => obj.parents('li').remove());
+    });
     // on quote submit
     $("#submit-data_invoice").on("click", function (e) {
         e.preventDefault();

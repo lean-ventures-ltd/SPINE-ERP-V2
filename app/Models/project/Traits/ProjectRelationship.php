@@ -168,4 +168,9 @@ trait ProjectRelationship
     {
         return $this->hasManyThrough(Invoice::class, ProjectInvoice::class, 'project_id', 'id', 'id', 'invoice_id');
     }
+    public function project_notes()
+    {
+        return $this->hasMany(Note::class);
+    }
+
 }
