@@ -189,6 +189,19 @@ class BillsController extends Controller
 
         return Response::stream($pdf->Output($name, 'I'), 200, $this->headers);
     }
+    public function print_stock_issue_pdf(Request $request)
+    {
+        $data = $this->bill_details($request);
+
+        $html = view('focus.bill.print_stock_issue', $data)->render();
+        $pdf = new \Mpdf\Mpdf(config('pdf'));
+        $pdf->WriteHTML($html);
+
+        $tid = $data['resource']['id'];
+        $name = 'E-' . sprintf('%04d', $tid) . '.pdf';
+
+        return Response::stream($pdf->Output($name, 'I'), 200, $this->headers);
+    }
 
     public function print_compact(Request $request)
     {

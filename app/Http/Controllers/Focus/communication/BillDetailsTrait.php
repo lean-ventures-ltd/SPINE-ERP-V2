@@ -15,6 +15,7 @@ use App\Models\djc\Djc;
 use App\Models\invoice\Invoice;
 use App\Models\items\VerifiedItem;
 use App\Models\rjc\Rjc;
+use App\Models\stock_issue\StockIssue;
 
 trait BillDetailsTrait
 {
@@ -191,6 +192,25 @@ trait BillDetailsTrait
                 );
                 $valid_token = token_validator('', 'd' . $resource->id, true);
                 break;
+            case 12:
+                    // purchase order
+                    $resource = StockIssue::find($request->id);
+                    $attributes = $getAttr(12, 'stock_issue', 12, 1, 0, route('biller.stock_issues.show', $resource->id));
+                    foreach($attributes as $key => $val) {
+                        $resource[$key] = $val;
+                    }
+    
+                    $flag = token_validator($request->token, 'si' . $resource->id, true);
+                    $general = $getGeneral(
+                        trans('purchaseorders.purchaseorder'),
+                        trans('purchaseorders.purchaseorder'),
+                        trans('purchaseorders.invoicedate'),
+                        trans('purchaseorders.invoiceduedate'),                    
+                        trans('suppliers.supplier'),
+                        'ltr', 9, false
+                    );
+                    $valid_token = token_validator('', 'si' . $resource->id, true);
+                    break;
 
         }
 

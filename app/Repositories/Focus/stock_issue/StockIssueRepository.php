@@ -53,6 +53,7 @@ class StockIssueRepository extends BaseRepository
 
         // create stock issue
         $data = Arr::only($input, ['date', 'ref_no', 'issue_to', 'employee_id', 'customer_id', 'project_id', 'note', 'quote_id', 'total']);
+        dd($data);
         $stock_issue = StockIssue::create($data);
 
         $data_items = array_diff_key($input, $data);
