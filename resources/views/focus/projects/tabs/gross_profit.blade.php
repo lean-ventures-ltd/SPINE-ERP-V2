@@ -15,7 +15,7 @@
                 <tbody>
                 @php
                     // aggregate
-                    use App\Models\quote\Quote;$total_actual = 0;
+                    $total_actual = 0;
                     $total_estimate = 0;
                     $total_balance = 0;
                 @endphp
@@ -42,11 +42,10 @@
                 @endforeach
                 <tr>
                     <td style="font-size: 20px;"><b>Totals</b></td>
-                    <td style="font-size: 18px;"><b>{{ numberFormat($total_estimate) }}</b></td>
-                    <td style="font-size: 18px;"><b>{{ numberFormat($total_actual) }}</b></td>
-                    <td style="font-size: 18px;"><b>{{ numberFormat($total_balance) }}</b></td>
-                    <td style="font-size: 18px;"><b>{{ round(div_num($total_balance, $total_estimate) * 100) }} %</b>
-                    </td>
+                    <td style="font-size: 18px;"> <b>{{ numberFormat($total_estimate) }}</b> </td>
+                    <td style="font-size: 18px;"> <b>{{ numberFormat($total_actual) }}</b> </td>
+                    <td style="font-size: 18px;"> <b>{{ numberFormat($total_balance) }}</b> </td>
+                    <td style="font-size: 18px;"> <b>{{ round(div_num($total_balance, $total_estimate) * 100) }} %</b> </td>
                 </tr>
                 </tbody>
             </table>
@@ -93,10 +92,10 @@
                 @endforeach
                 <tr>
                     <td style="font-size: 20px;"><b>Totals</b></td>
-                    <td style="font-size: 18px;"><b>{{ numberFormat($total_actual) }}</b></td>
-                    <td style="font-size: 18px;"><b>{{ numberFormat($total_estimate) }}</b></td>
-                    <td style="font-size: 18px;"><b>{{ numberFormat($total_balance) }}</b></td>
-                    <td style="font-size: 18px;"><b>{{ round(div_num($total_balance, $total_actual) * 100) }} %</b></td>
+                    <td style="font-size: 18px;"> <b>{{ numberFormat($total_actual) }}</b> </td>
+                    <td style="font-size: 18px;"> <b>{{ numberFormat($total_estimate) }}</b> </td>
+                    <td style="font-size: 18px;"> <b>{{ numberFormat($total_balance) }}</b> </td>
+                    <td style="font-size: 18px;"> <b>{{ round(div_num($total_balance, $total_actual) * 100) }} %</b> </td>
                 </tr>
                 </tbody>
             </table>
@@ -130,8 +129,7 @@
                 @endforeach
                 <tr>
                     <td style="font-size: 20px;"><b>Total</b></td>
-                    <td style="font-size: 18px;">
-                        <b>{{ numberFormat(sprintf("%.2f", $projectBudgetLines->pluck('amount')->sum())) }}</b></td>
+                    <td style="font-size: 18px;"><b>{{ numberFormat(sprintf("%.2f", $projectBudgetLines->pluck('amount')->sum())) }}</b></td>
                 </tr>
 
 
@@ -187,71 +185,16 @@
                 @endforeach
                 <tr>
                     <td style="font-size: 20px;"><b>Totals</b></td>
-                    <td style="font-size: 20px;"><b>{{ numberFormat($total_actual) }} </b></td>
-                    <td style="font-size: 20px;"><b>{{ numberFormat($total_estimate) }} </b></td>
-                    <td style="font-size: 20px;"><b>{{ numberFormat($total_balance) }} </b></td>
-                    <td style="font-size: 20px;"><b>{{ round(div_num($total_balance, $total_actual) * 100) }} % </b>
-                    </td>
+                    <td style="font-size: 20px;"> <b>{{ numberFormat($total_actual) }} </b></td>
+                    <td style="font-size: 20px;"> <b>{{ numberFormat($total_estimate) }} </b></td>
+                    <td style="font-size: 20px;"> <b>{{ numberFormat($total_balance) }} </b></td>
+                    <td style="font-size: 20px;"> <b>{{ round(div_num($total_balance, $total_actual) * 100) }} % </b></td>
                 </tr>
                 </tbody>
             </table>
         </div>
 
-        <h4>3.2 Stock Issues</h4>
-
-        @php
-
-            $projectWithStockIssues = \App\Models\project\Project::find($project->id)->with('quotes.stockIssues')->get();
-
-        @endphp
-
-        <div class="table-responsive mb-1">
-            <table class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
-                <thead>
-                <tr>
-                    <th style="font-size: 20px;">Stock Issue</th>
-                    <th style="font-size: 20px;">Quote</th>
-                    <th style="font-size: 20px;"><b>Total</b></th>
-                </tr>
-                </thead>
-                <tbody>
-
-                @php
-                    $stockIssuesTotal = 0;
-                @endphp
-
-                @foreach ($stockIssues as $sI)
-
-                    @php
-
-                        $quote = Quote::find($sI['quote_id']);
-                        $stockIssuesTotal += $sI['total'];
-
-                    @endphp
-
-
-                    <tr>
-                        <td>{{ gen4tid('SI-', $sI['id']) }}</td>
-                        <td>{{ gen4tid('QT-', $quote->tid) }}</td>
-                        <td>{{ numberFormat($sI['total']) }}</td>
-                    </tr>
-                @endforeach
-                <tr>
-                    <td style="font-size: 20px;"> </td>
-                    <td style="font-size: 20px;"></td>
-                    <td style="font-size: 20px;"></td>
-                </tr>
-                <tr>
-                    <td style="font-size: 20px;"> </td>
-                    <td style="font-size: 20px;"><b>Total</b></td>
-                    <td style="font-size: 20px;"><b>{{ numberFormat($stockIssuesTotal) }}</b></td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-
-        <h4>3.3 Expenditure per Budget Line</h4>
+        <h4>3.1 Expenditure per Budget Line</h4>
         <div class="table-responsive mb-1">
             <table class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
                 <thead>
@@ -273,8 +216,7 @@
                 @endforeach
                 <tr>
                     <td style="font-size: 20px;"><b>Total</b></td>
-                    <td style="font-size: 18px;">
-                        <b>{{ numberFormat(sprintf("%.2f", array_sum($expensesByMilestone))) }}</b></td>
+                    <td style="font-size: 18px;"><b>{{ numberFormat(sprintf("%.2f", array_sum($expensesByMilestone))) }}</b></td>
                 </tr>
 
 
@@ -311,7 +253,7 @@
                         $dir_purchase_amount = $project->purchase_items->sum('amount') / $project->quotes->count();
                         $proj_grn_amount = $project->grn_items()->sum(DB::raw('round(rate*qty)')) / $project->quotes->count();
                         $labour_amount = $project->labour_allocations()->sum(DB::raw('hrs * 500')) / $project->quotes->count();
-                        $expense_amount = $dir_purchase_amount + $proj_grn_amount + $labour_amount + $stockIssuesTotal;
+                        $expense_amount = $dir_purchase_amount + $proj_grn_amount + $labour_amount;
                         if ($quote->projectstock) $expense_amount += $quote->projectstock->sum('total');
 
                         $balance = $actual_amount - $expense_amount;
@@ -333,8 +275,7 @@
                     <td style="font-size: 18px;"><b>{{ numberFormat($total_actual) }} </b></td>
                     <td style="font-size: 18px;"><b>{{ numberFormat($total_estimate) }} </b></td>
                     <td style="font-size: 18px;"><b>{{ numberFormat($total_balance) }} </b></td>
-                    <td style="font-size: 18px;"><b>{{ round(div_num($total_balance, $total_actual) * 100) }} % </b>
-                    </td>
+                    <td style="font-size: 18px;"><b>{{ round(div_num($total_balance, $total_actual) * 100) }} % </b> </td>
                 </tr>
                 </tbody>
             </table>
