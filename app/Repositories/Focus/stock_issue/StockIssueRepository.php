@@ -18,7 +18,7 @@ class StockIssueRepository extends BaseRepository
      * Associated Repository Model.
      */
     const MODEL = StockIssue::class;
-    
+
     /**
      * This method is used by Table Controller
      * For getting the table data to show in
@@ -40,7 +40,7 @@ class StockIssueRepository extends BaseRepository
      * @return StockIssue $stock_issue
      */
     public function create(array $input)
-    {  
+    {
         DB::beginTransaction();
 
         $input['date'] = date_for_database($input['date']);
@@ -53,7 +53,7 @@ class StockIssueRepository extends BaseRepository
 
         // create stock issue
         $data = Arr::only($input, ['date', 'ref_no', 'issue_to', 'employee_id', 'customer_id', 'project_id', 'note', 'quote_id', 'total']);
-        dd($data);
+
         $stock_issue = StockIssue::create($data);
 
         $data_items = array_diff_key($input, $data);
@@ -62,7 +62,7 @@ class StockIssueRepository extends BaseRepository
         $data_items = array_filter($data_items, fn($v) => $v['warehouse_id'] && $v['issue_qty'] > 0);
         if (!$data_items) throw ValidationException::withMessages(['issue qty field and location field are required!']);
         StockIssueItem::insert($data_items);
-        
+
         // update stock Qty
         $productvar_ids = $stock_issue->items()->pluck('productvar_id')->toArray();
         updateStockQty($productvar_ids);
@@ -85,7 +85,7 @@ class StockIssueRepository extends BaseRepository
      * return bool
      */
     public function update(StockIssue $stock_issue, array $input)
-    {   
+    {
         DB::beginTransaction();
 
         $input['date'] = date_for_database($input['date']);
@@ -107,7 +107,7 @@ class StockIssueRepository extends BaseRepository
         if (!$data_items) throw ValidationException::withMessages(['issue qty field and location field are required!']);
         $stock_issue->items()->delete();
         StockIssueItem::insert($data_items);
-        
+
         // update stock Qty
         $productvar_ids = $stock_issue->items()->pluck('productvar_id')->toArray();
         updateStockQty($productvar_ids);
@@ -130,7 +130,7 @@ class StockIssueRepository extends BaseRepository
      * @return bool
      */
     public function delete(StockIssue $stock_issue)
-    { 
+    {
         DB::beginTransaction();
         $productvar_ids = $stock_issue->items()->pluck('productvar_id')->toArray();
 
