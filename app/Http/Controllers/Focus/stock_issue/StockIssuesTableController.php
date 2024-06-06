@@ -74,7 +74,9 @@ class StockIssuesTableController extends Controller
                 return numberFormat($stock_issue->total);
             })
             ->addColumn('actions', function ($stock_issue) {
-                return $stock_issue->action_buttons;
+                $valid_token = token_validator('', 'si' . $stock_issue->id . $stock_issue->id, true);
+                return '<a href="'.route('biller.print_stock_issue', [$stock_issue->id, 12, $valid_token, 1]).'" class="btn btn-purple round" target="_blank" data-toggle="tooltip" data-placement="top" title="Print"><i class="fa fa-print"></i></a> '
+                .$stock_issue->action_buttons;
             })
             ->make(true);
     }

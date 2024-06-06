@@ -10,6 +10,14 @@
         {{ Form::text('extra', null, ['class' => 'form-control box-size', 'placeholder' => trans('productcategories.extra')]) }}
     </div>
 </div>
+<div class='form-group'>
+    {{ Form::label( 'code_initials', 'Product Code Initials',['class' => 'col-lg-2 control-label']) }}
+    <div class='col-lg-10'>
+        {{-- {{ Form::text('code_initials', null, ['class' => 'form-control box-size', 'placeholder' => 'eg. SC', 'id'=>'code_initials']) }} --}}
+        <input type="text" maxlength="2" name="code_initials" id="code_initials" class="form-control box-size">
+        <p class="code"></p>
+    </div>
+</div>
 @if(!isset($productcategories->id))
     <div class='form-group'>
         {{ Form::label( 'c_type', trans('productcategories.c_type'),['class' => 'col-lg-2 control-label']) }}
@@ -43,6 +51,14 @@
 @section("after-scripts")
     <script type="text/javascript">
         $(document).ready(function () {
+            const config = {
+                ajax: {
+                    headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"}
+                },
+                date: {autoHide: true, format: '{{config('core.user_date_format')}}'},
+            };
+            // ajax header set up
+            $.ajaxSetup(config.ajax);
             $("#c_type").on('change', function () {
                 var parent = $('#c_type :selected').val();
                 if (parent) {
@@ -51,6 +67,34 @@
                     $('#product_cat').val(0);
                     $('#child').toggle();
                 }
+            });
+
+            $('#code_initials').on('keyup', function(e){
+                let code = $(this).val();
+                // console.log(code, code.length);
+                $('.code').text('');
+                $.ajax({
+                    url: "/productcategories/search_code/"+code,
+                    method: 'GET',
+                    // data: {
+                    //     code: code,
+                    // },
+                    success: function(response) {
+                        // console.log(response);
+                        if (response.exists == true) {
+                            // console.log(response);
+                            $('.code').text('Value exists in the database').addClass('text-danger');
+                        } else {
+                            $('.code').text('Value does not exist').removeClass('text-danger');
+                            $('.code').text('Value does not exist').addClass('text-success');
+                        }
+                        // do something with the response data
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.log(errorThrown);
+                        // handle the error case
+                    }
+                    });
             });
         });
     </script>

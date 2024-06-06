@@ -24,6 +24,7 @@ use App\Models\rjc\Rjc;
 use App\Models\items\GoodsreceivenoteItem;
 use App\Models\labour_allocation\LabourAllocation;
 use App\Models\project\ProjectInvoice;
+use App\Models\purchaseorder\Purchaseorder;
 use App\Models\stock_issue\StockIssue;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
@@ -168,4 +169,13 @@ trait ProjectRelationship
     {
         return $this->hasManyThrough(Invoice::class, ProjectInvoice::class, 'project_id', 'id', 'id', 'invoice_id');
     }
+    public function project_notes()
+    {
+        return $this->hasMany(Note::class);
+    }
+    public function lpo()
+    {
+        return $this->hasMany(Purchaseorder::class);
+    }
+
 }

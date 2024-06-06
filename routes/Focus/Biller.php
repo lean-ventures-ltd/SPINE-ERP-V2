@@ -429,6 +429,7 @@ Route::group(['namespace' => 'pricelistSupplier'], function () {
 });
 
 Route::group(['namespace' => 'productcategory'], function () {
+    Route::get('productcategories/search_code/{code}', 'ProductcategoriesController@search_code')->name('productcategories.search_code');
     Route::resource('productcategories', 'ProductcategoriesController');
     //For Datatable
     Route::post('productcategories/get', 'ProductcategoriesTableController')->name('productcategories.get');

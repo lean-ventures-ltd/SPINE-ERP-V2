@@ -130,9 +130,9 @@ class ProductRepository extends BaseRepository
                     $item[$key] =  rand(100, 999) . rand(0, 9) . rand(1000000, 9999999) . rand(0, 9);
                 if ($key == 'code' && !$val){
                     $productcategory = Productcategory::where('id',$input['productcategory_id'])->first();
-                    $strArray = explode(' ',$productcategory->title);
-                    $lastElement = end($strArray);
-                    $firstparent = $strArray[0][0].$lastElement[0];
+                    // $strArray = explode(' ',$productcategory->title);
+                    // $lastElement = end($strArray);
+                    $firstparent = $productcategory->code_initials;
                     $count = ProductVariation::where('productcategory_id', $input['productcategory_id'])->count();
                     $count = $count + 1;
                     $count_updated = sprintf("%04d", $count);
@@ -220,9 +220,9 @@ class ProductRepository extends BaseRepository
                     {
                         if (empty($item[$key])) {
                             $productcategory = Productcategory::where('id',$input['productcategory_id'])->first();
-                            $strArray = explode(' ',$productcategory->title);
-                            $lastElement = end($strArray);
-                            $firstparent = $strArray[0][0].$lastElement[0];
+                            // $strArray = explode(' ',$productcategory->title);
+                            // $lastElement = end($strArray);
+                            $firstparent = $productcategory->code_initials;
                             $count = ProductVariation::where('productcategory_id', $input['productcategory_id'])->count();
                             $count = $count + 1;
                             $count_updated = sprintf("%04d", $count);
@@ -234,9 +234,9 @@ class ProductRepository extends BaseRepository
                             $code_ext = ProductVariation::where('code', $item[$key])->first();
                             if ($code_ext) {
                                 $productcategory = Productcategory::where('id',$input['productcategory_id'])->first();
-                                $strArray = explode(' ',$productcategory->title);
-                                $lastElement = end($strArray);
-                                $firstparent = $strArray[0][0].$lastElement[0];
+                                // $strArray = explode(' ',$productcategory->title);
+                                // $lastElement = end($strArray);
+                                $firstparent = $productcategory->code_initials;
                                 $code_substr = substr($item[$key], 0, 2);
                                 if ($code_substr == $firstparent) {
                                     $item[$key] = $item[$key];

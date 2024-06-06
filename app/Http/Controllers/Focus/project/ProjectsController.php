@@ -470,6 +470,7 @@ class ProjectsController extends Controller
                 $note->project_id = $request->project_id;
                 $note->ins = auth()->user()->ins;
                 $note->creator_id = auth()->user()->id;
+                $note->user_type = 'employee';
                 $note->save();
 
                 ProjectLog::create(['project_id' => $input['project_id'], 'value' => '[Project Note][New]' . $note->title]);
@@ -489,7 +490,7 @@ class ProjectsController extends Controller
                         </td>
                     </tr>';
 
-                $response = array_replace($response, ['status' => 'Success', 't_type' => 6, 'meta' => $log_text]);
+                $response = array_replace($response, ['status' => 'Success', 't_type' => 6, 'meta' => $log_text, 'refresh' => 1]);
             }
             else if ($input['obj_type'] == 7){
 
@@ -549,6 +550,10 @@ class ProjectsController extends Controller
             $project = $milestone->project;
 
             return view('focus.projects.modal.milestone_new', compact('milestone', 'project'));
+        }else if($input['obj_type'] == 6){
+            $note = Note::find(intval($input['object_id']));
+            $project = $note->proj;
+            return view('focus.projects.modal.note_new', compact('note', 'project'));
         }
 
         return response()->json();
@@ -578,6 +583,18 @@ class ProjectsController extends Controller
                 $milestone->delete();
                 $data = ['status' => 'Success', 'message' => trans('general.delete'), 't_type' => 1, 'meta' => $input['object_id']];
             }
+            else if($input['obj_type'] == 6){
+                // dd($input);
+                $note = Note::find($input['object_id']);
+
+                // log
+                ProjectLog::create(['project_id' => $note['project_id'], 'value' => '[Project Note][New]' . $note->title]);
+
+                ProjectRelations::where(['project_id' => $note['project_id'], 'note_id' => $note->id])->delete();  
+
+                $note->delete();
+                $data = ['status' => 'Success', 'message' => trans('general.delete'), 't_type' => 1, 'meta' => $input['object_id']];
+            }
 
             DB::commit();
         } catch (\Throwable $th) {
@@ -600,6 +617,7 @@ class ProjectsController extends Controller
         try {
             switch ($input['obj_type']) {
                 case 2 :
+                    // dd($input);
                     $data = Arr::only($input, ['project_id','amount', 'name', 'description', 'color', 'duedate', 'time_to']);
                     $data = array_replace($data, [
                         'due_date' => date_for_database("{$data['duedate']} {$data['time_to']}:00"),
@@ -613,8 +631,23 @@ class ProjectsController extends Controller
                     // log
                     $data = ['project_id' => $milestone->project_id, 'value' => '['. trans('projects.milestone') .']' .'['. trans('general.update') .'] '. $input['name'], 'user_id' => auth()->user()->id];
                     ProjectLog::create($data);  
+                    
 
                     $data = ['status' => 'Success', 'message' => trans('general.update'), 't_type' => 1, 'meta' => $input['object_id'], 'refresh' => 1];
+                    break;
+                case 6:
+                    // dd($input);
+                    $data = Arr::only($input, ['project_id','title', 'content']);
+                    
+                    $note = Note::find($input['object_id']);
+                    $note->update($data);
+
+                    // log
+                    ProjectLog::create(['project_id' => $input['project_id'], 'value' => '[Project Note][New]' . $note->title]);
+
+                    ProjectRelations::create(['project_id' => $input['project_id'], 'note_id' => $note->id]); 
+
+                    $data = ['status' => 'Success', 'message' => 'Note Updated Successfully', 't_type' => 1, 'meta' => $input['object_id'], 'refresh' => 1];
                     break;
             }
             DB::commit();

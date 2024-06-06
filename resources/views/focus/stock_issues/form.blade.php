@@ -10,6 +10,7 @@
     <div class="col-md-2 col-12">
         <label for="issue_to">Issue To</label>
         <select name="issue_to" id="issue_to" class="custom-select" autocomplete="off">
+            <option value="">Default</option>
             @foreach (['Customer', 'Employee', 'Project'] as $value)
                 <option value="{{ $value }}">
                     {{ $value }}
