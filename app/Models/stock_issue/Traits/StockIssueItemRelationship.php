@@ -2,13 +2,14 @@
 
 namespace App\Models\stock_issue\Traits;
 
+use App\Models\client_product\ClientProduct;
 use App\Models\hrm\Hrm;
 use App\Models\product\ProductVariation;
 use App\Models\stock_issue\StockIssue;
 use App\Models\warehouse\Warehouse;
 
 trait StockIssueItemRelationship
-{    
+{
     public function stock_issue()
     {
         return $this->belongsTo(StockIssue::class);
@@ -27,5 +28,9 @@ trait StockIssueItemRelationship
     public function productvar()
     {
         return $this->belongsTo(ProductVariation::class, 'productvar_id');
+    }
+    public function clientProduct()
+    {
+        return $this->belongsTo(ClientProduct::class, 'productvar_id', );
     }
 }

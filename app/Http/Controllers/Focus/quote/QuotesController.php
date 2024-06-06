@@ -18,6 +18,7 @@
 
 namespace App\Http\Controllers\Focus\quote;
 
+use App\Models\project\Project;
 use App\Models\quote\Quote;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
@@ -68,6 +69,17 @@ class QuotesController extends Controller
         $customers = Customer::all(['id', 'company']);
         $accounts = Account::whereHas('accountType', fn($q) => $q->where('system', 'income'))->get();
 
+        $siQuotes = Quote::where('id', 398)->with('stockIssues')->get()->toArray();//->pluck('stock_issues');
+
+        $stock_issues_arrays = array_column($siQuotes, 'stock_issues');
+
+        // Flatten the array of arrays into a single array
+        $stock_issues = array_merge(...$stock_issues_arrays);
+
+        $stockIssuesValue = array_reduce($stock_issues, function($carry, $stock_issue) {
+            return $carry + $stock_issue['total'];
+        }, 0);
+
         return view('focus.quotes.index', compact('customers', 'accounts'));
     }
 
@@ -96,9 +108,9 @@ class QuotesController extends Controller
 
         // extract request input fields
         $data = $request->only([
-            'client_ref', 'tid', 'date', 'template_quote_id','notes', 'subtotal', 'tax', 'total', 
+            'client_ref', 'tid', 'date', 'template_quote_id','notes', 'subtotal', 'tax', 'total',
             'currency_id', 'term_id', 'tax_id', 'lead_id', 'pricegroup_id', 'attention',
-            'reference', 'reference_date', 'validity', 'prepared_by_user', 'print_type', 
+            'reference', 'reference_date', 'validity', 'prepared_by_user', 'print_type',
             'customer_id', 'branch_id', 'bank_id', 'is_repair', 'quote_type','extra_header', 'extra_footer' , 'account_id'
         ]);
         $data_items = $request->only([
@@ -107,9 +119,9 @@ class QuotesController extends Controller
         ]);
 
         $skill_items = $request->only(['skill', 'charge', 'hours', 'no_technician' ]);
-        
+
         $equipments = $request->only(['unique_id','equipment_tid','equip_serial','make_type','item_id','capacity','location','fault','row_index_id']);
-            
+
         $data['user_id'] = auth()->user()->id;
         $data['ins'] = auth()->user()->ins;
 
@@ -128,7 +140,7 @@ class QuotesController extends Controller
 
         // print preview url
         $valid_token = token_validator('', 'q'.$result->id .$result->tid, true);
-        $msg .= ' <a href="'. route('biller.print_quote', [$result->id, 4, $valid_token, 1]) .'" class="invisible" id="printpreview"></a>'; 
+        $msg .= ' <a href="'. route('biller.print_quote', [$result->id, 4, $valid_token, 1]) .'" class="invisible" id="printpreview"></a>';
 
         return new RedirectResponse($route, ['flash_success' => $msg]);
     }
@@ -161,9 +173,9 @@ class QuotesController extends Controller
 
         // extract request input fields
         $data = $request->only([
-            'client_ref', 'date', 'notes', 'subtotal', 'tax', 'total', 
+            'client_ref', 'date', 'notes', 'subtotal', 'tax', 'total',
             'currency_id', 'term_id', 'tax_id', 'lead_id', 'pricegroup_id', 'attention',
-            'reference', 'reference_date', 'validity', 'prepared_by', 'print_type', 
+            'reference', 'reference_date', 'validity', 'prepared_by', 'print_type',
             'customer_id', 'branch_id', 'bank_id', 'revision', 'is_repair', 'quote_type','extra_header', 'extra_footer', 'account_id'
         ]);
         $data_items = $request->only([
@@ -191,7 +203,7 @@ class QuotesController extends Controller
 
         // print preview url
         $valid_token = token_validator('', 'q'.$result->id .$result->tid, true);
-        $msg .= ' <a href="'. route('biller.print_quote', [$result->id, 4, $valid_token, 1]) .'" class="invisible" id="printpreview"></a>';        
+        $msg .= ' <a href="'. route('biller.print_quote', [$result->id, 4, $valid_token, 1]) .'" class="invisible" id="printpreview"></a>';
 
         return new RedirectResponse($route, ['flash_success' => $msg]);
     }
@@ -243,7 +255,7 @@ class QuotesController extends Controller
     public function get_verify_quote(ManageQuoteRequest $request)
     {
         $customers = Customer::get(['id', 'company']);
-        
+
         return new ViewResponse('focus.quotesverify.index', compact('customers'));
     }
 
@@ -279,14 +291,14 @@ class QuotesController extends Controller
         ]);
         $job_cards = $request->only(['type', 'jcitem_id', 'reference', 'date', 'technician', 'equipment_id', 'fault']);
         $labour_items = $request->only(['job_date', 'job_type', 'job_employee', 'job_ref_type', 'job_jobcard_no', 'job_hrs', 'job_is_payable', 'job_note']);
-    
+
         try {
             $data_items = modify_array($data_items);
             $job_cards = modify_array($job_cards);
             $labour_items = modify_array($labour_items);
-            
+
             $result = $this->repository->verify(compact('data', 'data_items', 'job_cards', 'labour_items'));
-            
+
             $tid = $result->tid;
             if ($result->bank_id) $tid = gen4tid('PI-', $tid);
             else $tid = gen4tid('QT-', $tid);
@@ -307,7 +319,7 @@ class QuotesController extends Controller
         $quote->verified_jcs()->delete();
         // reset verified status to No
         $quote->update([
-            'verified' => 'No', 
+            'verified' => 'No',
             'verification_date' => null,
             'verified_by' => null,
             'gen_remark' => null,
@@ -315,7 +327,7 @@ class QuotesController extends Controller
         ]);
 
         return response()->noContent();
-    } 
+    }
 
     /**
      * Approved Customer Quotes not in any project
@@ -332,15 +344,15 @@ class QuotesController extends Controller
     }
 
     /**
-     * Update Quote Approval Status 
+     * Update Quote Approval Status
      */
     public function approve_quote(ManageQuoteRequest $request, Quote $quote)
-    {   
+    {
         $request->validate([
             'approved_date' => 'required',
             'approved_by' => 'required',
         ]);
-        
+
         // extract request input fields
         $input = $request->only(['status', 'approved_method', 'approved_by', 'approval_note', 'approved_date']);
 
@@ -366,7 +378,7 @@ class QuotesController extends Controller
      public function turn_around()
     {
         $customers = Customer::all(['id', 'company']);
-        
+
         return new ViewResponse('focus.turn_around.index', compact('customers'));
     }
 }

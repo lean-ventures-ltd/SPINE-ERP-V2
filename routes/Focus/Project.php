@@ -9,7 +9,7 @@ Route::group(['namespace' => 'projectstock'], function () {
   Route::post('projectstock/get', 'ProjectStockTableController')->name('projectstock.get');
 });
 
-// 
+//
 Route::group(['namespace' => 'project', 'middleware' => 'project'], function () {
   Route::post('projects/update_status', 'ProjectsController@update_status')->name('projects.update_status');
   Route::get('projects/edit_meta', 'ProjectsController@edit_meta')->name('projects.edit_meta');
