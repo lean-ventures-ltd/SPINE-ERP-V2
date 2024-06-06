@@ -2,13 +2,13 @@
     <div class="card-body">
         <div class="row mb-1">
             <div class="col-2">
-                <label for="category">Expense Category</label>                             
+                <label for="category">Expense Category</label>
                 @php
                     $categories=[
-                        'labour_service' => 'Labour Service', 
-                        'inventory_stock' => 'Inventory Stock', 
-                        'dir_purchase_stock' => 'Direct Purchase Stock', 
-                        'purchase_order_stock' => 'Purchase Order Stock', 
+                        'labour_service' => 'Labour Service',
+                        'inventory_stock' => 'Inventory Stock',
+                        'dir_purchase_stock' => 'Direct Purchase Stock',
+                        'purchase_order_stock' => 'Purchase Order Stock',
                         'dir_purchase_service' => 'Direct Purchase Service',
                     ];
                 @endphp
@@ -19,7 +19,7 @@
                     @endforeach
                 </select>
             </div>
-            
+
             <div class="col-3">
                 <label for="account">Accounting Ledger</label>
                 <select class="custom-select" id="accountLedger" data-placeholder="Search Accounting Ledger">
@@ -31,9 +31,9 @@
             </div>
 
             <div class="col-3">
-                <label for="supplier">Supplier</label>   
+                <label for="supplier">Supplier</label>
                 <select class="custom-select" id="supplier" data-placeholder="Choose Supplier">
-                    <option value=""></option>           
+                    <option value=""></option>
                     @foreach ($suppliers as $supplier)
                         <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
                     @endforeach
@@ -81,7 +81,7 @@
                     <th>No.</th>
                     <th>Expense Category</th>
                     <th>Budget Line</th>
-                    <th>Supplier</th>
+                    <th>Source</th>
                     <th>Item Description</th>
                     <th>Date</th>
                     <th>UoM</th>
@@ -96,7 +96,7 @@
                         <i class="fa fa-spinner spinner"></i>
                     </td>
                 </tr> --}}
-            </tbody>            
+            </tbody>
         </table>
     </div>
 </div>

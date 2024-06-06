@@ -182,7 +182,7 @@ class ExpensesTableController extends Controller
         }
 
 
-        $projectQuotes = Project::where('id', request('project_id'))->first()->quotes->pluck('id');
+        $projectQuotes = Project::where('id', 221)->first()->quotes->pluck('id');
 
         $stockIssues = StockIssue::whereIn('quote_id', $projectQuotes)->with('items.productvar.product.unit')->get();
 

@@ -39,10 +39,10 @@
                 break;
             case 8:
                 $("#data_form_budget").trigger('reset');
-                break;                
+                break;
             case 9:
                 $("#data_form_invoice").trigger('reset');
-                break;                
+                break;
         }
         return;
     }
@@ -67,8 +67,8 @@
         // set active tab
         const projectTab = localStorage.project_tab;
         if (projectTab) $('a[href="' + projectTab + '"]').tab('show');
-        
-    
+
+
         // project progress slider
         $('#prog').text($('#progress').val() + '%');
         $(document).on('change', '#progress', function (e) {
@@ -78,8 +78,8 @@
                 url: "{{ route('biller.projects.update_status') }}",
                 type: 'POST',
                 data: {
-                    project_id: "{{ $project->id }}", 
-                    r_type: '1', 
+                    project_id: "{{ $project->id }}",
+                    r_type: '1',
                     progress: $('#progress').val(),
                 },
                 success: function(data) {
@@ -88,8 +88,8 @@
                 }
             });
         });
-        
-        // file attachment upload 
+
+        // file attachment upload
         $('#fileupload').fileupload({
             url: @json(route('biller.project_attachment')),
             dataType: 'json',
@@ -103,7 +103,7 @@
                         <td width="5%">
                             <a href="${del_url}${file.id}" class="file-del red">
                                 <i class="btn-sm fa fa-trash"></i>
-                            </a> 
+                            </a>
                         </td>
                         <td>
                             <a href="${view_url}/${file.name}" target="_blank" class="purple">
@@ -130,7 +130,7 @@
             $.post($(this).attr('href'), data => {
                 obj.parents('tr').remove()
             });
-        });   
+        });
     });
 
     // milestone show modal
@@ -142,14 +142,14 @@
             $('[data-toggle="datepicker"]').datepicker(config.date);
             $('.from_date').datepicker(config.date).datepicker('setDate', '{{dateFormat(date('Y-m-d', strtotime('-30 days', strtotime(date('Y-m-d')))))}}');
             $('.to_date').datepicker(config.date).datepicker('setDate', 'today');
-            $('#color').colorpicker();        
-        }   
+            $('#color').colorpicker();
+        }
 
         // fetch milestone budget limit
         $.get("{{ route('biller.projects.budget_limit', $project) }}", ({data}) => {
             const budgetLimit = accounting.formatNumber(data.milestone_budget);
             $('.milestone-limit').text(budgetLimit);
-            let limit = accounting.unformat($('.milestone-limit').text()); 
+            let limit = accounting.unformat($('.milestone-limit').text());
             if (milestoneState == 'edit') {
                 const amount = accounting.unformat($('#milestone-amount').val());
                 limit += amount;
@@ -164,7 +164,7 @@
             if (this.value > milestoneBudget) this.value = milestoneBudget;
             this.value = accounting.formatNumber(this.value);
         });
-        
+
         // milestone submit
         $("#submit-data_mile_stone").on("click", function(e) {
             e.preventDefault();
@@ -177,7 +177,7 @@
             addObject(form_data, true);
             $('#AddMileStoneModal').modal('toggle');
             $('#data_form_mile_stone')[0].reset();
-        });        
+        });
     });
     $('#addMilestone').click(function() { milestoneState = 'create'; });
     // on edit milestone
@@ -192,13 +192,13 @@
             $('#AddMileStoneModal').find('.modal-content').html(form);
             $('#AddMileStoneModal').modal('toggle');
         });
-    });     
+    });
     // on delete milestone
     $(document).on('click', ".milestone-del", function() {
         const obj = $(this);
         const url = $(this).attr('data-url');
         $.post(url, {object_id: $(this).attr('data-id'), obj_type: 2}, data => obj.parents('li').remove());
-    });  
+    });
 
     // quote show modal
     $('#AddQuoteModal').on('shown.bs.modal', function () {
@@ -285,7 +285,7 @@
             }
         });
     });
-    
+
     // task show modal
     $('#AddTaskModal').on('shown.bs.modal', function () {
         $('[data-toggle="datepicker"]').datepicker(config.date);
@@ -321,7 +321,7 @@
             $('#t_description').html(data.description);
         });
     });
-    
+
     // on quote submit
     $("#submit-data_quote").on("click", function (e) {
         e.preventDefault();
@@ -370,10 +370,10 @@
         ],
         popover: {},
     });
-    
+
     // Fetch quotes
     function quotes() {
-        if ($('#quotesTbl tbody tr').length) return;        
+        if ($('#quotesTbl tbody tr').length) return;
         $('#quotesTbl').dataTable({
             processing: true,
             responsive: true,
@@ -384,7 +384,7 @@
                 type: 'POST',
                 data: {project_id: "{{ $project->id }}"},
                 dataSrc: ({data}) => {
-                    
+
                     data = data.map(v => {
                         if (v.budget_status.includes('budgeted')) {
                             v.actions = '';
@@ -398,11 +398,11 @@
                             }
                             return v;
                         }
-                        
+
                         const create_budget_url = @json(route('biller.budgets.create', 'quote_id=')) + v.id;
                         const detach_quote_url = @json(route('biller.projects.detach_quote', ['project_id' => $project->id])) + '&quote_id=' + v.id;
                         const id_quote = v.id;
-                        
+
                         if(v.invoice_tid == null){
                             // console.log(v.id);
                             v.actions = `
@@ -414,7 +414,7 @@
                                             <a class="dropdown-item create" href="${create_budget_url}"><i class="fa fa-plus-square-o" aria-hidden="true"></i> Budget</a>
                                             <a class="dropdown-item qt-detach text-danger" href="${detach_quote_url}"><i class="fa fa-trash text-danger" aria-hidden="true"></i> Detach</a>
                                         </div>
-                                    </div> 
+                                    </div>
                                 <button type="button" class="btn btn-success btn-sm attach_di" id="attach_di" data-toggle="modal" data-id='${id_quote}'
                                         data-target="#AttachDIModal">
                                         <i class="fa fa-plus-circle"></i> Attach DI
@@ -430,7 +430,7 @@
                                         <a class="dropdown-item create" href="${create_budget_url}"><i class="fa fa-plus-square-o" aria-hidden="true"></i> Budget</a>
                                         <a class="dropdown-item qt-detach text-danger" href="${detach_quote_url}"><i class="fa fa-trash text-danger" aria-hidden="true"></i> Detach</a>
                                     </div>
-                                </div> 
+                                </div>
                         `;
 
                         }
@@ -455,17 +455,17 @@
             dom: 'Blfrtip',
             buttons: ['csv', 'excel', 'print'],
         });
-    }    
+    }
     // detach quote
     $(document).on('click', ".qt-detach", function(e) {
         e.preventDefault();
         addObject({form: '', url: $(this).attr('href')}, true);
         $(this).parents('tr').remove();
-    });    
+    });
 
     // Fetch budget
     function budgets() {
-        if ($('#budgetsTbl tbody tr').length) return;        
+        if ($('#budgetsTbl tbody tr').length) return;
         $('#budgetsTbl').dataTable({
             processing: true,
             responsive: true,
@@ -491,15 +491,15 @@
             buttons: ['csv', 'excel', 'print'],
         });
     }
-    
+
     // fetch expenses
     ['accountLedger', 'supplier', 'product_name'].forEach(v => $('#'+v).select2({allowClear: true}));
     ['expCategory', 'accountLedger', 'supplier', 'product_name'].forEach(v => $('#'+v).change(() =>  expenses(render=true)));
     function expenses(render=false) {
         if (!render) {
-            if ($('#expItems tbody tr').length) return;   
+            if ($('#expItems tbody tr').length) return;
         } else $('#expItems').DataTable().destroy();
-            
+
         $('#expItems').dataTable({
             processing: true,
             responsive: true,
@@ -529,7 +529,7 @@
                                 case 5: row.text(accounting.formatNumber(groupTotals['grand_total'])); break;
                             }
                         });
-                    } 
+                    }
                     return data;
                 },
             },
@@ -558,7 +558,7 @@
                 type: 'POST',
                 data: {project_id: "{{ $project->id }}"},
                 dataSrc: ({data}) => {
-                    
+
                     data = data.map(v => {
                         const detach_quote_url = @json(route('biller.projects.detach_invoice', ['project_id' => $project->id])) + '&invoice_id=' + v.id;
                         // console.log(v.is_standard);
@@ -569,15 +569,15 @@
                                         Action
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        
+
                                         <a class="dropdown-item qt-detach text-danger" href="${detach_quote_url}"><i class="fa fa-trash text-danger" aria-hidden="true"></i> Detach</a>
                                     </div>
-                                </div> 
+                                </div>
                         `;
                         }else{
                             v.actions = ``;
                         }
-                        
+
                         return v;
                     });
 
@@ -594,7 +594,7 @@
             dom: 'Blfrtip',
             buttons: ['csv', 'excel', 'print'],
         });
-    }    
+    }
 
     //Fetch Notes
     function notes() {
@@ -620,7 +620,7 @@
             buttons: ['csv', 'excel', 'print'],
         });
     }
-    
+
     /**Fetch Tasks */
     function tasks() {
         if ($('#tasks-table tbody tr').length) return;
