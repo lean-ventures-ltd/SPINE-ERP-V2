@@ -16,13 +16,13 @@
                                 <option value="{{ $i }}" {{ $i == $lead->status? 'selected' : '' }}>
                                     {{ $val }}
                                 </option>
-                            @endforeach                            
+                            @endforeach
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="reason">Reason</label>
                         <select class="form-control" name="reason" id="reason">
-                            @foreach (['new', 'won'] as $val)
+                            @foreach (['new', 'won', 'lost'] as $val)
                                 <option value="{{ $val }}" {{ $val == $lead->reason? 'selected' : '' }}>
                                     {{ ucfirst($val) }}
                                 </option>
