@@ -7,6 +7,7 @@ use App\Models\goodsreceivenote\Goodsreceivenote;
 use App\Models\items\GoodsreceivenoteItem;
 use App\Models\items\UtilityBillItem;
 use App\Models\product\ProductVariation;
+use App\Models\supplier\Supplier;
 use App\Models\utility_bill\UtilityBill;
 use App\Repositories\Accounting;
 use App\Repositories\BaseRepository;
@@ -77,7 +78,11 @@ class GoodsreceivenoteRepository extends BaseRepository
             if (strlen($input['invoice_no']) != 19 && $input['tax_rate'] > 1) 
             throw ValidationException::withMessages(['invoice_no' => 'Invoice No. should contain 11 characters']);
         }
-
+        if (@$input['tax_rate'] > 0) {
+            $supplier = Supplier::where('id', $input['supplier_id'])->first();
+                if($supplier->taxid == '') throw ValidationException::withMessages(['Update TaxPin to the Supplier']);
+        }
+        
         DB::beginTransaction();
         
         $tid = Goodsreceivenote::max('tid');

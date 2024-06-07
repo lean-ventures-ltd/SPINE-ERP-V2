@@ -154,7 +154,11 @@ class QuoteRepository extends BaseRepository
         if (request('verify_state')) $q->where('verified', request('verify_state'));
 
         // standard quote or budget project quote
-        $q->where(fn($q) =>  $q->whereHas('budget')->orWhere('quote_type', 'standard'));
+        $q->where(fn($q) =>  $q->whereHas('budget')->orWhere(function ($query) {
+            $query->where('quote_type', 'standard')
+                  ->where('status', 'approved');
+        }));
+        
         $q->where('status', '!=', 'cancelled');
         
         return $q->get();
