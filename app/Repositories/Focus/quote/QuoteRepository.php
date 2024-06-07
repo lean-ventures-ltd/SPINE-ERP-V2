@@ -109,7 +109,7 @@ class QuoteRepository extends BaseRepository
                     });
                     break;
                 case 'Invoiced':
-                    $q->whereHas('invoice_product');
+                    $q->whereHas('invoice_product')->orWhereHas('invoice_quote');
                     break;                    
                 case 'Cancelled':
                     $status = false;
