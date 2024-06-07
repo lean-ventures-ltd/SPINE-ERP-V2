@@ -52,7 +52,7 @@ class StockIssueRepository extends BaseRepository
         }
 
         // create stock issue
-        $data = Arr::only($input, ['date', 'ref_no', 'issue_to', 'employee_id', 'customer_id', 'project_id', 'note', 'quote_id', 'total']);
+        $data = Arr::only($input, ['date', 'ref_no', 'issue_to', 'employee_id', 'customer_id', 'project_id', 'note', 'quote_id', 'budget_line', 'total']);
 
         $stock_issue = StockIssue::create($data);
 
@@ -97,7 +97,7 @@ class StockIssueRepository extends BaseRepository
         }
 
         // create stock issue
-        $data = Arr::only($input, ['date', 'ref_no', 'issue_to', 'employee_id', 'customer_id', 'project_id', 'note', 'quote_id', 'total']);
+        $data = Arr::only($input, ['date', 'ref_no', 'issue_to', 'employee_id', 'customer_id', 'project_id', 'note', 'quote_id', 'budget_line', 'total']);
         $result = $stock_issue->update($data);
 
         $data_items = array_diff_key($input, $data);

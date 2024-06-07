@@ -27,6 +27,7 @@ use App\Models\account\Account;
 use App\Models\project\ProjectLog;
 use App\Models\project\ProjectMileStone;
 use App\Models\stock_issue\StockIssue;
+use Exception;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
@@ -110,7 +111,7 @@ class ProjectsController extends Controller
             $this->repository->create($request->except('_token'));
         } catch (\Throwable $th) {
             if ($th instanceof ValidationException) throw $th;
-            return errorHandler('Error Creating Project', $th); 
+            return errorHandler('Error Creating Project', $th);
         }
 
         return new RedirectResponse(route('biller.projects.index'), ['flash_success' => 'Project Successfully Created']);
@@ -136,15 +137,15 @@ class ProjectsController extends Controller
      * @return \App\Http\Responses\RedirectResponse
      */
     public function update(UpdateProjectRequest $request, Project $project)
-    {   
+    {
         try {
             $this->repository->update($project, $request->except('_token'));
-        } catch (\Throwable $th) { 
+        } catch (\Throwable $th) {
             if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Updating Project', $th);
         }
-        
-        return new RedirectResponse(route('biller.projects.index'), ['flash_success' => trans('alerts.backend.projects.updated')]);        
+
+        return new RedirectResponse(route('biller.projects.index'), ['flash_success' => trans('alerts.backend.projects.updated')]);
     }
 
     /**
@@ -230,7 +231,7 @@ class ProjectsController extends Controller
         if (!access()->allow('product_search')) return false;
 
         $k = $request->post('keyword');
-        
+
         $projects = Project::whereHas('misc', fn($q) => $q->where('name', '!=', 'Completed'))
         ->where(function($q) use($k) {
             $q->whereHas('quote', function ($q) use ($k) {
@@ -243,7 +244,7 @@ class ProjectsController extends Controller
             })->orWhereHas('customer_project', function ($q) use ($k) {
                 $q->where('company', 'LIKE', '%' . $k . '%');
             });
-        }) 
+        })
         ->limit(6)->get();
 
         $output = [];
@@ -273,6 +274,25 @@ class ProjectsController extends Controller
     public function getProjectMileStones(Request $request){
 
         $milestones = ProjectMileStone::where('project_id', $request->projectId)->select('id', 'name', 'amount', 'balance', 'due_date')->get();
+
+        return json_encode($milestones);
+    }
+
+    public function getBudgetLinesByQuote(Request $request){
+
+        $milestones = [];
+
+        try {
+
+            $quote = Quote::where('id', $request->quoteId)->with('project.milestones')->first();
+
+            if ($quote)
+                $milestones = $quote->project->milestones;
+
+        }
+        catch (Exception $e){
+            return "Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine();
+        }
 
         return json_encode($milestones);
     }
@@ -309,7 +329,7 @@ class ProjectsController extends Controller
      * Project Quotes select
      */
     public function quotes_select()
-    {   
+    {
         $quotes = Quote::where(['customer_id' => request('customer_id'), 'status' => 'approved'])
             ->doesntHave('project')
             ->doesntHave('invoice')
@@ -322,7 +342,7 @@ class ProjectsController extends Controller
         return response()->json($quotes);
     }
     public function invoices_select()
-    {   
+    {
         $invoice = Invoice::where(['customer_id' => request('customer_id')])
             ->where('is_standard', 1)
             ->doesntHave('quote')
@@ -335,7 +355,7 @@ class ProjectsController extends Controller
         return response()->json($invoice);
     }
     public function select_detached_invoices()
-    {   
+    {
         $invoice = ProjectInvoice::where(['project_id' => request('project_id')])
             ->get()
             ->map(fn($v) => [
@@ -346,7 +366,7 @@ class ProjectsController extends Controller
         return response()->json($invoice);
     }
     public function store_quote_invoice(Request $request)
-    {   
+    {
         // dd($request->all());
         try {
             DB::beginTransaction();
@@ -537,7 +557,7 @@ class ProjectsController extends Controller
             DB::commit();
             $response['message'] = 'Resource Updated Successfully';
             return response()->json($response);
-        } 
+        }
 
         return response()->json($response);
     }
@@ -562,7 +582,7 @@ class ProjectsController extends Controller
         }
 
         return response()->json();
-    }    
+    }
 
     /**
      * Delete meta
@@ -595,7 +615,7 @@ class ProjectsController extends Controller
                 // log
                 ProjectLog::create(['project_id' => $note['project_id'], 'value' => '[Project Note][New]' . $note->title]);
 
-                ProjectRelations::where(['project_id' => $note['project_id'], 'note_id' => $note->id])->delete();  
+                ProjectRelations::where(['project_id' => $note['project_id'], 'note_id' => $note->id])->delete();
 
                 $note->delete();
                 $data = ['status' => 'Success', 'message' => trans('general.delete'), 't_type' => 1, 'meta' => $input['object_id']];
@@ -615,7 +635,7 @@ class ProjectsController extends Controller
      */
     public function update_meta(ManageProjectRequest $request)
     {
-        $input = $request->except(['_token', 'ins']); 
+        $input = $request->except(['_token', 'ins']);
 
         DB::beginTransaction();
 
@@ -635,22 +655,22 @@ class ProjectsController extends Controller
 
                     // log
                     $data = ['project_id' => $milestone->project_id, 'value' => '['. trans('projects.milestone') .']' .'['. trans('general.update') .'] '. $input['name'], 'user_id' => auth()->user()->id];
-                    ProjectLog::create($data);  
-                    
+                    ProjectLog::create($data);
+
 
                     $data = ['status' => 'Success', 'message' => trans('general.update'), 't_type' => 1, 'meta' => $input['object_id'], 'refresh' => 1];
                     break;
                 case 6:
                     // dd($input);
                     $data = Arr::only($input, ['project_id','title', 'content']);
-                    
+
                     $note = Note::find($input['object_id']);
                     $note->update($data);
 
                     // log
                     ProjectLog::create(['project_id' => $input['project_id'], 'value' => '[Project Note][New]' . $note->title]);
 
-                    ProjectRelations::create(['project_id' => $input['project_id'], 'note_id' => $note->id]); 
+                    ProjectRelations::create(['project_id' => $input['project_id'], 'note_id' => $note->id]);
 
                     $data = ['status' => 'Success', 'message' => 'Note Updated Successfully', 't_type' => 1, 'meta' => $input['object_id'], 'refresh' => 1];
                     break;
@@ -673,7 +693,7 @@ class ProjectsController extends Controller
         $error_data = [];
 
         DB::beginTransaction();
-    
+
         try {
             $project = Project::find($input['project_id']);
             $quote = Quote::find($input['quote_id']);
@@ -717,7 +737,7 @@ class ProjectsController extends Controller
         $error_data = [];
 
         DB::beginTransaction();
-    
+
         try {
             $project = Project::find($input['project_id']);
             $invoice = Invoice::find($input['invoice_id']);           
@@ -768,7 +788,7 @@ class ProjectsController extends Controller
         foreach ($project->quotes as $quote) {
             if ($quote->budget) $project_budget += $quote->budget->budget_total;
         }
-        if ($project_budget == 0 && $project->quotes->count()) 
+        if ($project_budget == 0 && $project->quotes->count())
             $project_budget = $project->quotes->sum('total');
         elseif ($project_budget == 0) $project_budget = $project->worth;
 
@@ -785,14 +805,14 @@ class ProjectsController extends Controller
      */
     public function status_tag_update(Request $request)
     {
-        
+
         try {
             $project = Project::findOrFail($request->project_id);
             $project->update(['status' => $request->status, 'end_note' => $request->end_note]);
         } catch (\Throwable $th) {
             return errorHandler('Error updating project status tag', $th);
         }
-        
+
         return new RedirectResponse(route('biller.projects.index'), ['flash_success' => 'Status tag successfully updated']);
     }
 

@@ -22,7 +22,7 @@
                 select: function(event, ui) {
                     const {data} = ui.item;
                     let row = Index.currRow;
-                    row.find('.prodvar-id').val(data.id); 
+                    row.find('.prodvar-id').val(data.id);
                     row.find('.qty-onhand').text(accounting.unformat(data.qty));
                     row.find('.qty-onhand-inp').val(accounting.unformat(data.qty));
                     row.find('.qty-rem').text(accounting.unformat(data.qty));
@@ -73,12 +73,12 @@
             $('#quote').change(Index.quoteChange);
             $('#customer').change(Index.customerChange);
             $('#project').change(Index.projectChange);
-            
+
             $('#productsTbl').on('keyup', '.issue-qty', Index.qtyCostKeyUp);
             $('#productsTbl').on('change', '.source', Index.qtyCostKeyUp);
             $('#productsTbl').on('keyup', '.name', function() { Index.currRow = $(this).parents('tr') });
             $('#productsTbl').on('click', '.remove', Index.removeRowClick);
-                
+
             const data = @json(@$stock_issue);
             const data_items = @json(@$stock_issue->items);
             if (data && data_items.length) {
@@ -100,6 +100,8 @@
                 });
                 Index.calcTotals();
             }
+
+            getBudgetLinesByQuote($('#quote').val());
         },
 
         quoteChange() {
@@ -110,13 +112,16 @@
                 let quote_id = this.value;
                 $.post("{{ route('biller.stock_issues.quote_pi_products') }}", {quote_id}, data => {
 
-                    console.log(data);
+                    // console.log(data);
 
                     data.productvars.forEach((v,i) => {
+
+                        console.table(v);
+
                         if (i > 0) $('#add-item').click();
                         let row = $('#productsTbl tbody tr:last');
-                        row.find('.prodvar-id').val(v.id); 
-                        row.find('.name').val(v.name); 
+                        row.find('.prodvar-id').val(v.id);
+                        row.find('.name').val(v.name);
                         row.find('.product-code').text(v.code);
                         row.find('.budget').text(parseFloat(data.budgetDetails[i].new_qty).toFixed(2));
                         // console.table({product_code: v.code});
@@ -204,7 +209,7 @@
             let row = $(this).parents('tr');
             if (!row.siblings().length) {
                 row.find('input, textarea, select').each(function() { $(this).val('').change() });
-                row.find('.unit, .qty-onhand, .qty-rem').text('');  
+                row.find('.unit, .qty-onhand, .qty-rem').text('');
                 row.find('.source option:not(:first)').remove();
             } else row.remove();
             Index.calcTotals();
@@ -223,7 +228,7 @@
                 qtyOnhand = sourceQty;
                 qtyRem = sourceQty;
             }
-            if (issueQty > qtyOnhand) issueQty = qtyOnhand;            
+            if (issueQty > qtyOnhand) issueQty = qtyOnhand;
             const amount = issueQty * cost;
             qtyRem = qtyOnhand - issueQty;
 
@@ -234,7 +239,7 @@
             row.find('.qty-rem-inp').val(qtyRem);
             row.find('.amount').val(accounting.formatNumber(amount));
             Index.calcTotals();
-        },  
+        },
 
         calcTotals() {
             let total = 0;
@@ -244,7 +249,139 @@
             });
             $('#total').val(accounting.formatNumber(total));
         },
+
+
     };
+
+    function getBudgetLinesByQuote(quoteId = null){
+
+        if(!quoteId) return;
+
+        //console.log(quoteId);
+        $.ajax({
+            url: "{{ route('biller.getBudgetLinesByQuote') }}",
+            method: 'GET',
+            data: { quoteId: quoteId},
+            dataType: 'json', // Adjust the data type accordingly
+            success: function(data) {
+                // This function will be called when the AJAX request is successful
+
+                var select = $('#budget_line');
+
+                // Clear any existing options
+                select.empty();
+
+                if(data.length) console.table(data);
+                else console.log('No Budget Lines Created For This Project');
+
+                if(data.length === 0){
+
+                    select.append($('<option>', {
+                        value: null,
+                        text: 'No Budget Lines Created For This Project'
+                    }));
+
+                } else {
+
+                    select.append($('<option></option>').attr('value', null).text('Select a Budget Line'));
+
+
+                    // Add new options based on the received data
+                    for (var i = 0; i < data.length; i++) {
+
+                        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                        const date = new Date(data[i].due_date);
+
+                        select.append($('<option>', {
+                            value: data[i].id,
+                            text: data[i].name + ' | Balance: ' +  parseFloat(data[i].balance).toFixed(2) + ' | Due on ' + date.toLocaleDateString('en-US', options)
+                        }));
+
+                        select
+                    }
+
+                    let selectedOptionValue = "{{ @$stock_issue->budget_line }}";
+
+                    if (selectedOptionValue) {
+                        select.val(selectedOptionValue);
+                    }
+
+                    checkBudgetLine(select.find('option:selected').text());
+
+                }
+
+            },
+            error: function(error) {
+                // Handle errors here
+                console.log(error);
+            }
+        });
+    }
+
+    function checkBudgetLine(budgetLineString){
+
+        // Get the value of the input field
+        let selectedBudgetLine = budgetLineString;
+
+        console.log("SELECTED MILESTONE IS : " + budgetLineString);
+
+        if(budgetLineString === 'Select a Budget Line') {
+
+            console.log("NO MILESTONE SELECTED!!")
+            return false;
+        }
+
+        // Specify the start and end strings
+        let startString = 'Balance: ';
+        let endString = ' | Due on';
+
+        // Find the index of the start and end strings
+        let startIndex = selectedBudgetLine.indexOf(startString);
+        let endIndex = selectedBudgetLine.indexOf(endString, startIndex + startString.length);
+
+        // Extract the string between start and end
+        let budgetLineBudget = parseFloat(parseFloat(selectedBudgetLine.substring(startIndex + startString.length, endIndex)).toFixed(2));
+
+        // //console.log("Budget Line Budget is " + budgetLineBudget + " and purchase total is " + purchaseGrandTotal);
+
+        const stockIssueTotal = parseFloat($("#total").val().replace(/,/g, ''));
+
+        console.table({budgetLineBudget, stockIssueTotal});
+
+        if(stockIssueTotal > budgetLineBudget){
+
+            // //console.log( "Budget Line Budget is " + budgetLineBudget );
+            // //console.log( "Budget Line Budget Exceeded" );
+            $("#budget_line_warning").text("Budget Line of " + budgetLineBudget + " Exceeded!");
+        }
+        else {
+            $("#budget_line_warning").text("");
+        }
+
+
+    }
+
+    $('#budget_line').change(function() {
+
+        checkBudgetLine($(this).find('option:selected').text());
+    });
+
+    $('#total').change(function() {
+
+        checkBudgetLine($('#budget_line').find('option:selected').text());
+    });
+
+    $('.issue-qty').change(function() {
+
+        checkBudgetLine($('#budget_line').find('option:selected').text());
+    });
+
+    $('#quote').change(function() {
+
+        $("#budget_line_warning").text("");
+        getBudgetLinesByQuote($(this).val());
+    });
+
 
     $(Index.init);
 </script>
