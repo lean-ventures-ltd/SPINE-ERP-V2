@@ -21,7 +21,8 @@
                             
                         </div>
                     <small class="text-muted"><i class="fa fa-user"></i>
-                        <strong>{{ @$row->creator->fullname }}</strong>
+                        <strong>{{ @$row->creator->fullname }}</strong><br>
+                        <strong>{{ @$row->creator->role->name }}</strong><br>
                         <i class="fa fa-clock-o"></i> {{trans('general.created')}} {{dateTimeFormat($row['created_at'])}}
                     </small>
                     <div>

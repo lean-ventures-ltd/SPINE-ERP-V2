@@ -89,11 +89,33 @@
             });
         });
 
+        $('#caption').on('keyup', function(e) {
+            if($(this).val() != '') {
+                $('#fileupload').removeAttr('style');
+                $('#fileupload').show();
+            }else{
+                $('#fileupload').attr('style', ''); 
+                $('#fileupload').hide();
+            }
+            // console.log($(this).val());
+        });
+        
         // file attachment upload
         $('#fileupload').fileupload({
+            caption: $('#caption').val(),
             url: @json(route('biller.project_attachment')),
             dataType: 'json',
-            formData: {_token: "{{ csrf_token() }}", project_id: '{{$project['id']}}', 'bill': 11},
+            formData: {},
+            add: function (e, data) {
+                // Get the additional input value
+                var caption = $('#caption').val();
+                
+                // Append the additional data to the form data
+                data.formData = { caption: caption, _token: "{{ csrf_token() }}", project_id: '{{$project['id']}}', 'bill': 11 };
+                
+                // Automatically start the upload
+                data.submit();
+            },
             done: function (e, data) {
                 $.each(data.result, function (index, file) {
                     const del_url = @json(route('biller.project_attachment', '?op=delete&meta_id='));
@@ -110,14 +132,19 @@
                                 <i class="btn-sm fa fa-eye"></i> ${file.name}
                             </a>
                         </td>
+                        <td>
+                            ${file.caption}
+                        </td>
                     </tr>`;
 
                     $('#files').append(row);
+                    window.location.reload();
                 });
             },
             progressall: function (e, data) {
                 var progress = parseInt(data.loaded / data.total * 100, 10);
                 $('#progress .progress-bar').css('width', progress + '%');
+                console.log(this.caption);
             }
         })
         .prop('disabled', !$.support.fileInput)
@@ -274,10 +301,10 @@
             allowClear: true,
             dropdownParent: $('#AttachDIModal'),
             ajax: {
-                url: "{{ route('biller.projects.select_detached_invoices') }}",
+                url: "{{ route('biller.projects.invoices_select') }}",
                 dataType: 'json',
                 type: 'POST',
-                data: ({term}) => ({search: term, project_id: @json(@$project->id) }),
+                data: ({term}) => ({search: term, customer_id: @json(@$project->customer_id) }),
                 processResults: (data) => {
                     return {
                         results: $.map(data, (item) => ({
@@ -354,10 +381,12 @@
         $("#submit-data_note").on("click", function(e) {
             e.preventDefault();
             const form_data = {};
+            var fileInput = $('#fileInput').prop('files')[0];
             form_data['form_name'] = 'data_form_note';
-            form_data['form'] = $("#data_form_note").serialize();
+            form_data['form'] = $("#data_form_note").serializeArray();
+            form_data['form'].push(fileInput);
             form_data['url'] = $('#action-url_6').val();
-            // console.log(form_data);
+            console.log(form_data);
             addObject(form_data, true);
             $('#AddNoteModal').modal('toggle');
             // window.location.reload();

@@ -28,6 +28,7 @@
                         </fieldset>
                     </div>
                     <input type="hidden" value="" id="quote_id_val" name="quote_id">
+                    <input type="hidden" value="{{@$project->id}}" id="project_id" name="project_id">
                 </form>
             </section>
         </div>
