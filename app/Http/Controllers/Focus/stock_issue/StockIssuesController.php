@@ -87,7 +87,7 @@ class StockIssuesController extends Controller
             ->whereNotNull('approved_method')
             ->whereNotNull('approved_by')
             ->get(['id', 'notes', 'tid', 'bank_id', 'customer_id']);
-        
+
         return view('focus.stock_issues.create', compact('customers', 'employees', 'projects', 'quotes'));
     }
 
@@ -102,7 +102,7 @@ class StockIssuesController extends Controller
         } catch (\Throwable $th) {
             return errorHandler('Error Creating Stock Issue', $th);
         }
-    
+
         return new RedirectResponse(route('biller.stock_issues.index'), ['flash_success' => 'Stock Issue Created Successfully']);
     }
 
@@ -163,6 +163,8 @@ class StockIssuesController extends Controller
      */
     public function update(Request $request, StockIssue $stock_issue)
     {
+        return $request;
+
         try {
             $this->repository->update($stock_issue, $request->except('_token', '_method'));
         } catch (\Throwable $th) {

@@ -108,5 +108,6 @@ Route::group(['namespace' => 'project'], function () {
   Route::post('projects/search', 'ProjectsController@project_search')->name('projects.project_search');
 
   Route::get('projects/milestones/get', 'ProjectsController@getProjectMileStones')->name('getProjectMileStones');
+  Route::get('projects/quote-milestones/get', 'ProjectsController@getBudgetLinesByQuote')->name('getBudgetLinesByQuote');
   Route::get('/jaribu', 'ProjectsController@getExpensesByMilestone');
 });

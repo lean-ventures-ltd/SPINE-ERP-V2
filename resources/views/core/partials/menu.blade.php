@@ -258,7 +258,7 @@
                         <li class="dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button"
                                aria-expanded="false">
-                                {{ trans('menus.language-picker.language') }} EGG
+                                {{ trans('menus.language-picker.language') }}
                                 <span class="caret"></span>
                             </a>
                             @include('includes.partials.lang_focus')

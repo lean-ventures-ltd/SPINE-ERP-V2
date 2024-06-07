@@ -25,7 +25,7 @@
             @foreach ($employees as $row)
                 <option value="{{ $row->id }}" {{ @$stock_issue->employee_id == $row->id? 'selected' : ''}}>
                     {{ $row->first_name }} {{ $row->last_name }}
-                </option>    
+                </option>
             @endforeach
         </select>
     </div>
@@ -36,7 +36,7 @@
             @foreach ($customers as $row)
                 <option value="{{ $row->id }}" {{ @$stock_issue->customer_id == $row->id? 'selected' : ''}}>
                     {{ $row->company ?: $row->name }}
-                </option>    
+                </option>
             @endforeach
         </select>
     </div>
@@ -45,13 +45,13 @@
         <select name="project_id" id="project" class="form-control d-none" data-placeholder="Search Project" autocomplete="off">
             <option value=""></option>
             @foreach ($projects as $row)
-                <option 
+                <option
                     value="{{ $row->id }}"
                     quote_ids="{{ implode(',', $row->quote_ids) }}"
                     {{ @$stock_issue->project_id == $row->id? 'selected' : ''}}
                 >
                     {{ gen4tid('PRJ-', $row->tid) }} - {{ $row->name }}
-                </option>    
+                </option>
             @endforeach
         </select>
     </div>
@@ -67,19 +67,38 @@
 <div class="row mb-1">
     <div class="col-md-6 col-12">
         <label for="quote">Load Items From Quote / PI</label>
-        <select name="quote_id" id="quote" class="form-control" data-placeholder="Search Quote / PI Number" autocomplete="off">
+        <select
+                name="quote_id"
+                id="quote"
+                class="form-control"
+                data-placeholder="Search Quote / PI Number"
+                autocomplete="off"
+                @if(!empty($stock_issue)) disabled @endif
+        >
             <option value=""></option>
             @foreach ($quotes as $row)
-                <option 
-                    value="{{ $row->id }}" 
+                <option
+                    value="{{ $row->id }}"
                     customer_id="{{ $row->customer_id }}"
                     {{ @$stock_issue->quote_id == $row->id? 'selected' : ''}}
                 >
                     {{ gen4tid($row->bank_id? 'PI-' : 'QT-', $row->tid) }} {{ $row->notes }}
-                </option>    
+                </option>
             @endforeach
         </select>
     </div>
+
+    <div class="col-md-6 col-12">
+
+        <label for="budget_line" class="caption" style="display: inline-block;">Project Budget Line</label>
+
+        <select id="budget_line" name="budget_line" class="form-control">
+            <option value="">Load Budget Lines from a Project Quote</option>
+        </select>
+
+        <p id="budget_line_warning" class="text-red ml-2" style="color: red; font-size: 16px; "> </p>
+    </div>
+
 </div>
 
 <div class="table-responsive">
@@ -125,7 +144,7 @@
                                         @foreach ($employees as $row)
                                             <option value="{{ $row->id }}" {{ $item->assignee_id == $row->id? 'selected' : '' }}>
                                                 {{ $row->first_name }} {{ $row->last_name }}
-                                            </option>    
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -163,7 +182,7 @@
                                     @foreach ($employees as $row)
                                         <option value="{{ $row->id }}">
                                             {{ $row->first_name }} {{ $row->last_name }}
-                                        </option>    
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -181,7 +200,7 @@
             @endif
         </tbody>
     </table>
-</div>   
+</div>
 <div class="row mt-1">
     <div class="col-6">
         <button type="button" class="btn btn-success" id="add-item">
