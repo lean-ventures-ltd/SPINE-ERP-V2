@@ -325,6 +325,7 @@ class ProjectsController extends Controller
     {   
         $invoice = Invoice::where(['customer_id' => request('customer_id')])
             ->where('is_standard', 1)
+            ->doesntHave('quote')
             ->get()
             ->map(fn($v) => [
                 'id' => $v->id,
@@ -352,6 +353,10 @@ class ProjectsController extends Controller
             QuoteInvoice::create([
                 'invoice_id' => $request->invoice_id,
                 'quote_id' => $request->quote_id
+            ]);
+            ProjectInvoice::create([
+                'invoice_id' => $request->invoice_id,
+                'project_id' => $request->project_id
             ]);
             DB::commit();
         } catch (\Throwable $th) {
@@ -715,13 +720,14 @@ class ProjectsController extends Controller
     
         try {
             $project = Project::find($input['project_id']);
-            $invoice = Invoice::find($input['invoice_id']);
+            $invoice = Invoice::find($input['invoice_id']);           
 
 
             ProjectInvoice::where(['project_id' => $input['project_id'], 'invoice_id' => $input['invoice_id']])->delete();
+            QuoteInvoice::where('invoice_id', $input['invoice_id'])->delete();
 
             DB::commit();
-            return response()->json(['status' => 'Success', 'message' => 'Resource Detached Successfully', 't_type' => 7]);
+            return response()->json(['status' => 'Success', 'message' => 'Resource Detached Successfully', 't_type' => 7, 'refresh' => 1]);
         } catch (\Throwable $th) {
             \Log::error($th->getMessage());
             if (!$error_data) $error_data = ['status' => 'Error', 'message' => 'Something went wrong!'];

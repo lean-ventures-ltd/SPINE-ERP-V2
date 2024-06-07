@@ -274,10 +274,10 @@
             allowClear: true,
             dropdownParent: $('#AttachDIModal'),
             ajax: {
-                url: "{{ route('biller.projects.select_detached_invoices') }}",
+                url: "{{ route('biller.projects.invoices_select') }}",
                 dataType: 'json',
                 type: 'POST',
-                data: ({term}) => ({search: term, project_id: @json(@$project->id) }),
+                data: ({term}) => ({search: term, customer_id: @json(@$project->customer_id) }),
                 processResults: (data) => {
                     return {
                         results: $.map(data, (item) => ({
