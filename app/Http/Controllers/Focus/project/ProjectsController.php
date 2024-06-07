@@ -468,7 +468,7 @@ class ProjectsController extends Controller
                 $response = array_replace($response, ['status' => 'Success', 't_type' => 5, 'meta' => $log_text]);
             }
             else if ($input['obj_type'] == 6) {
-
+                dd($input);
                 $data = Arr::only($input, ['title', 'content']);
                 $data['section'] = 1;
                 $note = Note::create($data);

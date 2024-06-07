@@ -26,6 +26,7 @@ use App\Http\Controllers\Controller;
 use DB;
 use File;
 use Illuminate\Support\Facades\Storage;
+use Log;
 
 class FileController extends Controller
 {
@@ -54,7 +55,7 @@ class FileController extends Controller
         $this->file_item_path = 'files' . DIRECTORY_SEPARATOR;
         $this->storage = Storage::disk('public');
 
-        $this->file_path = $this->absolute_path(public_path(), ['storage', 'app', 'public', 'files']);
+        $this->file_path = $this->absolute_path(storage_path(), ['app', 'public', 'files']);
     }
 
     public function absolute_path($path='', $dirs=[])
@@ -106,9 +107,11 @@ class FileController extends Controller
      */
     public function project_attachment(Request $request)
     {
+        // dd($request->all());
         $operation = $request->op;
         $meta_id = $request->meta_id;
         $project_id = $request->project_id;
+        $caption = $request->caption;
         $files = $request->files;
 
         DB::beginTransaction();
@@ -117,7 +120,9 @@ class FileController extends Controller
             if ($operation == 'delete') {
                 $project_meta = ProjectMeta::find($meta_id);
                 $file = $this->file_path . $project_meta->value;
-                if (file_exists($file)) delete_file($file); 
+                // dd($file);
+                // if (file_exists($file)) delete_file($file); 
+                if (File::exists($file)) File::delete($file); 
                 $project_meta->delete();
 
                 DB::commit();
@@ -127,14 +132,15 @@ class FileController extends Controller
             $uploads = [];
             $config_meta = ConfigMeta::where('feature_id', 9)->first(['feature_value', 'value1']);
             if (@$config_meta->feature_value) {
-                $request->validate(['files' => 'required|mimes:' . $config_meta->value1]);
+                $request->validate(['files' => 'required|mimes:jpeg,png,pdf' . $config_meta->value1]);
                 foreach ($files as $file) {
                     $origin_filename = $file->getClientOriginalName();
                     $file_name = time() . '_' . substr($origin_filename, 0, 20);
-                    File::put($this->file_path . $file_name, file_get_contents($file->getRealPath()));
+                    // File::put($this->file_path . $file_name, file_get_contents($file->getRealPath()));
+                    $image_name = $this->uploadPicture($file, $this->file_item_path);
 
-                    $project_meta = ProjectMeta::create(['project_id' => $project_id, 'meta_key' => 1, 'value' => $file_name]);
-                    $uploads[] = ['id' => $project_meta->id, 'name' => $file_name];
+                    $project_meta = ProjectMeta::create(['project_id' => $project_id, 'meta_key' => 1, 'value' => $image_name, 'caption' => $caption]);
+                    $uploads[] = ['id' => $project_meta->id, 'name' => $image_name,'caption' => $caption];
                 }
             }
             $project_meta = ProjectMeta::latest()->first();
@@ -145,5 +151,12 @@ class FileController extends Controller
         } catch (\Throwable $th) {
             Log::error($th->getMessage());
         }
+    }
+
+    public function uploadPicture($file, $path)
+    {
+        $image_name = time() . $file->getClientOriginalName();
+        $this->storage->put($path . $image_name, file_get_contents($file->getRealPath()));
+        return $image_name;
     }
 }
