@@ -74,15 +74,15 @@
 
                        <li class="nav-item">
                            <a class="nav-link" id="tab6" data-toggle="tab" href="#tab_data6" aria-controls="tab_data6" role="tab" aria-selected="true">
-                               <i class="icon-note"></i> {{trans('general.notes')}}
+                               <i class="icon-note"></i>Notes
                             </a>
                         </li> 
 
-{{--                        <li class="nav-item">--}}
-{{--                            <a class="nav-link" id="tab5" data-toggle="tab" href="#tab_data5" aria-controls="tab_data5" role="tab" aria-selected="true">--}}
-{{--                                <i class="fa fa-paperclip"></i> {{trans('general.files')}}--}}
-{{--                            </a>--}}
-{{--                        </li>--}}
+                       <li class="nav-item">
+                           <a class="nav-link" id="tab5" data-toggle="tab" href="#tab_data5" aria-controls="tab_data5" role="tab" aria-selected="true">
+                               <i class="fa fa-paperclip"></i> {{trans('general.files')}}
+                           </a>
+                       </li>
                         
                         <li class="nav-item">
                             <a class="nav-link" id="tab10" data-toggle="tab" href="#tab_data10" aria-controls="tab_data10" role="tab" aria-selected="true">

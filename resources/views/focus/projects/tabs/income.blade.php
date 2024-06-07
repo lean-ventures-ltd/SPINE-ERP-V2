@@ -1,10 +1,10 @@
 <div class="tab-pane" id="tab_data10" aria-labelledby="tab10" role="tabpanel">
     @if($project->creator->id == auth()->user()->id)
         <div class="card-body">
-            <button type="button" class="btn btn-info float-right mr-2" id="addinvoice" data-toggle="modal"
+            {{-- <button type="button" class="btn btn-info float-right mr-2" id="addinvoice" data-toggle="modal"
                 data-target="#AddDetachedInvoiceModal">
                 <i class="fa fa-plus-circle"></i> Attach Detached Invoice
-        </button>
+        </button> --}}
             <table id="invoices-table_p"
                     class="table table-striped table-bordered zero-configuration"
                     cellspacing="0"
