@@ -156,6 +156,16 @@ class InvoicesController extends Controller
      */
     public function show(Invoice $invoice, ManageInvoiceRequest $request)
     {
+        if ($invoice->tax_id && $invoice->products->where('tax_rate', 0)->count() == $invoice->products->count()) {
+            $invoice['products'] = $invoice->products->map(function($item) use($invoice) {
+                $item['tax_rate'] = $invoice->tax_id;
+                $item['product_subtotal'] = $item['product_price'];
+                $item['product_tax'] = $item->product_price * $item->product_qty * $invoice->tax_id * 0.01;
+                $item['product_amount'] = $item->product_price * $item->product_qty * (1 + $invoice->tax_id * 0.01);
+                return $item;
+            });
+        }
+        
         $accounts = Account::all();
         $features = ConfigMeta::where('feature_id', 9)->first();
         $invoice['bill_type'] = 1;
@@ -276,7 +286,7 @@ class InvoicesController extends Controller
         ]);
         $bill_items = $request->only([
             'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 'product_subtotal', 'product_price', 
-            'tax_rate', 'quote_id', 'project_id', 'branch_id','verification_id'
+            'tax_rate', 'quote_id', 'project_id', 'branch_id', 'verification_id', 'product_tax', 'product_amount',
         ]);
 
         $bill['user_id'] = auth()->user()->id;
@@ -301,6 +311,16 @@ class InvoicesController extends Controller
      */
     public function edit_project_invoice(Invoice $invoice)
     {
+        if ($invoice->tax_id && $invoice->products->where('tax_rate', 0)->count() == $invoice->products->count()) {
+            $invoice['products'] = $invoice->products->map(function($item) use($invoice) {
+                $item['tax_rate'] = $invoice->tax_id;
+                $item['product_subtotal'] = $item['product_price'];
+                $item['product_tax'] = $item->product_price * $item->product_qty * $invoice->tax_id * 0.01;
+                $item['product_amount'] = $item->product_price * $item->product_qty * (1 + $invoice->tax_id * 0.01);
+                return $item;
+            });
+        }
+
         $banks = Bank::all();
         $accounts = Account::whereHas('accountType', function ($query) {
             $query->whereIn('name', ['Income', 'Other Income']);

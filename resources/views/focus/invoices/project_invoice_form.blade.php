@@ -194,14 +194,14 @@
                         }
     
                         // Table values
-                        $price = number_format($val->subtotal, 4);
-                        $project_id = $val->project_quote ? $val->project_quote->project_id : '';
-    
                         $title = $val->notes;
                         $jcs = implode(', ', $jcs);
                         $description = implode(';', [$title, $djc_ref, $jcs]);
                         $reference = '' . implode('; ', [$branch_name, $tid, $lpo_no, $client_ref]); 
+                        $project_id = $val->project_quote ? $val->project_quote->project_id : '';
                         $taxable = $val->verified_products()->where('product_tax', '>', 0)->sum(DB::raw('product_qty * product_subtotal'));
+                        $subtotal = $val->verified_products()->sum(DB::raw('product_qty * product_subtotal')); 
+                        // browserLog($subtotal . ' ' . $taxable);
                     @endphp
                     <tr>
                         <td class="num pl-2">{{ $k+1 }}</td>                                            
@@ -209,19 +209,21 @@
                         <td><textarea class="form-control descr" name="description[]" id="description-{{ $k }}" rows="5">{{ $description }}</textarea></td>
                         <td><input type="text" class="form-control unit" name="unit[]" id="unit-{{ $k }}" value="Lot" readonly></td>
                         <td><input type="text" class="form-control qty" name="product_qty[]" id="product_qty-{{ $k }}" value="1" readonly></td>
-                        <td><input type="text" class="form-control rate" name="product_price[]" value="{{ $price }}" id="product_price-{{ $k }}" readonly></td>
-                        <td><strong><span class='ttlText amount' id="result-{{ $k }}">{{ $price }}</span></strong></td>
+                        <td><input type="text" class="form-control rate" name="product_price[]" value="{{ number_format($subtotal, 4) }}" id="product_price-{{ $k }}" readonly></td>
+                        <td><strong><span class='ttlText amount' id="result-{{ $k }}">{{ number_format($subtotal + $val->verified_tax, 4) }}</span></strong></td>
                         
-                        <input type="hidden" class="subtotal" value="{{ $price }}" id="initprice-{{ $k }}" disabled>
+                        <input type="hidden" class="subtotal" value="{{ round($subtotal, 4) }}" id="initprice-{{ $k }}" disabled>
                         <input type="hidden" class="num-val" name="numbering[]" id="num-{{ $k }}">
                         <input type="hidden" class="row-index" name="row_index[]" id="rowindex-{{ $k }}">
                         <input type="hidden" class="quote-id" name="quote_id[]" value="{{ $val->id }}" id="quoteid-{{ $k }}">
                         <input type="hidden" class="branch-id" name="branch_id[]" value="{{ $val->branch_id }}" id="branchid-{{ $k }}">
                         <input type="hidden" class="project-id" name="project_id[]" value="{{ $project_id }}" id="projectid-{{ $k }}">
-
-                        <input type="hidden" class="producttax" name="product_tax[]" value="0" id="producttax-{{ $k }}">
+                        
+                        <input type="hidden" class="taxable" value="{{ round($taxable, 4) }}">
+                        <input type="hidden" class="producttax" name="product_tax[]" value="{{ $val->verified_tax }}" id="producttax-{{ $k }}">
                         <input type="hidden" class="taxrate" name="tax_rate[]" value="{{ +$val->tax_id }}" id="taxrate-{{ $k }}">
-                        <input type="hidden" class="taxable" value="{{ round($taxable, 4) }}" id="taxable-{{ $k }}">
+                        <input type="hidden" class="productsubtotal" name="product_subtotal[]" value="{{ round($subtotal, 4) }}" id="productsubtotal-{{ $k }}">
+                        <input type="hidden" class="productamount" name="product_amount[]" value="{{ number_format($subtotal + $val->verified_tax, 4) }}">
                         <input type="hidden" class="price" value="0" id="price-{{ $k }}">
                     </tr>
                 @endforeach
@@ -242,13 +244,20 @@
                         <td><input type="text" class="form-control rate" name="product_price[]" value="{{ $unit_cost }}" id="product_price-{{ $k }}" readonly></td>
                         <td><strong><span class='ttlText amount' id="result-{{ $k }}">{{ $net_cost }}</span></strong></td>
     
-                        <input type="hidden"  class="subtotal" value="{{ $item->product_price }}" id="initprice-{{ $k }}" disabled>
+                        <input type="hidden"  class="subtotal" value="{{ +$item->product_price }}" id="initprice-{{ $k }}" disabled>
                         <input type="hidden" class="num-val" name="numbering[]" value="{{ $item->numbering }}" id="num-{{ $k }}">
                         <input type="hidden" class="row-index" name="row_index[]" value="{{ $item->row_index }}" id="rowindex-{{ $k }}">
                         <input type="hidden" class="quote-id" name="quote_id[]" value="{{ $item->quote_id }}" id="quoteid-{{ $k }}">
                         <input type="hidden" class="branch-id" name="branch_id[]" value="{{ $item->branch_id }}" id="branchid-{{ $k }}">
                         <input type="hidden" class="project-id" name="project_id[]" value="{{ $item->project_id }}" id="projectid-{{ $k }}">
                         <input type="hidden" name="id[]" value="{{ $item->id }}">
+
+                        <input type="hidden" class="taxable" value="{{ +$item->product_price }}">
+                        <input type="hidden" class="producttax" name="product_tax[]" value="{{ $item->product_tax }}" id="producttax-{{ $k }}">
+                        <input type="hidden" class="taxrate" name="tax_rate[]" value="{{ +$item->tax_rate }}" id="taxrate-{{ $k }}">
+                        <input type="hidden" class="productsubtotal" name="product_subtotal[]" value="{{ +$item->product_price }}" id="productsubtotal-{{ $k }}">
+                        <input type="hidden" class="productamount" name="product_amount[]" value="{{ +$item->product_amount }}">
+                        <input type="hidden" class="price" value="0" id="price-{{ $k }}">
                     </tr>
                 @endforeach
             @endif
@@ -258,11 +267,15 @@
 
 <div class="form-group">
     <div class="col-2 ml-auto">
+        <label for="taxable">Taxable</label>
+        {{ Form::text('taxable', null, ['class' => 'form-control', 'id' => 'taxable', 'readonly']) }}
+    </div>
+    <div class="col-2 ml-auto">
         <label for="subtotal">Subtotal</label>
         {{ Form::text('subtotal', null, ['class' => 'form-control', 'id' => 'subtotal', 'readonly']) }}
     </div>
     <div class="col-2 ml-auto">
-        <label for="totaltax">Total Tax</label>
+        <label for="totaltax">Total VAT</label>
         {{ Form::text('tax', null, ['class' => 'form-control', 'id' => 'tax', 'readonly']) }}
     </div>
     <div class="col-2 ml-auto">

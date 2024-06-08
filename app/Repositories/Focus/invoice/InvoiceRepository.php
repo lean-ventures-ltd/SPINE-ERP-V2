@@ -107,11 +107,13 @@ class InvoiceRepository extends BaseRepository
         foreach ($bill_items as $k => $item) {
             $bill_items[$k] = array_replace($item, [
                 'invoice_id' => $result->id,
+                'tax_rate' => numberClean($item['tax_rate']),
+                'product_tax' => floatval(str_replace(',', '', $item['product_tax'])),
                 'product_price' => floatval(str_replace(',', '', $item['product_price'])),
-                'product_subtotal' => floatval(str_replace(',', '', @$item['product_subtotal'])),
+                'product_subtotal' => floatval(str_replace(',', '', $item['product_subtotal'])),
+                'product_amount' => floatval(str_replace(',', '', $item['product_amount'])),
             ]);
             $item = $bill_items[$k];
-            $bill_items[$k]['product_tax'] = $item['product_price'] - @$item['product_subtotal'];
         }
         InvoiceItem::insert($bill_items);
 
@@ -160,12 +162,9 @@ class InvoiceRepository extends BaseRepository
         // update invoice items
         $bill_items = $input['bill_items'];
         $bill_items = array_map(function ($v) { 
-            foreach (['product_price', 'product_subtotal'] as $key) {
+            foreach (['product_price', 'product_subtotal', 'product_tax', 'tax_rate', 'product_amount'] as $key) {
                 if (isset($v[$key])) $v[$key] = floatval(str_replace(',', '', $v[$key]));
             }
-            if (@$v['product_price'] && @$v['product_subtotal'])
-                $v['product_tax'] = $v['product_price'] - $v['product_subtotal'];
-
             return [
                 'id' => $v['id'],
                 'reference' => @$v['reference'] ?: '', 
