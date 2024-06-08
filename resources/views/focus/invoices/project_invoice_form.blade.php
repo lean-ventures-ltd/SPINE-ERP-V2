@@ -45,7 +45,7 @@
         <div class="input-group">
             <select class="custom-select round" name='tax_id' id="tax_id" required>
                 @foreach ($additionals as $row)
-                    <option value="{{ $row->value }}" {{ @$invoice && $invoice->tax_id == $row->value? 'selected' : '' }}>
+                    <option value="{{ +$row->value }}" {{ @$invoice && $invoice->tax_id == $row->value? 'selected' : '' }}>
                         {{ $row->name }}
                     </option>
                 @endforeach
@@ -201,6 +201,7 @@
                         $jcs = implode(', ', $jcs);
                         $description = implode(';', [$title, $djc_ref, $jcs]);
                         $reference = '' . implode('; ', [$branch_name, $tid, $lpo_no, $client_ref]); 
+                        $taxable = $val->verified_products()->where('product_tax', '>', 0)->sum(DB::raw('product_qty * product_subtotal'));
                     @endphp
                     <tr>
                         <td class="num pl-2">{{ $k+1 }}</td>                                            
@@ -217,6 +218,11 @@
                         <input type="hidden" class="quote-id" name="quote_id[]" value="{{ $val->id }}" id="quoteid-{{ $k }}">
                         <input type="hidden" class="branch-id" name="branch_id[]" value="{{ $val->branch_id }}" id="branchid-{{ $k }}">
                         <input type="hidden" class="project-id" name="project_id[]" value="{{ $project_id }}" id="projectid-{{ $k }}">
+
+                        <input type="hidden" class="producttax" name="product_tax[]" value="0" id="producttax-{{ $k }}">
+                        <input type="hidden" class="taxrate" name="tax_rate[]" value="{{ +$val->tax_id }}" id="taxrate-{{ $k }}">
+                        <input type="hidden" class="taxable" value="{{ round($taxable, 4) }}" id="taxable-{{ $k }}">
+                        <input type="hidden" class="price" value="0" id="price-{{ $k }}">
                     </tr>
                 @endforeach
             @else        

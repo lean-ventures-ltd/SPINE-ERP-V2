@@ -38,17 +38,28 @@
     .datepicker('setDate', new Date());
 
     // On tax change
-    let validateRowTaxRate = false;
     $('#tax_id').change(function() {
         const mainTax = accounting.unformat(this.value);
-        if (validateRowTaxRate) {
-            const rowTaxeRates = [];
-            $('#quoteTbl tbody tr').each(function(i) {
-                const taxRate = accounting.unformat($(this).find('.taxrate').val());
-                rowTaxeRates.push(taxRate);
-            });
-            const disjoint = rowTaxeRates.filter(v => ![mainTax, 0].includes(v));
-            if (disjoint.length) return alert(`${disjoint[0]}% Tax Rate Is Not Allowed!`);
+        const rowTaxeRates = [];
+        $('#quoteTbl tbody tr').each(function(i) {
+            const taxRate = accounting.unformat($(this).find('.taxrate').val());
+            rowTaxeRates.push(taxRate);
+        });
+        const disjoint = [mainTax, 0].filter(v => !rowTaxeRates.includes(v));
+
+        let isError = false;
+        if (rowTaxeRates.includes(0)) {
+            if (mainTax > 0) {
+                if (disjoint.length && !rowTaxeRates.includes(disjoint[0])) isError = true;
+            } else {
+                if (disjoint.length) isError = true;
+            }
+        } else {
+            if (disjoint.length > 1 && disjoint[0] != 0) isError = true;
+        }
+        if (isError) {
+            alert(`${disjoint[0]}% Tax Rate Is Not Allowed!`);
+            $('#tax_id').val(0);
         }
         computeTotals();
     });
@@ -67,7 +78,6 @@
             // append preselected quote as line
             if (this.value == 'collective') {
                 $('#quoteTbl tbody').append(`<tr>${invoiceItemRow}</tr>`);
-                validateRowTaxRate = true;
             }
             // append quote products as line
             if (this.value == 'standard') {
@@ -87,29 +97,26 @@
                         const tid = `${quote.tid}`.length < 4? `000${quote.tid}`.slice(-4) : quote.tid;
                         const pfx = quote.bank_id == 0? prefixes[1] : prefixes[2];
                         row.find('.ref').val(`${pfx}-${tid}`);
-
                         row.find('.descr').val(v.product_name);
                         row.find('.unit').val(v.unit);
+                        row.find('.taxrate').val(+v.tax_rate);
+                        row.find('.producttax').val(v.tax_rate * 0.01 * v.product_subtotal);
+                        row.find('.taxable').val(accounting.formatNumber(+v.product_subtotal, 4));
+                        row.find('.qty').val(+v.product_qty);
+                        row.find('.rate').val(accounting.formatNumber(+v.product_subtotal, 4));
+                        row.find('.price').val(accounting.formatNumber(+v.product_price, 4));
 
-                        row.find('.taxrate').val(v.tax_rate*1);
-                        row.find('.taxable').val(accounting.formatNumber(v.product_subtotal*1, 4));
-
-                        row.find('.qty').val(v.product_qty*1);
-                        row.find('.rate').val(accounting.formatNumber(v.product_subtotal*1, 4));
-                        row.find('.price').val(accounting.formatNumber(v.product_price*1, 4));
-
-                        const amount = v.product_qty * v.product_subtotal * (1 + v.tax_rate/100);
+                        const amount = v.product_qty * v.product_subtotal * (1 + v.tax_rate * 0.01);
                         row.find('.amount').text(accounting.formatNumber(amount, 4));
-
                         row.find('.quote-id').val(quote.id);
                         row.find('.branch-id').val(quote.branch_id);
-                        const project_id = quote.project_quote? quote.project_quote.project_id : '';
-                        row.find('.project-id').val(project_id);
+                        row.find('.project-id').val(quote.project_quote? quote.project_quote.project_id : '');
                     });
                 }
             }
             $('#tax_id').change();
-        }).change();
+        });
+        $('#invoice_type').change();
     } 
 
     // compute totals
@@ -123,6 +130,8 @@
             const qty = accounting.unformat($(this).find('.qty').val());
             const rowSubtotal = accounting.unformat($(this).find('.rate').val());
             const rowTaxable = accounting.unformat($(this).find('.taxable').val());
+
+            // standard - inventory products
             if ($('#invoice_type').val() == 'standard') {
                 const mainTaxRate = mainTax / 100;
                 const rowTaxRate = accounting.unformat($(this).find('.taxrate').val()) / 100;
@@ -139,8 +148,9 @@
                 $(this).find('.price').val(accounting.formatNumber(price, 4));
                 $(this).find('.amount').text(accounting.formatNumber(qty * price, 4));
             } else {
+                // bundled quotes
                 rowTax = rowTaxable * mainTax / 100;
-                taxable += qty * rowTaxable;
+                taxable += rowTaxable;
                 subtotal += qty * rowSubtotal;
                 price = rowSubtotal + rowTax;
                 total += qty * price;
