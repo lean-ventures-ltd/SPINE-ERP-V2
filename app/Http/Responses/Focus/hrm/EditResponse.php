@@ -53,7 +53,7 @@ class EditResponse implements Responsable
 
         $general['create'] = $this->hrms->id;
 
-        $hrms['employee_no'] = $prefixes['0'].$hrms['employee_no'];
+        $hrms['employee_no'] = gen4tid('EMP-',$hrms->tid);
         $permissions = PermissionUser::all()->keyBy('id')->where('user_id', $general['create'])->toArray();
 
         return view('focus.hrms.edit',compact('prefixes','hrms', 'roles', 'general', 'permissions_all', 'permissions', 'departments', 'last_tid'));

@@ -100,7 +100,7 @@
         },
         columns: [
             {data: 'DT_Row_Index', name: 'id'},
-            {data: 'employee_no', name: 'employee_no'},
+            {data: 'tid', name: 'tid'},
             {data: 'name', name: 'name'},
             {data: 'department', name: 'department'},
             {data: 'role', name: 'role'},
