@@ -81,7 +81,8 @@ class BudgetsTableController extends Controller
                 return numberFormat($total);
             })
             ->addColumn('actions', function ($budget) {
-                return $budget->action_buttons;
+                return '<a href="' . route('biller.budgets.show', $budget) . '" class="btn btn-primary round" data-toggle="tooltip" data-placement="top" title="View"><i  class="fa fa-eye"></i></a>'
+                .$budget->action_buttons;
             })
             ->make(true);
     }
