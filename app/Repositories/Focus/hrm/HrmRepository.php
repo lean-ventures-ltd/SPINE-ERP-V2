@@ -64,7 +64,7 @@ class HrmRepository extends BaseRepository
             });
         }
 
-        return $q->with(['monthlysalary'])->get(['id', 'email', 'picture', 'first_name', 'last_name', 'status', 'created_at']);
+        return $q->with(['monthlysalary'])->get(['id','tid', 'email', 'picture', 'first_name', 'last_name', 'status', 'created_at']);
     }
 
     /**
