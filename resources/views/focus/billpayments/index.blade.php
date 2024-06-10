@@ -61,6 +61,7 @@
                                         <th>Mode</th>
                                         <th>Reference</th>
                                         <th>Bill No</th>                                
+                                        <th>DP No</th>                                
                                         <th>{{ trans('labels.general.actions') }}</th>
                                     </tr>
                                 </thead>
@@ -134,6 +135,7 @@
                     {data: 'payment_mode', name: 'payment_mode'},
                     {data: 'reference', name: 'reference'},
                     {data: 'bill_no', name: 'bill_no'},
+                    {data: 'purchase_no', name: 'purchase_no'},
                     {data: 'actions', name: 'actions', searchable: false, sortable: false}
                 ],
                 order: [[0, "desc"]],

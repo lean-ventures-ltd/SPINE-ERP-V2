@@ -117,6 +117,18 @@ class BillPaymentTableController extends Controller
                 
                 return implode(', ', $links);
             })
+            ->addColumn('purchase_no', function ($billpayment) use ($prefixes) {
+                $links = [];
+                foreach ($billpayment->bills as $bill) {
+                    if($bill->purchase){
+
+                        $tid = gen4tid("DP-", $bill->purchase->tid);
+                        $links[] = '<a href="'. route('biller.purchases.show', $bill->purchase->tid) .'">'.$tid.'</a>';
+                    }
+                }
+                
+                return implode(', ', $links);
+            })
             ->filterColumn('bill_no', function($query, $tid) use($prefixes) {
                 $arr = explode('-', $tid);
                 if (strtolower($arr[0]) == strtolower($prefixes[1]) && isset($arr[1])) {
