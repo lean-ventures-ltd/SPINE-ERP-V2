@@ -381,10 +381,8 @@
         $("#submit-data_note").on("click", function(e) {
             e.preventDefault();
             const form_data = {};
-            var fileInput = $('#fileInput').prop('files')[0];
             form_data['form_name'] = 'data_form_note';
-            form_data['form'] = $("#data_form_note").serializeArray();
-            form_data['form'].push(fileInput);
+            form_data['form'] = $("#data_form_note").serialize();
             form_data['url'] = $('#action-url_6').val();
             console.log(form_data);
             addObject(form_data, true);
