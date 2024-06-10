@@ -66,6 +66,13 @@ class Hrm extends Model
     protected static function boot()
     {
         parent::boot();
+        static::creating(function ($instance) {
+            $instance->fill([
+                'tid' => Hrm::getTid() + 1,
+            ]);
+            return $instance;
+        });
+
         static::addGlobalScope('ins', function ($builder) {
             $builder->where('users.ins', '=', auth()->user()->ins);
         });
@@ -90,5 +97,9 @@ class Hrm extends Model
     public function getFullnameAttribute()
     {
         return "{$this->first_name} {$this->last_name}";
+    }
+    static function getTid()
+    {
+        return Hrm::where('ins', auth()->user()->ins)->max('tid');
     }
 }

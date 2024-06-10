@@ -141,6 +141,7 @@ class BudgetsController extends Controller
      */
     public function show(Budget $budget)
     {
-        return view('focus.budgets.view', compact('budget'));
+        $quote = $budget->quote;
+        return view('focus.budgets.view', compact('budget','quote'));
     }
 }
