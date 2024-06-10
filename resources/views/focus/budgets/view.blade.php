@@ -1,62 +1,148 @@
-@extends ('core.layouts.app')
+@extends('core.layouts.app')
 
-@section('title', 'Leave Management')
+@section('title', 'View | Project Budget')
 
 @section('content')
 <div class="content-wrapper">
+    <div class="content-header row">
+        <div class="alert alert-warning col-12 d-none budget-alert" role="alert">
+            <strong>E.P Margin Not Met!</strong> Check line item rates.
+        </div>
+    </div>
+
     <div class="content-header row mb-1">
         <div class="content-header-left col-6">
-            <h4 class="content-header-title">Leave Management</h4>
+            <h4 class="content-header-title">Project Budget</h4>
         </div>
-        <div class="col-6">
-            <div class="btn-group float-right">
-                @include('focus.leave.partials.leave-header-buttons')
+        <div class="content-header-right col-6">
+            <div class="media width-250 float-right">
+                <div class="media-body media-right text-right">
+                    <div class="btn-group">
+                        <a href="{{ route('biller.projects.index') }}" class="btn btn-primary">
+                            <i class="ft-list"></i> Projects
+                        </a>&nbsp;
+                        @php
+                            $valid_token = token_validator('', 'q'.@$budget->quote->id .@$budget->quote->tid, true);
+                            $quote_url = route('biller.print_budget_quote', [@$budget->quote->id, 4, $valid_token, 1]);
+                        @endphp
+                        <a href="{{ $quote_url }}" class="btn btn-secondary" target="_blank">
+                            <i class="fa fa-print"></i> Technician
+                        </a> 
+                    </div>                    
+                </div>
             </div>
         </div>
     </div>
 
     <div class="content-body">
         <div class="card">
-            <div class="card-content">
-                <div class="card-header">
-                    <a href="#" class="btn btn-warning btn-sm mr-1" data-toggle="modal" data-target="#leaveStatusModal">
-                        <i class="fa fa-pencil" aria-hidden="true"></i> Status
-                    </a>
+            <div class="card-body">                
+                <div class="row">
+                    <div class="col-12 cmp-pnl">
+                        <div id="customerpanel" class="inner-cmp-pnl">                        
+                            <div class="form-group row"> 
+                                <div class="col-5">
+                                    <label for="customer" class="caption">Customer</label>                                       
+                                    {{ Form::text('customer', $quote->customer? $quote->customer->company : '', ['class' => 'form-control', 'disabled']) }}
+                                </div> 
+                                <div class="col-3">
+                                    <label for="branch" class="caption">Branch</label>                                       
+                                    {{ Form::text('branch', $quote->branch? $quote->branch->name : '', ['class' => 'form-control', 'disabled']) }}
+                                </div> 
+                                <div class="col-2">
+                                    <label >Serial No</label>
+                                    <div class="input-group">
+                                        <div class="input-group-text"><span class="fa fa-list" aria-hidden="true"></span></div>
+                                        {{ Form::text('tid', gen4tid($quote->bank_id ? 'PI-' : 'QT-', $quote->tid), ['class' => 'form-control round', 'disabled']) }}
+                                    </div>
+                                </div>
+                                <div class="col-2"><label for="invoicedate" class="caption">{{trans('general.date')}}</label>
+                                    <div class="input-group">
+                                        <div class="input-group-addon"><span class="icon-calendar4" aria-hidden="true"></span></div>
+                                        {{ Form::text('date', dateFormat($quote->date), ['class' => 'form-control round datepicker', 'id' => 'date', 'disabled']) }}
+                                    </div>
+                                </div>                                                               
+                            </div> 
+                        </div>
+                    </div>
+                </div> 
+                <div class="form-group row">
+                    <div class="col-10">
+                        <label for="subject" class="caption">Subject / Title</label>
+                        {{ Form::text('notes', $quote->notes, ['class' => 'form-control', 'id'=>'subject', 'disabled']) }}
+                    </div>
+                    <div class="col-2">
+                        <label for="client_ref" class="caption">Client Ref / Callout ID</label>                                       
+                        {{ Form::text('client_ref', $quote->client_ref, ['class' => 'form-control', 'id' => 'client_ref', 'disabled']) }}
+                    </div> 
                 </div>
-                <div class="card-body">
-                    <table class="table table-bordered table-sm">
-                        @php
-                            $employee_name = '';
-                            $employee = $leave->employee;
-                            if ($employee) $employee_name = $employee->first_name . ' ' . $employee->last_name;
-                        
-                            $details = [
-                                'Employee' => $employee_name,
-                                'Leave Category' => $leave->leave_category? $leave->leave_category->title : '',
-                                'Leave Status' => $leave->status,
-                                'Leave Reason' => $leave->reason,
-                                'Leave Duration' => $leave->qty . ' days',
-                                'Start Date' => dateFormat($leave->start_date),
-                                'End Date' => dateFormat($leave->end_date),
-                            ];
-                        @endphp
-                        @foreach ($details as $key => $val)
-                            <tr>
-                                <th width="30%">{{ $key }}</th>
-                                <td>
-                                    @if ($key == 'Leave Status')
-                                        <span class="text-success">{{ $val }}</span>
-                                    @else
-                                        {{ $val }}
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </table>
-                </div>
-            </div>
+                
+            </div>             
         </div>
+        <div class="">
+            <table id="productsTbl" class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
+                <thead>
+                    <tr class="item_header bg-gradient-directional-blue white">
+                        <th class="text-center">#</th>
+                        <th class="text-center">Product</th>
+                        <th class="text-center">Quoted Qty</th>                                
+                        <th class="text-center">UoM</th>
+                        <th class="text-center">Qty</th>     
+                        <th class="text-center">Buy Price</th>
+                        <th class="text-center">Amount</th>                           
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($budget->items as $i => $item)
+                        <tr>
+                            @php
+                                $amount = $item->price * $item->new_qty;
+                            @endphp
+                            <td>{{$i+1}}</td>
+                            <td>{{$item->product_name}}</td>
+                            <td>{{numberFormat($item->product_qty)}}</td>
+                            <td>{{$item->unit}}</td>
+                            <td>{{numberFormat($item->new_qty)}}</td>
+                            <td>{{numberFormat($item->price)}}</td>
+                            <td>{{numberFormat($amount)}}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>  
     </div>
+    
 </div>
-@include('focus.leave.partials.leave-status-modal')
+@endsection
+
+@section('after-scripts')
+{{ Html::script('focus/js/select2.min.js') }}
+{{ Html::script(mix('js/dataTable.js')) }}
+<script>
+    const config = {
+        ajax: {headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"}},
+        date: {format: "{{ config('core.user_date_format')}}", autoHide: true},
+    };
+
+    const Index = {
+        init() {
+            this.drawDataTable();
+        },
+
+        drawDataTable() {
+            $('#productsTbl').dataTable({
+                // processing: true,
+                // serverSide: true,
+                // responsive: true,
+                
+                order: [[0, "desc"]],
+                searchDelay: 500,
+                dom: 'Blfrtip',
+                buttons: ['csv', 'excel', 'print'],
+            });
+        }
+    };
+
+    $(() => Index.init());
+</script>
 @endsection
