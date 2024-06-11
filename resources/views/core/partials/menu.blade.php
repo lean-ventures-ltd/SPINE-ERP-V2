@@ -1773,14 +1773,14 @@
 
                         </li>
                         @endauth
-                        @permission('create-daily-logs')
-                        <li><a class="dropdown-item"
-                               href="{{ route('biller.health-and-safety-targets.index') }}"
-                               data-toggle="dropdown"><i class="ft-list"></i>Health and Safety Targets
-                            </a>
+{{--                        @permission('create-daily-logs')--}}
+{{--                        <li><a class="dropdown-item"--}}
+{{--                               href="{{ route('biller.health-and-safety-targets.index') }}"--}}
+{{--                               data-toggle="dropdown"><i class="ft-list"></i>Health and Safety Targets--}}
+{{--                            </a>--}}
 
-                        </li>
-                        @endauth
+{{--                        </li>--}}
+{{--                        @endauth--}}
                     </ul>
                 </li>
                 @endauth
