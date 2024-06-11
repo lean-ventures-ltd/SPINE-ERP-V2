@@ -53,11 +53,11 @@
     {{ Html::script('focus/js/bootstrap-colorpicker.min.js') }}
     {{ Html::script('focus/js/select2.min.js') }}
     <script>
-        // $('#date').datepicker({
-        //     autoHide: true,
-        //     format: '{{ config('core.user_date_format') }}'
-        // });
-        // $('#date').datepicker('setDate', '{{ date(config('core.user_date_format')) }}');
+        $('#date').datepicker({
+            autoHide: true,
+            format: '{{ config('core.user_date_format') }}'
+        });
+        $('#date').datepicker('setDate', '{{ date(config('core.user_date_format')) }}');
 
 
         function select2Config(url, callback) {
