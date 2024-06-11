@@ -44,6 +44,8 @@ class RoleRepository extends BaseRepository
         $q = $this->query();
         // $q->where('roles.status', 0);
 
+        $q->where('roles.name', '!=', 'Software Landlord');
+
         $q->leftjoin('role_user', 'role_user.role_id', '=', 'roles.id')
         ->leftjoin('users', 'role_user.user_id', '=', 'users.id')
         ->leftjoin('permission_role', 'permission_role.role_id', '=', 'roles.id')
