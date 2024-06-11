@@ -155,7 +155,7 @@
             const received = accounting.formatNumber(v.qty_received);
             const due = v.qty - v.qty_received;
             const balance = accounting.formatNumber(due > 0? due : 0);
-            
+            console.log(v);
             return `
                 <tr>
                     <td width="5%">${i+1}</td>    
@@ -164,7 +164,7 @@
                         <input type="hidden" class="product_code" name="product_code[]" value="${v.product_code}">
                     </td>
                     <td width="15%">
-                        <input class="form-control projectstock" value="${v.project_name}" id="projectstocktext-${i+1}" placeholder="Search Project By Name"></input>
+                        <input class="form-control projectstock" value="${v.project_tid}" id="projectstocktext-${i+1}" placeholder="Search Project By Name"></input>
                         <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="${v.itemproject_id}" id="projectstockval-${i+1}" >
                     </td>  
                     <td width="10%"><select name="warehouse_id[]" class="form-control warehouse" id="warehouseid-${i+1}">
