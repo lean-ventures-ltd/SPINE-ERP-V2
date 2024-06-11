@@ -244,7 +244,10 @@
     // load projects dropdown
     const projectUrl = "{{ route('biller.projects.project_search') }}";
     function projectData(data) {
-        data = [{id: 0, name: 'None'}].concat(data).map(v => ({id: v.id, text: v.name}));
+
+        data = [{id: 0, name: 'None'}].concat(data).map(v => ({id: v.id, text: v.name, budget: v.budget ? v.budget.budget_total : 0 }));
+
+        loadedProjectDetails = data;
         return {results: data};
     }
     $("#project").select2(select2Config(projectUrl, projectData));
@@ -512,6 +515,31 @@
     });
 
 
+    let loadedProjectDetails = [];
+    let selectedProjectDetails = {};
+    let selectedProjectBudget = 0;
+
+    function checkProjectBudget(){
+
+        console.log('LOADED PROJECT DETAILS!!!!!!!');
+        console.table(loadedProjectDetails);
+
+        let selectedProjectIndex = loadedProjectDetails.findIndex((item) => item.id === parseInt($("#project").val()));
+        if(selectedProjectIndex !== -1) {
+
+            selectedProjectDetails = loadedProjectDetails[selectedProjectIndex];
+            selectedProjectBudget = parseInt(selectedProjectDetails.budget);
+        }
+
+        if(purchaseGrandTotal > selectedProjectBudget) $("#budget_warning").text("Project Budget of " + accounting.formatNumber(selectedProjectBudget) + " Exceeded!");
+        else $("#budget_warning").text("");
+
+
+        console.log('SELECTED PROJECT DETAILS!!!!!!!');
+        console.table(selectedProjectDetails);
+
+    }
+
 
         // On Tax change
     let taxChangeCount = 0;
@@ -526,6 +554,9 @@
 
     // On project change
     $("#project").change(function() {
+
+        checkProjectBudget();
+
         const text = $("#project option:selected").text().replace(/\s+/g, ' ');
         $('#projectexptext-0').val(text);
         $('#projectexpval-0').val($(this).val());
@@ -595,7 +626,7 @@
             }
 
             checkMilestoneBudget($('#project_milestone').find('option:selected').text());
-
+            checkProjectBudget();
         });
     }
 </script>
