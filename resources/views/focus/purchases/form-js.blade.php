@@ -306,8 +306,7 @@
                     }
 
                     let selectedOptionValue = "{{ @$purchase->project_milestone }}";
-                    console.table(@json(@$purchase) );
-                    //console.log("MSTONE VALUE IS:  " + selectedOptionValue);
+
                     if (selectedOptionValue) {
                         select.val(selectedOptionValue);
                     }
@@ -431,7 +430,7 @@
 
 
             // getProjectMilestones($(this).val(), false, '.item-milestone-' + this.id);
-            console.log("ID is " + 'item-milestone-' + this.id.split('-').pop());
+            // console.log("ID is " + 'item-milestone-' + this.id.split('-').pop());
 
         });
 
@@ -521,9 +520,6 @@
 
     function checkProjectBudget(){
 
-        console.log('LOADED PROJECT DETAILS!!!!!!!');
-        console.table(loadedProjectDetails);
-
         let selectedProjectIndex = loadedProjectDetails.findIndex((item) => item.id === parseInt($("#project").val()));
         if(selectedProjectIndex !== -1) {
 
@@ -533,11 +529,6 @@
 
         if(purchaseGrandTotal > selectedProjectBudget) $("#budget_warning").text("Project Budget of " + accounting.formatNumber(selectedProjectBudget) + " Exceeded!");
         else $("#budget_warning").text("");
-
-
-        console.log('SELECTED PROJECT DETAILS!!!!!!!');
-        console.table(selectedProjectDetails);
-
     }
 
 

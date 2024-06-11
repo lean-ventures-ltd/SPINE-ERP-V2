@@ -68,12 +68,9 @@
 
     $(document).ready(function() {
         $('#purchase_class').change(function () {
-            console.log("Purchase Class changed");
 
             // Get the selected value
             var selectedValue = $(this).val();
-
-            console.log("PURCHASE PROJO NI : " + $('#project').val());
 
             // Clear the value of the "Projects" select element
             $('#project').prop('value', '');
@@ -302,7 +299,6 @@
 
         data = [{id: 0, name: 'None'}].concat(data).map(v => ({id: v.id, text: v.name, budget: v.budget ? v.budget.budget_total : 0 }));
 
-        console.table(data);
         loadedProjectDetails = data;
         return {results: data};
     }
@@ -429,9 +425,6 @@
 
     function checkProjectBudget(){
 
-        console.log('LOADED PROJECT DETAILS!!!!!!!');
-        console.table(loadedProjectDetails);
-
         let selectedProjectIndex = loadedProjectDetails.findIndex((item) => item.id === parseInt($("#project").val()));
         if(selectedProjectIndex !== -1) {
 
@@ -439,17 +432,8 @@
             selectedProjectBudget = parseInt(selectedProjectDetails.budget);
         }
 
-        if(purchaseGrandTotal > selectedProjectBudget) {
-            $("#budget_warning").text("Project Budget of " + accounting.formatNumber(selectedProjectBudget) + " Exceeded!");
-            console.log("Project Budget of " + accounting.formatNumber(selectedProjectBudget) + " Exceeded!");
-        }
-
+        if(purchaseGrandTotal > selectedProjectBudget) $("#budget_warning").text("Project Budget of " + accounting.formatNumber(selectedProjectBudget) + " Exceeded!");
         else $("#budget_warning").text("");
-
-
-        console.log('SELECTED PROJECT DETAILS!!!!!!!');
-        console.table(selectedProjectDetails);
-
     }
 
 
