@@ -85,13 +85,11 @@ class HealthAndSafetyTrackingController extends Controller
         $input['ins'] = auth()->user()->ins;
         $input['user_id'] = auth()->user()->id;
 
-//        return $input;
-
         try {
             DB::beginTransaction();
 
             $hsTracking = new HealthAndSafetyTracking();
-
+            $hsTracking->project_id = $input['project'];
             $hsTracking->fill($input);
             $hsTracking->save();
 

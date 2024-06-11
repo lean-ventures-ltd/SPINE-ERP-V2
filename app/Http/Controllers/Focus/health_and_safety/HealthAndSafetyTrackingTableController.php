@@ -32,7 +32,7 @@ class HealthAndSafetyTrackingTableController extends Controller
                 return dateFormat($healthAndSafetyTracking->date);
             })
             ->addColumn('client', function ($healthAndSafetyTracking) {
-                return $healthAndSafetyTracking->client ? $healthAndSafetyTracking->client->name : " ";
+                return $healthAndSafetyTracking->customer ? $healthAndSafetyTracking->customer->name : " ";
             })
             ->addColumn('project', function ($healthAndSafetyTracking) {
                 return $healthAndSafetyTracking->project ? $healthAndSafetyTracking->project->name : " ";
