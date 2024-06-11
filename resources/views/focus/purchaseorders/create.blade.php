@@ -425,6 +425,7 @@
         $('#projectexptext-0').val(projectText);
         $('#projectexpval-0').val($(this).val());
         $('#projectstocktext-0').val(projectText);
+        $('#projectstockval-0').val($(this).val());
     });
 
     let purchaseGrandTotal = 0;
@@ -504,7 +505,9 @@
             $('.projectstock').autocomplete(prediction(projectstockUrl,projectstockSelect));
             $('#increment-'+i).val(i+1);
             const projectText = $("#project option:selected").text().replace(/\s+/g, ' ');
+            const projectval = $("#project option:selected").val();
             $('#projectstocktext-'+i).val(projectText);
+            $('#projectstockval-'+i).val(projectval);
             taxRule('rowtax-'+i, $('#tax').val());
 
             //Add the previous supplier data            
