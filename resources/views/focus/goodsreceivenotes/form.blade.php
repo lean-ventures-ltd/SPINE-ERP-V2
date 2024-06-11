@@ -111,9 +111,9 @@
                         </td>
                         <td>
                             <select name="warehouse_id[]" class="form-control warehouse" id="warehouseid-{{$i}}">
-                                <option value="">---Select Warehouse</option>
+                                <option value="0">---Select Warehouse</option>
                                 @foreach ($warehouses as $row)
-                                    <option value="{{ $row->id }}" {{ $row->id == $item->warehouse_id? 'selected' : '' }}>
+                                    <option value="{{ $row->id }}" {{ $row->id == $item->warehouse_id? 'selected' : 0 }}>
                                         {{ $row->title }}
                                     </option>
                                 @endforeach

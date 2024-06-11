@@ -67,15 +67,63 @@ class GoodsReceiveNoteController extends Controller
      */
     public function store(Request $request)
     {
+        // try {
+        //     if (@$request['invoice_no']) {
+        //         if (empty($request['invoice_date'])) throw ValidationException::withMessages(['invoice_date' => 'Invoice date is required.']);
+        //         if (strlen($request['invoice_no']) != 19 && $request['tax_rate'] > 1) 
+        //         throw ValidationException::withMessages(['invoice_no' => 'Invoice No. should contain 11 characters']);
+        //     }
+        //     if (@$request['tax_rate'] > 0) {
+        //         $supplier = Supplier::where('id', $request['supplier_id'])->first();
+        //             if($supplier->taxid == '') throw ValidationException::withMessages(['Update TaxPin to the Supplier']);
+        //     }
+        //     $grn = $this->respository->create($request->except('_token'));
+        //     $msg = 'Goods Received Note Created Successfully With DNote';
+        //     if ($grn->invoice_no) $msg = 'Goods Received Note Created Successfully With Invoice';
+        // } catch (\Exception $e){
+
+        //     return errorHandler("Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine());
+        // }
+
+        // return new RedirectResponse(route('biller.goodsreceivenote.index'), ['flash_success' => $msg]);
         try {
+            // Check for 'invoice_no' in the request
+            if (!empty($request['invoice_no'])) {
+                // Validate 'invoice_date'
+                if (empty($request['invoice_date'])) {
+                    throw ValidationException::withMessages(['invoice_date' => 'Invoice date is required.']);
+                }
+                // Validate length of 'invoice_no' when 'tax_rate' is greater than 1
+                if (strlen($request['invoice_no']) != 19 && $request['tax_rate'] > 1) {
+                    throw ValidationException::withMessages(['invoice_no' => 'Invoice No. should contain 11 characters']);
+                }
+            }
+        
+            // Validate 'tax_rate' and supplier's 'taxid'
+            if (!empty($request['tax_rate']) && $request['tax_rate'] > 1) {
+                $supplier = Supplier::find($request['supplier_id']);
+                if (!$supplier || empty($supplier->taxid)) {
+                    throw ValidationException::withMessages(['tax_rate' => 'Update TaxPin to the Supplier']);
+                }
+            }
+        
+            // Create GRN using the repository pattern, excluding '_token' from the request
             $grn = $this->respository->create($request->except('_token'));
+        
+            // Determine success message
             $msg = 'Goods Received Note Created Successfully With DNote';
-            if ($grn->invoice_no) $msg = 'Goods Received Note Created Successfully With Invoice';
-        } catch (\Exception $e){
-
-            return errorHandler("Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine());
+            if (!empty($grn->invoice_no)) {
+                $msg = 'Goods Received Note Created Successfully With Invoice';
+            }
+        } catch (ValidationException $e) {
+            // Return validation errors
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            // Handle general exceptions and return a detailed error message
+            return errorHandler("Error: '" . $e->getMessage() . "' | on File: " . $e->getFile() . " | Line: " . $e->getLine());
         }
-
+        
+        // Redirect to the index route with a success message
         return new RedirectResponse(route('biller.goodsreceivenote.index'), ['flash_success' => $msg]);
     }
 

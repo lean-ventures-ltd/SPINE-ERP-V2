@@ -74,15 +74,6 @@ class GoodsreceivenoteRepository extends BaseRepository
                 $input[$key] = array_map(fn($v) => numberClean($v), $val);
         }
         
-        if (@$input['invoice_no']) {
-            if (empty($input['invoice_date'])) throw ValidationException::withMessages(['invoice_date' => 'Invoice date is required.']);
-            if (strlen($input['invoice_no']) != 19 && $input['tax_rate'] > 1) 
-            throw ValidationException::withMessages(['invoice_no' => 'Invoice No. should contain 11 characters']);
-        }
-        if (@$input['tax_rate'] > 0) {
-            $supplier = Supplier::where('id', $input['supplier_id'])->first();
-                if($supplier->taxid == '') throw ValidationException::withMessages(['Update TaxPin to the Supplier']);
-        }
         
         DB::beginTransaction();
         
