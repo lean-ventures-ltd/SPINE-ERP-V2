@@ -321,6 +321,10 @@
             $('#stockTbl tbody tr:eq(-3)').before(html);
             $('.stockname').autocomplete(predict(stockUrl, stockSelect));
             taxRule('rowtax-'+i, $('#tax').val());
+            const projectText = $("#project option:selected").text().replace(/\s+/g, ' ');
+            const projectval = $("#project option:selected").val();
+            $('#projectstocktext-'+i).val(projectText);
+            $('#projectstockval-'+i).val(projectval);
 
             //Add the previous supplier data            
             let priceCustomer = '';

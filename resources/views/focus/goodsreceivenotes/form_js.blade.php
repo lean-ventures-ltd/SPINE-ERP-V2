@@ -78,6 +78,7 @@
             $('#productTbl').on('change', '.qty', this.onQtyChange);
             $('#productTbl').on('mouseup', '.projectstock', Form.projectMouse);
             $('#productTbl').on('change', '.warehouse', this.warehouseChange);
+            $('#productTbl').on('keyup', '.projectstock', this.projectChange);
             this.columnTotals();
         },
 
@@ -123,7 +124,7 @@
                         return false; // break out of the loop
                         }
                     });
-                    $('.projectstock').autocomplete(config.prediction(projectstockUrl, Form.projectstockSelect));
+                    // $('.projectstock').autocomplete(config.prediction(projectstockUrl, Form.projectstockSelect));
                 });
 
             });
@@ -139,7 +140,7 @@
             if(el.is('.projectstock')){
                 row.find('.warehouse').attr('readonly', true);
                 row.find('.warehouse option:selected').val(0);
-                $('#projectstockval-'+i).val(data.id).change();
+                row.find('.stockitemprojectid').val(data.id).change();
             }
             
         },
@@ -192,6 +193,20 @@
             if(el.is('.warehouse')){
                 row.find('.projectstock').val('').attr('disabled', true);
                 row.find('.stockitemprojectid').val(0);
+            }
+
+            if(el.val() == ''){
+                row.find('.projectstock').val('').attr('disabled', false);
+            }
+        },
+        projectChange() {
+            const projectstockUrl = "{{ route('biller.projects.project_search') }}";
+            const el = $(this);
+            const row = el.parents('tr:first');
+            if(el.is('.projectstock')){
+                row.find('.projectstock').autocomplete(config.prediction(projectstockUrl, Form.projectstockSelect));
+                // row.find('.projectstock').val('').attr('disabled', true);
+                // row.find('.stockitemprojectid').val(0);
             }
 
             if(el.val() == ''){
