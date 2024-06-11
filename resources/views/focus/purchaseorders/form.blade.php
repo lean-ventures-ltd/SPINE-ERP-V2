@@ -58,6 +58,7 @@
                         <tr class="sub_c" style="display: table-row;">
                             <td align="right" colspan="4">
                                 <p id="milestone_warning" class="text-red ml-2" style="display: inline-block; color: red; font-size: 16px; "> </p>
+                                <p id="budget_warning" class="text-red ml-2" style="display: inline-block; color: red; font-size: 16px; "> </p>
                             </td>
                         </tr>
 
