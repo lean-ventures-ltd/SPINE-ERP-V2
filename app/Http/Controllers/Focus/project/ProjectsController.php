@@ -233,19 +233,21 @@ class ProjectsController extends Controller
         $k = $request->post('keyword');
 
         $projects = Project::whereHas('misc', fn($q) => $q->where('name', '!=', 'Completed'))
-        ->where(function($q) use($k) {
-            $q->whereHas('quote', function ($q) use ($k) {
-                $q->whereHas('budget')->where('tid', 'LIKE', '%' . $k . '%');
+            ->where(function($q) use($k) {
+                $q->whereHas('quote', function ($q) use ($k) {
+                    $q->whereHas('budget')->where('tid', 'LIKE', '%' . $k . '%');
+                })
+                ->orWhere('tid', $k)
+                ->orWhere('name', 'LIKE', '%' . $k . '%')
+                ->orWhereHas('branch', function ($q) use ($k) {
+                    $q->where('name', 'LIKE', '%' . $k . '%');
+                })->orWhereHas('customer_project', function ($q) use ($k) {
+                    $q->where('company', 'LIKE', '%' . $k . '%');
+                });
             })
-            ->orWhere('tid', $k)
-            ->orWhere('name', 'LIKE', '%' . $k . '%')
-            ->orWhereHas('branch', function ($q) use ($k) {
-                $q->where('name', 'LIKE', '%' . $k . '%');
-            })->orWhereHas('customer_project', function ($q) use ($k) {
-                $q->where('company', 'LIKE', '%' . $k . '%');
-            });
-        })
-        ->limit(6)->get();
+            ->with('budget')
+            ->limit(6)
+            ->get();
 
         $output = [];
         foreach ($projects as $project) {
@@ -264,7 +266,8 @@ class ProjectsController extends Controller
                 'id' => $project->id,
                 'name' => implode(' - ', [$quote_tids, $customer, $branch, $project_tid, $project->name]),
                 'client_id' => @$project->customer_project->id,
-                'branch_id' => @$project->branch->id
+                'branch_id' => @$project->branch->id,
+                'budget' => $project->budget
             ];
         }
 
