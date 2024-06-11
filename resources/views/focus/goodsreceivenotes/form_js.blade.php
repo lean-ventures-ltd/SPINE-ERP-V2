@@ -155,7 +155,6 @@
             const received = accounting.formatNumber(v.qty_received);
             const due = v.qty - v.qty_received;
             const balance = accounting.formatNumber(due > 0? due : 0);
-            console.log(v);
             return `
                 <tr>
                     <td width="5%">${i+1}</td>    
