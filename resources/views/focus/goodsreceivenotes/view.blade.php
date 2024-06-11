@@ -47,18 +47,35 @@
                                         <tr class="bg-gradient-directional-blue white">
                                             <th>#</th>
                                             <th>Product Description</th>
+                                            <th>Project/Quote</th>
                                             <th>UoM</th>
                                             <th>Qty Ordered</th>
                                             <th>Qty Received</th>
                                             <th>Qty Due</th>                                            
+                                            <th>Payment Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>   
                                         @foreach ($grn->items as $i => $item)
                                             @if ($po_item = $item->purchaseorder_item)
                                                 <tr>
+                                                    @php
+                                                        $project_name = $item->project? gen4tid('Prj-', $item->project->tid) . ' - ' . $item->project->name : '';
+                                                        $project = $item->project;
+                                                        $paid = '';
+                                                        if ($project) {
+                                                            $quote = $project->quote;
+                                                            if($quote) {
+                                                                $invoice = $quote->invoice_product;
+                                                                if($invoice) {
+                                                                    $paid = $invoice->invoice ? $invoice->invoice->status : '';
+                                                                }
+                                                            }
+                                                        }
+                                                    @endphp
                                                     <td>{{ $i+1 }}</td>
                                                     <td>{{ $po_item->description }}</td>
+                                                    <td width="20%" style="">{{ $project_name }}</td>
                                                     <td>{{ $po_item->uom }}</td>
                                                     <td>{{ +$po_item->qty }}</td>
                                                     <td>{{ +$po_item->qty_received }}</td>
@@ -67,7 +84,8 @@
                                                             $due = $po_item->qty - $po_item->qty_received;
                                                         @endphp
                                                         {{ $due > 0? +$due : 0 }}
-                                                    </td>                                                                                            
+                                                    </td>     
+                                                    <td><span class="st-{{$paid}}">{{$paid}}</span></td>                                                                                       
                                                 </tr>
                                             @endif
                                         @endforeach
