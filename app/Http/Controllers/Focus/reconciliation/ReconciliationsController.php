@@ -139,7 +139,10 @@ class ReconciliationsController extends Controller
         $date = [current($date_parts), end($date_parts)];
 
         $journal_items = JournalItem::where('account_id', request('account_id'))
-        ->whereHas('journal', fn($q) => $q->whereMonth('date', $date[0])->whereYear('date', $date[1]))
+        ->whereHas('journal', function ($q) use($date) {
+            $q->whereMonth('date', $date[0])->whereYear('date', $date[1])
+            ->where(fn($q) => $q->where('customer_id', '>', 0)->orwhere('supplier_id', '>', 0));
+        })
         ->get()
         ->each(function($item) use($account_items, $struct) {
             $acc_item = array_replace($struct, [
