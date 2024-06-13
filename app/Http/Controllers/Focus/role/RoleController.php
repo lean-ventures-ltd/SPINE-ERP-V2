@@ -26,6 +26,7 @@ use App\Models\Access\Permission\Permission;
 use App\Models\Access\Role\Role;
 use App\Repositories\Focus\role\PermissionRepository;
 use App\Repositories\Focus\role\RoleRepository;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -174,8 +175,8 @@ class RoleController extends Controller
     {
         try {
             $this->roles->update($role, $request->except('_token'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Updating Role', $th);
+        } catch (Exception $e) {
+            return "Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine();
         }
 
         return new RedirectResponse(route('biller.role.index'), ['flash_success' => trans('alerts.backend.roles.updated')]);
