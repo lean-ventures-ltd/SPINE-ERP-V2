@@ -216,33 +216,15 @@
         const id = $(this).attr('id').split('-')[1];
         const row = $(this).parents("tr:first");
         if (row.hasClass('misc')) {
-            // const taxrate = accounting.unformat($('#taxrate-' + id).val());
-            // let buyprice = accounting.unformat($('#buyprice-' + id).val());
-            // let estqty = accounting.unformat($('#estqty-' + id).val() || '1');
             const taxrate = accounting.unformat(row.find('.tax_rate').val());
             let buyprice = accounting.unformat(row.find('.buyprice').val());
             let estqty = accounting.unformat(row.find('.estqty').val() || '1');
             price = 0;
-
-
-            if (taxrate === 0) {
-                price = buyprice;
-            } else {
-                price = buyprice * (taxrate / 100 + 1);
-            }
-
-            // $('#amount-' + id).text(accounting.formatNumber(estqty * price, 4));
-            row.find('.amount').text(accounting.formatNumber(estqty * price, 4));
+            if (taxrate === 0) price = buyprice;
+            else price = buyprice * (taxrate / 100 + 1);
+            row.find('.amount').text(accounting.formatNumber(estqty * price, 2));
             calcTotal();
         } else {
-
-            // const qty = accounting.unformat($('#qty-' + id).val());
-            // const taxrate = accounting.unformat($('#taxrate-' + id).val());
-            // let buyprice = accounting.unformat($('#buyprice-' + id).val());
-            // let estqty = accounting.unformat($('#estqty-' + id).val() || '1');
-            // let rate = accounting.unformat($('#rate-' + id).val());
-
-            // const qty = accounting.unformat($('#qty-' + id).val());
             const qty = accounting.unformat(row.find('.qty').val());
             const taxrate = accounting.unformat(row.find('.tax_rate').val());
             let buyprice = accounting.unformat(row.find('.buyprice').val());
@@ -255,18 +237,11 @@
             let pcent_profit = profit / (estqty * buyprice) * 100;
             pcent_profit = isFinite(pcent_profit) ? Math.round(pcent_profit) : 0;
 
-            row.find('.buyprice').val(accounting.formatNumber(buyprice, 4));
-            row.find('.rate').val(accounting.formatNumber(rate, 4));
-            row.find('.price').val(accounting.formatNumber(price, 4));
-            row.find('.amount').text(accounting.formatNumber(qty * price, 4));
+            row.find('.buyprice').val(accounting.formatNumber(buyprice,2));
+            row.find('.rate').val(accounting.formatNumber(rate,2));
+            row.find('.price').val(accounting.formatNumber(price,2));
+            row.find('.amount').text(accounting.formatNumber(qty * price,2));
             row.find('.lineprofit').text(pcent_profit + '%');
-
-
-            // $('#buyprice-' + id).val(accounting.formatNumber(buyprice, 4));
-            // $('#rate-' + id).val(accounting.formatNumber(rate, 4));
-            // $('#price-' + id).val(accounting.formatNumber(price, 4));
-            // $('#amount-' + id).text(accounting.formatNumber(qty * price, 4));
-            // $('#lineprofit-' + id).text(pcent_profit + '%');
             calcTotal();
         }
     });
@@ -278,7 +253,7 @@
             updateLineTax($(this).find('.tax_rate'));
             if ($(this).find('.qty').val() * 1) {
                 const itemRate = accounting.unformat($(this).find('.rate').val());
-                $(this).find('.price').val(accounting.formatNumber(itemRate * (mainTax / 100 + 1), 4));
+                $(this).find('.price').val(accounting.formatNumber(itemRate * (mainTax / 100 + 1), 2));
                 $(this).find('.rate').change();
             }
         });
@@ -294,8 +269,8 @@
                 let itemRate = accounting.unformat($(this).find('.rate').val()) * initRate;
                 purchasePrice = purchasePrice / currentRate;
                 itemRate = itemRate / currentRate;
-                $(this).find('.buyprice').val(accounting.formatNumber(purchasePrice, 4));
-                $(this).find('.rate').val(accounting.formatNumber(itemRate, 4)).change();
+                $(this).find('.buyprice').val(accounting.formatNumber(purchasePrice,2));
+                $(this).find('.rate').val(accounting.formatNumber(itemRate,2)).change();
             });
         } else {
             $('#quoteTbl tbody tr').each(function() {
@@ -303,8 +278,8 @@
                 let itemRate = accounting.unformat($(this).find('.rate').val()) / currentRate;
                 purchasePrice = purchasePrice * initRate;
                 itemRate = itemRate * initRate;
-                $(this).find('.buyprice').val(accounting.formatNumber(purchasePrice, 4));
-                $(this).find('.rate').val(accounting.formatNumber(itemRate, 4)).change();
+                $(this).find('.buyprice').val(accounting.formatNumber(purchasePrice,2));
+                $(this).find('.rate').val(accounting.formatNumber(itemRate,2)).change();
             });
         }
         initRate = currentRate;
@@ -320,14 +295,6 @@
             const isMisc = $(this).hasClass('misc');
             const qty = $(this).find('.qty').val() * 1;
             if (qty > 0) {
-                if (!isMisc) {
-                    const amount = accounting.unformat($(this).find('.amount').text());
-                    const rate = accounting.unformat($(this).find('.rate').val());
-                    const taxRate = accounting.unformat($(this).find('.tax_rate').val());
-                    if (taxRate > 0) taxable += qty * rate;
-                    total += amount;
-                    subtotal += qty * rate;
-                }
                 if (isMisc) {
                     const buyprice = accounting.unformat($(this).find('.buyprice').val());
                     const estqty = $(this).find('.estqty').val();
@@ -341,19 +308,17 @@
                     bp_subtotal += v * estqty;
 
                 } else {
+                    const amount = accounting.unformat($(this).find('.amount').text());
+                    const rate = accounting.unformat($(this).find('.rate').val());
+                    const taxRate = accounting.unformat($(this).find('.tax_rate').val());
+                    if (taxRate > 0) taxable += qty * rate;
+                    total += amount;
+                    subtotal += qty * rate;
+
                     const buyprice = accounting.unformat($(this).find('.buyprice').val());
                     const estqty = $(this).find('.estqty').val();
                     bp_subtotal += estqty * buyprice;
                 }
-                // const amount = accounting.unformat($(this).find('.amount').text());
-
-                // }
-                // profit variables
-                // const buyprice = accounting.unformat($(this).find('.buyprice').val());
-                // const estqty = $(this).find('.estqty').val();
-                // bp_subtotal += estqty * buyprice;
-
-                // bp_subtotal += estqty * v;
             }
             $(this).find('.index').val(i);
         });
