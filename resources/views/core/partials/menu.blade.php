@@ -247,6 +247,10 @@
                                             class="ficon ft-layout"></i> {{ trans('meta.rtl') }}</a></li>
                         </ul>
                     </li>
+
+                    <li class="nav-item ">
+                        <a href="{{ route('biller.dashboard') }}" class="btn round mt_6"> {{ @$logged_in_user->business->cname }} </a>
+                    </li>
                 </ul>
 
                 <div class="nav navbar-nav float-right mr-2" style="color: white;">
