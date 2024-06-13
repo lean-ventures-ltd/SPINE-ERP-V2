@@ -206,12 +206,13 @@ class ReconciliationsController extends Controller
         }
         // use last reconciliation if months are consecutive
         $month = $date[0] - 1 ?: 12;
-        $year = $date[1] - 1;
+        $year = $date[0] - 1? $date[1] : $date[1] - 1;
         if (strlen("{$month}") == 1) $month = "0{$month}";
-        $last_recon =  Reconciliation::where('account_id', request('id'))
-        ->where('end_date', 'LIKE', "%{$month}-{$year}%")
-        ->orderBy('id', 'DESC')
-        ->first();
+        $last_recon =  Reconciliation::where('account_id', request('account_id'))
+            ->where('end_date', 'LIKE', "%{$month}-{$year}%")
+            ->orderBy('id', 'DESC')
+            ->first();
+
         if ($last_recon) {
             $last_recon_date = explode('-', $last_recon->end_date);
             $month_diff = intval($date[0]) - intval($last_recon_date[0]);
