@@ -258,19 +258,23 @@ class InvoicesController extends Controller
                 ->get();
         }
         
-        
+        // check if quotes are of same currency
+        $currency_ids = $quotes->pluck('currency_id')->toArray();
+        if (count(array_unique($currency_ids)) > 1) throw ValidationException::withMessages(['Selected items must be of same currency!']);
+        $currency = $quotes->first()? $quotes->first()->currency : new Currency;
+
         $customer = Customer::find($customer_id) ?: new Customer;
         $accounts = Account::whereHas('accountType', fn($q) => $q->whereIn('name', ['Income', 'Other Income']))->get();
         $terms = Term::where('type', 1)->get();  // invoice term type is 1
         $banks = Bank::all();
         $additionals = Additional::all();
-
+        
         $ins =  auth()->user()->ins;
         $last_tid = Invoice::where('ins', $ins)->max('tid');
         $prefixes = prefixesArray(['invoice', 'quote', 'proforma_invoice', 'purchase_order', 'delivery_note', 'jobcard'], $ins);
 
         return new ViewResponse('focus.invoices.create_project_invoice',
-            compact('quotes', 'customer', 'last_tid', 'banks', 'accounts', 'terms', 'quote_ids', 'additionals', 'prefixes'),
+            compact('quotes', 'customer', 'last_tid', 'banks', 'accounts', 'terms', 'quote_ids', 'additionals', 'currency', 'prefixes'),
         );
     }
 
@@ -282,7 +286,7 @@ class InvoicesController extends Controller
         // extract request input fields
         $bill = $request->only([
             'customer_id', 'bank_id', 'tax_id', 'tid', 'invoicedate', 'validity', 'notes', 'term_id', 'account_id',
-            'taxable', 'subtotal', 'tax', 'total', 'estimate_id'
+            'taxable', 'subtotal', 'tax', 'total', 'estimate_id', 'fx_curr_rate',
         ]);
         $bill_items = $request->only([
             'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 'product_subtotal', 'product_price', 
@@ -322,19 +326,16 @@ class InvoicesController extends Controller
         }
 
         $banks = Bank::all();
-        $accounts = Account::whereHas('accountType', function ($query) {
-            $query->whereIn('name', ['Income', 'Other Income']);
-        })->with(['accountType' => function ($query) {
-            $query->select('id', 'name');
-        }])->get();
+        $accounts = Account::whereHas('accountType', fn($q) => $q->whereIn('name', ['Income', 'Other Income']))
+        ->with(['accountType' => fn($q) => $q->select('id', 'name')])
+        ->get();
 
         $terms = Term::where('type', 1)->get(); // invoice type 1
         $additionals = Additional::all();
         $prefixes = prefixesArray(['invoice'], $invoice->ins);
+        $currency = $invoice->currency ?: new Currency;
 
-        $params = compact('invoice', 'banks', 'accounts', 'terms', 'additionals', 'prefixes');
-
-        return new ViewResponse('focus.invoices.edit_project_invoice', $params);
+        return new ViewResponse('focus.invoices.edit_project_invoice', compact('invoice', 'banks', 'accounts', 'terms', 'additionals', 'prefixes', 'currency'));
     }
 
     /**
@@ -345,12 +346,11 @@ class InvoicesController extends Controller
         // extract request input fields
         $bill = $request->only([
             'customer_id', 'bank_id', 'tax_id', 'tid', 'invoicedate', 'validity', 'notes', 'term_id', 'account_id',
-            'taxable', 'subtotal', 'tax', 'total', 
+            'taxable', 'subtotal', 'tax', 'total', 'estimate_id', 'fx_curr_rate',
         ]);
         $bill_items = $request->only([
-            'id', 'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 
-            'product_subtotal', 'product_price', 'tax_rate', 'quote_id', 'project_id', 'branch_id',
-            'verification_id'
+            'id', 'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 'product_subtotal', 'product_price', 
+            'tax_rate', 'quote_id', 'project_id', 'branch_id', 'verification_id', 'product_tax', 'product_amount',
         ]);
 
         $bill['user_id'] = auth()->user()->id;
@@ -467,6 +467,7 @@ class InvoicesController extends Controller
         try {
             $result = $this->inv_payment_repository->update($payment, compact('data', 'data_items'));
         } catch (\Throwable $th) {
+            dd($th);
             return errorHandler('Error Updating Payment', $th);
         }
 

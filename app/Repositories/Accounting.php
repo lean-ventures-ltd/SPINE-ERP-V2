@@ -353,6 +353,8 @@ trait Accounting
     /**
      * Invoice Transaction
      * @param object $invoice
+     * 
+     * When fx_curr_rate > 1, fx_total is the functional currency else total
      */
     public function post_invoice($invoice)
     {
@@ -376,20 +378,23 @@ trait Accounting
             'debit' => 0,
             'credit' => 0,
             'customer_id' => $invoice->customer_id,
-            'invoice_id' => $invoice->id
+            'invoice_id' => $invoice->id,
+            'fx_curr_rate' => $invoice->fx_curr_rate,
         ];
 
         // debit Accounts Receivable (Debtors)
-        $inc_cr_data = array_replace($dr_data, [
-            'debit' => $invoice->total,
+        $inc_dr_data = array_replace($dr_data, [
+            'debit' => $invoice->fx_curr_rate > 1? $invoice->fx_total : $invoice->total, 
+            'fx_debit' => $invoice->fx_curr_rate > 1? $invoice->total : 0, 
         ]);
-        Transaction::create($inc_cr_data);
+        Transaction::create($inc_dr_data);
         unset($dr_data['is_primary']);
 
         // credit Revenue Account (Income)
         $inc_cr_data = array_replace($dr_data, [
             'account_id' => $invoice->account_id,
-            'credit' => $invoice->subtotal,
+            'credit' => $invoice->fx_curr_rate > 1? $invoice->fx_subtotal : $invoice->subtotal, 
+            'fx_credit' => $invoice->fx_curr_rate > 1? $invoice->subtotal : 0, 
         ]);
         Transaction::create($inc_cr_data);
         unset($dr_data['is_primary']);
@@ -399,7 +404,8 @@ trait Accounting
             $account = Account::where('system', 'tax')->first(['id']);
             $tax_cr_data = array_replace($dr_data, [
                 'account_id' => $account->id,
-                'credit' => $invoice->tax,
+                'credit' => $invoice->fx_curr_rate > 1? $invoice->fx_tax : $invoice->tax, 
+                'fx_credit' => $invoice->fx_curr_rate > 1? $invoice->tax : 0, 
             ]);
             Transaction::create($tax_cr_data);
         }
@@ -1055,7 +1061,6 @@ trait Accounting
             'debit' => $projectstock['total'],
         ]);
         Transaction::create($dr_data);
-        
     }
 
     /**

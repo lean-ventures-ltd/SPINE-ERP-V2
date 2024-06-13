@@ -97,16 +97,41 @@
         </select>
     </div>
 
-    <div class="col-md-4">
-        <label for="terms">Terms</label>
-        <select name="term_id" class="custom-select">
-            @foreach ($terms as $term)
-            <option value="{{ $term->id }}" {{ $term->id == @$invoice->term_id ? 'selected' : ''}}>
-                {{ $term->title }}
-            </option>
-            @endforeach
-        </select>
-    </div>
+    @if ($currency->rate == 1)
+        <div class="col-md-4">
+            <label for="terms">Terms</label>
+            <select name="term_id" class="custom-select">
+                @foreach ($terms as $term)
+                <option value="{{ $term->id }}" {{ $term->id == @$invoice->term_id ? 'selected' : ''}}>
+                    {{ $term->title }}
+                </option>
+                @endforeach
+            </select>
+            <input type="hidden" name="fx_curr_rate" value="{{ +$currency->rate }}">
+        </div>
+    @else
+        <div class="col-md-2">
+            <label for="terms">Terms</label>
+            <select name="term_id" class="custom-select">
+                @foreach ($terms as $term)
+                <option value="{{ $term->id }}" {{ $term->id == @$invoice->term_id ? 'selected' : ''}}>
+                    {{ $term->title }}
+                </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="currency_code">Forex Rate</label>
+            <div class="row no-gutters">
+                <div class="col-6"> 
+                    {{ Form::text('currency_code', $currency->code, ['class' => 'form-control', 'id' => 'currency_code', 'disabled' => 'disabled']) }}
+                </div>
+                <div class="col-6">
+                    {{ Form::text('fx_curr_rate', +$currency->rate, ['class' => 'form-control', 'id' => 'fx_curr_rate']) }}
+                </div>
+            </div>
+        </div>
+    @endif
 
     @if (@$quote_ids && count($quote_ids) == 1)
         <div class="col-md-2">
