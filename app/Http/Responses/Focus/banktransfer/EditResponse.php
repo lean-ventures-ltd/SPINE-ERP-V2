@@ -31,7 +31,6 @@ class EditResponse implements Responsable
     {
         $accounts = Account::whereHas('accountType', fn($q) => $q->where('system', 'bank'))->get(['id', 'holder']);
         
-        return view('focus.banktransfers.edit', compact('accounts'))
-            ->with([ 'banktransfer' => $this->banktransfer]);
+        return view('focus.banktransfers.edit', compact('accounts'))->with([ 'banktransfer' => $this->banktransfer]);
     }
 }
