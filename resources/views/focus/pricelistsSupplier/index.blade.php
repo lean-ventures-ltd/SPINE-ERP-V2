@@ -210,7 +210,12 @@
                 order: [[0, "desc"]],
                 searchDelay: 500,
                 dom: 'Blfrtip',
-                buttons: ['csv', 'excel', 'pdf']
+                buttons: ['csv', 'excel', 'pdf'],
+                lengthMenu: [
+                    [25, 50, 100, 200, -1],
+                    [25, 50, 100, 200, "All"]
+                ],
+                pageLength: -1,
             });
         },
     };
