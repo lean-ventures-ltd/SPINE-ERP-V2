@@ -85,7 +85,7 @@ class TenantRepository extends BaseRepository
 
         // update tenant user
         $user = User::where('customer_id', $tenant_package->customer_id)->first();
-        if (!$user) throw ValidationException::withMessages(['Default User must be created under customer module']);
+        if (!$user)  return 'Default User must be created under customer module';
         $user->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);
         $role = Role::where('created_by', $user->id)->first();
         $role->update(['ins' => $tenant->id, 'updated_by' => auth()->user()->id]);            
