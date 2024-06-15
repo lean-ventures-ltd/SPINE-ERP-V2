@@ -14,7 +14,7 @@
     {{ Form::label( 'code_initials', 'Product Code Initials',['class' => 'col-lg-2 control-label']) }}
     <div class='col-lg-10'>
         {{-- {{ Form::text('code_initials', null, ['class' => 'form-control box-size', 'placeholder' => 'eg. SC', 'id'=>'code_initials']) }} --}}
-        <input type="text" maxlength="2" name="code_initials" id="code_initials" class="form-control box-size">
+        <input type="text" maxlength="2" value="{{@$productcategories->code_initials}}" name="code_initials" id="code_initials" class="form-control box-size">
         <p class="code"></p>
     </div>
 </div>
