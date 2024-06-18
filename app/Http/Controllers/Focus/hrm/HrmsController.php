@@ -405,18 +405,18 @@ class HrmsController extends Controller
             'Account Service',
         ];
 
-        $permissions_all = \App\Models\Access\Permission\Permission::where(function ($query) use ($exclusions) {
+        $permissions_all = Permission::where(function ($query) use ($exclusions) {
                 foreach ($exclusions as $exclusion) {
                     $query->where('display_name', 'not like', '%' . $exclusion . '%');
                 }
             })
-            ->orWhereHas('roles', function ($q) use ($emp_role) {
+            ->whereHas('roles', function ($q) use ($emp_role) {
                 return $q->where('role_id', '=', $emp_role);
             })
             ->get()
             ->toArray();
 
-        if ($create > 1) $permissions = \App\Models\Access\Permission\PermissionUser::all()->keyBy('id')->where('user_id', '=', $create)->toArray();
+        if ($create > 1) $permissions = PermissionUser::all()->keyBy('id')->where('user_id', '=', $create)->toArray();
         return view('focus.hrms.partials.permissions')->with(compact('permissions_all', 'create', 'permissions'));
     }
 
@@ -426,12 +426,12 @@ class HrmsController extends Controller
         $emp_role = $request->post('rid');
         $create = $request->post('create');
 
-        $permissions_all = \App\Models\Access\Permission\Permission::orWhereHas('roles', function ($q) use ($emp_role) {
+        $permissions_all = Permission::whereHas('roles', function ($q) use ($emp_role) {
             return $q->where('role_id', '=', $emp_role);
         })->get()->toArray();
 
         $permissions = [];
-        if ($create) $permissions = \App\Models\Access\Permission\PermissionUser::all()->keyBy('id')->where('user_id', '=', $create)->toArray();
+        if ($create) $permissions = PermissionUser::all()->keyBy('id')->where('user_id', '=', $create)->toArray();
 
         return view('focus.hrms.partials.role_permissions')->with(compact('permissions_all', 'create', 'permissions'));
     }
@@ -453,10 +453,10 @@ class HrmsController extends Controller
         $emp_role = $request->post('rid');
         $create = $request->post('create');
         $permissions = '';
-        $permissions_all = \App\Models\Access\Permission\Permission::orWhereHas('roles', function ($q) use ($emp_role) {
+        $permissions_all = Permission::whereHas('roles', function ($q) use ($emp_role) {
             return $q->where('role_id', '=', $emp_role);
         })->get()->toArray();
-        if ($create) $permissions = \App\Models\Access\Permission\PermissionUser::all()->keyBy('id')->where('user_id', '=', $create)->toArray();
+        if ($create) $permissions = PermissionUser::all()->keyBy('id')->where('user_id', '=', $create)->toArray();
         return view('focus.hrms.partials.admin_permissions')->with(compact('permissions_all', 'create', 'permissions'));
     }
 }
