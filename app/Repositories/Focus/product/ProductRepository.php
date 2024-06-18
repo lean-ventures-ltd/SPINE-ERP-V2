@@ -130,14 +130,10 @@ class ProductRepository extends BaseRepository
                     $item[$key] =  rand(100, 999) . rand(0, 9) . rand(1000000, 9999999) . rand(0, 9);
                 if ($key == 'code' && !$val){
                     $productcategory = Productcategory::where('id',$input['productcategory_id'])->first();
-                    // $strArray = explode(' ',$productcategory->title);
-                    // $lastElement = end($strArray);
-                    $firstparent = $productcategory->code_initials;
-                    $count = ProductVariation::where('productcategory_id', $input['productcategory_id'])->count();
-                    $count = $count + 1;
-                    $count_updated = sprintf("%04d", $count);
-                    $code = $firstparent.$count_updated;
-                    $item[$key] =  $code;
+                    $prefix = $productcategory->code_initials;
+                    $codes = ProductVariation::where('productcategory_id', $input['productcategory_id'])->where('code', '!=','')->get(['code'])->toArray();
+                    $newCode = $this->addMissingOrNextCode($codes, $prefix);
+                    $item[$key] =  $newCode;
                 }
                    
 
@@ -220,33 +216,32 @@ class ProductRepository extends BaseRepository
                     {
                         if (empty($item[$key])) {
                             $productcategory = Productcategory::where('id',$input['productcategory_id'])->first();
-                            // $strArray = explode(' ',$productcategory->title);
-                            // $lastElement = end($strArray);
-                            $firstparent = $productcategory->code_initials;
-                            $count = ProductVariation::where('productcategory_id', $input['productcategory_id'])->count();
-                            $count = $count + 1;
-                            $count_updated = sprintf("%04d", $count);
-                            $code = $firstparent.$count_updated;
-                            $item[$key] =  $code;
+                            $prefix = $productcategory->code_initials;
+                            //Get the codes from productvariation
+                            $codes = ProductVariation::where('productcategory_id', $input['productcategory_id'])->where('code', '!=','')->get(['code'])->toArray();
+                            $newCode = $this->addMissingOrNextCode($codes, $prefix);
+                            $item[$key] =  $newCode;
                         }
                         elseif ($item[$key]) {
                            // dd($item[$key]);
                             $code_ext = ProductVariation::where('code', $item[$key])->first();
                             if ($code_ext) {
                                 $productcategory = Productcategory::where('id',$input['productcategory_id'])->first();
-                                // $strArray = explode(' ',$productcategory->title);
-                                // $lastElement = end($strArray);
-                                $firstparent = $productcategory->code_initials;
+                                $prefix = $productcategory->code_initials;
                                 $code_substr = substr($item[$key], 0, 2);
-                                if ($code_substr == $firstparent) {
+                                if ($code_substr == $prefix) {
+                                    $no_of_times = ProductVariation::where('code', $item[$key])->count();
+                                    if($no_of_times > 1){
+                                        $codes = ProductVariation::where('productcategory_id', $input['productcategory_id'])->where('code', '!=','')->get(['code'])->toArray();
+                                        $newCode = $this->addMissingOrNextCode($codes, $prefix);
+                                        $item[$key] =  $newCode;
+                                    }
                                     $item[$key] = $item[$key];
                                 }
                                 else {
-                                    $count = ProductVariation::where('productcategory_id', $input['productcategory_id'])->count();
-                                    $count = $count + 1;
-                                    $count_updated = sprintf("%04d", $count);
-                                    $code = $firstparent.$count_updated;
-                                    $item[$key] =  $code;
+                                    $codes = ProductVariation::where('productcategory_id', $input['productcategory_id'])->where('code', '!=','')->get(['code'])->toArray();
+                                    $newCode = $this->addMissingOrNextCode($codes, $prefix);
+                                    $item[$key] =  $newCode;
                                 }
                             }
                         }
@@ -287,6 +282,49 @@ class ProductRepository extends BaseRepository
         throw new GeneralException(trans('exceptions.backend.products.update_error'));
     }
 
+    public function addMissingOrNextCode(&$codes, $prefix) {
+        if (empty($codes)) {
+            // If the codes array is empty, create the first code
+            $newCode = $prefix . '0001';
+            $codes[] = ['code' => $newCode];
+            return $newCode;
+        }
+    
+        // Extract the codes and sort them
+        $codeList = array_column($codes, 'code');
+        sort($codeList);
+    
+        // Extract the numeric parts
+        $numericParts = array_map(function($code) {
+            return (int)substr($code, 2);
+        }, $codeList);
+    
+        // Find the missing number or the next number
+        $missingNumber = null;
+        for ($i = 0; $i < count($numericParts) - 1; $i++) {
+            if ($numericParts[$i + 1] - $numericParts[$i] > 1) {
+                $missingNumber = $numericParts[$i] + 1;
+                break;
+            }
+        }
+    
+        if ($missingNumber === null) {
+            // No missing number found, add the next incremented code
+            $nextNumber = max($numericParts) + 1;
+        } else {
+            // Missing number found
+            $nextNumber = $missingNumber;
+        }
+    
+        // Format the new code
+        $newCode = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+    
+        // Add the new code to the array
+        $codes[] = ['code' => $newCode];
+    
+        // Return the new code
+        return $newCode;
+    }
     /**
      * For deleting the respective model from storage
      *
