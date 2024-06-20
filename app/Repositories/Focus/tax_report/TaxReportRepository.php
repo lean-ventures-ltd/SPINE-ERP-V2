@@ -141,7 +141,7 @@ class TaxReportRepository extends BaseRepository
                 'tax_report_id' => $result->id,
                 'purchase_id' => $v['purchase_type'] == 'purchase'? $v['purchase_id'] : null,
                 'debit_note_id' => $v['purchase_type'] == 'debit_note'? $v['purchase_id'] : null,
-                'is_filed' => $v['purchase_is_filed'],
+                'is_filed' => empty($v['purchase_is_filed']) ? "1" : $v['purchase_is_filed'],
             ], $purchase_data_items);
 
             // delete previously removed items on consecutive filing

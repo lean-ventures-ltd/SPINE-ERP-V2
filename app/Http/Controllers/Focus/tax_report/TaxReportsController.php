@@ -83,9 +83,9 @@ class TaxReportsController extends Controller
         
         try {
             $this->repository->create($request->except('_token'));
-        } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
-            return errorHandler('Error Creating Tax Filing Report', $th);
+        } catch (\Exception $e){
+
+            return "Error: '" . $e->getMessage() . " | on File: " . $e->getFile() . "  | & Line: " . $e->getLine();
         }
 
         return new RedirectResponse(route('biller.tax_reports.index'), ['flash_success' => 'Tax Filing Report Created Successfully']);
