@@ -83,14 +83,14 @@ class ChartController extends Controller
                 break;
 
             case 'supplier':
-                $chart_result = Purchaseorder::whereBetween('invoicedate', [$c['from_date'], $c['to_date']])->groupBy('supplier_id')->select('supplier_id', DB::raw('sum(total) as amount'))->orderBy('amount', 'desc')->take(100)->get();
+                $chart_result = Purchaseorder::whereBetween('date', [$c['from_date'], $c['to_date']])->groupBy('supplier_id')->select('supplier_id', DB::raw('sum(grandttl) as amount'))->orderBy('amount', 'desc')->take(100)->get();
                 $lang['title'] = trans('meta.supplier_graphical_overview');
                 $lang['module'] = 'supplier';
 
                 if ($request->interval) {
                     $chart_array = array();
                     foreach ($chart_result as $row) {
-                        $chart_array[] = array('y' => $row->supplier['name'], 'a' => $row['amount']);
+                        $chart_array[] = array('y' => $row->supplier['name'], 'a' => $row['grandttl']);
                     }
                     return json_encode($chart_array);
                 }

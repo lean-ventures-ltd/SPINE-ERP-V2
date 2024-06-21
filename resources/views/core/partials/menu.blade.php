@@ -2090,11 +2090,11 @@
                                         {{ trans('meta.customer_graphical_overview') }}
                                     </a>
                                 </li>
-{{--                                <li data-menu=""><a class="dropdown-item"--}}
-{{--                                                    href="{{ route('biller.reports.charts', ['supplier']) }}"><i--}}
-{{--                                                class="fa fa-sun-o"></i> {{ trans('meta.supplier_graphical_overview') }}--}}
-{{--                                    </a>--}}
-{{--                                </li>--}}
+                               <li data-menu=""><a class="dropdown-item"
+                                                   href="{{ route('biller.reports.charts', ['supplier']) }}"><i
+                                               class="fa fa-sun-o"></i> {{ trans('meta.supplier_graphical_overview') }}
+                                   </a>
+                               </li>
 {{--                                <li data-menu=""><a class="dropdown-item"--}}
 {{--                                                    href="{{ route('biller.reports.charts', ['product']) }}"><i--}}
 {{--                                                class="ft-trending-up"></i>--}}
