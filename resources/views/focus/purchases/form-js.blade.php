@@ -475,6 +475,7 @@
     });
 
 
+    let purchaseGrandTotal = 0;
 
     function checkMilestoneBudget(milestoneString){
 
@@ -579,7 +580,6 @@
     let countPurchaseItems = @json(@$purchase->products? $purchase->products->count() : 0);    
 
 
-    let purchaseGrandTotal = 0;
 
         <!-- post transaction totals table-->
     const sumLine = (...values) => values.reduce((prev, curr) => prev + curr.replace(/,/g, '')*1, 0);
