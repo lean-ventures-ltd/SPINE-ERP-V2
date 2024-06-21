@@ -64,6 +64,8 @@
                     </div> --}}
                     <input type="text" class="form-control projectstock" id="projectstocktext-0" placeholder="Search Project By Name">
                     <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" id="projectstockval-0">
+                    <input type="hidden" class="prod_id" name="product_id[]" id="product_id-0">
+                    <input type="hidden" class="supplier_product_id" name="supplier_product_id[]" id="supplier_product_id-0">
                 </td>
                 <td colspan="6"></td>
             </tr>
@@ -123,6 +125,8 @@
                             <td colspan="4">
                                 <input type="text" class="form-control projectstock" value="{{ $item->project_name }}" id="projectstocktext-{{$i}}" placeholder="Search Project By Name">
                                 <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="{{ $item->itemproject_id ? $item->itemproject_id : '0' }}" id="projectstockval-{{$i}}">
+                                <input type="hidden" class="prod_id" name="product_id[]" id="product_id-{{$i}}" value="{{$item->product_id}}">
+                                <input type="hidden" class="supplier_product_id" name="supplier_product_id[]" value="{{$item->supplier_product_id}}" id="supplier_product_id-{{$i}}">
                             </td>
                             <td colspan="6"></td>
                         </tr>

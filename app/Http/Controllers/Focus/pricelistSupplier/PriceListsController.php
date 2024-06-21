@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\productcategory\Productcategory;
 use App\Models\warehouse\Warehouse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class PriceListsController extends Controller
 {
@@ -66,8 +67,16 @@ class PriceListsController extends Controller
      */
     public function store(Request $request)
     {
-        $this->repository->create($request->except('_token'));
-
+        try {
+            $this->repository->create($request->except('_token'));
+        }
+        catch (ValidationException $e) {
+            // Return validation errors
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        }
+         catch (\Throwable $e) {
+            return errorHandler("Error: '" . $e->getMessage() . "' | on File: " . $e->getFile() . " | Line: " . $e->getLine());
+        }
         return new RedirectResponse(route('biller.pricelistsSupplier.index'), ['flash_success' => 'Pricelist Item Created Successfully']);
     }
 
@@ -120,14 +129,22 @@ class PriceListsController extends Controller
      */
     public function destroy($id, Request $request)
     {
-        if ($id == 0) {
-            $request->validate(['supplier_id' => 'required']);
-            $this->repository->mass_delete($request->except('_token'));
-        } else {
-            $supplier_product = SupplierProduct::find($id);
-            $this->repository->delete($supplier_product);    
+        try {
+            if ($id == 0) {
+                $request->validate(['supplier_id' => 'required']);
+                $this->repository->mass_delete($request->except('_token'));
+            } else {
+                $supplier_product = SupplierProduct::find($id);
+                $this->repository->delete($supplier_product);    
+            }
         }
-            
+        catch (ValidationException $e) {
+            // Return validation errors
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        }
+         catch (\Throwable $e) {
+            return errorHandler("Error: '" . $e->getMessage() . "' | on File: " . $e->getFile() . " | Line: " . $e->getLine());
+        }
         return new RedirectResponse(route('biller.pricelistsSupplier.index'), ['flash_success' => 'Pricelist Item Deleted Successfully']);
     }
 }
