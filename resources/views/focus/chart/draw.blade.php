@@ -108,6 +108,14 @@
     {{ Html::script('core/app-assets/vendors/js/charts/raphael-min.js') }}
 
     <script type="text/javascript">
+        const config = {
+            ajax: {
+                headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"}
+            },
+            date: {autoHide: true, format: '{{config('core.user_date_format')}}'},
+        };
+        // ajax header set up
+        $.ajaxSetup(config.ajax);
         $('[data-toggle="datepicker"]').datepicker({
             autoHide: true,
             format: '{{config('core.user_date_format')}}'

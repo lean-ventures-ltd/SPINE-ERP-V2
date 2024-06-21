@@ -90,7 +90,7 @@ class ChartController extends Controller
                 if ($request->interval) {
                     $chart_array = array();
                     foreach ($chart_result as $row) {
-                        $chart_array[] = array('y' => $row->supplier['name'], 'a' => $row['grandttl']);
+                        $chart_array[] = array('y' => $row->supplier['name'], 'a' => $row['amount']);
                     }
                     return json_encode($chart_array);
                 }
