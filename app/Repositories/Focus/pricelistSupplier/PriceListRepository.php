@@ -7,6 +7,7 @@ use App\Models\supplier_product\SupplierProduct;
 use App\Repositories\BaseRepository;
 use DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Class ProductcategoryRepository.
@@ -50,6 +51,10 @@ class PriceListRepository extends BaseRepository
     {
         // dd($input);
         unset($input['description']);
+        $pricelist = SupplierProduct::where(['product_id'=> $input['product_id'], 'supplier_id'=> $input['supplier_id']])->first();
+        if($pricelist){
+            throw ValidationException::withMessages(['The Item with Same Supplier Already Exists!']);
+        }
         $input['rate'] = numberClean($input['rate']);
         $result = SupplierProduct::create($input);
         if ($result) return $result;
@@ -93,6 +98,11 @@ class PriceListRepository extends BaseRepository
      */
     public function delete(SupplierProduct $Supplier_product)
     {
+        if (isset($Supplier_product->purchase_order_item)) {
+            $product = $Supplier_product->purchase_order_item;
+            if ($product)
+            throw ValidationException::withMessages(['Product is attached to Purchase Order !']);
+        }
         if ($Supplier_product->delete()) return true;
         
         throw new GeneralException(trans('exceptions.backend.productcategories.delete_error'));

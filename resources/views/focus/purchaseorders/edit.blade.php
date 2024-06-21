@@ -429,6 +429,8 @@
         const stockItemId = data?.id || '';
         const stockDescr = data?.name || '';
         const productCode = data?.code || data?.product_code || '';
+        let product_id = 0;
+        let supplier_product_id = 0;
 
         $('#stockitemid-'+i).val(stockItemId);
         $('#stockdescr-'+i).val(stockDescr);
@@ -436,6 +438,15 @@
 
         const purchasePrice = accounting.unformat(data.purchase_price);
         $('#price-'+i).val(accounting.formatNumber(purchasePrice)).change();
+        if(data?.code){
+            product_id = data.id;
+            supplier_product_id = 0;
+        }else{
+            product_id = data?.product_id;
+            supplier_product_id = data?.id;
+        }
+        $('#product_id-'+i).val(product_id);
+        $('#supplier_product_id-'+i).val(supplier_product_id);
 
         $('#uom-'+i).html('');
         if(data.units)

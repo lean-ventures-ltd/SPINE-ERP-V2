@@ -40,7 +40,7 @@
         <label for="code">Product Code</label>
         <input type="text" name="product_code" class="form-control" @isset($supplier_product)
         {{ $supplier_product->product_code ? $supplier_product->product_code : ''}}
-    @endisset value="{{$supplier_product->product_code ? $supplier_product->product_code : ''}}" id="" >
+    @endisset value="{{$supplier_product->product_code ? $supplier_product->product_code : ''}}" id="" readonly>
     </div>
     <div class="col-2">
         <label for="rate">Rate (Ksh.)</label>

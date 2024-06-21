@@ -101,6 +101,7 @@ class GoodsreceivenoteRepository extends BaseRepository
             $po_item = $item->purchaseorder_item;
             if (!$po_item) throw ValidationException::withMessages(['Line ' . strval($i+1) . ' related purchase order item does not exist!']);
             $po_item->increment('qty_received', $item->qty);
+            // dd($item->productvariation);
 
             // check if is default product variation or is supplier product 
             $prod_variation = $item->productvariation;

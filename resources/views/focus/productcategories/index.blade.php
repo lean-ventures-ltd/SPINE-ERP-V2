@@ -108,14 +108,7 @@
                 order: [[0, "asc"]],
                 searchDelay: 500,
                 dom: 'Blfrtip',
-                buttons: {
-                    buttons: [
-
-                        {extend: 'csv', footer: true, exportOptions: {columns: [0, 1]}},
-                        {extend: 'excel', footer: true, exportOptions: {columns: [0, 1]}},
-                        {extend: 'print', footer: true, exportOptions: {columns: [0, 1]}}
-                    ]
-                }
+                buttons: ['csv', 'excel', 'print']
             });
             $('#productcategories-table_wrapper').removeClass('form-inline');
 

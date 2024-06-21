@@ -92,7 +92,8 @@ class PurchaseordersController extends Controller
             'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'project_milestone', 'purchase_class',
         ]);
         $order_items = $request->only([
-            'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type','product_code','warehouse_id', 'item_purchase_class'
+            'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type','product_code','warehouse_id', 'item_purchase_class',
+            'product_id', 'supplier_product_id'
         ]);
 
         if (!empty($order['project'])) $order['purchase_class'] = '';
@@ -107,6 +108,7 @@ class PurchaseordersController extends Controller
         try {
             $result = $this->repository->create(compact('order', 'order_items'));
         } catch (\Throwable $th) {
+            dd($th);
             if ($th instanceof ValidationException) throw $th;
             return errorHandler('Error Creating Purchase Order', $th);
         }
@@ -148,7 +150,8 @@ class PurchaseordersController extends Controller
             'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'project_milestone', 'purchase_class',
         ]);
         $order_items = $request->only([
-            'id', 'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type','product_code','warehouse_id'
+            'id', 'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type','product_code','warehouse_id',
+            'product_id', 'supplier_product_id'
         ]);
 
         $order['ins'] = auth()->user()->ins;
