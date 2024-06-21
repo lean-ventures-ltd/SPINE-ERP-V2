@@ -38,6 +38,8 @@ class LeadRepository extends BaseRepository
 
         $q->when(request('category'), fn($q) => $q->where('category', request('category')));
 
+        $q->when(request('source'), fn($q) => $q->where('lead_source_id', request('source')));
+
         $q->when(request('from_date') && request('to_date'), function ($q) {
             $q->whereBetween('date_of_request', array_map(fn($v) => date_for_database($v), [request('from_date'), request('to_date')]));
         });

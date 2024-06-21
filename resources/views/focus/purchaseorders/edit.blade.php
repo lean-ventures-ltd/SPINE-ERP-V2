@@ -201,6 +201,8 @@
 
     }
 
+    let purchaseGrandTotal = 0;
+
     function checkMilestoneBudget(milestoneString){
 
         // Get the value of the input field
@@ -276,7 +278,6 @@
     if (projectId) $('#project').append(new Option(projectName, projectId, true, true)).change();
 
 
-    let purchaseGrandTotal = 0;
     // Update transaction table
     const sumLine = (...values) => values.reduce((prev, curr) => prev + curr.replace(/,/g, '')*1, 0);
     function transxnCalc() {
