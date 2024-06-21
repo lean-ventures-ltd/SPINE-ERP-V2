@@ -105,10 +105,10 @@ class StandardInvoicesController extends Controller
 //            ['cu_invoice_no.unique' => 'The Specified CU Invoice Number is Already Taken']
 //        )->validate();
 
-        $cuNo = (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
-
-        if(empty(!$cuNo)) $request['cu_invoice_no'] = explode('KRAMW', auth()->user()->business->etr_code)[1] . $cuNo;
-        else $request['cu_invoice_no'] = '';
+//        $cuNo = (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
+//
+//        if(empty(!$cuNo)) $request['cu_invoice_no'] = explode('KRAMW', auth()->user()->business->etr_code)[1] . $cuNo;
+//        else $request['cu_invoice_no'] = '';
 
 
         $data = $request->only([

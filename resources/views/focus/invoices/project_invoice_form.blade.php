@@ -151,10 +151,8 @@
     @else
         <div class="col-md-2">
             <label for="cu_invoice_no">CU Invoice No.</label>
-            <input type="text" id="cu_invoice_no" name="cu_invoice_no" readonly class="form-control box-size"
-                   @if(!empty($newCuInvoiceNo))
-                       value="{{$newCuInvoiceNo}}"
-                    @elseif(!empty($invoice->cu_invoice_no))
+            <input type="text" id="cu_invoice_no" name="cu_invoice_no" class="form-control box-size"
+                   @if(!empty($invoice->cu_invoice_no))
                         value="{{$invoice->cu_invoice_no}}"
                     @endif
             >
@@ -172,10 +170,8 @@
         <div class="col-md-2">
             <label for="cu_invoice_no">CU Invoice No.</label>
 {{--            {{ Form::text('cu_invoice_no', null, ['class' => 'form-control']) }}--}}
-            <input type="text" id="cu_invoice_no" name="cu_invoice_no" readonly class="form-control box-size"
-                   @if(!empty($newCuInvoiceNo))
-                       value="{{$newCuInvoiceNo}}"
-                   @elseif(!empty($invoice->cu_invoice_no))
+            <input type="text" id="cu_invoice_no" name="cu_invoice_no" class="form-control box-size"
+                   @if(!empty($invoice->cu_invoice_no))
                        value="{{$invoice->cu_invoice_no}}"
                     @endif
             >

@@ -305,10 +305,10 @@ class InvoicesController extends Controller
         $bill['ins'] = auth()->user()->ins;
         $bill_items = modify_array($bill_items);
 
-        $cuNo = (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
-
-        if(empty(!$cuNo)) $bill['cu_invoice_no'] = explode('KRAMW', auth()->user()->business->etr_code)[1] . $cuNo;
-        else $bill['cu_invoice_no'] = '';
+//        $cuNo = (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
+//
+//        if(empty(!$cuNo)) $bill['cu_invoice_no'] = explode('KRAMW', auth()->user()->business->etr_code)[1] . $cuNo;
+//        else $bill['cu_invoice_no'] = '';
 
 
         try {
@@ -360,7 +360,7 @@ class InvoicesController extends Controller
         // extract request input fields
         $bill = $request->only([
             'customer_id', 'bank_id', 'tax_id', 'tid', 'invoicedate', 'validity', 'notes', 'term_id', 'account_id',
-            'taxable', 'subtotal', 'tax', 'total', 'estimate_id', 'fx_curr_rate',
+            'taxable', 'subtotal', 'tax', 'total', 'estimate_id', 'fx_curr_rate', 'cu_invoice_no',
         ]);
         $bill_items = $request->only([
             'id', 'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 'product_subtotal', 'product_price', 
