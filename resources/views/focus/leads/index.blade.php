@@ -35,7 +35,7 @@
 
                         <div class="row mt-2" id="filters">
 
-                            <div class="col-3">
+                            <div class="col-2">
                                 <label for="status">Status</label>
                                 <select name="status" class="custom-select" id="status" data-placeholder="Filter by status">
                                     <option value=""> Filter by Status </option>
@@ -45,7 +45,7 @@
                                 </select>
                             </div>
 
-                            <div class="col-3">
+                            <div class="col-2">
                                 <label for="category" class="caption">Category</label>
                                 <select class="custom-select" name="account_id" id="category" data-placeholder="Filter by Income Category">
                                     @foreach ($income_accounts as $row)
@@ -56,6 +56,16 @@
                                             </option>
                                         @endif
 
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-2">
+                                <label for="source">Source</label>
+                                <select name="source" class="custom-select" id="source" data-placeholder="Filter by source">
+                                    <option value=""> Filter by Source </option>
+                                    @foreach ($leadSources as $src)
+                                        <option value="{{ $src['id'] }}">{{ $src['name'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -131,9 +141,10 @@
 
     $('#status').select2({allowClear: true}).val('').trigger('change');
     $('#category').select2({allowClear: true}).val('').trigger('change');
+    $('#source').select2({allowClear: true}).val('').trigger('change');
 
     // $('#status, #category, #from_date, #to_date').change(redrawTable());
-    $('#filters').on('change', '#status, #category, #from_date, #to_date', () => {
+    $('#filters').on('change', '#status, #category, #source, #from_date, #to_date', () => {
         try {
             $('#leads-table').DataTable().destroy();
             draw_data();
@@ -166,6 +177,7 @@
                 data: {
                     status: $('#status').val(),
                     category: $('#category').val(),
+                    source: $('#source').val(),
                     from_date: $('#from_date').val(),
                     to_date: $('#to_date').val(),
                 },
