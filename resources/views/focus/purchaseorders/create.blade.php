@@ -377,6 +377,8 @@
 
     }
 
+    let purchaseGrandTotal = 0;
+
     function checkMilestoneBudget(milestoneString){
 
         // Get the value of the input field
@@ -449,7 +451,6 @@
         $('#projectstockval-0').val($(this).val());
     });
 
-    let purchaseGrandTotal = 0;
     // Update transaction table
     const sumLine = (...values) => values.reduce((prev, curr) => prev + curr.replace(/,/g, '')*1, 0);
     function transxnCalc() {
