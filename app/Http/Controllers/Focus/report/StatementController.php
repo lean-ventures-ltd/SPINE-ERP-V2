@@ -474,9 +474,20 @@ class StatementController extends Controller
                     })
                     ->get();
                     foreach ($grn_items as $item) {
+                        $supplier_name = '';
+                        $dnote = '';
+                        $invoice_no = '';
+                        if($item->goodsreceivenote){
+                            $supplier_name = $item->goodsreceivenote->supplier ? $item->goodsreceivenote->supplier->name : '';
+                            $dnote = $item->goodsreceivenote->dnote;
+                            $invoice_no = $item->goodsreceivenote->invoice_no;
+                        }
                         $struct_rep = array_replace($struct, [
                             'date' => @$item->goodsreceivenote->date,
                             'type' => 'grn',
+                            'supplier' => $supplier_name,
+                            'dnote_refno' => $dnote,
+                            'invoice_quote_no' => $invoice_no,
                             'qty' => $item->qty,
                         ]);
                         $account_details->add((object) $struct_rep);
@@ -498,9 +509,22 @@ class StatementController extends Controller
                         $q->whereBetween('date', [date_for_database($reports->from_date), date_for_database($reports->to_date)]);
                     })->get();
                     foreach ($issue_items as $item) {
+                        $supplier_name = '';
+                        $dnote = '';
+                        $invoice_no = '';
+                        if($item->stock_issue){
+                            $issue = $item->stock_issue;
+                            $supplier_name = '';
+                            $dnote = $item->stock_issue->ref_no;
+                            $invoice_no = $issue->quote ? gen4tid($issue->quote->bank_id? "PI-" : "QT-", $issue->quote->tid) : "";
+                            
+                        }
                         $struct_rep = array_replace($struct, [
                             'date' => @$item->stock_issue->date,
                             'type' => 'stock-issue',
+                            'supplier' => $supplier_name,
+                            'dnote_refno' => $dnote,
+                            'invoice_quote_no' => $invoice_no,
                             'qty' => -$item->issue_qty,
                         ]);
                         $account_details->add((object) $struct_rep);
