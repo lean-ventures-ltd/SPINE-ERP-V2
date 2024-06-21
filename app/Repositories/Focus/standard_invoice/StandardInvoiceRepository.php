@@ -90,21 +90,21 @@ class StandardInvoiceRepository extends BaseRepository
                 $data[$key] = numberClean($val);
         }
 
-        $cuPrefix = explode('KRAMW', auth()->user()->business->etr_code)[1];
-        if (empty($data['cu_invoice_no'])){
-
-            $cuResponse =['isSet' => true,];
-        }
-        else {
-
-            $setCu = explode($cuPrefix, $data['cu_invoice_no'])[1];
-            $cuResponse = (new ControlUnitInvoiceNumberController())->setCuInvoiceNumber($setCu);
-        }
-
-        if (!$cuResponse['isSet']){
-            DB::rollBack();
-            throw new GeneralException($cuResponse['message']);
-        }
+//        $cuPrefix = explode('KRAMW', auth()->user()->business->etr_code)[1];
+//        if (empty($data['cu_invoice_no'])){
+//
+//            $cuResponse =['isSet' => true,];
+//        }
+//        else {
+//
+//            $setCu = explode($cuPrefix, $data['cu_invoice_no'])[1];
+//            $cuResponse = (new ControlUnitInvoiceNumberController())->setCuInvoiceNumber($setCu);
+//        }
+//
+//        if (!$cuResponse['isSet']){
+//            DB::rollBack();
+//            throw new GeneralException($cuResponse['message']);
+//        }
 
         $result = Invoice::create($data);
         
