@@ -185,7 +185,38 @@
 			</tr>
 		</thead>
 		<tbody>
-			@foreach($resource->products as $i => $item)
+			@php
+            $groupedItems = [];
+			$count = 1;
+
+				// Group and sum quantities
+				foreach ($resource->products as $item) {
+                if (isset($groupedItems[$item->product_id])) {
+                    $groupedItems[$item->product_id]['total_quantity'] += $item->qty;
+                    $groupedItems[$item->product_id]['total_cost'] += $item->qty * $item->rate;
+                } else {
+                    $groupedItems[$item->product_id] = [
+						'description' => $item->description,
+                        'total_quantity' => $item->qty,
+                        'uom' => $item->uom,
+                        'rate' => $item->rate,
+                        'total_cost' => $item->qty * $item->rate
+                    ];
+                }
+            }
+			@endphp
+			@foreach ($groupedItems as $i => $details)
+				<tr>
+					<td>{{ $count }}</td>
+					<td>{{ $details['description'] }}</td>
+					<td class="align-c">{{ +$details['total_quantity'] }}</td>
+					<td class="align-c">{{ $details['uom'] }}</td>
+					<td class="align-r">{{	numberFormat($details['rate']) }}</td>
+					<td class="align-r">{{ numberFormat($details['total_cost']) }}</td>
+				</tr>
+				@php $count++; @endphp
+			@endforeach
+			{{-- @foreach($resource->products as $i => $item)
                 <tr>
                     <td>{{ $i+1 }}</td>
                     <td>{{ $item->description }}</td>
@@ -194,7 +225,8 @@
                     <td class="align-r">{{ numberFormat($item->rate) }}</td>
                     <td class="align-r">{{ numberFormat($item->qty * $item->rate) }}</td>
                 </tr>
-			@endforeach
+			@endforeach --}}
+
 			<!-- 20 dynamic empty rows -->
 			@for ($i = count($resource->products); $i < 15; $i++)
 				<tr>
