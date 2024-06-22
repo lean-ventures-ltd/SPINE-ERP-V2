@@ -180,7 +180,7 @@
                     <td width="15%"><input name="qty[]" id="qty" class="form-control qty"></td>    
                     <input type="hidden" name="purchaseorder_item_id[]" value="${v.id}">
                     <input type="hidden" name="rate[]" value="${parseFloat(v.rate)}" class="rate">
-                    <input type="hidden" name="item_id[]" value="${v.item_id}">
+                    <input type="hidden" name="item_id[]" value="${v.product_id}">
                 </tr>
             `;
         },

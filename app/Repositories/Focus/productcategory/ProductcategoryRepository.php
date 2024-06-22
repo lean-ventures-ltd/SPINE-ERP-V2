@@ -5,6 +5,7 @@ namespace App\Repositories\Focus\productcategory;
 use App\Models\productcategory\Productcategory;
 use App\Exceptions\GeneralException;
 use App\Repositories\BaseRepository;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Class ProductcategoryRepository.
@@ -76,6 +77,11 @@ class ProductcategoryRepository extends BaseRepository
      */
     public function delete(Productcategory $productcategory)
     {
+        if (isset($productcategory->products)) {
+            $product = $productcategory->products;
+            if ($product)
+            throw ValidationException::withMessages(['ProductCategory is attached to Inventory Products!']);
+        }
         if ($productcategory->delete()) {
             return true;
         }

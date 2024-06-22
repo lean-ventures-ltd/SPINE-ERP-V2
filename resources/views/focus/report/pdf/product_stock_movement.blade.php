@@ -13,6 +13,9 @@
         <tr class="heading">
             <td>Date</td>
             <td>Type</td>
+            <td>Supplier</td>
+            <td>Dnote/Ref No</td>
+            <td>Invoice/Quote No</td>
             <td>Qty</td>
             <td>On Hand</td>
             <td>Avg Cost</td>
@@ -22,6 +25,9 @@
             <tr class="item">
                 <td width="15%">{{ dateFormat($item->date) }}</td>
                 <td width="10%">{{ $item->type }}</td>
+                <td width="10%">{{ $item->supplier ?: '' }}</td>
+                <td width="10%">{{ $item->dnote_refno ?: '' }}</td>
+                <td width="12%">{{ $item->invoice_quote_no ?: '' }}</td>
                 <td width="8%">{{ round($item->qty) }}</td>
                 <td width="8%">{{ round($item->qty_onhand) }}</td>
                 <td width="12%">{{ numberFormat($item->avg_cost) }}</td>
@@ -31,7 +37,7 @@
         <!-- 20 dynamic empty rows -->
         @for ($i = count($account_details); $i < 10; $i++)
             <tr class="item">
-                @for($j = 0; $j < 5; $j++)
+                @for($j = 0; $j < 9; $j++)
                     <td></td>
                 @endfor
             </tr>

@@ -38,16 +38,16 @@ trait PurchaseorderItemRelationship
 
     public function productvariation()
     {
-        return $this->belongsTo(ProductVariation::class, 'item_id');
+        return $this->belongsTo(ProductVariation::class, 'product_id');
     }
 
     public function product()
     {
-        return $this->belongsTo('App\Models\product\ProductVariation', 'item_id');
+        return $this->belongsTo('App\Models\product\ProductVariation', 'product_id');
     }
 
     public function variation()
     {
-        return $this->belongsTo('App\Models\product\ProductVariation', 'item_id')->withoutGlobalScopes();
+        return $this->belongsTo('App\Models\product\ProductVariation', 'product_id')->withoutGlobalScopes();
     }
 }

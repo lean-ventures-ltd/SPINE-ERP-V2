@@ -106,6 +106,8 @@
                 $('#description').val(description);
                 var uom = e.target.getAttribute('uom');
                 $('#uom').val(uom);
+                var product_id = e.target.getAttribute('item_id');
+                $('#product_id').val(product_id);
             });
             
             if ($('#contract').val()) {

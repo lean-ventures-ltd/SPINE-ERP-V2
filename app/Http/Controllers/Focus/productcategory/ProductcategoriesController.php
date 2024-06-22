@@ -27,6 +27,7 @@ use App\Http\Responses\Focus\productcategory\EditResponse;
 use App\Repositories\Focus\productcategory\ProductcategoryRepository;
 use App\Http\Requests\Focus\productcategory\ManageProductcategoryRequest;
 use App\Http\Requests\Focus\productcategory\StoreProductcategoryRequest;
+use Illuminate\Validation\ValidationException;
 
 
 /**
@@ -135,8 +136,18 @@ class ProductcategoriesController extends Controller
      */
     public function destroy(Productcategory $productcategory, StoreProductcategoryRequest $request)
     {
-        //Calling the delete method on repository
-        $this->repository->delete($productcategory);
+        try {
+            //Calling the delete method on repository
+            $this->repository->delete($productcategory);
+        }
+        catch (ValidationException $e) {
+            // Return validation errors
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        }
+         catch (\Throwable $e) {
+            return errorHandler("Error: '" . $e->getMessage() . "' | on File: " . $e->getFile() . " | Line: " . $e->getLine());
+        }
+        
         //returning with successfull message
         return new RedirectResponse(route('biller.productcategories.index'), ['flash_success' => trans('alerts.backend.productcategories.deleted')]);
     }

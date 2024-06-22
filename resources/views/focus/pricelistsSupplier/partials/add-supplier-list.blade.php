@@ -47,6 +47,7 @@
                 <div class="col-3 mt-2">
                     <label for="uom">Unit of Measure (UoM)</label>
                     {{ Form::text('uom', null, ['class' => 'form-control', 'readonly', 'id'=> 'uom']) }}
+                    {{ Form::hidden('product_id', null, ['class' => 'form-control', 'readonly', 'id'=> 'product_id']) }}
                 </div>
                 <div class="col-3 mt-2">
                     <label for="row_number">Row No.</label>

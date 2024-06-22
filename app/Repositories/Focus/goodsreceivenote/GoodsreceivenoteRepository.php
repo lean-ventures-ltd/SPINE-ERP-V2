@@ -102,15 +102,16 @@ class GoodsreceivenoteRepository extends BaseRepository
             $po_item = $item->purchaseorder_item;
             if (!$po_item) throw ValidationException::withMessages(['Line ' . strval($i+1) . ' related purchase order item does not exist!']);
             $po_item->increment('qty_received', $item->qty);
+            // dd($item->productvariation);
 
             // check if is default product variation or is supplier product 
             $prod_variation = $item->productvariation;
-            if (@$result->purchaseorder->pricegroup_id && $item->supplier_product) {
-                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            } 
-            elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
-                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            }
+            // if (@$result->purchaseorder->pricegroup_id && $item->supplier_product) {
+            //     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            // } 
+            // elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
+            //     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            // }
     
             if($item->warehouse_id){    
                 if ($prod_variation->warehouse_id != $item['warehouse_id']) {   
@@ -259,11 +260,11 @@ class GoodsreceivenoteRepository extends BaseRepository
             
             // check if is default product variation or supplier product 
             $prod_variation = $item->productvariation;
-            if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
-                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            } elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
-                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            }
+            // if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
+            //     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            // } elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
+            //     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            // }
             
             // apply unit conversion
             if (isset($prod_variation->product->units)) {
@@ -333,12 +334,12 @@ class GoodsreceivenoteRepository extends BaseRepository
                 $po_item->decrement('qty_received', $item->qty);
                 // check if is default product variation or supplier product 
                 $prod_variation = $item->productvariation;
-                if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
-                    $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-                } 
-                elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
-                    $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-                }
+                // if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
+                //     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+                // } 
+                // elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
+                //     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+                // }
                 // apply unit conversion
                 if (isset($prod_variation->product->units)) {
                     foreach ($prod_variation->product->units as $unit) {
