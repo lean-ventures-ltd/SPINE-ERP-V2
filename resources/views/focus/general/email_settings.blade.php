@@ -121,7 +121,7 @@
                                             <div class='col'>
                                                 <select name="sms_active"
                                                         class="round form-control custom_gateway" id="custom_gateway">
-                                                    {!! $sms['active']  == 0 ? "<option value='0' selected>--".trans('meta.default_server')."--</option>" : "<option value='1' selected>--".trans('meta.custom_gateway')."--</option>" !!}
+                                                    {!! @$sms['active']  == 0 ? "<option value='0' selected>--".trans('meta.default_server')."--</option>" : "<option value='1' selected>--".trans('meta.custom_gateway')."--</option>" !!}
                                                     <option value="0">{{trans('meta.default_server')}}</option>
                                                     <option value="1">{{trans('meta.custom_gateway')}}</option>
                                                 </select>
@@ -129,7 +129,7 @@
                                         </div>
                                     </div>
                                     <div class='row mb-1' id="custom_gateway_config"
-                                         @if(!$sms['active']) style="display: none;" @endif>
+                                         @if(!@$sms['active']) style="display: none;" @endif>
                                         <div class='col-md-12'>
                                             {{ Form::label( 'host',trans('meta.sms_gateway'),['class' => 'col control-label']) }}
                                             <div class='col-md-6'>
@@ -139,28 +139,28 @@
 
                                                     <option value="1"
                                                             data-c_fields='{"s_username":"Account SID","s_password":"Twilio Token","s_sender":"Twilio phone number"}'
-                                                            @if($sms['driver_id']==1) selected @endif>Twilio
+                                                            @if(@['driver_id']==1) selected @endif>Twilio
                                                     </option>
                                                     <option value="2"
                                                             data-c_fields='{"s_username":"Api Key","s_sender":"Sender ID"}'
-                                                            @if($sms['driver_id']==2) selected @endif>TextLocal
+                                                            @if(@['driver_id']==2) selected @endif>TextLocal
                                                     </option>
                                                     <option value="3"
                                                             data-c_fields='{"s_username":"Api Key","s_sender":"Sender ID"}'
-                                                            @if($sms['driver_id']==3) selected @endif>Clockwork
+                                                            @if(@['driver_id']==3) selected @endif>Clockwork
                                                     </option>
                                                     <option value="4"
                                                             data-c_fields='{"s_username":"Api Key","s_sender":"Sender ID"}'
-                                                            @if($sms['driver_id']==4) selected @endif>msg91
+                                                            @if(@['driver_id']==4) selected @endif>msg91
                                                     </option>
                                                     <option value="5"
                                                             data-c_fields='{"s_username":"Username","s_password":"Password","s_sender":"Sender ID"}'
-                                                            @if($sms['driver_id']==5) selected @endif>BulkSMS Gateway
+                                                            @if(@['driver_id']==5) selected @endif>BulkSMS Gateway
                                                         (bulksms.in)
                                                     </option>
                                                     <option value="7"
                                                             data-c_fields='{"s_username":"Data"}'
-                                                            @if($sms['driver_id']==7) selected @endif>{{trans('meta.generic')}}</option>
+                                                            @if(@['driver_id']==7) selected @endif>{{trans('meta.generic')}}</option>
                                                 </select>
                                             </div>
                                         </div>
