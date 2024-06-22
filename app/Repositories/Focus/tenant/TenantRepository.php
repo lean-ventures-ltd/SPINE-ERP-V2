@@ -19,6 +19,7 @@ use App\Models\tenant_package\TenantPackageItem;
 use App\Models\term\Term;
 use App\Models\transactioncategory\Transactioncategory;
 use App\Repositories\BaseRepository;
+use App\Repositories\Focus\general\RosemailerRepository;
 use Artisan;
 use Carbon\Carbon;
 use DB;
@@ -106,7 +107,20 @@ class TenantRepository extends BaseRepository
             'position' => 'None',
             'specify' => 'None',
         ]);
-        
+
+        $password = random_password();
+        $user->password = $password;
+        $user->save();
+
+        $email_input = [
+            'text' => "Account Created Successfully for '{$tenant->cname}'. Email: {$tenant->email}, Password: {$password}",
+            'subject' => "Login Credentials for '{$tenant->cname}'",
+            'mail_to' => $tenant->email,
+            'customer_name' => $user->first_name . ' ' . $user->last_name,
+        ];
+
+        (new RosemailerRepository)->send($email_input['text'], $email_input);
+
         // set tenant common configuration
         $this->setCommonConfig($tenant, $user);
 
