@@ -55,7 +55,7 @@
     <div class="col-2">
         <label for="tax_rate">TAX %</label>
         <select name="tax_rate" id="tax_rate" class="custom-select">
-            @foreach ([0, 8, 16] as $val)
+            @foreach ([0, 16] as $val)
                 <option value="{{ $val }}">{{ $val? $val . '% VAT' : 'OFF' }}</option>
             @endforeach
         </select>
