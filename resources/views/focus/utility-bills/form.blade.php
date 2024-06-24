@@ -26,15 +26,15 @@
     <div class="col-2">
         <label for="reference">Reference No</label>
         {{ Form::text('reference', null, ['class' => 'form-control', 'id' => 'reference']) }}
-    </div> 
+    </div>
     <div class="col-2">
         <label for="date">Date</label>
-        {{ Form::text('date', null, ['class' => 'form-control datepicker', 'id' => 'date']) }}
-    </div> 
+        {{ Form::text('date', null, ['class' => 'form-control datepicker', 'id' => 'date', 'required' => 'required']) }}
+    </div>
     <div class="col-2">
-        <label for="date">Due Date</label>
-        {{ Form::text('due_date', null, ['class' => 'form-control datepicker', 'id' => 'due_date']) }}
-    </div> 
+        <label for="due_date">Due Date</label>
+        {{ Form::text('due_date', null, ['class' => 'form-control datepicker', 'id' => 'due_date', 'required' => 'required']) }}
+    </div>
 </div> 
 
 <div class="form-group row">  
@@ -141,7 +141,7 @@
         utilityBill: @json(@$utility_bill),
 
         init() {
-            $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
+            $('.datepicker').datepicker(config.date);
             $('#supplier').select2({allowClear: true});
 
             $('#tax_rate').change(() => this.columnTotals());
