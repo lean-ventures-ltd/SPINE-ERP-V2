@@ -1,5 +1,12 @@
 <?php
 
+Route::group(['namespace' => 'sale_return'], function () {
+    Route::post('sale_returns/invoice_stock_items', 'SaleReturnsController@invoice_stock_items')->name('sale_returns.invoice_stock_items');
+    Route::resource('sale_returns', 'SaleReturnsController');
+    // datatable
+    Route::post('sale_returns/get', 'SaleReturnsTableController')->name('sale_returns.get');
+});
+
 Route::group(['namespace' => 'stock_rcv'], function () {
     Route::resource('stock_rcvs', 'StockRcvsController');
     // datatable

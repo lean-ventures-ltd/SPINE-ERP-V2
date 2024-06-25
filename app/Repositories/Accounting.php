@@ -14,7 +14,45 @@ use App\Models\transactioncategory\Transactioncategory;
 trait Accounting
 {
     /**
-     * Inventory Stock Adjustment
+     * Customer Sale Return
+     * @param object $sale_return
+     */
+    public function post_sale_return($sale_return)
+    {
+        $stock_account = Account::where('system', 'stock')->first(['id']);
+        $tr_category = Transactioncategory::where('code', 'stock')->first(['id', 'code']);
+        // debit Stock Account
+        $dr_data = [
+            'tid' => Transaction::max('tid')+1,
+            'account_id' => $stock_account->id,
+            'trans_category_id' => $tr_category->id,
+            'tr_date' => $sale_return->date,
+            'due_date' => $sale_return->date,
+            'user_id' => $sale_return->user_id,
+            'note' => $sale_return->note,
+            'ins' => $sale_return->ins,
+            'tr_type' => $tr_category->code,
+            'tr_ref' => $sale_return->id,
+            'user_type' => 'customer',
+            'customer_id' => $sale_return->customer_id,
+            'sale_return_id' => $sale_return->id,
+            'is_primary' => 1,
+            'debit' => $sale_return->total,
+        ];
+        Transaction::create($dr_data);
+        unset($dr_data['debit'], $dr_data['is_primary']);
+
+        // credit COG Account
+        $cog_account = Account::where('system', 'cog')->first(['id']);
+        $cr_data = array_replace($dr_data, [
+            'account_id' => $cog_account->id,
+            'credit' =>  $sale_return->total,
+        ]);
+        Transaction::create($cr_data);
+    }
+
+    /**
+     * Inventory Stock Issue
      * @param object $stock_adj
      */
     public function post_stock_issue($stock_issue)

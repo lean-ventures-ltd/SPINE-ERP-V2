@@ -1087,6 +1087,19 @@
                     </li>
                     @endauth
 
+                    {{-- Sale Returns --}}
+                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-money"></i> Sale Returns</a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{{ route('biller.sale_returns.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Manage Sale Returns</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('biller.sale_returns.create') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Sale Return</a>
+                            </li>
+                        </ul>
+                    </li>
+
                     {{-- Asset and Equipments  --}}
                     @permission('manage-asset-equipment')
                     <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="ft-target"></i> Assets & Equipments

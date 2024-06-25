@@ -30,4 +30,9 @@ trait InvoiceItemRelationship
     {
         return $this->belongsTo(ProductVariation::class, 'product_id')->withoutGlobalScopes();
     }
+
+    public function product_variation()
+    {
+        return $this->belongsTo(ProductVariation::class, 'product_id')->withoutGlobalScopes();
+    }
 }
