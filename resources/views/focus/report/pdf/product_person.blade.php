@@ -13,14 +13,18 @@
             $balance=0;
              foreach ($account_details as $account_detail) {
             foreach ($account_detail as $row) {
-
                 if ($fill == true) {
                     $flag = ' mfill';
                 } else {
                     $flag = '';
                 }
-                  $balance += $row['product_qty'];
-                echo '<tr class="item' . $flag . '"><td>' . dateFormat($row['created_at']) . '</td><td>' . $row['product_name'] . '</td><td>' . amountFormat($row['product_price']) .'</td><td>' . numberFormat($row['product_qty']) . ' '. $row['unit'] . '</td><td>' . numberFormat($balance) . ' </td></tr>';
+                // dd($row);
+                if($row['purchaseorder_id']){
+                    echo '<tr class="item' . $flag . '"><td>' . dateFormat($row['created_at']) . '</td><td>' . $row['description'] . '</td><td>' . amountFormat($row['rate']) .'</td><td>' . numberFormat($row['qty']) . ' '. $row['uom'] . '</td><td>' . amountFormat($row['amount']) . ' </td></tr>';
+                }else{
+
+                    echo '<tr class="item' . $flag . '"><td>' . dateFormat($row['created_at']) . '</td><td>' . $row['description'] . '</td><td>' . amountFormat($row['product_price']) .'</td><td>' . numberFormat($row['product_qty']) . ' '. $row['unit'] . '</td><td>' . amountFormat($row['product_price']) . ' </td></tr>';
+                }
                 $fill = !$fill;
             }
         }
@@ -38,7 +42,7 @@
         </tr>
         <tr>
             <td>{{trans('accounts.balance')}}:</td>
-            <td>{{numberFormat($balance)}}</td>
+            <td>{{amountFormat($balance)}}</td>
         </tr>
 
         </tbody>

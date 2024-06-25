@@ -131,12 +131,12 @@ trait TransactionRelationship
 
     public function customer()
     {
-        return $this->belongsTo('App\Models\customer\Customer', 'payer_id', 'id');
+        return $this->belongsTo('App\Models\customer\Customer', 'customer_id', 'id');
     }
 
     public function supplier()
     {
-        return $this->belongsTo('App\Models\supplier\Supplier', 'payer_id', 'id');
+        return $this->belongsTo('App\Models\supplier\Supplier', 'supplier_id', 'id');
     }
 
     public function employee()

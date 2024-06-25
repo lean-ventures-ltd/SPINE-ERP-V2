@@ -19,45 +19,38 @@
                 } else {
                     $flag = '';
                 }
-                 
 
-                  if($row['payer_id']>0){
-
+                if($row['user_type'] =='supplier'){
 
                   if($lang['type']==2){
 
-              $payer= $row->supplier->name;
-               $pin=$row->supplier->taxid;
-               
-                   $amount=$row['debit'];
-              }else{
-               $payer= $row->customer->company;
-                $pin=$row->customer->taxid;
+                        $payer= $row->supplier ? $row->supplier->name : '';
+                        $pin= $row->supplier ? $row->supplier->taxid : '';
+                        if($row['supplier_id'] == 1){
+                            $pin = "";
+                        }
+                
+                        $amount=$row['debit'];
+                    }
+                    
+                }else{
+                    $payer = $row->customer ? $row->customer->company : '';
+                    $pin = $row->customer ? $row->customer->taxid : '';
                 
                     $amount=$row['credit'];
-
-              }
-
-          
-              }else{
-
-
-                $payer=$row['payer'];
-                $pin=$row['taxid'];
-
-             
-          }
+                    
+                }
+                // $payer=$row['payer'];
+                // $pin=$row['taxid'];
 
 
-           if($lang['type']==2){
-             $amount=$row['debit'];
-            $balance += $row['debit'];
-       }else{
-         $amount=$row['credit'];
-        $balance += $row['credit'];
-
-
-   }
+                if($lang['type']==2){
+                    $amount=$row['debit'];
+                    $balance += $row['debit'];
+                }else{
+                    $amount=$row['credit'];
+                    $balance += $row['credit'];
+                }
 
 
                  

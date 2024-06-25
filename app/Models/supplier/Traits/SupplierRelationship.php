@@ -10,6 +10,7 @@ use App\Models\purchaseorder\Purchaseorder;
 use App\Models\purchase\Purchase;
 use App\Models\utility_bill\UtilityBill;
 use App\Models\supplier_product\SupplierProduct;
+use App\Models\transaction\Transaction;
 
 /**
  * Class SupplierRelationship
@@ -55,5 +56,8 @@ trait SupplierRelationship
     
     function purchase() {
         return $this->hasMany(Purchase::class);
+    }
+    function transactions() {
+        return $this->hasMany(Transaction::class, 'supplier_id');
     }
 }
