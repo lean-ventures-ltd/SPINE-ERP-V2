@@ -99,18 +99,7 @@ class PayrollTableController extends Controller
             ->addColumn('actions', function ($payroll) {
                 return '<a href="'.route('biller.payroll.reports', $payroll->id).'" class="btn btn-purple round" data-toggle="tooltip" data-placement="top" title="Reports"><i class="fa fa-list"></i></a> '
                     . $payroll->action_buttons
-                    . '<a href="' . route('biller.payroll-delete', $payroll->id) . '" 
-                            class="btn btn-danger round" data-method="delete"
-                            data-trans-button-cancel="' . trans('buttons.general.cancel') . '"
-                            data-trans-button-confirm="' . trans('buttons.general.crud.delete') . '"
-                            data-trans-title="' . trans('strings.backend.general.are_you_sure') . '" 
-                            data-toggle="tooltip" 
-                            data-placement="top" 
-                            title="Delete"
-                            >
-                                <i  class="fa fa-trash"></i>
-                            </a>';
-                //return $payroll->action_buttons;
+                        . '<button class="btn btn-danger payroll-delete" id="' . $payroll->id . '"> <i  class="fa fa-trash"></i> Delete</button>';
             })
             ->make(true);
     }

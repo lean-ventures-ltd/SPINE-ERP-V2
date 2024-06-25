@@ -79,65 +79,26 @@
 @section('after-scripts')
     {{-- For DataTables --}}
     {{ Html::script(mix('js/dataTable.js')) }}
-    {{-- <script>
-        $(function () {
-            setTimeout(function () {
-                draw_data()
-            }, {{config('master.delay')}});
-        });
 
-        function draw_data() {
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                }
-            });
-
-            var dataTable = $('#payroll-table').dataTable({
-                processing: true,
-                serverSide: true,
-                responsive: true,
-                language: {
-                    @lang('datatable.strings')
-                },
-                ajax: {
-                    url: '{{ route("biller.payroll.get") }}',
-                    type: 'post'
-                },
-                columns: [
-                    {data: 'DT_Row_Index', name: 'id'},
-                    {data: 'tid', name: 'tid'},
-                    {data: 'processing_date', name: 'processing_date'},
-                    {data: 'salary_total', name: 'salary_total'},
-                    {data: 'allowance_total', name: 'allowance_total'},
-                    {data: 'deduction_total', name: 'deduction_total'},
-                    {data: 'total_nssf', name: 'total_nssf'},
-                    {data: 'paye_total', name: 'paye_total'},
-                    {data: 'total_nhif', name: 'total_nhif'},
-                    {data: 'status', name: 'status'},
-                    {data: 'total_netpay', name: 'total_netpay'},
-                    {data: 'actions', name: 'actions', searchable: false, sortable: false}
-                ],
-                order: [[0, "asc"]],
-                searchDelay: 500,
-                dom: 'Blfrtip',
-                buttons: {
-                    buttons: [
-
-                        {extend: 'csv', footer: true, exportOptions: {columns: [0, 1]}},
-                        {extend: 'excel', footer: true, exportOptions: {columns: [0, 1]}},
-                        {extend: 'print', footer: true, exportOptions: {columns: [0, 1]}}
-                    ]
-                }
-            });
-            $('#payroll-table_wrapper').removeClass('form-inline');
-
-        }
-    </script> --}}
     <script>
+
         const config = {
             ajax: {headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}" }}
         };
+
+        $(document).ready(function() {
+            // Use event delegation to handle the click event for dynamically added elements
+            $(document).on('click', '.payroll-delete', function(e) {
+
+                e.preventDefault();
+                let buttonId = $(this).attr('id');
+                let confirmAction = confirm("Are you sure you want to delete this payroll? This action cannot be reversed past this point.");
+                if (confirmAction) {
+                    // Use the button ID in the URL
+                    window.location.href = '/payroll-delete/' + buttonId;
+                }
+            });
+        });
 
         const Index = {
             month: @json(request('month')),
