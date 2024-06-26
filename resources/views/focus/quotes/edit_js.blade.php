@@ -687,131 +687,130 @@
     }
 
     $('#template_quote_id').change(function() {
-    const template_quote_id = $(this).val();
-
-    $.ajax({
-        url: "{{ route('biller.template-quote-details') }}",
-        dataType: "json",
-        method: 'post',
-        data: {
-            template_quote_id: template_quote_id,
-        },
-        success: function(data) {
-            $('#taxable').val(accounting.formatNumber(data[0].taxable));
-            $('#vatable').val(accounting.formatNumber(data[0].taxable));
-            $('#total').val(accounting.formatNumber(data[0].total));
-            $('#subtotal').val(accounting.formatNumber(data[0].subtotal));
-            $('#tax').val(accounting.formatNumber((data[0].total - data[0].subtotal)));
-            
-            $('#subject').val(data[0].notes);
-            $('#quoteTbl tbody').html('');
-            data[0].products.forEach(function(v, i) {
-                if (v.a_type === 1 && v.misc === 0) {
-                    $('#quoteTbl tbody').append(
-                        `<tr id="productRow">
-                        <td><input type="text" class="form-control" name="numbering[]" id="numbering-p0" value=""></td>
-                        <td>
-                            <textarea name="product_name[]" id="name-p0" cols="35" rows="2" class="form-control" placeholder="{{ trans('general.enter_product') }}" required>${v.product_name}</textarea>
-                        </td>
-                        <td><input type="text" name="unit[]" id="unit-p0" class="form-control" value="${v.unit}"></td>
-                        <td ><input type="number" class="form-control estqty" name="estimate_qty[]" value="${v.estimate_qty}" id="estqty-p0" step="0.1" style="border:solid #f5a8a2;" required></td>  
-                        <td ><input type="text" class="form-control buyprice" name="buy_price[]" value="${v.buy_price}" id="buyprice-p0"  style="border:solid #f5a8a2;" readonly></td>  
-                        <td><input type="number" class="form-control qty" name="product_qty[]" value="${v.product_qty}" id="qty-p0" step="0.1" required></td>
-                        <td><input type="text" class="form-control rate" name="product_subtotal[]" value="${v.product_subtotal}" id="rate-p0" required></td>
-                        <td>
-                            <div class="row no-gutters">
-                                <div class="col-6">
-                                    <input type="text" class="form-control price" value="${v.product_price}" name="product_price[]" id="price-p0" readonly>
+        const template_quote_id = $(this).val();
+        $.ajax({
+            url: "{{ route('biller.template-quote-details') }}",
+            dataType: "json",
+            method: 'post',
+            data: {
+                template_quote_id: template_quote_id,
+            },
+            success: function(data) {
+                $('#taxable').val(accounting.formatNumber(data[0].taxable));
+                $('#vatable').val(accounting.formatNumber(data[0].taxable));
+                $('#total').val(accounting.formatNumber(data[0].total));
+                $('#subtotal').val(accounting.formatNumber(data[0].subtotal));
+                $('#tax').val(accounting.formatNumber((data[0].total - data[0].subtotal)));
+                
+                $('#subject').val(data[0].notes);
+                $('#quoteTbl tbody').html('');
+                data[0].products.forEach(function(v, i) {
+                    if (v.a_type === 1 && v.misc === 0) {
+                        $('#quoteTbl tbody').append(
+                            `<tr id="productRow">
+                            <td><input type="text" class="form-control" name="numbering[]" id="numbering-p0" value=""></td>
+                            <td>
+                                <textarea name="product_name[]" id="name-p0" cols="35" rows="2" class="form-control" placeholder="{{ trans('general.enter_product') }}" required>${v.product_name}</textarea>
+                            </td>
+                            <td><input type="text" name="unit[]" id="unit-p0" class="form-control" value="${v.unit}"></td>
+                            <td ><input type="number" class="form-control estqty" name="estimate_qty[]" value="${+v.estimate_qty}" id="estqty-p0" step="0.1" style="border:solid #f5a8a2;" required></td>  
+                            <td ><input type="text" class="form-control buyprice" name="buy_price[]" value="${+v.buy_price}" id="buyprice-p0"  style="border:solid #f5a8a2;" readonly></td>  
+                            <td><input type="number" class="form-control qty" name="product_qty[]" value="${+v.product_qty}" id="qty-p0" step="0.1" required></td>
+                            <td><input type="text" class="form-control rate" name="product_subtotal[]" value="${+v.product_subtotal}" id="rate-p0" required></td>
+                            <td>
+                                <div class="row no-gutters">
+                                    <div class="col-6">
+                                        <input type="text" class="form-control price" value="${+v.product_price}" name="product_price[]" id="price-p0" readonly>
+                                    </div>
+                                    <div class="col-6">
+                                        <select class="custom-select tax_rate" name="tax_rate[]" id="taxrate-p0">
+                                            @foreach ($additionals as $item)
+                                                <option value="{{ +$item->value }}">{{ $item->value == 0 ? 'OFF' : +$item->value . '%' }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="col-6">
-                                    <select class="custom-select tax_rate" name="tax_rate[]" id="taxrate-p0">
-                                        @foreach ($additionals as $item)
-                                            <option value="{{ +$item->value }}">{{ $item->value == 0 ? 'OFF' : +$item->value . '%' }}</option>
-                                        @endforeach
-                                    </select>
+                            </td>
+                            <td class='text-center'>
+                                <span class="amount" id="amount-p0">${+v.product_amount}</span>&nbsp;&nbsp;
+                                <span class="lineprofit text-info" id="lineprofit-p0">0%</span>
+                            </td>
+                            <td class="text-center">
+                                @include('focus.quotes.partials.action-dropdown')
+                            </td>
+                            <input type="hidden" name="misc[]" value="0" id="misc-p0">
+                            <input type="hidden" name="product_id[]" value="${+v.product_id}" id="productid-p0">
+                            <input type="hidden" class="index" name="row_index[]" value="${v.row_index}" id="rowindex-p0">
+                            <input type="hidden" name="a_type[]" value="1" id="atype-p0">
+                            <input type="hidden" name="id[]" value="0">
+                        </tr>`
+                        );
+                    } else if (v.a_type === 1 && v.misc === 1) {
+                        $('#quoteTbl tbody').append(
+                            `<tr id="productRow" class="misc" style="background-color:rgba(229, 241, 101, 0.4);">
+                            <td><input type="text" class="form-control" name="numbering[]" id="numbering-p0" value=""></td>
+                            <td>
+                                <textarea name="product_name[]" id="name-p0" cols="35" rows="2" class="form-control" placeholder="{{ trans('general.enter_product') }}" required>${v.product_name}</textarea>
+                            </td>
+                            <td><input type="text" name="unit[]" id="unit-p0" class="form-control" value="${v.unit}"></td>
+                            <td ><input type="number" class="form-control estqty" name="estimate_qty[]" value="${+v.estimate_qty}" id="estqty-p0" step="0.1" style="border:solid #f5a8a2;" required></td>  
+                            <td ><input type="text" class="form-control buyprice" name="buy_price[]" value="${+v.buy_price}" id="buyprice-p0"  style="border:solid #f5a8a2;" readonly></td>  
+                            <td><input type="number" class="form-control qty invisible" name="product_qty[]" value="${+v.product_qty}" id="qty-p0" step="0.1" required ></td>
+                            <td><input type="text" class="form-control rate invisible" name="product_subtotal[]" value="${+v.product_subtotal}" id="rate-p0" required></td>
+                            <td>
+                                <div class="row no-gutters">
+                                    <div class="col-6">
+                                        <input type="text" class="form-control price" value="${+v.product_price}" name="product_price[]" id="price-p0" readonly>
+                                    </div>
+                                    <div class="col-6">
+                                        <select class="custom-select tax_rate" name="tax_rate[]" id="taxrate-p0">
+                                            @foreach ($additionals as $item)
+                                                <option value="{{ +$item->value }}">{{ $item->value == 0 ? 'OFF' : +$item->value . '%' }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td class='text-center'>
-                            <span class="amount" id="amount-p0">${v.product_amount}</span>&nbsp;&nbsp;
-                            <span class="lineprofit text-info" id="lineprofit-p0">0%</span>
-                        </td>
-                        <td class="text-center">
-                            @include('focus.quotes.partials.action-dropdown')
-                        </td>
-                        <input type="hidden" name="misc[]" value="0" id="misc-p0">
-                        <input type="hidden" name="product_id[]" value="${v.product_id}" id="productid-p0">
-                        <input type="hidden" class="index" name="row_index[]" value="${v.row_index}" id="rowindex-p0">
-                        <input type="hidden" name="a_type[]" value="1" id="atype-p0">
-                        <input type="hidden" name="id[]" value="0">
-                    </tr>`
-                    );
-                } else if (v.a_type === 1 && v.misc === 1) {
-                    $('#quoteTbl tbody').append(
-                        `<tr id="productRow" class="misc" style="background-color:rgba(229, 241, 101, 0.4);">
-                        <td><input type="text" class="form-control" name="numbering[]" id="numbering-p0" value=""></td>
-                        <td>
-                            <textarea name="product_name[]" id="name-p0" cols="35" rows="2" class="form-control" placeholder="{{ trans('general.enter_product') }}" required>${v.product_name}</textarea>
-                        </td>
-                        <td><input type="text" name="unit[]" id="unit-p0" class="form-control" value="${v.unit}"></td>
-                        <td ><input type="number" class="form-control estqty" name="estimate_qty[]" value="${v.estimate_qty}" id="estqty-p0" step="0.1" style="border:solid #f5a8a2;" required></td>  
-                        <td ><input type="text" class="form-control buyprice" name="buy_price[]" value="${v.buy_price}" id="buyprice-p0"  style="border:solid #f5a8a2;" readonly></td>  
-                        <td><input type="number" class="form-control qty " name="product_qty[]" value="${v.product_qty}" id="qty-p0" step="0.1" required ></td>
-                        <td><input type="text" class="form-control rate " name="product_subtotal[]" value="${v.product_subtotal}" id="rate-p0" required></td>
-                        <td>
-                            <div class="row no-gutters">
-                                <div class="col-6">
-                                    <input type="text" class="form-control price" value="${v.product_price}" name="product_price[]" id="price-p0" readonly>
-                                </div>
-                                <div class="col-6">
-                                    <select class="custom-select tax_rate" name="tax_rate[]" id="taxrate-p0">
-                                        @foreach ($additionals as $item)
-                                            <option value="{{ +$item->value }}">{{ $item->value == 0 ? 'OFF' : +$item->value . '%' }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                        </td>
-                        <td class='text-center'>
-                            <span class="amount" id="amount-p0">${v.product_amount}</span>&nbsp;&nbsp;
-                            <span class="lineprofit text-info" id="lineprofit-p0">0%</span>
-                        </td>
-                        <td class="text-center">
-                            @include('focus.quotes.partials.action-dropdown')
-                        </td>
-                        <input type="hidden" name="misc[]" value="0" id="misc-p0">
-                        <input type="hidden" name="product_id[]" value="${v.product_id}" id="productid-p0">
-                        <input type="hidden" class="index" name="row_index[]" value="${v.row_index}" id="rowindex-p0">
-                        <input type="hidden" name="a_type[]" value="1" id="atype-p0">
-                        <input type="hidden" name="id[]" value="0">
-                    </tr>`);
-                } else if (v.a_type === 2) {
-                    $('#quoteTbl tbody').append(`
-                    <tr id="titleRow">
-                        <td><input type="text" class="form-control" name="numbering[]" id="numbering-t1" value="" style="font-weight: bold;"></td>
-                        <td colspan="8">
-                            <input type="text"  class="form-control" name="product_name[]" value="${v.product_name}" id="name-t1" style="font-weight: bold;" required>
-                        </td>
-                        <td class="text-center">
-                            @include('focus.quotes.partials.action-dropdown')
-                        </td>
-                        <input type="hidden" name="misc[]" value="0" id="misc-t1">
-                        <input type="hidden" name="product_id[]" value="0" id="productid-t1">
-                        <input type="hidden" name="unit[]">
-                        <input type="hidden" name="product_qty[]" value="0">
-                        <input type="hidden" name="product_price[]" value="0">
-                        <input type="hidden" name="tax_rate[]" value="0">
-                        <input type="hidden" name="product_subtotal[]" value="0">
-                        <input type="hidden" name="estimate_qty[]" value="0">
-                        <input type="hidden" name="buy_price[]" value="0">
-                        <input type="hidden" class="index" name="row_index[]" value="0" id="rowindex-t1">
-                        <input type="hidden" name="a_type[]" value="2" id="atype-t1">
-                        <input type="hidden" name="id[]" value="0">
-                    </tr>
-                    `);
-                }
-            });
-        }
+                            </td>
+                            <td class='text-center'>
+                                <span class="amount" id="amount-p0">${+v.product_amount}</span>&nbsp;&nbsp;
+                                <span class="lineprofit text-info" id="lineprofit-p0">0%</span>
+                            </td>
+                            <td class="text-center">
+                                @include('focus.quotes.partials.action-dropdown')
+                            </td>
+                            <input type="hidden" name="misc[]" value="0" id="misc-p0">
+                            <input type="hidden" name="product_id[]" value="${v.product_id}" id="productid-p0">
+                            <input type="hidden" class="index" name="row_index[]" value="${v.row_index}" id="rowindex-p0">
+                            <input type="hidden" name="a_type[]" value="1" id="atype-p0">
+                            <input type="hidden" name="id[]" value="0">
+                        </tr>`);
+                    } else if (v.a_type === 2) {
+                        $('#quoteTbl tbody').append(`
+                        <tr id="titleRow">
+                            <td><input type="text" class="form-control" name="numbering[]" id="numbering-t1" value="" style="font-weight: bold;"></td>
+                            <td colspan="8">
+                                <input type="text"  class="form-control" name="product_name[]" value="${v.product_name}" id="name-t1" style="font-weight: bold;" required>
+                            </td>
+                            <td class="text-center">
+                                @include('focus.quotes.partials.action-dropdown')
+                            </td>
+                            <input type="hidden" name="misc[]" value="0" id="misc-t1">
+                            <input type="hidden" name="product_id[]" value="0" id="productid-t1">
+                            <input type="hidden" name="unit[]">
+                            <input type="hidden" name="product_qty[]" value="0">
+                            <input type="hidden" name="product_price[]" value="0">
+                            <input type="hidden" name="tax_rate[]" value="0">
+                            <input type="hidden" name="product_subtotal[]" value="0">
+                            <input type="hidden" name="estimate_qty[]" value="0">
+                            <input type="hidden" name="buy_price[]" value="0">
+                            <input type="hidden" class="index" name="row_index[]" value="0" id="rowindex-t1">
+                            <input type="hidden" name="a_type[]" value="2" id="atype-t1">
+                            <input type="hidden" name="id[]" value="0">
+                        </tr>
+                        `);
+                    }
+                });
+            }
+        });
     });
-});
 </script>

@@ -659,14 +659,14 @@
                                 <textarea name="product_name[]" id="name-p0" cols="35" rows="2" class="form-control" placeholder="{{ trans('general.enter_product') }}" required>${v.product_name}</textarea>
                             </td>
                             <td><input type="text" name="unit[]" id="unit-p0" class="form-control" value="${v.unit}"></td>
-                            <td ><input type="number" class="form-control estqty" name="estimate_qty[]" value="${v.estimate_qty}" id="estqty-p0" step="0.1" style="border:solid #f5a8a2;" required></td>  
-                            <td ><input type="text" class="form-control buyprice" name="buy_price[]" value="${v.buy_price}" id="buyprice-p0"  style="border:solid #f5a8a2;" readonly></td>  
-                            <td><input type="number" class="form-control qty" name="product_qty[]" value="${v.product_qty}" id="qty-p0" step="0.1" required></td>
-                            <td><input type="text" class="form-control rate" name="product_subtotal[]" value="${v.product_subtotal}" id="rate-p0" required></td>
+                            <td ><input type="number" class="form-control estqty" name="estimate_qty[]" value="${+v.estimate_qty}" id="estqty-p0" step="0.1" style="border:solid #f5a8a2;" required></td>  
+                            <td ><input type="text" class="form-control buyprice" name="buy_price[]" value="${+v.buy_price}" id="buyprice-p0"  style="border:solid #f5a8a2;" readonly></td>  
+                            <td><input type="number" class="form-control qty" name="product_qty[]" value="${+v.product_qty}" id="qty-p0" step="0.1" required></td>
+                            <td><input type="text" class="form-control rate" name="product_subtotal[]" value="${+v.product_subtotal}" id="rate-p0" required></td>
                             <td>
                                 <div class="row no-gutters">
                                     <div class="col-6">
-                                        <input type="text" class="form-control price" value="${v.product_price}" name="product_price[]" id="price-p0" readonly>
+                                        <input type="text" class="form-control price" value="${+v.product_price}" name="product_price[]" id="price-p0" readonly>
                                     </div>
                                     <div class="col-6">
                                         <select class="custom-select tax_rate" name="tax_rate[]" id="taxrate-p0">
@@ -678,7 +678,7 @@
                                 </div>
                             </td>
                             <td class='text-center'>
-                                <span class="amount" id="amount-p0">${v.product_amount}</span>&nbsp;&nbsp;
+                                <span class="amount" id="amount-p0">${+v.product_amount}</span>&nbsp;&nbsp;
                                 <span class="lineprofit text-info" id="lineprofit-p0">0%</span>
                             </td>
                             <td class="text-center">
@@ -699,14 +699,14 @@
                                 <textarea name="product_name[]" id="name-p0" cols="35" rows="2" class="form-control" placeholder="{{ trans('general.enter_product') }}" required>${v.product_name}</textarea>
                             </td>
                             <td><input type="text" name="unit[]" id="unit-p0" class="form-control" value="${v.unit}"></td>
-                            <td ><input type="number" class="form-control estqty" name="estimate_qty[]" value="${v.estimate_qty}" id="estqty-p0" step="0.1" style="border:solid #f5a8a2;" required></td>  
-                            <td ><input type="text" class="form-control buyprice" name="buy_price[]" value="${v.buy_price}" id="buyprice-p0"  style="border:solid #f5a8a2;" readonly></td>  
-                            <td><input type="number" class="form-control qty invisible" name="product_qty[]" value="${v.product_qty}" id="qty-p0" step="0.1" required ></td>
-                            <td><input type="text" class="form-control rate invisible" name="product_subtotal[]" value="${v.product_subtotal}" id="rate-p0" required></td>
+                            <td ><input type="number" class="form-control estqty" name="estimate_qty[]" value="${+v.estimate_qty}" id="estqty-p0" step="0.1" style="border:solid #f5a8a2;" required></td>  
+                            <td ><input type="text" class="form-control buyprice" name="buy_price[]" value="${+v.buy_price}" id="buyprice-p0"  style="border:solid #f5a8a2;" readonly></td>  
+                            <td><input type="number" class="form-control qty invisible" name="product_qty[]" value="${+v.product_qty}" id="qty-p0" step="0.1" required ></td>
+                            <td><input type="text" class="form-control rate invisible" name="product_subtotal[]" value="${+v.product_subtotal}" id="rate-p0" required></td>
                             <td>
                                 <div class="row no-gutters">
                                     <div class="col-6">
-                                        <input type="text" class="form-control price" value="${v.product_price}" name="product_price[]" id="price-p0" readonly>
+                                        <input type="text" class="form-control price" value="${+v.product_price}" name="product_price[]" id="price-p0" readonly>
                                     </div>
                                     <div class="col-6">
                                         <select class="custom-select tax_rate" name="tax_rate[]" id="taxrate-p0">
@@ -718,7 +718,7 @@
                                 </div>
                             </td>
                             <td class='text-center'>
-                                <span class="amount" id="amount-p0">${v.product_amount}</span>&nbsp;&nbsp;
+                                <span class="amount" id="amount-p0">${+v.product_amount}</span>&nbsp;&nbsp;
                                 <span class="lineprofit text-info" id="lineprofit-p0">0%</span>
                             </td>
                             <td class="text-center">
