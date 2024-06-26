@@ -913,8 +913,7 @@ function updateStockQty($productvar_ids=[])
 {
     foreach ($productvar_ids as $id) {
         // qty in        
-        $grn_qty = 0;
-        \App\Models\items\GoodsreceivenoteItem::whereHas('purchaseorder_item')
+        $grn_items = \App\Models\items\GoodsreceivenoteItem::whereHas('purchaseorder_item')
         ->whereHas('goodsreceivenote', function($q) use($id) {
             $q->where(function($q) use($id) {
                 $q->whereHas('supplier', function($q) use($id) {
@@ -929,8 +928,9 @@ function updateStockQty($productvar_ids=[])
                 });
             });
         })
-        ->get()
-        ->each(function($v) use($grn_qty) {
+        ->get();
+        $grn_qty = 0;
+        foreach ($grn_items as $v) {
             // check if is default product variation or supplier product 
             $prod_variation = $v->productvariation;
             if (@$v->goodsreceivenote->purchaseorder->pricegroup_id && $v->supplier_product) {
@@ -953,7 +953,7 @@ function updateStockQty($productvar_ids=[])
             } elseif ($prod_variation) {
                 $grn_qty += $v->qty;
             }
-        });
+        }
         $op_stock_qty = \App\Models\items\OpeningStockItem::where('productvar_id', $id)->sum('qty');
         $dir_purchase_qty = \App\Models\items\PurchaseItem::where('item_id', $id)->where('type', 'Stock')->sum('qty');
         $sale_return_qty = \App\Models\sale_return\SaleReturnItem::where('productvar_id', $id)->sum('return_qty');    
