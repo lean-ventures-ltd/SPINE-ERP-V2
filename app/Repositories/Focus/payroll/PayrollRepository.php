@@ -108,18 +108,6 @@ class PayrollRepository extends BaseRepository
 
         throw new GeneralException(trans('exceptions.backend.payrolls.delete_error'));
     }
-    public function approve_payroll(array $input)
-    {
-        $payroll = $input['payroll'];
-        if($payroll->status == 'approved'){
-            $this->post_transaction($payroll);
-            
-        }
-        //unset($payroll['account']);
-        $payroll->update();
-        
-        throw new GeneralException('Approval Payroll Failed');
-    }
     public function create_basic(array $input)
     {
          

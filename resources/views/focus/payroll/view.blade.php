@@ -34,16 +34,29 @@
                                 <i class="fa fa-pencil" aria-hidden="true"></i> Approve
                             </a>
                         </div>
-                        {{-- <div class="col-2">
-                            <a href="#" class="btn btn-danger btn-lg my-1" data-toggle="modal" data-target="#generateModal">
-                                <i class="fa fa-pencil" aria-hidden="true"></i> Generate Payroll
-                            </a>
-                        </div> --}}
                         <div class="col-2">
                             <button type="button" class="btn btn-success btn-lg my-1 send_mail">
                                 <i class="fa fa-paper-plane-o"></i> {{trans('general.send')}}
                             </button>
                         </div>
+
+
+                        @if($payroll->status === 'APPROVED')
+
+                            <div class="col-12 mt-2">
+                                <div class="d-flex flex-row align-items-center">
+                                    <h2 class="mb-0"><i>THIS PAYROLL IS APPROVED</i></h2>
+                                    <a href="#" data-toggle="modal" data-target="#statusModal">
+                                        <small class="ml-2" style="color: red;"> change </small>
+                                    </a>
+                                </div>
+                                <div class="row mt-1">
+                                    <h4 class="col-12 col-lg-8">{{ $payroll->approval_note }}</h4>
+                                </div>
+                            </div>
+
+                        @endif
+
                     </div>
                 </div>
                 <div class="card-body">
@@ -54,53 +67,6 @@
 
                             </a>
                         </li>
-{{--                        <li class="nav-item">--}}
-{{--                            <a class="nav-link" id="base-tab1" data-toggle="tab" aria-controls="tab1" href="#tab1"--}}
-{{--                                role="tab" aria-selected="true"><span class="">Basic Salary </span>--}}
-
-{{--                            </a>--}}
-{{--                        </li>--}}
-{{--                        <li class="nav-item">--}}
-{{--                            <a class="nav-link" id="base-tab2" data-toggle="tab" aria-controls="tab2" href="#tab2"--}}
-{{--                                role="tab" aria-selected="false"><span>Taxable Allowances</span>--}}
-{{--                            </a>--}}
-{{--                        </li>--}}
-{{--                        <li class="nav-item">--}}
-{{--                            <a class="nav-link" id="base-tab3" data-toggle="tab" aria-controls="tab3" href="#tab3"--}}
-{{--                                role="tab" aria-selected="false">--}}
-{{--                                <span>Taxable Deductions</span>--}}
-{{--                            </a>--}}
-{{--                        </li>--}}
-{{--                        <li class="nav-item">--}}
-{{--                            <a class="nav-link" id="base-tab4" data-toggle="tab" aria-controls="tab4" href="#tab4"--}}
-{{--                                role="tab" aria-selected="false">--}}
-{{--                                <span>PAYE</span>--}}
-{{--                            </a>--}}
-{{--                        </li>--}}
-
-{{--                        <li class="nav-item">--}}
-{{--                            <a class="nav-link" id="base-tab5" data-toggle="tab" aria-controls="tab5" href="#tab5"--}}
-{{--                                role="tab" aria-selected="false">--}}
-{{--                                <span>NHIF</span>--}}
-{{--                            </a>--}}
-{{--                        </li>--}}
-{{--                        <li class="nav-item">--}}
-{{--                            <a class="nav-link" id="base-tab6" data-toggle="tab" aria-controls="tab6" href="#tab6"--}}
-{{--                                role="tab" aria-selected="false">--}}
-{{--                                <span>Other Deductions and Benefits</span>--}}
-{{--                            </a>--}}
-{{--                        </li>--}}
-{{--                        <li class="nav-item">--}}
-{{--                            <a class="nav-link" id="base-tab7" data-toggle="tab" aria-controls="tab7" href="#tab7" role="tab" aria-selected="false">--}}
-{{--                                <span>Summary</span>--}}
-{{--                            </a>--}}
-{{--                        </li>--}}
-{{--                        <li class="nav-item">--}}
-{{--                            <a class="nav-link" id="base-tab8" data-toggle="tab" aria-controls="tab8" href="#tab8" role="tab"--}}
-{{--                               aria-selected="false">--}}
-{{--                               <span>Print Payroll</span>--}}
-{{--                            </a>--}}
-{{--                        </li>--}}
                     </ul>
                     <div class="tab-content px-1 pt-1">
                         <div class="tab-pane active" id="tab0" role="tabpanel" aria-labelledby="base-tab0">
@@ -550,7 +516,7 @@
             $('.datepicker').datepicker({
                 container: '#statusModal',
                 ...config.date
-            }).datepicker('setDate', new Date());
+            });
         });
     $('.send_mail').click(function () { 
         var id = @json($payroll->id);
@@ -565,7 +531,7 @@
     function approval() {
         $('.send_mail').addClass('d-none');
         var status = @json($payroll->status);
-        if(status == 'approved'){
+        if(status == 'APPROVED'){
             $('.send_mail').removeClass('d-none');
             $('.approve').addClass('d-none');
         }
