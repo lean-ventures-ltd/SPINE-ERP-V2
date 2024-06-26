@@ -26,18 +26,15 @@
                 <div class="card">
                     <div class="card-content">
                         <div class="card-body">
-
-                            <div class="">
-                                <div class="media float-right">
-                                    <a href="{{ route('biller.purchase-classes.create') }}" class="btn btn-primary"> Create Purchase Class </a>
-                                </div>
-                            </div>
-
+                            
 
                             <table id="etc-table" class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
+                                        <th>Budget</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -79,6 +76,18 @@
                 {
                     data: 'name',
                     name: 'name'
+                },
+                {
+                    data: 'budget',
+                    name: 'budget'
+                },
+                {
+                    data: 'start_date',
+                    name: 'start_date'
+                },
+                {
+                    data: 'end_date',
+                    name: 'end_date'
                 },
                 {
                     data: 'action',

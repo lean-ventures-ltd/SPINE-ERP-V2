@@ -15,7 +15,10 @@ class PurchaseClass extends Model
 
     protected $fillable = [
         'name',
-        // Add other fillable fields as needed
+        'budget',
+        'description',
+        'start_date',
+        'end_date'
     ];
 
     protected static function boot()
