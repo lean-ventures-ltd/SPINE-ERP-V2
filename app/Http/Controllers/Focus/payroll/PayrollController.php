@@ -228,8 +228,8 @@ class PayrollController extends Controller
         $expired_contracts = Salary::where('status', 'expired')->count();
         $payroll = Payroll::find($payrollId);
         $payroll->reference = gen4tid('PYRL-',$payroll->tid);
+        $payroll['approval_date']  = (new DateTime($payroll['approval_date']))->format('d-m-Y');
 
-//        return
         $payrollItems = Payroll::where('payroll_id', $payrollId)
             ->join('payroll_items', 'payroll.id', 'payroll_items.payroll_id')
             ->join('users', 'payroll_items.employee_id', 'users.id')
@@ -251,7 +251,6 @@ class PayrollController extends Controller
                 DB::raw('SUM(absent_total_deduction + total_nhif + total_nssf + housing_levy + loan + other_deductions) as deductions_tally'),
             )
             ->get();
-
 
         //returning with successfull message
         return new ViewResponse('focus.payroll.view', compact('payrollItems', 'payroll','accounts'));
@@ -454,16 +453,36 @@ class PayrollController extends Controller
      */
     public function approve_payroll(Request $request)
     {
-//        return $request;
-        //dd($request->all());
-        $payroll = Payroll::find($request->id);
-//        $payroll->approval_note = $request->approval_note;
-//        $payroll->approval_date = date_for_database($request->approval_date);
-//        $payroll->status = $request->status;
-       // $payroll['account'] = $request->account_id;
-       // $payroll->update();
-        return $this->repository->approve_payroll(compact('payroll'));
-//        return redirect()->back();
+
+        $validated = $request->validate([
+            'status' => ['required', 'string'],
+            'approval_date' => ['required', 'date'],
+            'approval_note' => ['required', 'string'],
+        ]);
+
+
+        try {
+            DB::beginTransaction();
+
+
+            $payroll = Payroll::find($request->id);
+
+            $validated['approval_date']  = (new DateTime($validated['approval_date']))->format('Y-m-d');
+            $payroll->fill($validated);
+
+            $payroll->save();
+
+//            $this->repository->post_transaction($payroll);
+
+            DB::commit();
+        }
+        catch (Exception $e){
+            DB::rollBack();
+            return 'SQL ERROR : ' . $e->getMessage() . " On File: " .  $e->getFile() . " On Line: " . $e->getLine();
+        }
+
+
+        return new RedirectResponse(route('biller.payroll.show', $payroll->id), ['flash_success' => "Payroll '" . gen4tid('PYRLL-', $payroll->tid) . "' Approval updated successfully"]);
     }
 
     /**

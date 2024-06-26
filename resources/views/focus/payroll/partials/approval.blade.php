@@ -10,19 +10,25 @@
             <form action="{{ route('biller.payroll.approve_payroll') }}" method="post">
                 @csrf
                 <div class="modal-body">
+
+
                     <div class="form-group">
                         <label for="status"> Status</label>
                         <select class="form-control" name="status" id="status">
-                            @foreach (['pending','approved', 'rejected'] as $val)
-                                <option value="{{ $val }}">
-                                    {{ ucfirst($val) }}
+                            @foreach (['PENDING','APPROVED', 'REJECTED'] as $val)
+                                <option value="{{ $val }}" @if($val === $payroll->status) selected @endif>
+                                    {{ $val }}
                                 </option>
                             @endforeach                            
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="date">Date</label>
-                        {{ Form::text('approval_date', null, ['class' => 'form-control datepicker', 'id' => 'date']) }}
+{{--                        {{ Form::text('approval_date', null, ['class' => 'form-control datepicker', 'id' => 'date']) }}--}}
+                        <input type="text" id="approval_date" name="approval_date" required placeholder="Approval Date"
+                               class="datepicker form-control box-size mb-2"
+                               value="{{$payroll['approval_date']}}"
+                        >
                         <input type="hidden" name="id" value="{{ @$payroll->id}}">
                     </div>
                     <div class="form-group">
@@ -31,20 +37,9 @@
                     </div>
                     <div class="form-group">
                         <label for="note">Note</label>
-                        {{ Form::textarea('approval_note', null, ['class' => 'form-control', 'rows' => '4', 'id' => 'note']) }}
+                        <textarea name="approval_note" id="approval_note" class="col-12" rows="4">{{ $payroll->approval_note }}</textarea>
                     </div>
-                    {{-- <div class="form-group">
-                        <label for="account">Pay From Account</label>
-                        <select name="account_id" id="account" class="custom-select" required>  
-                            <option value="">-- select account --</option>                                 
-                            @foreach ($accounts as $row)
-                                <option value="{{ $row->id }}" {{ $row->id == @$billpayment->account_id? 'selected' : '' }}>
-                                    {{ $row->holder }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>  --}}
-                    
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
