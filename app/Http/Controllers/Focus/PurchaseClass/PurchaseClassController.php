@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Focus\PurchaseClass;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\RedirectResponse;
 use App\Models\PurchaseClass\PurchaseClass;
 use DateTime;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Yajra\DataTables\Facades\DataTables;
 
 class PurchaseClassController extends Controller
@@ -23,6 +25,17 @@ class PurchaseClassController extends Controller
             $purchaseClasses = PurchaseClass::all();
 
             return Datatables::of($purchaseClasses)
+
+                ->editColumn('start_date', function ($model) {
+
+                    if ($model->start_date == '0000-00-00') return '<b><i> N/A </i></b>';
+                    return (new DateTime($model->start_date))->format('jS M Y');
+                })
+                ->editColumn('end_date', function ($model) {
+
+                    if ($model->end_date == '0000-00-00') return '<b><i> N/A </i></b>';
+                    return (new DateTime($model->end_date))->format('jS M Y');
+                })
                 ->addColumn('action', function ($model) {
 
                     $route = route('biller.purchase-classes.edit', $model->id);
@@ -44,7 +57,7 @@ class PurchaseClassController extends Controller
                             </a>';
 
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['start_date', 'end_date','action'])
                 ->make(true);
 
         }
@@ -91,27 +104,42 @@ class PurchaseClassController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return RedirectResponse
      */
     public function store(Request $request)
     {
 
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'budget'=> ['required', 'numeric'],
+            'description' => ['required', 'string'],
+            'start_date' => ['required', 'date_format:d-m-Y'],
+            'end_date' => [
+                'required',
+                'date_format:d-m-Y',
+                function ($attribute, $value, $fail) use ($request) {
+                    // Convert start_date and end_date to DateTime objects
+                    $startDate = \DateTime::createFromFormat('d-m-Y', $request->start_date);
+                    $endDate = \DateTime::createFromFormat('d-m-Y', $value);
 
-        $request->validate([
-            'name' => ['required'],
-            // Add other validation rules as needed
+                    // Check if the end date is after the start date
+                    if ($startDate && $endDate && $endDate <= $startDate) {
+                        $fail('The end date must be a date after the start date.');
+                    }
+                }
+            ],
         ]);
 
-//        return $request;
+        $validated['start_date'] = (new DateTime($validated['start_date']))->format('Y-m-d');
+        $validated['end_date'] = (new DateTime($validated['end_date']))->format('Y-m-d');
 
-        $p = new PurchaseClass();
-        $p->name = $request->name;
-        $p->ins = auth()->user()->ins;
-        $p->save();
+        $purchaseClass = new PurchaseClass();
+        $purchaseClass->fill($validated);
+        $purchaseClass->ins = auth()->user()->ins;
 
-        return redirect()->route('biller.purchase-classes.index')
-            ->with('success', 'Purchase class created successfully');
+        $purchaseClass->save();
 
+        return new RedirectResponse(route('biller.purchase-classes.index'), ['flash_success' => "Purchase class '" . $purchaseClass->name . "' updated successfully"]);
     }
 
     /**
@@ -229,31 +257,54 @@ class PurchaseClassController extends Controller
     {
         $purchaseClass = PurchaseClass::find($id);
 
+        $purchaseClass->start_date = (new DateTime($purchaseClass->start_date))->format('d-m-Y');
+        $purchaseClass->end_date = (new DateTime($purchaseClass->end_date))->format('d-m-Y');
+
         return view('focus.purchase_classes.edit', compact('purchaseClass'));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return RedirectResponse
+     * @throws \Exception
      */
     public function update(Request $request, $id)
     {
 
         $purchaseClass = PurchaseClass::find($id);
 
-        $request->validate([
-            'name' => 'required',
-            // Add other validation rules as needed
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'budget'=> ['required', 'numeric'],
+            'description' => ['required', 'string'],
+            'start_date' => ['required', 'date_format:d-m-Y'],
+            'end_date' => [
+                'required',
+                'date_format:d-m-Y',
+                function ($attribute, $value, $fail) use ($request) {
+                    // Convert start_date and end_date to DateTime objects
+                    $startDate = \DateTime::createFromFormat('d-m-Y', $request->start_date);
+                    $endDate = \DateTime::createFromFormat('d-m-Y', $value);
+
+                    // Check if the end date is after the start date
+                    if ($startDate && $endDate && $endDate <= $startDate) {
+                        $fail('The end date must be a date after the start date.');
+                    }
+                }
+            ],
         ]);
 
-        $purchaseClass = PurchaseClass::find($id);
-        $purchaseClass->update($request->all());
+        $validated['start_date'] = (new DateTime($validated['start_date']))->format('Y-m-d');
+        $validated['end_date'] = (new DateTime($validated['end_date']))->format('Y-m-d');
 
-        return redirect()->route('biller.purchase-classes.index')
-            ->with('success', 'Purchase class updated successfully');
+        $purchaseClass = PurchaseClass::find($id);
+        $purchaseClass->fill($validated);
+        $purchaseClass->save();
+
+        return new RedirectResponse(route('biller.purchase-classes.index'), ['flash_success' => "Purchase class '" . $purchaseClass->name . "' updated successfully"]);
     }
 
     /**
@@ -266,6 +317,8 @@ class PurchaseClassController extends Controller
     {
 
         $purchaseClass = PurchaseClass::find($id);
+
+        $name = $purchaseClass->name;
 
         $directsAndOrders = PurchaseClass::where('id', $id)->with('purchases', 'purchaseOrders')->first();
 
@@ -280,7 +333,6 @@ class PurchaseClassController extends Controller
 
         $purchaseClass->delete();
 
-        return redirect()->route('biller.purchase-classes.index')
-            ->with('success', 'Purchase class deleted successfully');
+        return new RedirectResponse(route('biller.purchase-classes.index'), ['flash_success' => "Purchase class '" . $name . "' deleted successfully"]);
     }
 }

@@ -1,4 +1,11 @@
+<!DOCTYPE html>
+
 @extends ('core.layouts.app')
+
+<head>
+    <script src="https://cdn.tiny.cloud/1/ewcb9ttdxkr6mv3uyc8ueykuqz06aja4t3e7wuqyfqfwq17z/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+</head>
+
 
 @section ('title',  'Create Purchase Class')
 
@@ -52,5 +59,15 @@
     $('.datepicker').datepicker({format: "{{ config('core.user_date_format') }}", autoHide: true})
     $('#purchase_date').datepicker('setDate', new Date());
     $('#warranty_expiry_date').datepicker('setDate', new Date());
+
+
+    tinymce.init({
+        selector: '.tinyinput',
+        menubar: false,
+        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link table | align lineheight | checklist numlist bullist indent outdent | removeformat',
+        height: 300,
+    });
+
 </script>
 @endsection
