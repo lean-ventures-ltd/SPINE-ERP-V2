@@ -368,6 +368,10 @@
                                     </a>
                                 </li>
                                 @endauth
+                                <li><a class="dropdown-item" href="{{ route('biller.customers.aging_report') }}"
+                                    data-toggle="dropdown"><i class="ft-list"></i> Aging Report
+                                 </a>
+                             </li>
                             </ul>
                         </li>
                         @endauth
@@ -863,6 +867,10 @@
                                 </a>
                             </li>
                             @endauth
+                            <li><a class="dropdown-item" href="{{ route('biller.suppliers.supplier_aging_report') }}"
+                                    data-toggle="dropdown"> <i class="ft-list"></i> Aging Report
+                                </a>
+                            </li>
                         </ul>
                     </li>
                     @endauth

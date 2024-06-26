@@ -37,6 +37,7 @@ use App\Models\lpo\Lpo;
 use App\Models\verifiedjcs\VerifiedJc;
 use App\Models\fault\Fault;
 use App\Models\hrm\Hrm;
+use Illuminate\Validation\ValidationException;
 
 /**
  * QuotesController
@@ -217,16 +218,27 @@ class QuotesController extends Controller
      */
     public function destroy(Quote $quote)
     {
-        $type = $quote->bank_id > 0? 'pi' : 'quote';
 
-        $this->repository->delete($quote);
+        try {
+            $type = $quote->bank_id > 0? 'pi' : 'quote';
 
-        $link = route('biller.quotes.index');
-        $msg = trans('alerts.backend.quotes.deleted');
-        if ($type == 'pi') {
-            $link = route('biller.quotes.index', 'page=pi');
-            $msg = 'Proforma Invoice Successfully Deleted';
+            $this->repository->delete($quote);
+
+            $link = route('biller.quotes.index');
+            $msg = trans('alerts.backend.quotes.deleted');
+            if ($type == 'pi') {
+                $link = route('biller.quotes.index', 'page=pi');
+                $msg = 'Proforma Invoice Successfully Deleted';
+            }
         }
+        catch (ValidationException $e) {
+            // Return validation errors
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        }
+         catch (\Throwable $th) {
+            return errorHandler('Error Deleting Quote', $th);
+        }
+        
 
         return new RedirectResponse($link, ['flash_success' => $msg]);
     }

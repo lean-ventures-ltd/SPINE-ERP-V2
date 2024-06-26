@@ -29,6 +29,7 @@ use App\Repositories\Focus\branch\BranchRepository;
 use App\Http\Requests\Focus\branch\ManageBranchRequest;
 use App\Http\Requests\Focus\branch\StoreBranchRequest;
 use App\Models\customer\Customer;
+use Illuminate\Validation\ValidationException;
 
 /**
  * ProductcategoriesController
@@ -149,10 +150,18 @@ class BranchesController extends Controller
      */
     public function destroy(Branch $branch)
     {
-        $res = $this->repository->delete($branch);
-
-        $params = ['flash_success' => 'Branch successfully deleted'];
-        if (!$res) $params = ['flash_error' => 'Branch attached to Ticket'];
+        try {
+            $res = $this->repository->delete($branch);
+            $params = ['flash_success' => 'Branch successfully deleted'];
+            if (!$res) $params = ['flash_error' => 'Branch attached to Ticket'];
+        }
+        catch (ValidationException $e) {
+            // Return validation errors
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        }
+         catch (\Throwable $th) {
+            return errorHandler('Error Deleting Branch', $th);
+        }
 
         return new RedirectResponse(route('biller.branches.index'), $params);
     }

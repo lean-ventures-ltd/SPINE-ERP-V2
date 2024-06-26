@@ -164,7 +164,12 @@ class CustomersController extends Controller
     {
         try {
             $this->repository->delete($customer);
-        } catch (\Throwable $th) {
+        }
+        catch (ValidationException $e) {
+            // Return validation errors
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        }
+         catch (\Throwable $th) {
             return errorHandler('Error Deleting Customers', $th);
         }
 
@@ -190,6 +195,20 @@ class CustomersController extends Controller
         $account_balance = collect($aging_cluster)->sum() - $customer->on_account;
 
         return new ViewResponse('focus.customers.view', compact('customer', 'aging_cluster', 'account_balance'));
+    }
+
+    //Aging report for multiple customers
+    public function aging_report()
+    {
+        $customers = Customer::all();
+        $customers_data = $customers->map(function ($customer) {
+            $invoices = $this->statement_invoices($customer);
+            return [
+                'customer' => $customer,
+                'aging_cluster' => $this->aging_cluster($customer, $invoices)
+            ];
+        });
+        return new ViewResponse('focus.customers.aging_report', compact('customers_data'));
     }
 
     /**

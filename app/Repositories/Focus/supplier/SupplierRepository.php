@@ -205,6 +205,8 @@ class SupplierRepository extends BaseRepository
     {
         if ($supplier->id == 1) throw ValidationException::withMessages(['Cannot delete default supplier']);
         if ($supplier->bills()->exists()) throw ValidationException::withMessages(['Supplier has attached bills']);
+        if ($supplier->purchase()->exists()) throw ValidationException::withMessages(['Supplier has attached Purchase']);
+        if ($supplier->transactions()->exists()) throw ValidationException::withMessages(['Supplier has attached Transactions']);
         if ($supplier->payments()->exists()) throw ValidationException::withMessages(['Supplier has attached payments']);
         if ($supplier->bills->purchase_orders()) throw ValidationException::withMessages(['Supplier has attached purchase orders!']);
 

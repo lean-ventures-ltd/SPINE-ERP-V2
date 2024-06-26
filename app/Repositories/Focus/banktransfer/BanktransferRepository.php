@@ -31,7 +31,7 @@ class BanktransferRepository extends BaseRepository
     {
         $q = $this->query();
 
-        return $q->get();
+        return $q;
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Repositories\Focus\branch;
 use App\Models\branch\Branch;
 use App\Exceptions\GeneralException;
 use App\Repositories\BaseRepository;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Class ProductcategoryRepository.
@@ -72,7 +73,12 @@ class BranchRepository extends BaseRepository
      */
     public function delete(Branch $branch)
     {
-        if ($branch->leads()->first()) return;
+        if ($branch->contract_equipments()->exists()) throw ValidationException::withMessages(['Branch has attached Equipments']);
+        if ($branch->taskschedule_equipments()->exists()) throw ValidationException::withMessages(['Branch has attached TaskSchedule']);
+        if ($branch->service_contract_items()->exists()) throw ValidationException::withMessages(['Branch has attached Service Contract Items']);
+        if ($branch->contract_services()->exists()) throw ValidationException::withMessages(['Branch has attached Contract Services']);
+        if ($branch->equipments()->exists()) throw ValidationException::withMessages(['Branch has attached Equipments']);
+        if ($branch->leads()->exists()) throw ValidationException::withMessages(['Branch has attached Leads']);
         return $branch->delete();
 
         throw new GeneralException(trans('exceptions.backend.productcategories.delete_error'));

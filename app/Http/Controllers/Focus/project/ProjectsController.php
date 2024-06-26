@@ -92,7 +92,7 @@ class ProjectsController extends Controller
         $statuses = Misc::where('section', 2)->get();
         $tags = Misc::where('section', 1)->get();
 
-        $employees = Hrm::all();
+        $employees = Hrm::where('ins', auth()->user()->ins)->get();
         $project = new Project;
 
         return new ViewResponse('focus.projects.index', compact('customers', 'accounts', 'last_tid', 'project', 'mics', 'employees', 'statuses', 'tags'));
@@ -159,7 +159,12 @@ class ProjectsController extends Controller
     {
         try {
             $this->repository->delete($project);
-        } catch (\Throwable $th) {
+        }
+        catch (ValidationException $e) {
+            // Return validation errors
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        }
+         catch (\Throwable $th) {
             return errorHandler('Error Deleting Project', $th);
          }
 
@@ -203,7 +208,8 @@ class ProjectsController extends Controller
 
 
         $mics = Misc::all();
-        $employees = User::all();
+        // dd($mics);
+        $employees = User::where('ins', auth()->user()->ins)->get();
         $expensesByMilestone = $this->getExpensesByMilestone($project->id);
 
         return new ViewResponse('focus.projects.view', compact('project', 'accounts', 'exp_accounts', 'suppliers', 'last_tid', 'mics', 'employees', 'expensesByMilestone', 'productNames', 'stockIssues'));

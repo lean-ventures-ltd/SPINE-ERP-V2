@@ -225,6 +225,12 @@ class ProjectRepository extends BaseRepository
             if ($quote->projectstock->count()) $is_expensed = true;
         }    
         if ($is_expensed) throw ValidationException::withMessages(['Not allowed! Project has been expensed']);
+        if ($project->quote()->exists()) throw ValidationException::withMessages(['Project has attached Main Quote']);
+        if ($project->quotes()->exists()) throw ValidationException::withMessages(['Project has attached Quotes']);
+        if ($project->tasks()->exists()) throw ValidationException::withMessages(['Project has attached Main Quote']);
+        if ($project->milestones()->exists()) throw ValidationException::withMessages(['Project has attached Milestone']);
+        if ($project->stockIssues()->exists()) throw ValidationException::withMessages(['Project has attached Stock Issuance']);
+        if ($project->invoices()->exists()) throw ValidationException::withMessages(['Project has attached Detached Invoices']);
 
         // log
         $data = ['project_id' => $project->id, 'value' => '[' . trans('general.delete') . '] ' . $project->name, 'user_id' => auth()->user()->id];
