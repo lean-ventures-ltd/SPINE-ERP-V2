@@ -826,7 +826,7 @@ class ProjectsController extends Controller
     }
 
 
-    public function getExpensesByMilestone(int $projectId): array {
+    public function getExpensesByMilestone(int $projectId) {
 
         try {
 
@@ -899,14 +899,17 @@ class ProjectsController extends Controller
         }
         catch(Exception $ex){
 
-            if(!Auth::user()->hasRole(17)) return ['An error occurred. Please await support'];
-            else return [
-                'trace' => $ex->getTrace() ,
-                'message' => $ex->getMessage(),
-                'code' => $ex->getCode(),
-                'file' => $ex->getFile(),
-                'line' => $ex->getLine(),
-            ];
+            if (Auth::user()->roles()->first()->id === 17)
+                return [
+                    'trace' => $ex->getTrace() ,
+                    'message' => $ex->getMessage(),
+                    'code' => $ex->getCode(),
+                    'file' => $ex->getFile(),
+                    'line' => $ex->getLine(),
+                ];
+
+            else
+                return ['An error occurred. Please await support'];
         }
 
     }
