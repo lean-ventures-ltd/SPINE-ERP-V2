@@ -38,6 +38,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Focus\report\ManageReports;
 use App\Models\items\GoodsreceivenoteItem;
 use App\Models\items\OpeningStockItem;
+use App\Models\items\PurchaseorderItem;
 use App\Models\items\StockTransferItem;
 use App\Models\stock_adj\StockAdjItem;
 use App\Models\stock_issue\StockIssueItem;
@@ -152,6 +153,7 @@ class StatementController extends Controller
             case 'account':
                 if (!$reports->account) return new RedirectResponse(route('biller.reports.statements', [$reports->section]), ['flash_error' => trans('meta.invalid_entry')]);
                 $account_details = Account::where('id', '=', $reports->account)->first();
+                // dd($account_details, $reports->account);
                 $lang['title'] = trans('meta.account_statement');
                 $lang['title2'] = trans('accounts.account');
                 $lang['module'] = 'account_statement';
@@ -161,26 +163,30 @@ class StatementController extends Controller
 
             case 'income':
                 $account_details = Account::where('id', '=', $reports->account)->first();
+                // dd($account_details, $reports->account);
                 $lang['title'] = trans('meta.income_statement');
                 $lang['title2'] = trans('meta.income_statement');
                 $lang['module'] = 'income_statement';
                 $default_category = ConfigMeta::withoutGlobalScopes()->where('feature_id', '=', 8)->first('feature_value');
                 $category = Transactioncategory::find($default_category['feature_value']);
+                // dd($default_category['feature_value']);
                 $lang['party'] = $category->name;
                 $file_name = preg_replace('/[^A-Za-z0-9]+/', '-', $lang['title'] . '_' . $category->name);
-                $transactions = Transaction::whereBetween('payment_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)])->where('trans_category_id', '=', $category->id)->get();
+                $transactions = Transaction::whereBetween('tr_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)])->where('trans_category_id', '=', $category->id)->get();
 
                 break;
             case 'expenses':
                 $account_details = Account::where('id', '=', $reports->account)->first();
+                // dd($account_details, $reports->account);
                 $lang['title'] = trans('meta.expense_statement');
                 $lang['title2'] = trans('meta.expense_statement');
                 $lang['module'] = 'expense_statement';
                 $default_category = ConfigMeta::withoutGlobalScopes()->where('feature_id', '=', 10)->first('feature_value');
                 $category = Transactioncategory::find($default_category['feature_value']);
+                // dd($category, $default_category['feature_value']);
                 $lang['party'] = $category->name;
                 $file_name = preg_replace('/[^A-Za-z0-9]+/', '-', $lang['title'] . '_' . $category->name);
-                $transactions = Transaction::whereBetween('payment_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)])->where('trans_category_id', '=', $category->id)->get();
+                $transactions = Transaction::whereBetween('tr_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)])->where('trans_category_id', '=', $category->id)->get();
 
                 break;
 
@@ -206,13 +212,13 @@ class StatementController extends Controller
 
         switch ($reports->trans_type) {
             case 'credit':
-                $transactions = $account_details->transactions->whereBetween('payment_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)])->where('credit', '>', 0);
+                $transactions = $account_details->transactions->whereBetween('tr_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)])->where('credit', '>', 0);
                 break;
             case 'debit':
-                $transactions = $account_details->transactions->whereBetween('payment_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)])->where('debit', '>', 0);
+                $transactions = $account_details->transactions->whereBetween('tr_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)])->where('debit', '>', 0);
                 break;
             case 'all':
-                $transactions = $account_details->transactions->whereBetween('payment_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)]);
+                $transactions = $account_details->transactions->whereBetween('tr_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)]);
                 break;
         }
 
@@ -245,7 +251,7 @@ class StatementController extends Controller
                     "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
                     "Expires" => "0"
                 );
-                $columns = array(trans('transactions.payment_date'), trans('general.description'), trans('transactions.debit'), trans('transactions.credit'), trans('accounts.balance'));
+                $columns = array(trans('transactions.tr_date'), trans('general.description'), trans('transactions.debit'), trans('transactions.credit'), trans('accounts.balance'));
                 $callback = function () use ($transactions, $columns) {
                     $file = fopen('php://output', 'w');
                     fputcsv($file, $columns);
@@ -253,7 +259,7 @@ class StatementController extends Controller
 
                     foreach ($transactions as $row) {
                         $balance += $row['credit'] - $row['debit'];
-                        fputcsv($file, array(dateFormat($row['payment_date']), $row['note'], amountFormat($row['debit']), amountFormat($row['credit']), amountFormat($balance)));
+                        fputcsv($file, array(dateFormat($row['tr_date']), $row['note'], amountFormat($row['debit']), amountFormat($row['credit']), amountFormat($balance)));
                     }
                     fclose($file);
                 };
@@ -612,19 +618,54 @@ class StatementController extends Controller
                 $cat_id = $reports->product_category;
                 if ($reports->type_p == 'sales') {
                     $lang['title2'] = trans('meta.product_statement_sales');
-                    $account_details = InvoiceItem::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])->whereHas('variation', function ($q) use ($cat_id) {
-                        return $q->whereHas('product', function ($q) use ($cat_id) {
+                    $account_details = InvoiceItem::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])
+                    ->where(function ($query) use ($cat_id) {
+                        $query->whereHas('variation.product', function ($q) use ($cat_id) {
                             return $q->where('productcategory_id', '=', $cat_id);
+                        })
+                        ->orWhereHas('quote.verified_products', function ($q) use ($cat_id) {
+                            return $q->whereHas('product_variation.product', function ($q) use ($cat_id) {
+                                return $q->where('productcategory_id', '=', $cat_id);
+                            });
                         });
-                    })->get();
+                    })
+                    ->with(['variation.product' => function ($q) {
+                        $q->select('id', 'name','price'); // Assuming 'name' is the column for product name
+                    }])
+                    ->with(['quote.verified_products.product_variation.product'=> function ($q) {
+                        $q->select('id', 'name', 'price'); // Assuming 'name' is the column for product name
+                    }])
+                    ->get();
+                    // dd($account_details, $reports->from_date);
                 } elseif ($reports->type_p == 'purchase') {
                     $lang['title2'] = trans('meta.product_statement_purchase');
-                    $account_details = PurchaseItem::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])->whereHas('variation', function ($q) use ($cat_id) {
+                    $purchase_items = PurchaseItem::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])
+                    ->where('type','Stock')
+                    ->whereHas('variation', function ($q) use ($cat_id) {
                         return $q->whereHas('product', function ($q) use ($cat_id) {
                             return $q->where('productcategory_id', '=', $cat_id);
                         });
-                    })->get();
+                    })
+                    ->with(['variation.product' => function ($q) {
+                        $q->select('id', 'name'); // Assuming 'name' is the column for product name
+                    }])
+                    ->select('id','description as product_name','rate as product_price', 'qty as product_qty','amount', 'created_at')
+                    ->get();
+                    $purchase_order_items = PurchaseorderItem::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])
+                    ->where('type','Stock')->where('qty_received', '>', 0)
+                    ->whereHas('variation', function ($q) use ($cat_id) {
+                        return $q->whereHas('product', function ($q) use ($cat_id) {
+                            return $q->where('productcategory_id', '=', $cat_id);
+                        });
+                    })
+                    ->with(['variation.product' => function ($q) {
+                        $q->select('id', 'name'); // Assuming 'name' is the column for product name
+                    }])
+                    ->select('id', 'description as product_name','rate as product_price', 'qty_received as product_qty','amount', 'created_at')
+                    ->get();
+                    $account_details = $purchase_items->merge($purchase_order_items);
                 }
+                // dd($account_details);
                 $product = Productcategory::where('id', '=', $reports->product_category)->first();
                 $lang['title'] = trans('meta.product_category_statement');
                 $lang['module'] = 'product_statement';
@@ -636,19 +677,56 @@ class StatementController extends Controller
 
             case 'product_warehouse_statement':
                 if (!$reports->warehouse) return new RedirectResponse(route('biller.reports.statements', [$reports->section]), ['flash_error' => trans('meta.invalid_entry')]);
-                $cat_id = $reports->warehouse;
+                $warehouse_id = $reports->warehouse;
                 if ($reports->type_p == 'sales') {
-                    $account_details = InvoiceItem::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])->whereHas('variation', function ($q) use ($cat_id) {
-                        return $q->where('warehouse_id', '=', $cat_id);
-                    })->get();
+                    $account_details = InvoiceItem::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])
+                    ->where(function ($query) use ($warehouse_id) {
+                        $query->whereHas('variation', function ($q) use ($warehouse_id) {
+                            $q->where('warehouse_id', '=', $warehouse_id);
+                        })
+                        ->orWhereHas('quote.verified_products', function ($q) use ($warehouse_id) {
+                            $q->whereHas('product_variation', function ($q) use ($warehouse_id) {
+                                $q->where('warehouse_id', '=', $warehouse_id);
+                            });
+                        });
+                    })
+                    ->with(['variation' => function ($q) {
+                        $q->select('id', 'name','price'); // Assuming 'name' is the column for product name
+                    }])
+                    ->with(['quote.verified_products.product_variation'=> function ($q) {
+                        $q->select('id', 'name', 'price'); // Assuming 'name' is the column for product name
+                    }])
+                    ->get(); 
+                    // dd($account_details, datetime_for_database($reports->from_date));
                     $lang['title2'] = trans('meta.product_statement_sales');
                 } elseif ($reports->type_p == 'purchase') {
-                    $account_details = PurchaseItem::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])->whereHas('variation', function ($q) use ($cat_id) {
-                        return $q->where('warehouse_id', '=', $cat_id);
-                    })->get();
+                    
+                    $purchase_items = PurchaseItem::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])
+                    ->where('type','Stock')
+                    ->whereHas('variation', function ($q) use ($warehouse_id) {
+                        return $q->where('warehouse_id', '=', $warehouse_id);
+                    })
+                    ->with(['variation' => function ($q) {
+                        $q->select('id', 'name'); // Assuming 'name' is the column for product name
+                    }])
+                    ->select('id','description as product_name','rate as product_price', 'qty as product_qty','amount', 'created_at')
+                    ->get();
+                    $purchase_order_items = PurchaseorderItem::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])
+                    ->where('type','Stock')->where('qty_received', '>', 0)
+                    ->whereHas('variation', function ($q) use ($warehouse_id) {
+                        return $q->where('warehouse_id', '=', $warehouse_id);
+                    })
+                    ->with(['variation' => function ($q) {
+                        $q->select('id', 'name'); // Assuming 'name' is the column for product name
+                    }])
+                    ->select('id', 'description as product_name','rate as product_price', 'qty_received as product_qty','amount', 'created_at')
+                    ->get();
+                    $account_details = $purchase_items->merge($purchase_order_items);
+                    // dd($account_details);
                     $lang['title2'] = trans('meta.product_statement_purchase');
                 }
-                $product = Productcategory::where('id', '=', $reports->product_category)->first();
+                // dd($account_details);
+                $product = Warehouse::where('id', '=', $reports->warehouse)->first();
                 $lang['title'] = trans('meta.product_warehouse_statement');
                 $lang['module'] = 'product_statement';
                 $lang['party'] = $product['title'];
@@ -677,6 +755,7 @@ class StatementController extends Controller
 
 
                 $account_details = Purchaseorder::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])->with('products')->get()->pluck('products');
+                // dd($account_details);
                 $lang['title2'] = trans('suppliers.supplier');
                 $lang['title'] = trans('meta.product_supplier_statement');
                 $supplier = Supplier::find($reports->person)->first();

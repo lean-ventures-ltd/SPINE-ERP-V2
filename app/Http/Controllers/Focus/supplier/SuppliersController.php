@@ -188,7 +188,12 @@ class SuppliersController extends Controller
     {
         try {
             $this->repository->delete($supplier);
-        } catch (\Throwable $th) {
+        } 
+        catch (ValidationException $e) {
+            // Return validation errors
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        }
+        catch (\Throwable $th) {
             return errorHandler('Error Deleting Supplier', $th);
         }
 
@@ -259,6 +264,67 @@ class SuppliersController extends Controller
         $account_balance = collect($aging_cluster)->sum() - $supplier->on_account;
 
         return new ViewResponse('focus.suppliers.view', compact('supplier', 'account_balance', 'aging_cluster'));
+    }
+
+    public function supplier_aging_report()
+    {
+        $suppliers = Supplier::all();
+        $suppliers_data = $suppliers->map(function ($supplier) {
+            $intervals = array();
+            for ($i = 0; $i < 5; $i++) {
+                $from = date('Y-m-d');
+                $to = date('Y-m-d', strtotime($from . ' - 30 days'));
+                if ($i > 0) {
+                    $prev = $intervals[$i-1][1];
+                    $from = date('Y-m-d', strtotime($prev . ' - 1 day'));
+                    $to = date('Y-m-d', strtotime($from . ' - 28 days'));
+                }
+                $intervals[] = [$from, $to];
+            }
+
+            // statement on bills 
+            $bills = collect();
+            $bills_statement = $this->repository->getStatementForDataTable($supplier->id);
+            foreach ($bills_statement as $row) {
+                if ($row->type == 'bill') $bills->add($row);
+                else {
+                    $last_bill = $bills->last();
+                    if ($last_bill->bill_id == $row->bill_id) {
+                        $last_bill->debit += $row->debit;
+                    }
+                }
+            }
+
+            // aging balance from extracted invoices
+            $aging_cluster = array_fill(0, 5, 0);
+            foreach ($bills as $bill) {
+                $due_date = new DateTime($bill->date);
+                $debt_amount = $bill->credit - $bill->debit;
+                // over payment
+                if ($debt_amount < 0) {
+                    // $supplier->on_account += $debt_amount * -1;
+                    $debt_amount = 0;
+                }
+                // due_date between 0 - 120 days
+                foreach ($intervals as $i => $dates) {
+                    $start  = new DateTime($dates[0]);
+                    $end = new DateTime($dates[1]);
+                    if ($start >= $due_date && $end <= $due_date) {
+                        $aging_cluster[$i] += $debt_amount;
+                        break;
+                    }
+                }
+                // due_date in 120+ days
+                if ($due_date < new DateTime($intervals[4][1])) {
+                    $aging_cluster[4] += $debt_amount;
+                }
+            }
+            return [
+                'supplier' => $supplier,
+                'aging_cluster' => $aging_cluster
+            ];
+        });
+        return new ViewResponse('focus.suppliers.supplier_aging_report', compact('suppliers_data'));
     }
 
     public function search(CreatePurchaseorderRequest $request)

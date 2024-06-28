@@ -10,6 +10,7 @@ Route::group(['namespace' => 'customer'], function () {
     Route::post('customer_send_email', 'CustomersController@send_bill')->name('customer_send_email');
     Route::post('customers/selected', 'CustomersController@selected_action')->name('customers.selected_action');
     Route::get('customers/wallet', 'CustomersController@wallet')->name('customers.wallet');
+    Route::get('customers/aging_report', 'CustomersController@aging_report')->name('customers.aging_report');
     Route::post('customers/wallet', 'CustomersController@wallet')->name('customers.wallet');
     Route::post('customers/wallet_load', 'CustomersController@wallet_transactions')->name('customers.wallet_load');
     Route::post('customers/search', 'CustomersController@search')->name('customers.search');

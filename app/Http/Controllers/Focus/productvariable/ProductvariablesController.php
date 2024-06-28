@@ -25,6 +25,7 @@ use App\Http\Responses\ViewResponse;
 use App\Http\Responses\Focus\productvariable\CreateResponse;
 use App\Http\Responses\Focus\productvariable\EditResponse;
 use App\Repositories\Focus\productvariable\ProductvariableRepository;
+use Illuminate\Validation\ValidationException;
 
 /**
  * ProductvariablesController
@@ -116,7 +117,17 @@ class ProductvariablesController extends Controller
      */
     public function destroy(Productvariable $productvariable)
     {
-        $this->repository->delete($productvariable);
+        try {
+            $this->repository->delete($productvariable);
+        }
+        catch (ValidationException $e) {
+            // Return validation errors
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        }
+         catch (\Throwable $th) {
+            return errorHandler('Error Deleting UOM', $th);
+         }
+        
         
         return new RedirectResponse(route('biller.productvariables.index'), ['flash_success' => 'Product Unit Variable Successfully Deleted']);
     }

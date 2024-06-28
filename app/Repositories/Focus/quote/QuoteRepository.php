@@ -443,6 +443,13 @@ class QuoteRepository extends BaseRepository
         $type = $quote->bank_id ? 'PI' : 'Quote';
         if ($quote->project_quote) 
             throw ValidationException::withMessages([$type . ' is attached to a project!']);
+        if ($quote->project()->exists()) throw ValidationException::withMessages([$type .' has attached Project']);
+        if ($quote->budget()->exists()) throw ValidationException::withMessages([$type .' has attached Budget']);
+        if ($quote->verified_jcs()->exists()) throw ValidationException::withMessages([$type .' is Verified']);
+        if ($quote->invoice()->exists()) throw ValidationException::withMessages([$type .' has attached Invoice']);
+        if ($quote->invoice_quote()->exists()) throw ValidationException::withMessages([$type .' has attached Detached Invoice']);
+        if ($quote->stockIssues()->exists()) throw ValidationException::withMessages([$type .' has attached Issuance Items']);
+        if ($quote->skill_items()->exists()) throw ValidationException::withMessages([$type .' has attached SkillItems']);
             
         if ($quote->delete()) {
             if ($quote->lead) $quote->lead->update(['status' => 0, 'reason' => 'new']);

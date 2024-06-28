@@ -11,6 +11,7 @@ use App\Models\manualjournal\Journal;
 use App\Models\project\Project;
 use App\Models\quote\Quote;
 use App\Models\tenant_package\TenantPackage;
+use App\Models\transaction\Transaction;
 
 /**
  * Class CustomerRelationship
@@ -72,5 +73,9 @@ trait CustomerRelationship
     public function projects()
     {
         return $this->hasMany(Project::class);
+    }
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'customer_id');
     }
 }

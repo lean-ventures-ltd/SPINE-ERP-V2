@@ -83,6 +83,7 @@ class ProductvariableRepository extends BaseRepository
      */
     public function delete($productvariable)
     {
+        if ($productvariable->products()->exists()) throw ValidationException::withMessages(['Unit of Measure has attached Products']);
         if ($productvariable->unit_type == 'base') {
             $rel_units = Productvariable::where(['unit_type' => 'compound', 'base_unit_id' => $productvariable->id])->count();
             if ($rel_units) throw ValidationException::withMessages(['Unit is attached to related compound unit']);

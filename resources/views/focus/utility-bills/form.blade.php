@@ -56,7 +56,7 @@
         <label for="tax_rate">TAX %</label>
         <select name="tax_rate" id="tax_rate" class="custom-select">
             @foreach ([0, 16] as $val)
-                <option value="{{ $val }}">{{ $val? $val . '% VAT' : 'OFF' }}</option>
+                <option value="{{ $val }}" {{ @$utility_bill->tax_rate == $val? 'selected' : '' }}>{{ $val? $val . '% VAT' : 'OFF' }}</option>
             @endforeach
         </select>
     </div>                        

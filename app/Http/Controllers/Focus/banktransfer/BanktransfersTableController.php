@@ -58,12 +58,16 @@ class BanktransfersTableController extends Controller
             ->addColumn('account', function ($banktransfer) {
                 return @$banktransfer->source_account->holder;
             })
+            ->filterColumn('account', function($query, $account) {
+                $query->whereHas('source_account', fn($q) => $q->where('holder', 'LIKE', "%{$account}%"));
+            })
             ->addColumn('debit', function ($banktransfer) {
                 return amountFormat($banktransfer->amount);
             })
             ->addColumn('transaction_date', function ($banktransfer) {
                 return dateFormat($banktransfer->transaction_date);
             })
+            ->orderColumn('transaction_date', '-transaction_date $1')
             ->addColumn('actions', function ($banktransfer) {
                 return $banktransfer->action_buttons;
             })
