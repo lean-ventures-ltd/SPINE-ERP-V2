@@ -852,6 +852,10 @@ class ProjectsController extends Controller
                     if ($dpi->purchase->project_milestone !== 0) {
 
                         $projectMilestone = ProjectMileStone::where('id', $dpi->purchase->project_milestone)->first();
+
+                        if (empty($projectMilestone))
+                            continue;
+
                         $milestoneTotals[$projectMilestone->name] += $dpi->amount;
                     } else {
 
