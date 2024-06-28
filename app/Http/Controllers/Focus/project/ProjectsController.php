@@ -899,7 +899,7 @@ class ProjectsController extends Controller
         }
         catch(Exception $ex){
 
-            if(!Auth::user()->hasRole(17)) return 'An error occured. Please await support';
+            if(!Auth::user()->hasRole(17)) return ['An error occurred. Please await support'];
             else return [
                 'trace' => $ex->getTrace() ,
                 'message' => $ex->getMessage(),
