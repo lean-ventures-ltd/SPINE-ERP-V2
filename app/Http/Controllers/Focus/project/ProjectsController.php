@@ -879,14 +879,16 @@ class ProjectsController extends Controller
                 $labour = LabourAllocation::whereHas('project', fn($q) => $q->where('project_id', $projectId))->get();
                 foreach ($labour as $lab) {
 
-                    $projectMilestone = ProjectMileStone::where('id', $lab->project_milestone)->first();
+                    if(!empty($lab->project_milestone)){
+                        $projectMilestone = ProjectMileStone::where('id', $lab->project_milestone)->first();
 
-                    if ($lab->project_milestone !== 0 && !empty($projectMilestone)) {
+                        if ($lab->project_milestone !== 0 && !empty($projectMilestone)) {
 
-                        $milestoneTotals[$projectMilestone->name] += $lab->hrs * 500;
-                    } else {
+                            $milestoneTotals[$projectMilestone->name] += $lab->hrs * 500;
+                        } else {
 
-                        $milestoneTotals['No Budget Line Selected'] += $lab->hrs * 500;
+                            $milestoneTotals['No Budget Line Selected'] += $lab->hrs * 500;
+                        }
                     }
                 }
 
