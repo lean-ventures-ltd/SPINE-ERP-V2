@@ -92,7 +92,8 @@ class SupplierRepository extends BaseRepository
         }
 
         DB::beginTransaction();
-
+        $data = array_merge($data, $input['payment_data']);
+        $data['credit_limit'] = numberClean($data['credit_limit']);
         $account_data = $input['account_data'];
         $data['open_balance'] = numberClean($account_data['open_balance']);
         $data['open_balance_date'] = date_for_database($account_data['open_balance_date']);
@@ -161,6 +162,9 @@ class SupplierRepository extends BaseRepository
             'open_balance_note' => $account_data['open_balance_note'],
         ]);
         if ($data['open_balance'] == 0) $data['open_balance_date'] = null;
+        $data = array_merge($data, $input['payment_data']);
+        $data['credit_limit'] = numberClean($data['credit_limit']);
+        // dd($data);
         $result = $supplier->update($data);
 
         /**accounting */   

@@ -43,6 +43,9 @@
                     </select>
                     <input type="hidden" name="branch_id" id="branch_id" value="0">
                     <input type="hidden" name="customer_id" id="customer_id" value="0">
+                    <input type="hidden" value="0" id="credit">
+                    <input type="hidden" value="0" id="total_aging">
+                    <input type="hidden" value="0" id="outstanding_balance">
                 </div>
             </div>
         </div>

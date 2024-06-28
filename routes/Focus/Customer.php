@@ -15,6 +15,7 @@ Route::group(['namespace' => 'customer'], function () {
     Route::post('customers/wallet_load', 'CustomersController@wallet_transactions')->name('customers.wallet_load');
     Route::post('customers/search', 'CustomersController@search')->name('customers.search');
     Route::post('customers/select', 'CustomersController@select')->name('customers.select');
+    Route::post('customers/check_limit', 'CustomersController@check_limit')->name('customers.check_limit');
     Route::post('customers/active', 'CustomersController@select')->name('customers.active');
     Route::resource('customers', 'CustomersController');
     //For Datatable

@@ -21,6 +21,9 @@
             <div class="col-12">
                 <div class="card round">
                     <div class="card-content">
+                        <div class="card-header">
+                            <div id="credit_limit" class="align-center"></div>
+                        </div>
                         <div class="card-body ">
                             {{ Form::open(['route' => 'biller.standard_invoices.store', 'method' => 'POST', 'id' => 'standardInvoiceForm']) }}
                                 @include("focus.standard_invoices.form")

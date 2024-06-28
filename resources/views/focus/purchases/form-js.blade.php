@@ -103,6 +103,34 @@
             });
             
             $('#pricegroup_id').val(priceCustomer);
+            $('#credit_limit').html('')
+            $.ajax({
+                type: "POST",
+                url: "{{route('biller.suppliers.check_limit')}}",
+                data: {
+                    supplier_id: id
+                },
+                success: function (result) {
+                    let total = $('#exp_grandttl').val();
+                    let number = total.replace(/,/g, '');
+                    let newTotal = parseFloat(number);
+                     let outstandingTotal = parseFloat(result.outstanding_balance);
+                     let total_aging = parseFloat(result.total_aging);
+                     let credit_limit = parseFloat(result.credit_limit);
+                     let total_age_grandtotal = total_aging+newTotal;
+                    let balance = total_age_grandtotal - outstandingTotal;
+                    $('#total_aging').val(result.total_aging.toLocaleString());
+                    $('#credit').val(result.credit_limit.toLocaleString());
+                    $('#outstanding_balance').val(result.outstanding_balance);
+                    if(balance > credit_limit){
+                        let exceeded = balance-result.credit_limit;
+                        $("#credit_limit").append(`<h4 class="text-danger">Credit Limit Violated by: ${parseFloat(exceeded).toFixed(2)}</h4>`);
+                        
+                    }else{
+                        $('#credit_limit').html('')
+                    }
+                }
+            });
     });
 
     // load suppliers

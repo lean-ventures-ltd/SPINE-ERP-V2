@@ -211,6 +211,24 @@ class CustomersController extends Controller
         return new ViewResponse('focus.customers.aging_report', compact('customers_data'));
     }
 
+    public function check_limit(Request $request)
+    {
+        $customer = Customer::find($request->customer_id);
+        $invoices = $this->statement_invoices($customer);
+        $aging_cluster = $this->aging_cluster($customer, $invoices);
+        $account_balance = collect($aging_cluster)->sum() - $customer->on_account;
+        $total_aging = 0;         
+        for ($i = 0; $i < count($aging_cluster); $i++) {
+
+            $total_aging += $aging_cluster[$i];
+        } 
+        return response()->json([
+            'total_aging' => floatval($total_aging),
+            'outstanding_balance' => floatval($customer->on_account),
+            'credit_limit' => floatval($customer->credit_limit),
+        ]);
+    }
+
     /**
      * Customer Statement Invoices
      */
