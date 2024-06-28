@@ -49,6 +49,7 @@ use App\Models\project\ProjectRelations;
 use App\Models\quote\Quote;
 use App\Models\supplier\Supplier;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Log;
@@ -821,72 +822,87 @@ class ProjectsController extends Controller
 
     public function getExpensesByMilestone(int $projectId): array {
 
-       $mStone = ProjectMileStone::where('project_id', $projectId)->get();
+        try {
 
-//       return !empty($mStone->toArray()) ? 'TRUE' : 'FALSE';
+            $mStone = ProjectMileStone::where('project_id', $projectId)->get();
 
-        if (!empty($mStone->toArray())) {
+            if (!empty($mStone->toArray())) {
 
-            $milestones = $mStone->pluck('name');
+                $milestones = $mStone->pluck('name');
 
-            $mstoneArray = $milestones->toArray();
-            array_push($mstoneArray, 'No Budget Line Selected');
+                $mstoneArray = $milestones->toArray();
+                array_push($mstoneArray, 'No Budget Line Selected');
 
-            $totals = array_fill(0, count($mstoneArray), 0);
-            $milestoneTotals = array_combine($mstoneArray, $totals);
+                $totals = array_fill(0, count($mstoneArray), 0);
+                $milestoneTotals = array_combine($mstoneArray, $totals);
 
-            /** Getting Direct Purchase Totals */
-            $dir_purchase_items = PurchaseItem::whereHas('project', fn($q) => $q->where('projects.id', $projectId))
-                ->with('purchase', 'account')
-                ->get();
+                /** Getting Direct Purchase Totals */
+                $dir_purchase_items = PurchaseItem::whereHas('project', fn($q) => $q->where('projects.id', $projectId))
+                    ->with('purchase', 'account')
+                    ->get();
 
-            foreach ($dir_purchase_items as $dpi) {
+                foreach ($dir_purchase_items as $dpi) {
 
-                if ($dpi->purchase->project_milestone !== 0) {
+                    if ($dpi->purchase->project_milestone !== 0) {
 
-                    $projectMilestone = ProjectMileStone::where('id', $dpi->purchase->project_milestone)->first();
-                    $milestoneTotals[$projectMilestone->name] += $dpi->amount;
-                } else {
+                        $projectMilestone = ProjectMileStone::where('id', $dpi->purchase->project_milestone)->first();
+                        $milestoneTotals[$projectMilestone->name] += $dpi->amount;
+                    } else {
 
-                    $milestoneTotals['No Budget Line Selected'] += $dpi->amount;
+                        $milestoneTotals['No Budget Line Selected'] += $dpi->amount;
+                    }
                 }
+
+                /** Getting Purchase Order totals */
+                $goods_receive_items = GoodsreceivenoteItem::whereHas('project', fn($q) => $q->where('itemproject_id', $projectId))->get();
+
+                foreach ($goods_receive_items as $grnItem) {
+
+                    $projectMilestone = ProjectMileStone::where('id', $grnItem->purchaseorder_item->purchaseorder->project_milestone)->first();
+
+                    if ($grnItem->purchaseorder_item->purchaseorder->project_milestone !== 0 && !empty($projectMilestone)) {
+
+                        $milestoneTotals[$projectMilestone->name] += $grnItem->rate * $grnItem->qty;
+                    } else {
+
+                        $milestoneTotals['No Budget Line Selected'] += $grnItem->rate * $grnItem->qty;
+                    }
+                }
+
+                /** Getting Labour Totals */
+                $labour = LabourAllocation::whereHas('project', fn($q) => $q->where('project_id', $projectId))->get();
+                foreach ($labour as $lab) {
+
+                    $projectMilestone = ProjectMileStone::where('id', $lab->project_milestone)->first();
+
+                    if ($lab->project_milestone !== 0 && !empty($projectMilestone)) {
+
+                        $milestoneTotals[$projectMilestone->name] += $lab->hrs * 500;
+                    } else {
+
+                        $milestoneTotals['No Budget Line Selected'] += $lab->hrs * 500;
+                    }
+                }
+
+                return $milestoneTotals;
             }
 
-            /** Getting Purchase Order totals */
-            $goods_receive_items = GoodsreceivenoteItem::whereHas('project', fn($q) => $q->where('itemproject_id', $projectId))->get();
+            return [];
 
-            foreach ($goods_receive_items as $grnItem) {
 
-                $projectMilestone = ProjectMileStone::where('id', $grnItem->purchaseorder_item->purchaseorder->project_milestone)->first();
+        }
+        catch(Exception $ex){
 
-                if ($grnItem->purchaseorder_item->purchaseorder->project_milestone !== 0 && !empty($projectMilestone)) {
-
-                    $milestoneTotals[$projectMilestone->name] += $grnItem->rate * $grnItem->qty;
-                } else {
-
-                    $milestoneTotals['No Budget Line Selected'] += $grnItem->rate * $grnItem->qty;
-                }
-            }
-
-            /** Getting Labour Totals */
-            $labour = LabourAllocation::whereHas('project', fn($q) => $q->where('project_id', $projectId))->get();
-            foreach ($labour as $lab) {
-
-                $projectMilestone = ProjectMileStone::where('id', $lab->project_milestone)->first();
-
-                if ($lab->project_milestone !== 0 && !empty($projectMilestone)) {
-
-                    $milestoneTotals[$projectMilestone->name] += $lab->hrs * 500;
-                } else {
-
-                    $milestoneTotals['No Budget Line Selected'] += $lab->hrs * 500;
-                }
-            }
-
-            return $milestoneTotals;
+            if(!Auth::user()->hasRole(17)) return 'An error occured. Please await support';
+            else return [
+                'trace' => $ex->getTrace() ,
+                'message' => $ex->getMessage(),
+                'code' => $ex->getCode(),
+                'file' => $ex->getFile(),
+                'line' => $ex->getLine(),
+            ];
         }
 
-        return [];
     }
 
 }

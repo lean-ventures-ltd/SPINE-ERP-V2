@@ -109,5 +109,5 @@ Route::group(['namespace' => 'project'], function () {
 
   Route::get('projects/milestones/get', 'ProjectsController@getProjectMileStones')->name('getProjectMileStones');
   Route::get('projects/quote-milestones/get', 'ProjectsController@getBudgetLinesByQuote')->name('getBudgetLinesByQuote');
-  Route::get('/jaribu', 'ProjectsController@getExpensesByMilestone');
+  Route::get('/gebm/{projectId}', 'ProjectsController@getExpensesByMilestone');
 });
