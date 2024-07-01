@@ -66,6 +66,7 @@ class StockIssuesController extends Controller
         $customers = Customer::whereHas('invoices')
             ->orWhereHas('projects')
             ->get(['id', 'company', 'name']);
+
         $employees = Hrm::where([
             'customer_id' => null,
             'supplier_id' => null,
@@ -93,14 +94,18 @@ class StockIssuesController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     * @return \App\Http\Responses\RedirectResponse
      */
     public function store(Request $request)
     {
         try {
             $this->repository->create($request->except('_token'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Stock Issue', $th);
+        } catch (\Exception $ex) {
+            return [
+                'message' => $ex->getMessage(),
+                'code' => $ex->getCode(),
+                'file' => $ex->getFile(),
+                'line' => $ex->getLine(),
+            ];
         }
 
         return new RedirectResponse(route('biller.stock_issues.index'), ['flash_success' => 'Stock Issue Created Successfully']);
@@ -163,7 +168,6 @@ class StockIssuesController extends Controller
      */
     public function update(Request $request, StockIssue $stock_issue)
     {
-        return $request;
 
         try {
             $this->repository->update($stock_issue, $request->except('_token', '_method'));
@@ -208,7 +212,7 @@ class StockIssuesController extends Controller
      */
     public function quote_pi_products(Request $request)
     {
-        $quote = Quote::find($request->quote_id);
+        $quote = Quote::find(4711);
         $quote_product_ids = $quote->products()->pluck('product_id')->toArray();
         if ($quote->budget) {
             $quote_product_ids = $quote->budget->items()->pluck('product_id')->toArray();
