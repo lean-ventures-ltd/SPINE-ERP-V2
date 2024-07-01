@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Focus\stock_issue;
 
+use App\Models\product\ProductVariation;
 use DB;
 use App\Exceptions\GeneralException;
 use App\Models\stock_issue\StockIssue;
@@ -59,14 +60,31 @@ class StockIssueRepository extends BaseRepository
         $data_items = array_diff_key($input, $data);
         $data_items['stock_issue_id'] = array_fill(0, count($data_items['issue_qty']), $stock_issue->id);
         $data_items = modify_array($data_items);
+        $issuedProducts = $data_items;
         $data_items = array_filter($data_items, fn($v) => $v['issue_qty'] > 0);
         if (!$data_items) throw ValidationException::withMessages(['Issue Qty field is required!']);
         StockIssueItem::insert($data_items);
 
         // update stock Qty
-        $productvar_ids = $stock_issue->items()->pluck('productvar_id')->toArray();
-        updateStockQty($productvar_ids);
+        $productvarIds = $stock_issue->items()->pluck('productvar_id')->toArray();
 
+//        $productsBefore = ProductVariation::whereIn('id', $productvarIds)->get()->toArray();
+
+        foreach ($productvarIds as $productId) {
+
+            $product = ProductVariation::where('id', $productId)->first();
+
+            foreach ($issuedProducts as $isp){
+
+                if (intval($isp['productvar_id']) === $productId && intval($isp['issue_qty']) > 0) {
+                    $product->qty -= intval($isp['issue_qty']);
+                    $product->save();
+                }
+            }
+        }
+
+//        $productsAfter = ProductVariation::whereIn('id', $productvarIds)->get()->toArray();
+//        return StockIssue::where('id', $stock_issue->id)->with('items')->first();//->with('items')->get();
         /** accounting */
         $this->post_stock_issue($stock_issue);
 
@@ -103,14 +121,38 @@ class StockIssueRepository extends BaseRepository
         $data_items = array_diff_key($input, $data);
         $data_items['stock_issue_id'] = array_fill(0, count($data_items['issue_qty']), $stock_issue->id);
         $data_items = modify_array($data_items);
+        $issuedProducts = $data_items;
         $data_items = array_filter($data_items, fn($v) => $v['issue_qty'] > 0);
         if (!$data_items) throw ValidationException::withMessages(['Issue Qty field is required!']);
+
+        $previouslyIssuedProducts = $stock_issue->items()->get();
+
         $stock_issue->items()->delete();
         StockIssueItem::insert($data_items);
 
         // update stock Qty
-        $productvar_ids = $stock_issue->items()->pluck('productvar_id')->toArray();
-        updateStockQty($productvar_ids);
+        $productvarIds = $stock_issue->items()->pluck('productvar_id')->toArray();
+
+        foreach ($productvarIds as $productId) {
+
+            $product = ProductVariation::where('id', $productId)->first();
+
+            foreach ($previouslyIssuedProducts as $previouslyIsp){
+
+                if (intval($previouslyIsp['productvar_id']) === $productId && intval($previouslyIsp['issue_qty']) > 0) {
+                    $product->qty += intval($previouslyIsp['issue_qty']);
+                    $product->save();
+                }
+            }
+
+            foreach ($issuedProducts as $isp){
+
+                if (intval($isp['productvar_id']) === $productId && intval($isp['issue_qty']) > 0) {
+                    $product->qty -= intval($isp['issue_qty']);
+                    $product->save();
+                }
+            }
+        }
 
         /** accounting */
         $stock_issue->transactions()->delete();

@@ -1270,18 +1270,27 @@ class PayrollController extends Controller
      */
     public function calculate_nssf($gross_pay)
     {
-        $nssf_brackets = Deduction::where('deduction_id','2')->get();
-        $nssf = 0;
-        foreach ($nssf_brackets as $i => $bracket) {
-            if($i > 0){
-                if($gross_pay > $bracket->amount_from){
-                    $nssf = $bracket->rate;
-                }
-            }else{
-                $nssf = $bracket->rate/100 * $gross_pay;
-            }
+        
+        $gross_pay = doubleval($gross_pay);
+        $nssfDeduction = 0.00;
+
+        if ($gross_pay > 0 && $gross_pay <= 7000){
+
+            $nssfDeduction += (double) bcmul($gross_pay, 0.06, 2);
         }
-        return $nssf;
+
+        if($gross_pay > 7000 && $gross_pay <= 36000 ){
+
+            $pensionable = (double) bcsub($gross_pay, 7000);
+            $nssfDeduction += (double) bcmul($pensionable, 0.06, 2) + (double) bcmul(7000, 0.06, 2);
+        }
+
+        if ($gross_pay > 36000){
+
+            $nssfDeduction += (double) bcmul(7000, 0.06, 2) + (double) bcmul(29000, 0.06, 2);
+        }
+
+        return $nssfDeduction;
     }
 
     /**
