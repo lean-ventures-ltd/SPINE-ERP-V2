@@ -98,13 +98,13 @@ class ChartController extends Controller
                 break;
 
             case 'product':
-                $chart_result = InvoiceItem::whereBetween('created_at', [datetime_for_database($c['from_date']), datetime_for_database($c['to_date'])])->groupBy('product_id')->select('product_name', DB::raw('sum(product_qty) as amount'))->orderBy('amount', 'desc')->take(100)->get();
+                $chart_result = InvoiceItem::whereBetween('created_at', [datetime_for_database($c['from_date']), datetime_for_database($c['to_date'])])->groupBy('product_id')->select('description', DB::raw('sum(product_qty) as amount'))->orderBy('amount', 'desc')->take(100)->get();
                 $lang['title'] = trans('meta.product_graphical_overview');
                 $lang['module'] = 'product';
                 if ($request->interval) {
                     $chart_array = array();
                     foreach ($chart_result as $row) {
-                        $chart_array[] = array('y' => $row['product_name'], 'a' => $row['amount']);
+                        $chart_array[] = array('y' => $row['description'], 'a' => $row['amount']);
                     }
                     return json_encode($chart_array);
                 }
@@ -115,8 +115,8 @@ class ChartController extends Controller
                 $income_category = ConfigMeta::withoutGlobalScopes()->where('feature_id', '=', 8)->first('feature_value');
                 $purchase_category = ConfigMeta::withoutGlobalScopes()->where('feature_id', '=', 10)->first('feature_value');
 
-                $chart_result['income'] = Transaction::where('trans_category_id', $income_category['feature_value'])->whereBetween('payment_date', [$c['from_date'], $c['to_date']])->sum('credit');
-                $chart_result['expense'] = Transaction::where('trans_category_id', $purchase_category['feature_value'])->whereBetween('payment_date', [$c['from_date'], $c['to_date']])->sum('debit');
+                $chart_result['income'] = Transaction::where('trans_category_id', $income_category['feature_value'])->whereBetween('tr_date', [$c['from_date'], $c['to_date']])->sum('credit');
+                $chart_result['expense'] = Transaction::where('trans_category_id', $purchase_category['feature_value'])->whereBetween('tr_date', [$c['from_date'], $c['to_date']])->sum('debit');
 
 
                 $lang['title'] = trans('meta.income_vs_expenses_overview');

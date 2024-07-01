@@ -331,7 +331,23 @@ class ProjectsController extends Controller
     {
         $q = $request->post('q');
         $projects = Project::where('name', 'LIKE', '%' . $q . '%')->limit(6)->get();
-
+        
+        $customer_id = $request->customer_id;
+        if($customer_id){
+            $search = $request->search;
+            $projects = Project::where('customer_id', $customer_id)
+            ->where(function($q) use ($search){
+                $q->where('name', 'LIKE', '%'.$search.'%');
+                $q->orwhere('tid', 'LIKE', '%'.$search.'%');
+            })
+            ->limit(6)->get()
+            ->map(fn($v) => [
+                'id' => $v->id,
+                'name' => gen4tid('Prj-', $v->tid) . ' - ' . $v->name,
+            ]);
+            // dd($request->all(), $projects);
+        }
+        
         return response()->json($projects);
     }
 
@@ -411,7 +427,7 @@ class ProjectsController extends Controller
                     $status_code = ConfigMeta::where('feature_id', '=', 16)->first();
                     $project->status = $status_code->feature_value;
                 }
-                $project->save();
+                // $project->save();
                 $response = ['status' => $project->progress];
                 break;
             case 2:
@@ -484,7 +500,8 @@ class ProjectsController extends Controller
                             </div>
                         </li>
                     ';
-
+                    $project = Project::find($data['project_id']); 
+                updateCompletionPercentage($milestone, $project);
                 $response = array_replace($response, ['status' => 'Success', 't_type' => 2, 'meta' => $result]);
             }
             else if ($input['obj_type'] == 5){
@@ -918,6 +935,24 @@ class ProjectsController extends Controller
 //                return ['An error occurred. Please await support'];
         }
 
+    }
+
+    public function get_project_report()
+    {
+        $customers = Customer::all();
+        return view('focus.projects.all_round_report', compact('customers'));
+    }
+    public function get_all_report(Request $request)
+    {
+
+        $data = $request->only(['project_id','customer_id']);
+        $project = Project::find($data['project_id']);
+        //Get quotes
+        //Get tickets
+        //Get budgets via quotes
+        // 
+        dd($project);
+        return view('focus.projects.all_round_report');
     }
 
 }

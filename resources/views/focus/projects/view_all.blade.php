@@ -1,13 +1,13 @@
 @extends ('core.layouts.app',['page'=>'class="horizontal-layout horizontal-menu content-detached-right-sidebar" data-open="click" data-menu="horizontal-menu" data-col="content-detached-right-sidebar" '])
 
-@section ('title', 'View | ' . trans('labels.backend.projects.management') )
+@section ('title', 'View All Round Report' )
 
 @section('content')
     <!-- BEGIN: Content-->
     <div class="content-wrapper">
         <div class="content-header row mb-1">
             <div class="content-header-left col-6">
-                <h3 class="content-header-title">{{trans('projects.project_summary')}}</h3>
+                <h3 class="content-header-title">View All Round Report</h3>
             </div>
             <div class="col-6">
                 <div class="media-body media-right text-right">
@@ -25,44 +25,44 @@
                     <ul class="nav nav-tabs nav-top-border no-hover-bg" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" id="tab1" data-toggle="tab" href="#tab_data1" aria-controls="tab_data1" role="tab" aria-selected="true">
-                                <i class="fa fa-lightbulb-o"></i> {{trans('projects.project_summary')}}
+                                <i class="fa fa-lightbulb-o"></i> Ticket
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="tab7" data-toggle="tab" href="#tab_data7" aria-controls="tab_data7" role="tab" aria-selected="true">
-                                <i class="ft-file-text"></i> Quote / PI 
+                                <i class="ft-file-text"></i> DJC
                             </a>
                         </li> 
                         <li class="nav-item">
                             <a class="nav-link" id="tab8" data-toggle="tab" href="#tab_data8" aria-controls="tab_data8" role="tab" aria-selected="true">
-                                <i class="ft-file-text"></i> Budget (Quote / PI)
+                                <i class="ft-file-text"></i> Quote / PI
                             </a>
                         </li> 
 
                         <!-- Expense Report -->
                         <li class="nav-item">
                             <a class="nav-link" id="tab9" data-toggle="tab" href="#tab_data9" aria-controls="tab_data9" role="tab" aria-selected="true">
-                                <i class="ft-file-text"></i> Expenses 
+                                <i class="ft-file-text"></i> Budget (Quote / PI)
                             </a>
                         </li> 
 
                         <li class="nav-item">
                             <a class="nav-link" id="tab2" data-toggle="tab" href="#tab_data2" aria-controls="tab_data2" role="tab" aria-selected="true">
-                                <i class="fa fa-flag-checkered"></i> Budget Lines
+                                <i class="fa fa-flag-checkered"></i> Expenses
                             </a>
                         </li>
 
                        <li class="nav-item">
                            <a class="nav-link" id="tab3" data-toggle="tab" href="#tab_data3" aria-controls="tab_data3" role="tab" aria-selected="true">
-                               <i class="icon-directions"></i> {{trans('tasks.tasks')}}
+                               <i class="icon-directions"></i> Milestones
                            </a>
                        </li>
 
-{{--                        <li class="nav-item">--}}
-{{--                            <a class="nav-link" id="tab11" data-toggle="tab" href="#tab_data11" aria-controls="tab_data11" role="tab" aria-selected="true">--}}
-{{--                                <i class="ft-users"></i> {{trans('projects.users')}}--}}
-{{--                            </a>--}}
-{{--                        </li>--}}
+                       <li class="nav-item">
+                           <a class="nav-link" id="tab11" data-toggle="tab" href="#tab_data11" aria-controls="tab_data11" role="tab" aria-selected="true">
+                               <i class="ft-users"></i> Tasks
+                           </a>
+                       </li>
 
 {{--                        @if($project->creator->id==auth()->user()->id)--}}
 {{--                            <li class="nav-item">--}}

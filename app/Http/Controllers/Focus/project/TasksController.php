@@ -62,7 +62,7 @@ class TasksController extends Controller
     public function index(ManageTaskRequest $request)
     {
         $mics = Misc::all();
-        $employees = Hrm::all();
+        $employees = Hrm::where('ins', auth()->user()->ins)->get();
         $user = auth()->user()->id;
         $project_select = Project::whereHas('users', fn($q) => $q->where('users.id', '=', $user))->get();
 
@@ -243,4 +243,15 @@ class TasksController extends Controller
             return json_encode(array('status' => $status));
         }
     }
+
+    public function update_task_completion(Request $request)
+    {
+        $task = Task::findOrFail($request->task_id);
+        $task->task_completion = $request->task_completion;
+        $task->save(); // This will trigger the milestone and project updates
+        updateNewTask($task);
+        
+        return response()->json(['message' => 'Task and related milestone and project completion percentages updated successfully.']);
+    }
+
 }

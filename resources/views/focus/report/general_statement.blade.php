@@ -97,8 +97,8 @@
             quietMillis: 50,
             data: ({term}) => ({keyword: term}),
             processResults: (data) => {
-                data.unshift({id: "all", name: '-- All Products --'});
-                return {results: data.map(v => ({text: `${v.name} ${v.warehouse? '(' + v.warehouse.title + ')' : ''}`, id: v.id}))}
+                data.unshift({id: "all", name: '-- All Products --', code: 'all'});
+                return {results: data.map(v => ({text: `${v.name} (${v.code}) ${v.warehouse? '(' + v.warehouse.title + ')' : ''}`, id: v.id}))}
             },
         }
     });

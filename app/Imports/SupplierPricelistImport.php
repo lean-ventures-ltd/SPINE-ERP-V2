@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Models\product\ProductVariation;
 use App\Models\supplier_product\SupplierProduct;
 use Error;
 use Illuminate\Support\Collection;
@@ -40,11 +41,10 @@ class SupplierPricelistImport implements ToCollection, WithBatchInserts, WithVal
         $columns = [
             'Id','Description','Category Name','product_code','uom','row_num','description','rate'
         ];
-
         $row_count = 0;
         foreach ($rows as $i => $row) {
             $row = $row->toArray();
-            $row = array_slice($row, 0, count($columns));
+            $row = array_slice($row, 0, count($columns));            
             printlog($row);
             if ($i == 0) {
                 $omitted_cols = array_diff($columns, $row);
@@ -55,13 +55,15 @@ class SupplierPricelistImport implements ToCollection, WithBatchInserts, WithVal
             }
             //add Array Slice
             $row_data = array_combine($columns, $row);
+            $variation = ProductVariation::where('code', $row_data['product_code'])->first();
             $row_data = array_replace($row_data, [
                 'product_code' => $row_data['product_code'],
                 'descr' => $row_data['description'],
                 'contract' => $this->data['contract'],
                 'supplier_id' => $this->data['supplier_id'],
                 'ins' => auth()->user()->ins,
-                'user_id' => auth()->user()->id
+                'user_id' => auth()->user()->id,
+                'product_id' => $variation ? $variation->id: 0,
             ]);
             unset($row_data['description']);
             unset($row_data['Description']);

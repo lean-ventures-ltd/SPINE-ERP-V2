@@ -41,7 +41,7 @@ class SummaryController extends Controller
                 $lang['module'] = 'income';
                 if ($summary->calculate) {
                     $income_category = ConfigMeta::withoutGlobalScopes()->where('feature_id', '=', 8)->first('feature_value');
-                    $income = Transaction::where('trans_category_id', $income_category['feature_value'])->whereBetween('payment_date', [datetime_for_database($summary->from_date), datetime_for_database($summary->to_date)])->sum('credit');
+                    $income = Transaction::where('trans_category_id', $income_category['feature_value'])->whereBetween('tr_date', [datetime_for_database($summary->from_date), datetime_for_database($summary->to_date)])->sum('credit');
                     $lang['calculate'] = trans('meta.income_summary') . ' &nbsp; &nbsp; &nbsp;' . dateFormat($summary->from_date) . ' - ' . dateFormat($summary->to_date) . ' &nbsp; &nbsp; &nbsp;' . trans('general.total') . ' ' . amountFormat($income);
                 }
                 return view('focus.summary.summary', compact('lang'));
@@ -51,7 +51,7 @@ class SummaryController extends Controller
                 $lang['module'] = 'expense';
                 if ($summary->calculate) {
                     $income_category = ConfigMeta::withoutGlobalScopes()->where('feature_id', '=', 10)->first('feature_value');
-                    $income = Transaction::where('trans_category_id', $income_category['feature_value'])->whereBetween('payment_date', [datetime_for_database($summary->from_date), datetime_for_database($summary->to_date)])->sum('debit');
+                    $income = Transaction::where('trans_category_id', $income_category['feature_value'])->whereBetween('tr_date', [datetime_for_database($summary->from_date), datetime_for_database($summary->to_date)])->sum('debit');
                     $lang['calculate'] = trans('meta.expense_summary') . ' &nbsp; &nbsp; &nbsp;' . dateFormat($summary->from_date) . ' - ' . dateFormat($summary->to_date) . ' &nbsp; &nbsp; &nbsp;' . trans('general.total') . ' ' . amountFormat($income);
                 }
                 return view('focus.summary.summary', compact('lang'));
@@ -70,7 +70,7 @@ class SummaryController extends Controller
                 $lang['title'] = trans('meta.purchase_summary');
                 $lang['module'] = 'purchase';
                 if ($summary->calculate) {
-                    $sales = Purchaseorder::whereBetween('invoicedate', [datetime_for_database($summary->from_date), datetime_for_database($summary->to_date)])->sum('total');
+                    $sales = Purchaseorder::whereBetween('date', [datetime_for_database($summary->from_date), datetime_for_database($summary->to_date)])->sum('grandttl');
                     $lang['calculate'] = trans('meta.purchase_summary') . ' &nbsp; &nbsp; &nbsp;' . dateFormat($summary->from_date) . ' - ' . dateFormat($summary->to_date) . ' &nbsp; &nbsp; &nbsp;' . trans('general.total') . ' ' . amountFormat($sales);
                 }
                 return view('focus.summary.summary', compact('lang'));

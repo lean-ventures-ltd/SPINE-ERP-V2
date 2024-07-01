@@ -110,6 +110,7 @@
                                         <th>Subject</th>
                                         <th>Inv Date</th>
                                         <th>Due Date</th>
+                                        <th>VAT Amount</th>
                                         <th>{{ trans('general.amount') }}</th>
                                         <th>Outstanding</th>                                       
                                         <th>#Quote / PI No</th>
@@ -275,6 +276,10 @@
                     {
                         data: 'invoiceduedate',
                         name: 'invoiceduedate'
+                    },
+                    {
+                        data: 'tax',
+                        name: 'tax'
                     },
                     {
                         data: 'total',

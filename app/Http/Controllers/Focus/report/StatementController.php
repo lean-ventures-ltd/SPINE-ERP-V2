@@ -163,20 +163,43 @@ class StatementController extends Controller
 
             case 'income':
                 $account_details = Account::where('id', '=', $reports->account)->first();
-                // dd($account_details, $reports->account);
                 $lang['title'] = trans('meta.income_statement');
                 $lang['title2'] = trans('meta.income_statement');
                 $lang['module'] = 'income_statement';
                 $default_category = ConfigMeta::withoutGlobalScopes()->where('feature_id', '=', 8)->first('feature_value');
                 $category = Transactioncategory::find($default_category['feature_value']);
-                // dd($default_category['feature_value']);
                 $lang['party'] = $category->name;
                 $file_name = preg_replace('/[^A-Za-z0-9]+/', '-', $lang['title'] . '_' . $category->name);
                 $transactions = Transaction::whereBetween('tr_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)])->where('trans_category_id', '=', $category->id)->get();
 
+
+                //new code
+                $data = [
+                    'start_date' => $reports->from_date,
+                    'end_date' => $reports->to_date,
+                ];
+                $dates = $data;
+                $dates = array_map(function ($v) { 
+                    return date_for_database($v); 
+                }, $dates);
+
+                $q = Account::whereHas('transactions', function ($q) use($dates) {
+                        $q->when($dates, function ($q) use($dates) {
+                            $q->whereBetween('tr_date', $dates);
+                        });
+                    });
+
+                $accounts = $q->get();
+
+                return $this->print_document('profit_and_loss', $accounts, $dates, 0);
+
+                $bg_styles = [
+                    'bg-gradient-x-info', 'bg-gradient-x-purple', 'bg-gradient-x-grey-blue', 'bg-gradient-x-danger',
+                ];
+
                 break;
             case 'expenses':
-                $account_details = Account::where('id', '=', $reports->account)->first();
+                // $account_details = Account::where('id', '=', $reports->account)->first();
                 // dd($account_details, $reports->account);
                 $lang['title'] = trans('meta.expense_statement');
                 $lang['title2'] = trans('meta.expense_statement');
@@ -187,6 +210,17 @@ class StatementController extends Controller
                 $lang['party'] = $category->name;
                 $file_name = preg_replace('/[^A-Za-z0-9]+/', '-', $lang['title'] . '_' . $category->name);
                 $transactions = Transaction::whereBetween('tr_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)])->where('trans_category_id', '=', $category->id)->get();
+
+                // $purchase_items = PurchaseItem::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])
+                // ->where('type','Expense')
+                // ->select('id','description as product_name','rate as product_price', 'qty as product_qty','amount', 'created_at')
+                // ->get();
+                // $purchase_order_items = PurchaseorderItem::whereBetween('created_at', [datetime_for_database($reports->from_date), datetime_for_database($reports->to_date)])
+                // ->where('type','Expense')
+                // ->select('id', 'description as product_name','rate as product_price', 'qty as product_qty','amount', 'created_at')
+                // ->get();
+                // // dd($purchase_items, datetime_for_database($reports->from_date));
+                // $account_details = $purchase_items->merge($purchase_order_items);
 
                 break;
 
@@ -238,7 +272,7 @@ class StatementController extends Controller
                 return Response::stream($pdf->Output($file_name . '.pdf', 'I'), 200, $headers);
                 break;
             case 'pdf':
-                $html = view('focus.report.pdf.account', compact('account_details', 'transactions', 'lang'))->render();
+                $html = view('focus.report.pdf.account', compact('account_details', 'transactions', 'lang'))->render();  
                 $pdf = new \Mpdf\Mpdf(config('pdf'));
                 $pdf->WriteHTML($html);
                 return $pdf->Output($file_name . '.pdf', 'D');
@@ -266,6 +300,23 @@ class StatementController extends Controller
                 return Response::stream($callback, 200, $headers);
                 break;
         }
+    }
+
+    public function print_document(string $name, $accounts, array $dates, float $net_profit)
+    {
+        // dd($name, $dates, $net_profit);
+        $account_types = ['Assets', 'Equity', 'Expenses', 'Liabilities', 'Income'];
+        $params = compact('accounts', 'account_types', 'dates', 'net_profit');
+        $html = view('focus.accounts.print_' . $name, $params)->render();
+        $pdf = new \Mpdf\Mpdf(config('pdf'));
+        $pdf->WriteHTML($html);
+        $headers = array(
+            "Content-type" => "application/pdf",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        );
+        return Response::stream($pdf->Output($name . '.pdf', 'I'), 200, $headers);
     }
 
     public function generate_tax_statement(ManageReports $reports)
