@@ -260,6 +260,19 @@ class InvoicesController extends Controller
                 ->with(['verified_products' => fn($q) =>$q->orderBy('row_index', 'ASC')])
                 ->get();
         }
+        // update quote line items totals
+        $quotes->each(function($quote) {
+            if ($quote->tax_id && $quote->verified_products->where('tax_rate', 0)->count() == $quote->verified_products->count()) {
+                $quote['verified_products'] = $quote->verified_products->map(function($item) use($quote) {
+                    $item['tax_rate'] = $quote->tax_id;
+                    $item['product_subtotal'] = $item['product_price'];
+                    $item['product_tax'] = $item->product_price * $item->product_qty * $quote->tax_id * 0.01;
+                    $item['product_amount'] = $item->product_price * $item->product_qty * (1 + $quote->tax_id * 0.01);    
+                    return $item;
+                });
+            }
+        });
+
         
         // check if quotes are of same currency
         $currency_ids = $quotes->pluck('currency_id')->toArray();
@@ -304,12 +317,6 @@ class InvoicesController extends Controller
         $bill['user_id'] = auth()->user()->id;
         $bill['ins'] = auth()->user()->ins;
         $bill_items = modify_array($bill_items);
-
-//        $cuNo = (new ControlUnitInvoiceNumberController())->retrieveCuInvoiceNumber();
-//
-//        if(empty(!$cuNo)) $bill['cu_invoice_no'] = explode('KRAMW', auth()->user()->business->etr_code)[1] . $cuNo;
-//        else $bill['cu_invoice_no'] = '';
-
 
         try {
             $result = $this->repository->create_project_invoice(compact('bill', 'bill_items'));

@@ -158,7 +158,6 @@
                 total += rowTotal;
             }
         });
-        console.log(taxable)
         const tax = taxable * mainTax/100;
         total = subtotal + tax;
         $('#tax').val(accounting.formatNumber(tax));

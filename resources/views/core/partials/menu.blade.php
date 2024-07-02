@@ -638,7 +638,7 @@
                             </ul>
                         </li>
                         @endauth
-                        {{-- verification --}}
+                        {{-- job verification --}}
                         @permission('manage-quote-verify')
                         <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a
                                     class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
@@ -655,6 +655,20 @@
                                        data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Partial
                                         Verification
                                     </a>
+                                </li>
+                            </ul>
+                        </li>
+                        @endauth
+                        {{-- job valuation --}}
+                        @permission('manage-quote-verify')
+                        <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="ft-file-text"></i> Job Valuation</a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('biller.job_valuations.index') }}" data-toggle="dropdown"><i class="ft-list"></i>Manage Job Valuations</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('biller.job_valuations.quote_index') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Job Valuation</a>
                                 </li>
                             </ul>
                         </li>
