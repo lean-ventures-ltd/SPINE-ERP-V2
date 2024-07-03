@@ -225,27 +225,65 @@ class AccountsController extends Controller
     public function profit_and_loss(Request $request)
     {
         $dates = $request->only('start_date', 'end_date');
-        $dates = array_map(function ($v) { 
-            return date_for_database($v); 
-        }, $dates);
+        $dates = array_map(fn($v) => date_for_database($v), $dates);
 
-        $q = Account::whereHas('transactions', function ($q) use($dates) {
-                $q->when($dates, function ($q) use($dates) {
-                    $q->whereBetween('tr_date', $dates);
-                });
-            });
+        $accounts = Account::whereHas('transactions', function ($q) use($dates) {
+            $q->when($dates, fn($q) =>$q->whereBetween('tr_date', $dates));
+        })->get();
 
-        $accounts = $q->get();
+        $cog_material = 0;
+        $cog_labour = 0;
+        $cog_transport = 0;
+        $project_ids = []; 
+        foreach ($accounts->where('system', 'cog') as $account) {
+            // project invoice COGs (material, labour, transport)
+            $invoice_trs = $account->transactions()
+            ->when(@$dates, fn($q) => $q->whereBetween('tr_date', $dates))
+            ->where('tr_type', 'inv')
+            ->get();
+            foreach ($invoice_trs as $invoice_tr) {
+                if ($invoice_tr->invoice) {
+                    foreach ($invoice_tr->invoice->quotes as $quote) {
+                        $project = @$quote->project_quote->project;
+                        if (!$project) continue;
+                        if (in_array($project->id, $project_ids)) continue;
+                        $project_ids[] = $project->id;
+                        foreach ($project->purchase_items as $i => $item) {
+                            if ($item->itemproject_id) {
+                                $subtotal = $item->amount - $item->taxrate;
+                                // labour and transport
+                                if ($item->type == 'Expense') {
+                                    if(preg_match("/transport/i", @$item->account->holder)) {
+                                        $cog_transport += $subtotal;
+                                    }
+                                    if(preg_match("/labour/i", @$item->account->holder)) {
+                                        $cog_labour += $subtotal;
+                                    }
+                                }
+                                // material
+                                if ($item->type == 'Stock') {
+                                    $cog_material += $subtotal;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
-        if ($request->type == 'p') {
-            return $this->print_document('profit_and_loss', $accounts, $dates, 0);
-        } 
+            // stock-issue, sale-return, stock-adj COGs (material)
+            $stock_trs = $account->transactions()
+            ->when(@$dates, fn($q) => $q->whereBetween('tr_date', $dates))
+            ->where('tr_type', 'stock')
+            ->get();
+            $cog_material += $stock_trs->sum('debit');
+            $cog_material -= $stock_trs->sum('credit');
+        }
+                   
+        if ($request->type == 'p') 
+            return $this->print_document('profit_and_loss', $accounts, $dates, 0);        
 
-        $bg_styles = [
-            'bg-gradient-x-info', 'bg-gradient-x-purple', 'bg-gradient-x-grey-blue', 'bg-gradient-x-danger',
-        ];
-            
-        return new ViewResponse('focus.accounts.profit_&_loss', compact('accounts', 'bg_styles', 'dates'));
+        $bg_styles = ['bg-gradient-x-info', 'bg-gradient-x-purple', 'bg-gradient-x-grey-blue', 'bg-gradient-x-danger',];
+        return new ViewResponse('focus.accounts.profit_&_loss', compact('accounts', 'bg_styles', 'dates', 'cog_material', 'cog_labour', 'cog_transport'));
     }
 
     /**

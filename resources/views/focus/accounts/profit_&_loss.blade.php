@@ -78,7 +78,6 @@
                                                     ->transactions()
                                                     ->when(@$dates, fn($q) => $q->whereBetween('tr_date', $dates))
                                                     ->sum('debit');
-
                                                     $credit = $account
                                                     ->transactions()
                                                     ->when(@$dates, fn($q) => $q->whereBetween('tr_date', $dates))
@@ -91,17 +90,43 @@
                                                         $debit_balance = round($debit - $credit, 2); 
                                                         $balance = $debit_balance;
                                                     }
-                                                    
                                                     $gross_balance += $balance;
                                                     $j++;
                                                 @endphp
                                                 @if ($balance)
-                                                    <tr>
-                                                        <td>{{ $j }}</td>
-                                                        <td>{{ $account->number }}</td>
-                                                        <td>{{ $account->holder }}</td>
-                                                        <td>{{ numberFormat($balance) }}</td>
-                                                    </tr>
+                                                    @if ($is_cog)
+                                                        <tr>
+                                                            <td>{{ $j }}</td>
+                                                            <td>{{ $account->number }}</td>
+                                                            <td>{{ $account->holder }} (Materials)</td>
+                                                            <td>{{ numberFormat($cog_material) }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>{{ $j }}</td>
+                                                            <td>{{ $account->number }}</td>
+                                                            <td>{{ $account->holder }} (Transport)</td>
+                                                            <td>{{ numberFormat($cog_transport) }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>{{ $j }}</td>
+                                                            <td>{{ $account->number }}</td>
+                                                            <td>{{ $account->holder }} (Labour)</td>
+                                                            <td>{{ numberFormat($cog_labour) }}</td>
+                                                        </tr>
+                                                        <tr style="border-top: 2px solid grey;">
+                                                            {{-- <td>{{ $j }}</td>
+                                                            <td>{{ $account->number }}</td>
+                                                            <td>{{ $account->holder }}</td>
+                                                            <td>{{ numberFormat($balance) }}</td> --}}
+                                                        </tr>
+                                                    @else    
+                                                        <tr>
+                                                            <td>{{ $j }}</td>
+                                                            <td>{{ $account->number }}</td>
+                                                            <td>{{ $account->holder }}</td>
+                                                            <td>{{ numberFormat($balance) }}</td>
+                                                        </tr>
+                                                    @endif
                                                 @endif
                                             @endif
                                         @endforeach

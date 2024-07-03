@@ -57,9 +57,9 @@ trait Accounting
      */
     public function post_stock_issue($stock_issue)
     {
+        // credit Stock Account
         $stock_account = Account::where('system', 'stock')->first(['id']);
         $tr_category = Transactioncategory::where('code', 'stock')->first(['id', 'code']);
-        // credit Stock Account
         $cr_data = [
             'tid' => Transaction::max('tid')+1,
             'account_id' => $stock_account->id,
@@ -89,6 +89,8 @@ trait Accounting
             ]);
             Transaction::create($dr_data);
         } else {
+            // debit related expense account
+
             // debit COG Account
             $cog_account = Account::where('system', 'cog')->first(['id']);
             $dr_data = array_replace($cr_data, [
@@ -126,6 +128,7 @@ trait Accounting
 
         $tr_data_arr = [];
         $account = Account::find($stock_adj->account_id);
+        // negative stock adjustment
         if ($account->account_type == 'Expense') {
             // credit Inventory
             $tr_data_arr[] = array_replace($tr_data, [
@@ -138,7 +141,9 @@ trait Accounting
                 'account_id' => $stock_adj->account_id,
                 'debit' =>  $stock_adj->total,
             ]);
-        } elseif ($account->account_type == 'Income') {
+        } 
+        // positive stock adjustment
+        elseif ($account->account_type == 'Income') {
             // debit Inventory
             $tr_data_arr[] = array_replace($tr_data, [
                 'account_id' => $stock_account->id,
@@ -396,7 +401,6 @@ trait Accounting
      */
     public function post_invoice($invoice)
     {
-        // debit Accounts Receivable (Debtors)
         $account = Account::where('system', 'receivable')->first(['id']);
         $tr_category = Transactioncategory::where('code', 'inv')->first(['id', 'code']);
         $dr_data = [
@@ -451,8 +455,6 @@ trait Accounting
         // WIP and COG transactions
         $tr_data = [];
 
-        // stock amount for items issued from inventory
-        $store_inventory_amount = 0;
         // direct purchase item amounts for item directly issued to project
         $dirpurch_inventory_amount = 0;
         $dirpurch_expense_amount = 0;
@@ -462,7 +464,6 @@ trait Accounting
         $quote_ids = $invoice->products->pluck('quote_id')->toArray();
         $quotes = Quote::whereIn('id', $quote_ids)->get();
         foreach ($quotes as $quote) {
-            $store_inventory_amount  = $quote->projectstock->sum('subtotal');
             // direct purchase items issued to project
             if (isset($quote->project_quote->project)) {
                 foreach ($quote->project_quote->project->purchase_items as $item) {
@@ -493,10 +494,6 @@ trait Accounting
         if ($dirpurch_asset_amount > 0) {
             $tr_data[] = array_replace($cr_data, ['credit' => $dirpurch_asset_amount]);
             $tr_data[] = array_replace($dr_data, ['debit' => $dirpurch_asset_amount]);
-        }
-        if ($store_inventory_amount > 0) {
-            $tr_data[] = array_replace($cr_data, ['credit' => $store_inventory_amount]);
-            $tr_data[] = array_replace($dr_data, ['debit' => $store_inventory_amount]);
         }
         Transaction::insert($tr_data);       
     }
@@ -817,7 +814,6 @@ trait Accounting
             'credit' => $utility_bill->total,
         ]);    
         Transaction::create($cr_data);
-        
     }  
 
     /**
