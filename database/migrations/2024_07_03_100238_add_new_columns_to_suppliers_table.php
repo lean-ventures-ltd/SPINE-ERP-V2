@@ -15,11 +15,11 @@ class AddNewColumnsToSuppliersTable extends Migration
     {
         Schema::table('suppliers', function (Blueprint $table) {
 
-            $table->string('bank')->after('open_balance_date');
-            $table->string('bank_code')->after('bank');
-            $table->string('payment_terms')->after('bank_code');
-            $table->decimal('credit_limit', 16,4)->after('payment_terms');
-            $table->string('mpesa_payment')->after('credit_limit');
+            $table->string('bank')->nullable()->after('open_balance_date');
+            $table->string('bank_code')->nullable()->after('bank');
+            $table->string('payment_terms')->nullable()->after('bank_code');
+            $table->decimal('credit_limit', 16,4)->after('payment_terms')->default(0);
+            $table->string('mpesa_payment')->nullable()->after('credit_limit');
         });
     }
 

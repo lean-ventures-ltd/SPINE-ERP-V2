@@ -15,13 +15,13 @@ class AddNewColumnsToCustomersTable extends Migration
     {
         Schema::table('customers', function (Blueprint $table) {
 
-            $table->string('account_no')->after('on_account');
-            $table->string('account_name')->after('account_no');
-            $table->string('bank')->after('account_name');
-            $table->string('bank_code')->after('bank');
-            $table->string('payment_terms')->after('bank_code');
-            $table->decimal('credit_limit', 16,4)->after('payment_terms');
-            $table->string('mpesa_payment')->after('credit_limit');
+            $table->string('account_no')->nullable()->after('on_account');
+            $table->string('account_name')->nullable()->after('account_no');
+            $table->string('bank')->nullable()->after('account_name');
+            $table->string('bank_code')->nullable()->after('bank');
+            $table->string('payment_terms')->nullable()->after('bank_code');
+            $table->decimal('credit_limit', 16,4)->after('payment_terms')->default(0);
+            $table->string('mpesa_payment')->nullable()->after('credit_limit');
         });
     }
 
