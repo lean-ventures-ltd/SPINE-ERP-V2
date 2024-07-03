@@ -66,7 +66,15 @@ class ProductcategoriesTableController extends Controller
                 return $productcategory->code_initials;
             })
             ->addColumn('worth', function ($productcategory) {
-                return amountFormat($productcategory->products->sum('purchase_price'));
+                $total = 0;
+                if ($productcategory->products){
+                    foreach ($productcategory->products as $product){
+                        if ($product->qty > 0){
+                            $total += $product->qty * $product->purchase_price;
+                        }
+                    }
+                }
+                return amountFormat($total);
             })
             ->addColumn('created_at', function ($productcategory) {
                 return dateFormat($productcategory->created_at);

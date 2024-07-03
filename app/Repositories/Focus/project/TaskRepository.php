@@ -37,6 +37,7 @@ class TaskRepository extends BaseRepository
         
         // filter project
         if (request('project_id')) {
+            // $q->whereHas('users', fn($q) => $q->where('project_relations.project_id', request('project_id')));
             $q->whereHas('milestone', fn($q) => $q->where('project_milestones.project_id', request('project_id')));
         }
 
@@ -62,10 +63,11 @@ class TaskRepository extends BaseRepository
         if (!$project_id) trigger_error('Milestone required!');
 
         // task
-        $task_input = array_diff_key($input, array_flip(['milestone_id', 'tags', 'employees', 'projects', 'link_to_calender', 'color']));
+        $task_input = array_diff_key($input, array_flip(['tags', 'employees', 'projects', 'link_to_calender', 'color']));
         $task_input = array_replace($task_input, [
             'start' => datetime_for_database("{$task_input['start']} {$task_input['time_from']}"),
             'duedate' => datetime_for_database("{$task_input['duedate']} {$task_input['time_to']}"),
+            'project_id' => $project_id,
             'creator_id' => auth()->user()->id,
         ]);
         unset($task_input['time_from'], $task_input['time_to']);
@@ -79,7 +81,7 @@ class TaskRepository extends BaseRepository
         $tags = @$input['tags'] ?: [];
         $tag_group = array_map(fn($v) => ['misc_id' => $v, 'task_id' => $result->id, 'milestone_id' => $milestone_id, 'project_id' => $project_id], $tags);
         ProjectRelations::insert($tag_group);
-
+        
         // task users
         $employees = @$input['employees'] ?: [];
         $employees_group = array_map(fn($v) => ['user_id' => $v, 'task_id' => $result->id, 'milestone_id' => $milestone_id, 'project_id' => $project_id], $employees);
@@ -99,7 +101,7 @@ class TaskRepository extends BaseRepository
             $event = Event::create($data);
             EventRelation::create(['event_id' => $event->id, 'related' => 2, 'r_id' => $result->id]);
         }
-
+        updateNewTask($result);
         if ($result) {
             DB::commit();
 
@@ -136,7 +138,7 @@ class TaskRepository extends BaseRepository
         DB::beginTransaction();
 
         // task
-        $task_input = array_diff_key($input, array_flip(['milestone_id', 'tags', 'employees', 'projects', 'link_to_calender', 'color']));
+        $task_input = array_diff_key($input, array_flip(['tags', 'employees', 'projects', 'link_to_calender', 'color']));
         $task_input = array_replace($task_input, [
             'start' => datetime_for_database("{$task_input['start']} {$task_input['time_from']}"),
             'duedate' => datetime_for_database("{$task_input['duedate']} {$task_input['time_to']}"),
@@ -149,7 +151,7 @@ class TaskRepository extends BaseRepository
 
         // tags
         $tags = @$input['tags'] ?: [];
-        ProjectRelations::whereNotIn('misc_id', $tags)->where('project_id', $project_id)->whereNotNull('task_id')->delete();
+        ProjectRelations::whereNotIn('misc_id', $tags)->where('project_id', $project_id)->where('task_id', $task->id)->delete();
         foreach ($tags as $tag) {
             ProjectRelations::updateOrCreate(
                 ['misc_id' => $tag, 'task_id' => $task->id],

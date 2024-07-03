@@ -1,6 +1,9 @@
 <div class="row">
     <div class="col-sm-6 cmp-pnl">
         <div id="customerpanel" class="inner-cmp-pnl">
+            <input type="hidden" value="0" id="credit">
+            <input type="hidden" value="0" id="total_aging">
+            <input type="hidden" value="0" id="outstanding_balance">
             <h3 class="title">Bill </h3>                                                                
             <div class="form-group row">
                 <div class="col-12">

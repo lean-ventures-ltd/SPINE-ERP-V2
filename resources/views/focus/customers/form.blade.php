@@ -5,6 +5,10 @@
                 <a class="nav-link active" id="base-tab1" data-toggle="tab" aria-controls="tab1" href="#tab1" role="tab" aria-selected="true">{{trans('customers.billing_address')}}</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" id="base-tab5" data-toggle="tab" aria-controls="tab5" href="#tab5" role="tab"
+                   aria-selected="false">Payment Settings</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" id="base-tab2" data-toggle="tab" aria-controls="tab2" href="#tab2" role="tab" aria-selected="false">{{trans('customers.shipping_address')}}</a>
             </li>
             <li class="nav-item">
@@ -14,7 +18,7 @@
                 <a class="nav-link" id="base-tab4" data-toggle="tab" aria-controls="tab4" href="#tab4" role="tab" aria-selected="false">{{trans('general.other')}}</a>
             </li>
         </ul>
-        <div class="tab-content px-1">
+        <div class="tab-content px-1 mt-2">
             <!-- billing address -->
             <div class="tab-pane active" id="tab1" role="tabpanel" aria-labelledby="base-tab1">
                 <div class="row">
@@ -122,6 +126,52 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- payment setting -->
+            <div class="tab-pane" id="tab5" role="tabpanel" aria-labelledby="base-tab5">       
+                <div class='form-group'>
+                    {{ Form::label( 'account_no', 'ACCOUNT NUMBER',['class' => 'col-lg-2 control-label']) }}
+                    <div class='col-lg-10'>
+                        {{ Form::text('account_no', null, ['class' => 'form-control box-size', 'placeholder' => 'ACCOUNT NUMBER']) }}
+                    </div>
+                </div>              
+                <div class='form-group'>
+                    {{ Form::label( 'account_name', 'PRINT NAME ON CHEQUE AS',['class' => 'col-lg-3 control-label']) }}
+                    <div class='col-lg-10'>
+                        {{ Form::text('account_name', null, ['class' => 'form-control box-size', 'placeholder' => 'CHEQUE NAME (ACCOUNT NAME)']) }}
+                    </div>
+                </div>
+                <div class='form-group'>
+                    {{ Form::label( 'bank', 'BANK',['class' => 'col-lg-2 control-label']) }}
+                    <div class='col-lg-10'>
+                        {{ Form::text('bank', null, ['class' => 'form-control box-size', 'placeholder' => 'BANK']) }}
+                    </div>
+                </div>
+                <div class='form-group'>
+                    {{ Form::label( 'bank_code', 'BANK CODE',['class' => 'col-lg-2 control-label']) }}
+                    <div class='col-lg-10'>
+                        {{ Form::text('bank_code', null, ['class' => 'form-control box-size', 'placeholder' => 'BANK CODE']) }}
+                    </div>
+                </div>
+                <div class='form-group'>
+                    {{ Form::label( 'payment_terms', 'PAYMENT TERMS',['class' => 'col-lg-2 control-label']) }}
+                    <div class='col-lg-10'>                     
+                        {{ Form::select('payment_terms',['0'=>'ON RECEIPT','30'=>'AFTER 30 DAYS','45'=>'AFTER 45 DAY','60'=>'AFTER 60 DAY','90'=>'AFTER 90 DAY'], null, ['class' => 'form-control box-size', 'placeholder' => 'PAYMENT TERMS']) }}
+                    </div>
+                </div>             
+                <div class='form-group'>
+                    {{ Form::label( 'credit_limit', 'CREDIT LIMIT',['class' => 'col-lg-3 control-label']) }}
+                    <div class='col-lg-10'>
+                        {{ Form::text('credit_limit', numberFormat(@$customer->credit_limit), ['class' => 'form-control box-size', 'id'=>'credit_limit', 'placeholder' => 'CREDIT LIMIT']) }}
+                    </div>
+                </div>
+                <div class='form-group'>
+                    {{ Form::label( 'mpesa_payment', 'MPESA PAYMENT OPTIONS',['class' => 'col-lg-3 control-label']) }}
+                    <div class='col-lg-10'>
+                        {{ Form::text('mpesa_payment', null, ['class' => 'form-control box-size', 'placeholder' => 'PAYBILL OR BUYGOODS NUMBER & ACCOUNT NUMBER']) }}
+                    </div>
+                </div>              
             </div>
 
             <!-- shipping address -->

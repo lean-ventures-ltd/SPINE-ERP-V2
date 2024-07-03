@@ -107,7 +107,7 @@
             <div class="col-6">
                 <select class="form-control select-box" name="milestone_id" id="milestone" data-placeholder="{{trans('tasks.assign')}}">
                     <option value="">-- Choose Milestone --</option>
-                    @foreach($milestones as $milestone)
+                    @foreach($tasks->project->milestones as $milestone)
                         <option value="{{ $milestone->id }}" {{ @$tasks->milestone->id == $milestone->id? 'selected' : '' }}>
                             {{ $milestone->name }}
                         </option>

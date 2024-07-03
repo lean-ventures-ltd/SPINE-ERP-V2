@@ -84,6 +84,9 @@ class InvoicesTableController extends Controller
             ->addColumn('ledgerAccount', function ($invoice) {
                 return !empty($invoice->ledgerAccount ) ? $invoice->ledgerAccount->holder : '<b> <i>LEDGER ACCOUNT NOT FOUND!</i> </b>';
             })
+            ->addColumn('tax', function ($invoice) {
+                return numberFormat($invoice->tax);
+            })
             ->addColumn('total', function ($invoice) {
                 // return $invoice->currency? amountFormat($invoice->total, $invoice->currency->id) : numberFormat($invoice->total);
                 return numberFormat($invoice->total);

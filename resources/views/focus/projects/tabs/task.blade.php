@@ -13,6 +13,7 @@
                     <th>Due Date</th>
                     <th>{{ trans('tasks.status') }}</th>
                     <th>Assigned To</th>
+                    <th>Task Progress</th>
                     <th>{{ trans('labels.general.actions') }}</th>
                 </tr>
             </thead>

@@ -6,6 +6,7 @@ use App\Models\event\Event;
 use App\Models\event\EventRelation;
 use App\Models\hrm\Hrm;
 use App\Models\misc\Misc;
+use App\Models\project\Project;
 use App\Models\project\ProjectMileStone;
 use App\Models\project\ProjectRelations;
 
@@ -42,5 +43,10 @@ trait TaskRelationship
     public function creator()
     {
         return $this->hasOne(Hrm::class, 'id', 'creator_id');
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class, 'project_id');
     }
 }

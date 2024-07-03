@@ -15,6 +15,9 @@
     <div class="content-body">
         <div class="card">
             <div class="card-content">
+                <div class="card-header">
+                    <div id="credit_limit" class="align-center"></div>
+                </div>
                 <div class="card-body">
                     {{ Form::model($invoice, ['route' => ['biller.invoices.update_project_invoice', $invoice], 'method' => 'POST']) }}
                         @php $customer = $invoice->customer; @endphp
@@ -36,6 +39,7 @@
     // Initialize datepicker
     $('.datepicker').datepicker({format: "{{config('core.user_date_format')}}", autoHide: true})
     .datepicker('setDate', new Date());
+    $.ajaxSetup({headers: { 'X-CSRF-TOKEN': "{{ csrf_token() }}" }});
     if (invoice.invoicedate) 
         $('#invoicedate').datepicker('setDate', new Date(invoice.invoicedate));
 
@@ -60,8 +64,47 @@
         $('#subtotal').val(accounting.formatNumber(subtotal));
         $('#tax').val(accounting.formatNumber(tax));
         $('#total').val(accounting.formatNumber(total));
+        checkLimits();
     });
     $('#tax_id').change();
+
+    function checkLimits() {
+        $('#credit_limit').html('')
+            $.ajax({
+                type: "POST",
+                url: "{{route('biller.customers.check_limit')}}",
+                data: {
+                    customer_id: $('#customer_id').val(),
+                },
+                success: function (result) {
+                    let total = $('#total').val();
+                    let number = 0;
+                    if(!isNaN(total)){
+                        total = 0;
+                        number = total;
+                    }else{
+                        number = total.replace(/,/g, '');
+                    }
+                    
+                    let newTotal = parseFloat(number);
+                     let outstandingTotal = parseFloat(result.outstanding_balance);
+                     let total_aging = parseFloat(result.total_aging);
+                     let credit_limit = parseFloat(result.credit_limit);
+                     let total_age_grandtotal = total_aging+newTotal;
+                    let balance = total_age_grandtotal - outstandingTotal;
+                    $('#total_aging').val(result.total_aging.toLocaleString());
+                    $('#credit').val(result.credit_limit.toLocaleString());
+                    $('#outstanding_balance').val(result.outstanding_balance);
+                    if(balance > credit_limit){
+                        let exceeded = balance-result.credit_limit;
+                        $("#credit_limit").append(`<h4 class="text-danger">Credit Limit Violated by: ${exceeded.toLocaleString()}</h4>`);
+                        
+                    }else{
+                        $('#credit_limit').html('')
+                    }
+                }
+            });
+    }
 
 
     /**

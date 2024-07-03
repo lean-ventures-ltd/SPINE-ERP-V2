@@ -19,6 +19,10 @@
 
     <div class="content-body"> 
         <div class="card">
+            <div class="card-header">
+                <div id="credit_limit" class="align-center"></div>
+                
+            </div>
             <div class="card-body">
                 {{ Form::model($purchase, ['route' => ['biller.purchases.update', $purchase], 'method' => 'PATCH']) }}
                     @include('focus.purchases.form')

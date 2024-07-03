@@ -19,6 +19,10 @@
 
     <div class="content-body"> 
         <div class="card">
+            <div class="card-header">
+                <div id="credit_limit" class="align-center"></div>
+                
+            </div>
             <div class="card-body">
                 {{ Form::open(['route' => 'biller.purchaseorders.store', 'method' => 'POST']) }}
                     @include('focus.purchaseorders.form')
@@ -154,6 +158,34 @@
             });
             
             $('#pricegroup_id').val(priceCustomer);
+            $('#credit_limit').html('');
+            $.ajax({
+                type: "POST",
+                url: "{{route('biller.suppliers.check_limit')}}",
+                data: {
+                    supplier_id: id
+                },
+                success: function (result) {
+                    let total = $('#stock_grandttl').val();
+                    let number = total.replace(/,/g, '');
+                    let newTotal = parseFloat(number);
+                     let outstandingTotal = parseFloat(result.outstanding_balance);
+                     let total_aging = parseFloat(result.total_aging);
+                     let credit_limit = parseFloat(result.credit_limit);
+                     let total_age_grandtotal = total_aging+newTotal;
+                    let balance = total_age_grandtotal - outstandingTotal;
+                    $('#total_aging').val(result.total_aging.toLocaleString());
+                    $('#credit').val(result.credit_limit.toLocaleString());
+                    $('#outstanding_balance').val(result.outstanding_balance);
+                    if(balance > credit_limit){
+                        let exceeded = balance-result.credit_limit;
+                        $("#credit_limit").append(`<h4 class="text-danger">Credit Limit Violated by: ${parseFloat(exceeded).toFixed(2)}</h4>`);
+                        
+                    }else{
+                        $('#credit_limit').html('')
+                    }
+                }
+            });
     });
     // load suppliers
     const supplierUrl = "{{ route('biller.suppliers.select') }}";
@@ -597,6 +629,17 @@
         $('#stock_tax').val(accounting.formatNumber(tax));
         $('#stock_grandttl').val(accounting.formatNumber(grandTotal));
         $('#stock_subttl').val(accounting.formatNumber(grandTotal - tax));
+        $("#credit_limit").html('');
+        let credit_limit = $('#credit').val().replace(/,/g, '');
+        let total_aging = $('#total_aging').val().replace(/,/g, '');
+        let outstanding_balance = $('#outstanding_balance').val().replace(/,/g, '');
+        let balance = total_aging.toLocaleString() - outstanding_balance.toLocaleString() + grandTotal;
+        if (balance > credit_limit) {
+            let exceeded = balance -credit_limit;
+            $("#credit_limit").append(`<h4 class="text-danger">Credit Limit Violated by:  ${parseFloat(exceeded).toFixed(2)}</h4>`);
+        }else{
+            $("#credit_limit").html('');
+        }
         transxnCalc();
     }
 

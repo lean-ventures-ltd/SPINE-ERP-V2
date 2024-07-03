@@ -28,6 +28,9 @@
         </div>
 
         <div class="card">
+            <div class="card-header">
+                <div id="credit_limit" class="align-center"></div>
+            </div>
             <div class="card-body">
                 @if ($task)
                     {{ Form::model($quote, ['route' => ['biller.quotes.store', $quote], 'method' => 'post']) }}
@@ -114,6 +117,41 @@
                         priceCustomer = $(this).val();
                 });
                 $('#price_customer').val(priceCustomer);
+                $('#credit_limit').html('')
+                $.ajax({
+                    type: "POST",
+                    url: "{{route('biller.customers.check_limit')}}",
+                    data: {
+                        customer_id: opt.attr('customer_id')
+                    },
+                    success: function (result) {
+                        let total = $('#total').val();
+                        let number = 0;
+                        if(!isNaN(total)){
+                            total = 0;
+                            number = total;
+                        }else{
+                            number = total.replace(/,/g, '');
+                        }
+                        
+                        let newTotal = parseFloat(number);
+                        let outstandingTotal = parseFloat(result.outstanding_balance);
+                        let total_aging = parseFloat(result.total_aging);
+                        let credit_limit = parseFloat(result.credit_limit);
+                        let total_age_grandtotal = total_aging+newTotal;
+                        let balance = total_age_grandtotal - outstandingTotal;
+                        $('#total_aging').val(result.total_aging.toLocaleString());
+                        $('#credit').val(result.credit_limit.toLocaleString());
+                        $('#outstanding_balance').val(result.outstanding_balance);
+                        if(balance > credit_limit){
+                            let exceeded = balance-result.credit_limit;
+                            $("#credit_limit").append(`<h4 class="text-danger">Credit Limit Violated by: ${exceeded.toLocaleString()}</h4>`);
+                            
+                        }else{
+                            $('#credit_limit').html('')
+                        }
+                    }
+                });
 
             } else subject.djc = $(this).val();
             // subject
@@ -441,6 +479,17 @@
             $('#tax').val(accounting.formatNumber((total - subtotal)));
             profitState.bp_total = bp_subtotal;
             profitState.sp_total = subtotal;
+            $("#credit_limit").html('');
+            let credit_limit = $('#credit').val().replace(/,/g, '');
+            let total_aging = $('#total_aging').val().replace(/,/g, '');
+            let outstanding_balance = $('#outstanding_balance').val().replace(/,/g, '');
+            let balance = total_aging.toLocaleString() - outstanding_balance.toLocaleString() + total;
+            if (balance > credit_limit) {
+                let exceeded = balance -credit_limit;
+                $("#credit_limit").append(`<h4 class="text-danger">Credit Limit Violated by:  ${accounting.formatNumber(exceeded)}</h4>`);
+            }else{
+                $("#credit_limit").html('');
+            }
             calcProfit();
         }
 

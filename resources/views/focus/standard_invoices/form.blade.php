@@ -16,6 +16,9 @@
                     </option>
                 @endforeach
             </select>
+            <input type="hidden" value="0" id="credit">
+            <input type="hidden" value="0" id="total_aging">
+            <input type="hidden" value="0" id="outstanding_balance">
         </div>
     </div>
 
@@ -237,6 +240,45 @@
     // ajax config
     $.ajaxSetup({headers: { 'X-CSRF-TOKEN': "{{ csrf_token() }}" }});
 
+    $('#customer').change(function() {
+        var customer_id = $(this).val();
+        $('#credit_limit').html('')
+            $.ajax({
+                type: "POST",
+                url: "{{route('biller.customers.check_limit')}}",
+                data: {
+                    customer_id: customer_id
+                },
+                success: function (result) {
+                    let total = $('#total').val();
+                    let number = 0;
+                    if(!isNaN(total)){
+                        total = 0;
+                        number = total;
+                    }else{
+                        number = total.replace(/,/g, '');
+                    }
+                    
+                    let newTotal = parseFloat(number);
+                     let outstandingTotal = parseFloat(result.outstanding_balance);
+                     let total_aging = parseFloat(result.total_aging);
+                     let credit_limit = parseFloat(result.credit_limit);
+                     let total_age_grandtotal = total_aging+newTotal;
+                    let balance = total_age_grandtotal - outstandingTotal;
+                    $('#total_aging').val(result.total_aging.toLocaleString());
+                    $('#credit').val(result.credit_limit.toLocaleString());
+                    $('#outstanding_balance').val(result.outstanding_balance);
+                    if(balance > credit_limit){
+                        let exceeded = balance-result.credit_limit;
+                        $("#credit_limit").append(`<h4 class="text-danger">Credit Limit Violated by: ${exceeded.toLocaleString()}</h4>`);
+                        
+                    }else{
+                        $('#credit_limit').html('')
+                    }
+                }
+            });
+    })
+
 
     // add or remove row
     let rowCount = 1;
@@ -316,6 +358,17 @@
         $('#total').val(accounting.formatNumber(total));
         $('#subtotal').val(accounting.formatNumber(subtotal));
         $('#totaltax').val(accounting.formatNumber((total - subtotal)));
+        $("#credit_limit").html('');
+        let credit_limit = $('#credit').val().replace(/,/g, '');
+        let total_aging = $('#total_aging').val().replace(/,/g, '');
+        let outstanding_balance = $('#outstanding_balance').val().replace(/,/g, '');
+        let balance = total_aging.toLocaleString() - outstanding_balance.toLocaleString() + total;
+        if (balance > credit_limit) {
+            let exceeded = balance -credit_limit;
+            $("#credit_limit").append(`<h4 class="text-danger">Credit Limit Violated by:  ${accounting.formatNumber(exceeded)}</h4>`);
+        }else{
+            $("#credit_limit").html('');
+        }
     }
 
     // on keyup item name set active row

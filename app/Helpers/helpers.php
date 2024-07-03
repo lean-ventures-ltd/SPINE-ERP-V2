@@ -975,6 +975,47 @@ function updateStockQty($productvar_ids=[])
     }
     return true;
 }
+
+function updateCompletionPercentage($milestone, $project)
+{
+    // dd($project, $milestone);
+    $milestone_percentage = 100/$project->milestones->count();
+    foreach ($project->milestones as $project_milestone){
+        $project_milestone->milestone_expected_percent = $milestone_percentage;
+        //number of tasks in milestone
+        $task_count = count($project->milestones);
+        $tasks = $project_milestone->tasks;
+        $task_percent = $milestone_percentage/$task_count;
+        foreach ($tasks as $task){
+            $task->task_expected_percent = $task_percent;
+            $task->task_percent_of_expected = $task->task_completion/100 * $task_percent;
+            $task->update();
+        }
+        $project_milestone->milestone_percent_of_expected = $project_milestone->tasks()->sum('task_percent_of_expected');
+        $project_milestone->milestone_completion = ($project_milestone->milestone_percent_of_expected/$milestone_percentage)*100;
+        $project_milestone->update();
+    }
+    $project->progress = $project->milestones()->sum('milestone_percent_of_expected');
+    $project->update();
+    // dd($project->milestones);
+}
+function updateNewTask($task)
+{
+    $milestone = $task->milestone;
+    $project = $task->milestone->project;;
+    $task_count = count($milestone->tasks);
+    $task_percent = $milestone->milestone_expected_percent/$task_count;
+    foreach ($milestone->tasks as $task)
+    {
+        $task->task_expected_percent = $task_percent;
+        $task->task_percent_of_expected = $task->task_completion/100 * $task_percent;
+        $task->update();
+    }
+    $milestone->milestone_percent_of_expected = $milestone->tasks()->sum('task_percent_of_expected');
+    $milestone->update();
+    $project->progress = $project->milestones()->sum('milestone_percent_of_expected');
+    $project->update();
+}
 // generate random username
 function random_username()
 {

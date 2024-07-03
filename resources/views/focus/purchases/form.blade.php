@@ -4,6 +4,9 @@
             <h3 class="title">Bill </h3>                                                                
             <div class="form-group row">
                 <div class="col-5">
+                    <input type="hidden" value="0" id="credit">
+                    <input type="hidden" value="0" id="total_aging">
+                    <input type="hidden" value="0" id="outstanding_balance">
                     <div><label for="supplier-type">Select Supplier Type</label></div>
                     <div class="d-inline-block custom-control custom-checkbox mr-1">
                         <input type="radio" class="custom-control-input bg-primary" name="supplier_type" id="colorCheck1" value="walk-in" checked>

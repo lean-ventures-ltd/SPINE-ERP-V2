@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\client_product\ClientProduct;
+use App\Models\product\ProductVariation;
 use Error;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -37,7 +38,7 @@ class ClientPricelistImport implements ToCollection, WithBatchInserts, WithValid
     public function collection(Collection $rows)
     {        
         $columns = [
-            'row_num','description','uom','rate'
+            'Id','Description','Category Name','product_code','uom','row_num','description','rate'
         ];
 
         $row_count = 0;
@@ -52,14 +53,20 @@ class ClientPricelistImport implements ToCollection, WithBatchInserts, WithValid
             }
 
             $row_data = array_combine($columns, $row);
+            $variation = ProductVariation::where('code', $row_data['product_code'])->first();
             $row_data = array_replace($row_data, [
+                'product_code' => $row_data['product_code'],
                 'descr' => $row_data['description'],
                 'contract' => $this->data['contract'],
                 'customer_id' => $this->data['customer_id'],
                 'ins' => auth()->user()->ins,
-                'user_id' => auth()->user()->id
+                'user_id' => auth()->user()->id,
+                'item_id' => $variation ? $variation->id: 0,
             ]);
             unset($row_data['description']);
+            unset($row_data['Description']);
+            unset($row_data['Category Name']);
+            unset($row_data['Id']);
             foreach ($row_data as $key => $val) {
                 if ($key == 'rate') $row_data[$key] = numberClean($row_data['rate']);
                 if (strcasecmp($val, 'null') == 0) $row_data[$key] = null;

@@ -17,6 +17,9 @@
 
     <div class="content-body">
         <div class="card">
+            <div class="card-header">
+                <div id="credit_limit" class="align-center"></div>
+            </div>
             <div class="card-content">
                 <div class="card-body">
                     {{ Form::open(['route' => 'biller.goodsreceivenote.store', 'method' => 'POST']) }}

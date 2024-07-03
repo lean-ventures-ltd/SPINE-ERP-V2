@@ -1,4 +1,7 @@
 <div class="form-group row">
+    <input type="hidden" value="0" id="credit">
+    <input type="hidden" value="0" id="total_aging">
+    <input type="hidden" value="0" id="outstanding_balance">
     <div class="col-4">
         <label for="supplier">Supplier</label>
         <select id="supplier" name="supplier_id" class="form-control" data-placeholder="Choose Supplier" required>

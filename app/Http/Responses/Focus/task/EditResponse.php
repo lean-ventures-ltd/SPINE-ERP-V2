@@ -32,13 +32,14 @@ class EditResponse implements Responsable
     public function toResponse($request)
     {
         $tasks=$this->tasks;
+        // dd($tasks);
         $mics = Misc::all();
         $employees = Hrm::all();
         $user = auth()->user()->id;
-        $project_select = Project::whereHas('users', function ($q) use ($user) {
-            return $q->where('rid', '=', $user);
-        })->get();
-        return view('focus.projects.tasks.edit',compact('tasks','mics', 'employees', 'project_select'));
+        // $project_select = Project::whereHas('users', function ($q) use ($user) {
+        //     return $q->where('user', '=', $user);
+        // })->get();
+        return view('focus.projects.tasks.edit',compact('tasks','mics', 'employees'));
 
     }
 }

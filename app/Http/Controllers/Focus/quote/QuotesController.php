@@ -370,6 +370,9 @@ class QuotesController extends Controller
 
         // update
         $input['approved_date'] = date_for_database($input['approved_date']);
+        if($input['status'] == 'cancelled'){
+            if($quote->project()->exists()) throw ValidationException::withMessages(['Quote has attached Project']);
+        }
         $quote->update($input);
 
         return new RedirectResponse(route('biller.quotes.show', [$quote]), ['flash_success' => 'Approval status updated successfully']);

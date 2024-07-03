@@ -174,9 +174,9 @@ class CustomerRepository extends BaseRepository
             if (!preg_match($letter_pattern, $input['taxid'][-1])) 
                 throw ValidationException::withMessages(['Last character of Tax Pin must be a letter!']);
         }
-        
         $input = array_replace($input, [
             'open_balance' => numberClean($input['open_balance']),
+            'credit_limit' => numberClean($input['credit_limit']),
             'open_balance_date' =>  date_for_database($input['open_balance_date'])
         ]);
         if ($input['open_balance'] == 0) $input['open_balance_date'] = null;

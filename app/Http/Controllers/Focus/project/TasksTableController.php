@@ -82,6 +82,23 @@ class TasksTableController extends Controller
                 $task_users = $task->users->map(fn($v) => $v->full_name)->toArray();
                 return implode(', ', $task_users);
             })
+            ->addColumn('task_completion', function ($task) {
+                return '
+                    <div>
+                    <div class="project-info-icon">
+                        <h2 id="prog">'.$task->task_completion.'%</h2>
+                        <div class="project-info-sub-icon">
+                            <span class="fa fa-rocket"></span>
+                        </div>
+                    </div>
+                    <div class="project-info-text pt-1">
+                        <h5></h5>
+                        <input type="range" min="0" max="100" data-id="'.$task->id.'" value="'.$task->task_completion.'" class="slider task_progress" id="task_progress">
+                    </div>
+                    </div>
+                ';
+            })
+
             ->addColumn('actions', function ($task) {
                 $btn = '<a href="#" title="View" class="view_task success" data-toggle="modal" data-target="#ViewTaskModal" data-id="'. $task->id .'">
                     <i class="ft-eye" style="font-size:1.5em;"></i></a> ';

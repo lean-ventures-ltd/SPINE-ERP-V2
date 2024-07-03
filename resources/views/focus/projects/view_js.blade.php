@@ -690,6 +690,29 @@
         });
     }
 
+    //Task Progress Bar
+    $('#tasks-table').on('click', '.task_progress', function (e) {
+        let task_id = e.target.getAttribute('data-id');
+        let task_value = e.target.value;
+        $.ajax({
+        url: "{{ route('biller.tasks.update_task_completion')}}",
+        method: 'POST',
+        data: {
+            task_id: task_id,
+            task_completion: task_value,
+        },
+        success: function(response) {
+            console.log(response);
+            window.location.reload();
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(errorThrown);
+            // handle the error case
+        }
+        });
+
+    });
+
     /**Fetch Tasks */
     function tasks() {
         if ($('#tasks-table tbody tr').length) return;
@@ -705,7 +728,7 @@
             },
             columns: [
                 {data: 'DT_Row_Index', name: 'id'},
-                ...['milestone', 'tags','start', 'duedate', 'status', 'assigned_to'].map(v => ({data:v, name:v})),
+                ...['milestone', 'tags','start', 'duedate', 'status', 'assigned_to', 'task_completion'].map(v => ({data:v, name:v})),
                 {data: 'actions', name: 'actions', searchable: false, sortable: false}
             ],
             order: [[0, "desc"]],

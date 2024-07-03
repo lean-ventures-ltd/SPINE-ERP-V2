@@ -1,7 +1,7 @@
 $(document).ready(function () {
 var cat_data = [
 <?php foreach ($chart_result as $item) {
-    echo '{y: "' . $item['product_name'] . '", a: ' . $item['amount'] . ' },';
+    echo '{y: "' . $item['description'] . '", a: ' . $item['amount'] . ' },';
 }
 ?>
 ];

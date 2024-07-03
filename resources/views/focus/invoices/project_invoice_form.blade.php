@@ -13,6 +13,9 @@
             {{ Form::text('customer_name', $customer_name, ['class' => 'form-control round', 'id' => 'customername', 'readonly']) }}
             <input type="hidden" name="customer_id" value="{{ $customer->id ?: 0 }}" id="customer_id">
             {{ Form::hidden('taxid', $customer->taxid) }}
+            <input type="hidden" value="0" id="credit">
+            <input type="hidden" value="0" id="total_aging">
+            <input type="hidden" value="0" id="outstanding_balance">
         </div>
     </div>
     <div class="col-md-2">

@@ -36,6 +36,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @php
+                                            $totals = array_fill(0, 5, 0); // Assuming there are 5 aging clusters
+                                            $totalAgingTotal = 0;
+                                            $totalUnallocated = 0;
+                                            $totalOutstanding = 0;
+                                        @endphp
                                         @foreach ($customers_data as $data)
                                             @php
                                                 $customer = $data['customer'];
@@ -49,15 +55,32 @@
                                                         {{ numberFormat($aging_cluster[$i]) }}
                                                         @php
                                                             $total_aging += $aging_cluster[$i];
+                                                            $totals[$i] += $aging_cluster[$i];
                                                         @endphp
                                                     </td>
                                                 @endfor
                                                 <td>{{ numberFormat($total_aging) }}</td>
                                                 <td>{{ numberFormat($customer->on_account) }}</td>
                                                 <td>{{ numberFormat($total_aging - $customer->on_account) }}</td>
+                                                @php
+                                                    $totalAgingTotal += $total_aging;
+                                                    $totalUnallocated += $customer->on_account;
+                                                    $totalOutstanding += ($total_aging - $customer->on_account);
+                                                @endphp
                                             </tr>
                                         @endforeach                    
-                                    </tbody>                     
+                                    </tbody>  
+                                    <thead>
+                                        <tr>
+                                            <th>Total</th>
+                                            @for ($i = 0; $i < count($totals); $i++)
+                                                <th>{{ numberFormat($totals[$i]) }}</th>
+                                            @endfor
+                                            <th>{{ numberFormat($totalAgingTotal) }}</th>
+                                            <th>{{ numberFormat($totalUnallocated) }}</th>
+                                            <th>{{ numberFormat($totalOutstanding) }}</th>
+                                        </tr>
+                                    </thead>                   
                                 </table> 
                             </div>
                         </div>
