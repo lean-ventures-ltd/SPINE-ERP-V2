@@ -18,6 +18,7 @@
 
 namespace App\Http\Controllers\Focus\quote;
 
+use App\Models\lead\LeadSource;
 use App\Models\project\Project;
 use App\Models\quote\Quote;
 use App\Http\Controllers\Controller;
@@ -81,7 +82,10 @@ class QuotesController extends Controller
             return $carry + $stock_issue['total'];
         }, 0);
 
-        return view('focus.quotes.index', compact('customers', 'accounts'));
+        $leadSources = LeadSource::select('id', 'name')->get();
+
+
+        return view('focus.quotes.index', compact('customers', 'accounts', 'leadSources'));
     }
 
     /**

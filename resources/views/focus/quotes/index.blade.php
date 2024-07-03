@@ -37,7 +37,7 @@
                             </select>
                         </div>
                         <div class="col-3">
-                            <label for="filter">Filter Criteria</label>                             
+                            <label for="filter">Approval Status</label>
                             @php
                                 $criteria = [
                                     'Unapproved', 'Approved without LPO & Uninvoiced', 'Approved & Unbudgeted',  
@@ -54,6 +54,18 @@
                                 @endforeach
                             </select>
                         </div>
+
+                        <div class="col-3">
+                            <label for="source_filter">Source</label>
+                            <select name="source_filter" class="custom-select" id="source_filter" data-placeholder="Filter by source">
+                                <option value=""> Filter by Source </option>
+                                @foreach ($leadSources as $src)
+                                    <option value="{{ $src['id'] }}">{{ $src['name'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+
                         <div class="col-3">
                             <label for="income_category" class="caption">Income Category</label>
                             <select class="custom-select" name="account_id" id="account_id">
@@ -70,7 +82,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-3">
+                        <div class="col-3 mt-1">
                             <label for="total">Total Amount</label>                             
                             <input type="text" name="amount_total" class="form-control" id="amount_total" readonly>
                         </div>
@@ -106,7 +118,8 @@
                                 <th>Date</th>   
                                 <th>{{ $query_str == 'page=pi' ? '#PI' : '#Quote'  }} No</th>
                                 <th>Customer - Branch</th>   
-                                <th>Title</th>                                                                       
+                                <th>Source</th>
+                                <th>Title</th>
                                 <th>Amount</th>
 {{--                                <th>Exp Amount</th>--}}
 {{--                                <th>Amnt Diff (VAT Exc)</th>--}}
@@ -155,16 +168,21 @@
             $('.datepicker').change(this.dateChange);
             $('#search').click(this.filterCriteriaChange);
             $('#account_id').click(this.incomeCategoryhange);
-            $('#filters').on('change','#account_id ,#status_filter,#client', this.filterCriteriaChange);
+            $('#filters').on('change','#account_id ,#status_filter, #client, #source_filter', this.filterCriteriaChange);
             // $('#filters').on('change', '#status_filter, #client', this.filterCriteriaChange);
 
             this.drawDataTable();
         },
 
         filterCriteriaChange() {
+
+            let tryzex = $('#status_filter').val();
+            console.table({tryzex})
+
             $('#quotesTbl').DataTable().destroy();
             return Index.drawDataTable({
                 status_filter: $('#status_filter').val(),
+                source_filter: $('#source_filter').val(),
                 account_id: $('#account_id').val(),
                 client_id: $('#client').val()
             });   
@@ -174,6 +192,7 @@
             $('#quotesTbl').DataTable().destroy();
             return Index.drawDataTable({
                 status_filter: $('#status_filter').val(),
+                source_filter: $('#source_filter').val(),
                 account_id: $('#account_id').val(),
                 client_id: $('#client').val()
             });   
@@ -217,7 +236,7 @@
                         name: 'id'
                     },
                     ...[
-                        'date', 'tid', 'customer', 'notes', 'total',
+                        'date', 'tid', 'customer','source', 'notes', 'total',
                         // 'exp_total', 'exp_diff',
                         'approved_date', 'client_ref', 'lead_tid', 'invoice_tid'
                     ].map(v => ({data: v, name: v})),

@@ -83,6 +83,14 @@ class QuotesTableController extends Controller
 
                 return $customer;
             })
+            ->addColumn('source', function ($quote) {
+                $lead = $quote->lead;
+
+                $leadSource = $lead->LeadSource;
+
+                if (!empty($leadSource)) return $leadSource->name;
+                else return '<b><i> N/A </i></b>';
+            })
             ->addColumn('date', function ($quote) {
                 return dateFormat($quote->date);
             })

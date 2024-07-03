@@ -45,6 +45,13 @@ class QuoteRepository extends BaseRepository
             $q->whereBetween('date', array_map(fn($v) => date_for_database($v), [request('start_date'), request('end_date')]));
         });
 
+        $q->when(request('source_filter'), function ($q) {
+            $q->with(['lead' => function ($query) {
+                $query->with(['LeadSource' => function ($query) {
+                    $query->where('id', request('source_filter'));
+                }]);
+            }]);
+        });
         // client filter
         $q->when(request('client_id'), fn($q) => $q->where('customer_id', request('client_id')));
 
