@@ -16,9 +16,9 @@ class MakeColumnsDefaultZeroOnTodolistsTable extends Migration
 
         Schema::table('todolists', function (Blueprint $table) {
 
-            $table->unsignedDecimal('task_completion', 16, 2)->default(0.00)->change();
-            $table->unsignedDecimal('task_expected_percent', 16, 2)->default(0.00)->change();
-            $table->unsignedDecimal('task_percent_of_expected', 16, 2)->default(0.00)->change();
+            $table->decimal('task_completion', 16, 2)->default(0.00)->change();
+            $table->decimal('task_expected_percent', 16, 2)->default(0.00)->change();
+            $table->decimal('task_percent_of_expected', 16, 2)->default(0.00)->change();
         });
 
 
