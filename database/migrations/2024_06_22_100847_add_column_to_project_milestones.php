@@ -14,9 +14,9 @@ class AddColumnToProjectMilestones extends Migration
     public function up()
     {
         Schema::table('project_milestones', function (Blueprint $table) {
-            $table->unsignedDecimal('milestone_completion')->nullable()->after('due_date');
-            $table->unsignedDecimal('milestone_expected_percent')->nullable()->after('milestone_completion');
-            $table->unsignedDecimal('milestone_percent_of_expected')->nullable()->after('milestone_expected_percent');
+            $table->unsignedDecimal('milestone_completion')->default(0.00)->after('due_date');
+            $table->unsignedDecimal('milestone_expected_percent')->default(0.00)->after('milestone_completion');
+            $table->unsignedDecimal('milestone_percent_of_expected')->default(0.00)->after('milestone_expected_percent');
         });
     }
 
