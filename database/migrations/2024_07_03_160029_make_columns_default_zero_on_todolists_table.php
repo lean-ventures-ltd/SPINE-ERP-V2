@@ -13,15 +13,17 @@ class MakeColumnsDefaultZeroOnTodolistsTable extends Migration
      */
     public function up()
     {
-
         Schema::table('todolists', function (Blueprint $table) {
-
-            $table->decimal('task_completion', 16, 2)->default(0.00)->change();
-            $table->decimal('task_expected_percent', 16, 2)->default(0.00)->change();
-            $table->decimal('task_percent_of_expected', 16, 2)->default(0.00)->change();
+            // Drop the columns
+            $table->dropColumn(['task_completion', 'task_expected_percent', 'task_percent_of_expected']);
         });
 
-
+        Schema::table('todolists', function (Blueprint $table) {
+            // Recreate the columns with the desired attributes
+            $table->decimal('task_completion', 8, 2)->unsigned()->default(0.00);
+            $table->decimal('task_expected_percent', 8, 2)->unsigned()->default(0.00);
+            $table->decimal('task_percent_of_expected', 8, 2)->unsigned()->default(0.00);
+        });
     }
 
     /**
@@ -31,6 +33,16 @@ class MakeColumnsDefaultZeroOnTodolistsTable extends Migration
      */
     public function down()
     {
-        //
+        Schema::table('todolists', function (Blueprint $table) {
+            // Drop the columns if they exist
+            $table->dropColumn(['task_completion', 'task_expected_percent', 'task_percent_of_expected']);
+        });
+
+        Schema::table('todolists', function (Blueprint $table) {
+            // Recreate the columns without default values
+            $table->decimal('task_completion', 8, 2)->unsigned();
+            $table->decimal('task_expected_percent', 8, 2)->unsigned();
+            $table->decimal('task_percent_of_expected', 8, 2)->unsigned();
+        });
     }
 }
