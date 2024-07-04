@@ -88,13 +88,19 @@ trait Accounting
                 'debit' =>  $stock_issue->total,
             ]);
             Transaction::create($dr_data);
-        } else {
-            // debit related expense account
-
+        } else if (!$stock_issue->project_id && $stock_issue->customer_id) {
             // debit COG Account
             $cog_account = Account::where('system', 'cog')->first(['id']);
             $dr_data = array_replace($cr_data, [
                 'account_id' => $cog_account->id,
+                'debit' =>  $stock_issue->total,
+            ]);
+            Transaction::create($dr_data);
+        } else if (!$stock_issue->project_id && $stock_issue->employee_id) {
+            // debit respective Expense account
+            $exp_account = Account::where('id', $stock_issue->account_id)->first(['id']);
+            $dr_data = array_replace($cr_data, [
+                'account_id' => $exp_account->id,
                 'debit' =>  $stock_issue->total,
             ]);
             Transaction::create($dr_data);

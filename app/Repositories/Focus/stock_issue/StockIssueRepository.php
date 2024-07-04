@@ -50,21 +50,22 @@ class StockIssueRepository extends BaseRepository
                 $input[$key] = array_map(fn($v) =>  numberClean($v), $val);
             }
         }
+        if (@$input['employee_id'] && !isset($input['account_id']))
+            throw ValidationException::withMessages(['Expense account required!']);
 
         // create stock issue
         $data = Arr::only($input, ['date', 'ref_no', 'issue_to', 'employee_id', 'customer_id', 'project_id', 'note', 'quote_id', 'budget_line', 'total']);
-
         $stock_issue = StockIssue::create($data);
 
         $data_items = array_diff_key($input, $data);
         $data_items['stock_issue_id'] = array_fill(0, count($data_items['issue_qty']), $stock_issue->id);
         $data_items = modify_array($data_items);
         $data_items = array_filter($data_items, fn($v) => $v['warehouse_id'] && $v['issue_qty'] > 0);
-        if (!$data_items) throw ValidationException::withMessages(['issue qty field and location field are required!']);
+        if (!$data_items) throw ValidationException::withMessages(['Fields required! issue-qty, location']);
         StockIssueItem::insert($data_items);
 
         // update stock Qty
-        $productvar_ids = $stock_issue->items()->pluck('productvar_id')->toArray();
+        $productvar_ids = $stock_issue->items->pluck('productvar_id')->toArray();
         updateStockQty($productvar_ids);
 
         /** accounting */
@@ -95,6 +96,8 @@ class StockIssueRepository extends BaseRepository
                 $input[$key] = array_map(fn($v) =>  numberClean($v), $val);
             }
         }
+        if (@$input['employee_id'] && !isset($input['account_id']))
+            throw ValidationException::withMessages(['Expense account required!']);
 
         // create stock issue
         $data = Arr::only($input, ['date', 'ref_no', 'issue_to', 'employee_id', 'customer_id', 'project_id', 'note', 'quote_id', 'budget_line', 'total']);
@@ -104,12 +107,12 @@ class StockIssueRepository extends BaseRepository
         $data_items['stock_issue_id'] = array_fill(0, count($data_items['issue_qty']), $stock_issue->id);
         $data_items = modify_array($data_items);
         $data_items = array_filter($data_items, fn($v) => $v['warehouse_id'] && $v['issue_qty'] > 0);
-        if (!$data_items) throw ValidationException::withMessages(['issue qty field and location field are required!']);
+        if (!$data_items) throw ValidationException::withMessages(['Fields required! issue-qty, location']);
         $stock_issue->items()->delete();
         StockIssueItem::insert($data_items);
 
         // update stock Qty
-        $productvar_ids = $stock_issue->items()->pluck('productvar_id')->toArray();
+        $productvar_ids = $stock_issue->items->pluck('productvar_id')->toArray();
         updateStockQty($productvar_ids);
 
         /** accounting */
@@ -132,13 +135,14 @@ class StockIssueRepository extends BaseRepository
     public function delete(StockIssue $stock_issue)
     {
         DB::beginTransaction();
-        $productvar_ids = $stock_issue->items()->pluck('productvar_id')->toArray();
 
-        $stock_issue->transactions()->delete();
+        $productvar_ids = $stock_issue->items->pluck('productvar_id')->toArray();
         $stock_issue->items()->delete();
+
         // update stock Qty
         updateStockQty($productvar_ids);
-
+        
+        $stock_issue->transactions()->delete();
         if ($stock_issue->delete()) {
             DB::commit();
             return true;
