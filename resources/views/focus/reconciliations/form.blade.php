@@ -220,11 +220,6 @@
                 $('#account').attr('disabled', true);
                 $('#end_date').datepicker('setDate', data.end_date).attr('disabled', true);
                 $('#end_balance').keyup().change();
-                $('#transactions tbody tr').each(function() {
-                    const row = $(this);
-                    const checkinp = row.find('.check-inp');
-                    if (checkinp.val() == 1) row.find('.check').prop('checked', true).change();
-                });
             } 
         },
 
@@ -262,6 +257,15 @@
                     row.find('.cash').text(accounting.formatNumber(v.amount*1));
                     $('#transactions tbody').append(row);
                 });
+                
+                const data_items = @json(@$reconciliation->items);
+                if (data_items && data_items.length) {
+                    $('#transactions tbody tr').each(function() {
+                        const el = $(this);
+                        const checkinp = el.find('.check-inp');
+                        if (checkinp.val() == 1) el.find('.check').prop('checked', true).change();
+                    });
+                } 
             });
         },
 

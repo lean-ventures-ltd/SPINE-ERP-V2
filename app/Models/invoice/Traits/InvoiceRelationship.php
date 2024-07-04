@@ -2,6 +2,7 @@
 
 namespace App\Models\invoice\Traits;
 
+use App\Models\branch\Branch;
 use App\Models\account\Account;
 use App\Models\creditnote\CreditNote;
 use App\Models\currency\Currency;

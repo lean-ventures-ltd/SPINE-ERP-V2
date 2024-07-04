@@ -354,7 +354,7 @@ class CompanyController extends Controller
                 }
                 $input_items['opening_stock_id'] = array_fill(0, count($input_items['qty']), $openingstock->id);
                 $input_items = modify_array($input_items);
-                $input_items = array_filter($input_items, fn($v) => @$v['amount'] > 0);
+                $input_items = array_filter($input_items, fn($v) => @$v['cost'] > 0);
                 $openingstock->items()->delete();
                 OpeningStockItem::insert($input_items);
 

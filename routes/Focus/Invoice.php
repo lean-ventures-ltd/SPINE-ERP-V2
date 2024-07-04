@@ -5,6 +5,14 @@
  *
  */
 
+Route::group(['namespace' => 'job_valuation'], function () {
+    Route::post('job_valuations/quotes', 'JobValuationsController@get_quotes')->name('job_valuations.get_quotes');
+    Route::get('job_valuations/quote_index', 'JobValuationsController@quote_index')->name('job_valuations.quote_index');
+    Route::resource('job_valuations', 'JobValuationsController');
+    // datatable
+    Route::post('job_valuations/get', 'JobValuationsTableController')->name('job_valuations.get');
+});
+
 Route::group(['namespace' => 'estimate'], function () {
     Route::post('estimates/verified_products', 'EstimatesController@verified_products')->name('estimates.verified_products');
     Route::post('estimates/quote_select', 'EstimatesController@quote_select')->name('estimates.quote_select');

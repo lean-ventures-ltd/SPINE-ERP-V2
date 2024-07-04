@@ -25,7 +25,7 @@
                         $recon = $reconciliation;
                         $recon_details = [
                             'Account' => @$recon->account->holder,
-                            'Statement Ending' => dateFormat($recon->end_date),
+                            'Statement Ending' => $recon->end_date,
                             'Ending Balance' => numberFormat($recon->end_balance),
                             'Reconciled On' => dateFormat($recon->created_at),
                             'Beginning Balance' => numberFormat($recon->begin_balance),   

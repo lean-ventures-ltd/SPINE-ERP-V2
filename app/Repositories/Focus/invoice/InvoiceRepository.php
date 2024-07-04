@@ -106,8 +106,9 @@ class InvoiceRepository extends BaseRepository
         $bill['invoiceduedate'] = date_for_database($duedate);
         foreach ($bill as $key => $val) {
             if ($key == 'invoicedate') $bill[$key] = date_for_database($val);
-            if (in_array($key, ['total', 'subtotal', 'tax'])) 
+            if (in_array($key, ['total', 'subtotal', 'tax', 'taxable', 'fx_curr_rate'])) {
                 $bill[$key] = numberClean($val);
+            }
         }
 
 
@@ -129,17 +130,41 @@ class InvoiceRepository extends BaseRepository
 
         $tid = Invoice::where('ins', auth()->user()->ins)->max('tid');
         if ($bill['tid'] <= $tid) $bill['tid'] = $tid+1;
+        //  forex values
+        $fx_rate = $bill['fx_curr_rate'];
+        if ($fx_rate > 1) {
+            $bill = array_replace($bill, [
+                'fx_taxable' => round($bill['taxable'] * $fx_rate, 4),
+                'fx_subtotal' => round($bill['subtotal'] * $fx_rate, 4),
+                'fx_tax' => round($bill['tax'] * $fx_rate, 4),
+                'fx_total' => round($bill['total'] * $fx_rate, 4),
+            ]);
+        }
+        
         $result = Invoice::create($bill);
         
         $bill_items = $input['bill_items'];
         foreach ($bill_items as $k => $item) {
-            $bill_items[$k] = array_replace($item, [
+            $item = array_replace($item, [
                 'invoice_id' => $result->id,
+                'tax_rate' => numberClean($item['tax_rate']),
+                'product_tax' => floatval(str_replace(',', '', $item['product_tax'])),
                 'product_price' => floatval(str_replace(',', '', $item['product_price'])),
-                'product_subtotal' => floatval(str_replace(',', '', @$item['product_subtotal'])),
+                'product_subtotal' => floatval(str_replace(',', '', $item['product_subtotal'])),
+                'product_amount' => floatval(str_replace(',', '', $item['product_amount'])),
             ]);
-            $item = $bill_items[$k];
-            $bill_items[$k]['product_tax'] = $item['product_price'] - @$item['product_subtotal'];
+            // forex values
+            $fx_rate = $result->fx_curr_rate;
+            if ($fx_rate > 1) {
+                $item = array_replace($item, [
+                    'fx_curr_rate' => $fx_rate,
+                    'fx_product_tax' => round($item['product_tax'] * $fx_rate, 4),
+                    'fx_product_price' => round($item['product_price'] * $fx_rate, 4),
+                    'fx_product_subtotal' => round($item['product_subtotal'] * $fx_rate, 4),
+                    'fx_product_amount' => round($item['product_amount'] * $fx_rate, 4),
+                ]);
+            }
+            $bill_items[$k] = $item;
         }
         InvoiceItem::insert($bill_items);
 
@@ -151,9 +176,6 @@ class InvoiceRepository extends BaseRepository
                 if ($key == 0) $result->update(['currency_id' => $quote->currency_id]);
             }
         }
-
-        // convert invoice totals to KES via verified quote items
-        $result = $this->convert_totals_to_kes($result);
         
         /** accounting */
         $this->post_invoice($result);
@@ -162,9 +184,7 @@ class InvoiceRepository extends BaseRepository
             DB::commit();
             return $result;
         }
-
         DB::rollBack();
-        throw new GeneralException('Error Creating Invoice');
     }
 
     /**
@@ -176,39 +196,60 @@ class InvoiceRepository extends BaseRepository
         DB::beginTransaction();
 
         $bill = $input['bill'];
-        foreach ($bill as $key => $val) {
-            if ($key == 'invoicedate') $bill[$key] = date_for_database($val);
-            if (in_array($key, ['total', 'subtotal', 'tax'])) 
-                $bill[$key] = numberClean($val);
-        }
         $duedate = $bill['invoicedate'] . ' + ' . $bill['validity'] . ' days';
         $bill['invoiceduedate'] = date_for_database($duedate);
+        foreach ($bill as $key => $val) {
+            if ($key == 'invoicedate') $bill[$key] = date_for_database($val);
+            if (in_array($key, ['total', 'subtotal', 'tax', 'taxable', 'fx_curr_rate'])) {
+                $bill[$key] = numberClean($val);
+            }
+        }
+
+        //  forex values
+        $fx_rate = $bill['fx_curr_rate'];
+        if ($fx_rate > 1) {
+            $bill = array_replace($bill, [
+                'fx_taxable' => round($bill['taxable'] * $fx_rate, 4),
+                'fx_subtotal' => round($bill['subtotal'] * $fx_rate, 4),
+                'fx_tax' => round($bill['tax'] * $fx_rate, 4),
+                'fx_total' => round($bill['total'] * $fx_rate, 4),
+            ]);
+        }
+
         $invoice->update($bill);
 
         // update invoice items
         $bill_items = $input['bill_items'];
-        $bill_items = array_map(function ($v) { 
-            foreach (['product_price', 'product_subtotal'] as $key) {
-                if (isset($v[$key])) $v[$key] = floatval(str_replace(',', '', $v[$key]));
+        foreach ($bill_items as $k => $item) {
+            $item = array_replace($item, [
+                'id' => $item['id'],
+                'reference' => @$item['reference'] ?: '', 
+                'description' => $item['description'],
+                'tax_rate' => numberClean($item['tax_rate']),
+                'product_tax' => floatval(str_replace(',', '', $item['product_tax'])),
+                'product_price' => floatval(str_replace(',', '', $item['product_price'])),
+                'product_subtotal' => floatval(str_replace(',', '', $item['product_subtotal'])),
+                'product_amount' => floatval(str_replace(',', '', $item['product_amount'])),
+            ]);
+            // forex values
+            $fx_rate = $invoice->fx_curr_rate;
+            if ($fx_rate > 1) {
+                $item = array_replace($item, [
+                    'fx_curr_rate' => $fx_rate,
+                    'fx_product_tax' => round($item['product_tax'] * $fx_rate, 4),
+                    'fx_product_price' => round($item['product_price'] * $fx_rate, 4),
+                    'fx_product_subtotal' => round($item['product_subtotal'] * $fx_rate, 4),
+                    'fx_product_amount' => round($item['product_amount'] * $fx_rate, 4),
+                ]);
             }
-            if (@$v['product_price'] && @$v['product_subtotal'])
-                $v['product_tax'] = $v['product_price'] - $v['product_subtotal'];
-
-            return [
-                'id' => $v['id'],
-                'reference' => @$v['reference'] ?: '', 
-                'description' => $v['description']
-            ];
-        }, $bill_items);
+            $bill_items[$k] = $item;
+        }
         Batch::update(new InvoiceItem, $bill_items, 'id');
 
         // update Quote or PI invoice status
         foreach ($invoice->products as $item) {
             if ($item->quote) $item->quote->update(['invoiced' => 'Yes']);
         }
-
-        // convert invoice totals to KES via verified quote items
-        $invoice = $this->convert_totals_to_kes($invoice);
 
         /**accounting */
         $invoice->transactions()->delete();
@@ -218,7 +259,6 @@ class InvoiceRepository extends BaseRepository
             DB::commit();
             return $invoice;        
         }
-
         DB::rollBack();
     }
 
@@ -258,7 +298,6 @@ class InvoiceRepository extends BaseRepository
         }
 
         $invoice->transactions()->delete();
-        aggregate_account_transactions();
         $invoice->products()->delete();
         if ($invoice->delete()) {
             DB::commit();
@@ -266,33 +305,5 @@ class InvoiceRepository extends BaseRepository
         }
 
         DB::rollBack();
-    }
-
-    // Convert Invoice totals to KES
-    public function convert_totals_to_kes($result)
-    {
-        $quote_ids = [];
-        $inv_has_tax = $result['tax_id'] > 0;
-        foreach ($result->products as $key => $inv_product) {
-            $quote = $inv_product->quote;
-            if ($quote) {
-                if (in_array($quote->id, $quote_ids)) continue;
-                $quote_ids[] = $quote->id;
-                $currency = $inv_product->quote->currency;
-                if ($currency && $currency->rate > 1) {
-                    $subtotal = $quote->verified_products()->sum(DB::raw('product_subtotal * product_qty')) * $currency->rate;
-                    $total = $quote->verified_products()->sum(DB::raw('product_price * product_qty')) * $currency->rate;
-                    if ($key == 0) {
-                        foreach (['total', 'tax', 'subtotal'] as $value) {
-                            $result[$value] = 0;
-                        }
-                    }
-                    $result['total'] += $total;
-                    $result['subtotal'] += $subtotal;
-                    if ($inv_has_tax) $result['tax'] += $total - $subtotal;
-                }
-            }
-        }
-        return $result;
     }
 }

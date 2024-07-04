@@ -499,6 +499,8 @@ class QuoteRepository extends BaseRepository
             $item = array_replace($item, [
                 'quote_id' => $data['id'],
                 'product_qty' => numberClean($item['product_qty']),
+                'product_tax' => numberClean($item['product_tax']),
+                'tax_rate' => numberClean($item['tax_rate']),
                 'product_price' => floatval(str_replace(',', '', $item['product_price'])),
                 'product_subtotal' => floatval(str_replace(',', '', $item['product_subtotal'])),
                 'ins' => auth()->user()->ins

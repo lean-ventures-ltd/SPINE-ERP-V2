@@ -159,6 +159,16 @@ class InvoicesController extends Controller
      */
     public function show(Invoice $invoice, ManageInvoiceRequest $request)
     {
+        if ($invoice->tax_id && $invoice->products->where('tax_rate', 0)->count() == $invoice->products->count()) {
+            $invoice['products'] = $invoice->products->map(function($item) use($invoice) {
+                $item['tax_rate'] = $invoice->tax_id;
+                $item['product_subtotal'] = $item['product_price'];
+                $item['product_tax'] = $item->product_price * $item->product_qty * $invoice->tax_id * 0.01;
+                $item['product_amount'] = $item->product_price * $item->product_qty * (1 + $invoice->tax_id * 0.01);
+                return $item;
+            });
+        }
+        
         $accounts = Account::all();
         $features = ConfigMeta::where('feature_id', 9)->first();
         $invoice['bill_type'] = 1;
@@ -250,14 +260,31 @@ class InvoicesController extends Controller
                 ->with(['verified_products' => fn($q) =>$q->orderBy('row_index', 'ASC')])
                 ->get();
         }
+        // update quote line items totals
+        $quotes->each(function($quote) {
+            if ($quote->tax_id && $quote->verified_products->where('tax_rate', 0)->count() == $quote->verified_products->count()) {
+                $quote['verified_products'] = $quote->verified_products->map(function($item) use($quote) {
+                    $item['tax_rate'] = $quote->tax_id;
+                    $item['product_subtotal'] = $item['product_price'];
+                    $item['product_tax'] = $item->product_price * $item->product_qty * $quote->tax_id * 0.01;
+                    $item['product_amount'] = $item->product_price * $item->product_qty * (1 + $quote->tax_id * 0.01);    
+                    return $item;
+                });
+            }
+        });
+
         
-        
+        // check if quotes are of same currency
+        $currency_ids = $quotes->pluck('currency_id')->toArray();
+        if (count(array_unique($currency_ids)) > 1) throw ValidationException::withMessages(['Selected items must be of same currency!']);
+        $currency = $quotes->first()? $quotes->first()->currency : new Currency;
+
         $customer = Customer::find($customer_id) ?: new Customer;
         $accounts = Account::whereHas('accountType', fn($q) => $q->whereIn('name', ['Income', 'Other Income']))->get();
         $terms = Term::where('type', 1)->get();  // invoice term type is 1
         $banks = Bank::all();
         $additionals = Additional::all();
-
+        
         $ins =  auth()->user()->ins;
         $last_tid = Invoice::where('ins', $ins)->max('tid');
         $prefixes = prefixesArray(['invoice', 'quote', 'proforma_invoice', 'purchase_order', 'delivery_note', 'jobcard'], $ins);
@@ -268,7 +295,7 @@ class InvoicesController extends Controller
         else $newCuInvoiceNo = '';
 
         return new ViewResponse('focus.invoices.create_project_invoice',
-            compact('quotes', 'customer', 'last_tid', 'banks', 'accounts', 'terms', 'quote_ids', 'additionals', 'prefixes', 'newCuInvoiceNo'),
+            compact('quotes', 'customer', 'last_tid', 'banks', 'accounts', 'terms', 'quote_ids', 'additionals', 'currency', 'prefixes', 'newCuInvoiceNo'),
         );
     }
 
@@ -280,11 +307,11 @@ class InvoicesController extends Controller
         // extract request input fields
         $bill = $request->only([
             'customer_id', 'bank_id', 'tax_id', 'tid', 'invoicedate', 'validity', 'notes', 'term_id', 'account_id',
-            'taxable', 'subtotal', 'tax', 'total', 'estimate_id', 'cu_invoice_no',
+            'taxable', 'subtotal', 'tax', 'total', 'estimate_id', 'fx_curr_rate', 'cu_invoice_no',
         ]);
         $bill_items = $request->only([
             'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 'product_subtotal', 'product_price', 
-            'tax_rate', 'quote_id', 'project_id', 'branch_id','verification_id'
+            'tax_rate', 'quote_id', 'project_id', 'branch_id', 'verification_id', 'product_tax', 'product_amount',
         ]);
 
         $bill['user_id'] = auth()->user()->id;
@@ -315,20 +342,27 @@ class InvoicesController extends Controller
      */
     public function edit_project_invoice(Invoice $invoice)
     {
+        if ($invoice->tax_id && $invoice->products->where('tax_rate', 0)->count() == $invoice->products->count()) {
+            $invoice['products'] = $invoice->products->map(function($item) use($invoice) {
+                $item['tax_rate'] = $invoice->tax_id;
+                $item['product_subtotal'] = $item['product_price'];
+                $item['product_tax'] = $item->product_price * $item->product_qty * $invoice->tax_id * 0.01;
+                $item['product_amount'] = $item->product_price * $item->product_qty * (1 + $invoice->tax_id * 0.01);
+                return $item;
+            });
+        }
+
         $banks = Bank::all();
-        $accounts = Account::whereHas('accountType', function ($query) {
-            $query->whereIn('name', ['Income', 'Other Income']);
-        })->with(['accountType' => function ($query) {
-            $query->select('id', 'name');
-        }])->get();
+        $accounts = Account::whereHas('accountType', fn($q) => $q->whereIn('name', ['Income', 'Other Income']))
+        ->with(['accountType' => fn($q) => $q->select('id', 'name')])
+        ->get();
 
         $terms = Term::where('type', 1)->get(); // invoice type 1
         $additionals = Additional::all();
         $prefixes = prefixesArray(['invoice'], $invoice->ins);
+        $currency = $invoice->currency ?: new Currency;
 
-        $params = compact('invoice', 'banks', 'accounts', 'terms', 'additionals', 'prefixes');
-
-        return new ViewResponse('focus.invoices.edit_project_invoice', $params);
+        return new ViewResponse('focus.invoices.edit_project_invoice', compact('invoice', 'banks', 'accounts', 'terms', 'additionals', 'prefixes', 'currency'));
     }
 
     /**
@@ -339,12 +373,11 @@ class InvoicesController extends Controller
         // extract request input fields
         $bill = $request->only([
             'customer_id', 'bank_id', 'tax_id', 'tid', 'invoicedate', 'validity', 'notes', 'term_id', 'account_id',
-            'taxable', 'subtotal', 'tax', 'total', 'cu_invoice_no',
+            'taxable', 'subtotal', 'tax', 'total', 'estimate_id', 'fx_curr_rate', 'cu_invoice_no',
         ]);
         $bill_items = $request->only([
-            'id', 'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 
-            'product_subtotal', 'product_price', 'tax_rate', 'quote_id', 'project_id', 'branch_id',
-            'verification_id'
+            'id', 'numbering', 'row_index', 'description', 'reference', 'unit', 'product_qty', 'product_subtotal', 'product_price', 
+            'tax_rate', 'quote_id', 'project_id', 'branch_id', 'verification_id', 'product_tax', 'product_amount',
         ]);
 
         $bill['user_id'] = auth()->user()->id;
@@ -461,6 +494,7 @@ class InvoicesController extends Controller
         try {
             $result = $this->inv_payment_repository->update($payment, compact('data', 'data_items'));
         } catch (\Throwable $th) {
+            dd($th);
             return errorHandler('Error Updating Payment', $th);
         }
 
@@ -487,13 +521,12 @@ class InvoicesController extends Controller
      */
     public function client_invoices(Request $request)
     {
-        $query = Invoice::query()->where('customer_id', $request->customer_id)->whereIn('status', ['due', 'partial']);
-        $w = $request->search;
-        if ($w) {
-            $invoices = $query->where('notes', 'LIKE', "%{$w}%")->orderBy('invoiceduedate', 'ASC')->limit(6)->get();
-        } else {
-            $invoices = $query->orderBy('invoiceduedate', 'ASC')->get();
-        }
+        $w = $request->search; 
+        $query = Invoice::query()->whereHas('currency', fn($q) => $q->where('rate', 1))
+        ->where('customer_id', $request->customer_id)->whereIn('status', ['due', 'partial']);
+
+        if ($w) $invoices = $query->where('notes', 'LIKE', "%{$w}%")->orderBy('invoiceduedate', 'ASC')->limit(6)->get();
+        else $invoices = $query->orderBy('invoiceduedate', 'ASC')->get();
             
         return response()->json($invoices);
     }
