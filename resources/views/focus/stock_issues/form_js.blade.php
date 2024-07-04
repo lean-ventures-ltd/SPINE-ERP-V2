@@ -106,7 +106,7 @@
 
         quoteChange() {
 
-            console.table({currQuote: $('#quote').val()})
+            // console.table({currQuote: $('#quote').val()})
 
             $('#productsTbl tbody tr:not(:first)').remove();
             $('#productsTbl .remove').click();
@@ -119,17 +119,17 @@
                         try {
 
                             console.log("INSIDE AJAX FOR QUOTE ITEMS")
-                            console.table(data);
+                            console.table(data.productvars);
 
                             data.productvars.forEach((v, i) => {
-                                console.table(v);
 
                                 if (i > 0) $('#add-item').click();
                                 let row = $('#productsTbl tbody tr:last');
                                 row.find('.prodvar-id').val(v.id);
                                 row.find('.name').val(v.name);
                                 row.find('.product-code').text(v.code);
-                                row.find('.budget').text(parseFloat(data.budgetDetails[i].new_qty).toFixed(2));
+                                if(data.budgetDetails.length > 0) row.find('.budget').text(parseFloat(data.budgetDetails[i].new_qty).toFixed(2));
+                                else row.find('.budget').text(parseFloat('0').toFixed(2));
                                 row.find('.qty-onhand').text(accounting.unformat(v.qty));
                                 row.find('.qty-onhand-inp').val(accounting.unformat(v.qty));
                                 row.find('.qty-rem').text(accounting.unformat(v.qty));
@@ -339,11 +339,11 @@
         // Get the value of the input field
         let selectedBudgetLine = budgetLineString;
 
-        console.log("SELECTED MILESTONE IS : " + budgetLineString);
+        // console.log("SELECTED MILESTONE IS : " + budgetLineString);
 
         if(budgetLineString === 'Select a Budget Line') {
 
-            console.log("NO MILESTONE SELECTED!!")
+            // console.log("NO MILESTONE SELECTED!!")
             return false;
         }
 
@@ -362,7 +362,7 @@
 
         const stockIssueTotal = parseFloat($("#total").val().replace(/,/g, ''));
 
-        console.table({budgetLineBudget, stockIssueTotal});
+        // console.table({budgetLineBudget, stockIssueTotal});
 
         if(stockIssueTotal > budgetLineBudget){
 

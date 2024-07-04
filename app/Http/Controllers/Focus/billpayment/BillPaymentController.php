@@ -155,7 +155,7 @@ class BillPaymentController extends Controller
                 END", ['Walk-In'])
             ->orderByRaw('LOWER(name) ASC')
             ->get(['id', 'name']);
-        
+
         $employees = User::get();
         $accounts = Account::whereNull('system')
             ->whereHas('accountType', fn($q) => $q->where('system', 'bank'))
