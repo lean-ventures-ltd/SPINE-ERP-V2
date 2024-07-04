@@ -210,9 +210,9 @@ class StockIssuesController extends Controller
     /**
      * Quote/PI Stock Items
      */
-    public function quote_pi_products(Request $request)
+    public function quote_pi_products(Request $request, $quoteId = 0)
     {
-        $quote = Quote::find($request->quote_id);
+        $quote = Quote::find($quoteId ?? $request->quote_id);
         $quote_product_ids = $quote->products()->pluck('product_id')->toArray();
         if ($quote->budget) {
             $quote_product_ids = $quote->budget->items()->pluck('product_id')->toArray();
