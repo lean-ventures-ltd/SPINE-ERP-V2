@@ -212,42 +212,58 @@ class StockIssuesController extends Controller
      */
     public function quote_pi_products(Request $request, $quoteId = 0)
     {
-        $quote = Quote::find($quoteId ?? $request->quote_id);
-        $quote_product_ids = $quote->products()->pluck('product_id')->toArray();
-        if ($quote->budget) {
-            $quote_product_ids = $quote->budget->items()->pluck('product_id')->toArray();
-        }
-        $productvars = ProductVariation::whereIn('id', array_filter($quote_product_ids))
-        ->whereHas('product', fn($q) => $q->where('stock_type', '!=', 'service'))
-        ->get()
-        ->map(function($v) {
-            $v->unit = @$v->product->unit;
-            unset($v->product);
-            return $v;
-        });
-        foreach ($productvars as $key => $item) {
-            $warehouses = Warehouse::whereHas('products', fn($q) => $q->where('name', 'LIKE', "%{$item->name}%"))
-            ->with(['products' => fn($q) => $q->where('name', 'LIKE', "%{$item->name}%")])
-            ->get();
-            foreach ($warehouses as $i => $wh) {
-                $warehouses[$i]['products_qty'] = $wh->products->sum('qty');
-                unset($warehouses[$i]['products']);
+        try {
+
+            $quoteId = empty($quoteId) ? $request->quote_id : $quoteId;
+
+            $quote = Quote::find($quoteId);
+
+            $quote_product_ids = $quote->products()->pluck('product_id')->toArray();
+            if ($quote->budget) {
+                $quote_product_ids = $quote->budget->items()->pluck('product_id')->toArray();
             }
-            $productvars[$key]['warehouses'] = $warehouses;
+
+            $productvars = ProductVariation::whereIn('id', array_filter($quote_product_ids))
+                ->whereHas('product', fn($q) => $q->where('stock_type', '!=', 'service'))
+                ->get()
+                ->map(function ($v) {
+                    $v->unit = @$v->product->unit;
+                    unset($v->product);
+                    return $v;
+                });
+            foreach ($productvars as $key => $item) {
+                $warehouses = Warehouse::whereHas('products', fn($q) => $q->where('name', 'LIKE', "%{$item->name}%"))
+                    ->with(['products' => fn($q) => $q->where('name', 'LIKE', "%{$item->name}%")])
+                    ->get();
+                foreach ($warehouses as $i => $wh) {
+                    $warehouses[$i]['products_qty'] = $wh->products->sum('qty');
+                    unset($warehouses[$i]['products']);
+                }
+                $productvars[$key]['warehouses'] = $warehouses;
+            }
+
+            $budgetDetails = [];
+            foreach ($productvars as $key => $item) {
+
+                $budgetItem = BudgetItem::where('budget_id', $quote->budget->id)
+                    ->where('product_id', $item['id'])
+                    ->first();
+
+                $bi = [$item['id'] => $budgetItem];
+
+                $budgetDetails = array_merge($budgetDetails, $bi);
+            }
+
+            return response()->json(compact('productvars', 'budgetDetails'));
         }
-
-        $budgetDetails = [];
-        foreach ($productvars as $key => $item) {
-
-            $budgetItem = BudgetItem::where('budget_id', $quote->budget->id)
-                ->where('product_id', $item['id'])
-                ->first();
-
-            $bi = [$item['id'] => $budgetItem];
-
-            $budgetDetails = array_merge($budgetDetails, $bi);
+        catch (\Exception $ex) {
+                return [
+                    'request' => $request->toArray(),
+                    'message' => $ex->getMessage(),
+                    'code' => $ex->getCode(),
+                    'file' => $ex->getFile(),
+                    'line' => $ex->getLine(),
+                ];
         }
-
-        return response()->json(compact('productvars', 'budgetDetails'));
     }
 }

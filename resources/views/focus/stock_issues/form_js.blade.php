@@ -105,43 +105,59 @@
         },
 
         quoteChange() {
+
+            console.table({currQuote: $('#quote').val()})
+
             $('#productsTbl tbody tr:not(:first)').remove();
             $('#productsTbl .remove').click();
             $('#total').val('');
             if (this.value) {
                 let quote_id = this.value;
-                $.post("{{ route('biller.stock_issues.quote_pi_products') }}", {quote_id}, data => {
 
-                    // console.log(data);
+                $.post("{{ route('biller.stock_issues.quote_pi_products') }}", { quote_id: quote_id })
+                    .done(data => {
+                        try {
 
-                    data.productvars.forEach((v,i) => {
+                            console.log("INSIDE AJAX FOR QUOTE ITEMS")
+                            console.table(data);
 
-                        console.table(v);
+                            data.productvars.forEach((v, i) => {
+                                console.table(v);
 
-                        if (i > 0) $('#add-item').click();
-                        let row = $('#productsTbl tbody tr:last');
-                        row.find('.prodvar-id').val(v.id);
-                        row.find('.name').val(v.name);
-                        row.find('.product-code').text(v.code);
-                        row.find('.budget').text(parseFloat(data.budgetDetails[i].new_qty).toFixed(2));
-                        // console.table({product_code: v.code});
-                        row.find('.qty-onhand').text(accounting.unformat(v.qty));
-                        row.find('.qty-onhand-inp').val(accounting.unformat(v.qty));
-                        row.find('.qty-rem').text(accounting.unformat(v.qty));
-                        row.find('.qty-rem-inp').val(accounting.unformat(v.qty));
-                        row.find('.cost').val(accounting.unformat(v.purchase_price));
-                        if (v.unit && v.unit.id) row.find('.unit').text(v.unit.code);
-                        if (v.warehouses && v.warehouses.length) {
-                            row.find('.source option:not(:first)').remove();
-                            v.warehouses.forEach(v => {
-                                const productsQty = accounting.unformat(v.products_qty);
-                                row.find('.source').append(`<option value="${v.id}" products_qty="${productsQty}">${v.title} (${productsQty})</option>`)
+                                if (i > 0) $('#add-item').click();
+                                let row = $('#productsTbl tbody tr:last');
+                                row.find('.prodvar-id').val(v.id);
+                                row.find('.name').val(v.name);
+                                row.find('.product-code').text(v.code);
+                                row.find('.budget').text(parseFloat(data.budgetDetails[i].new_qty).toFixed(2));
+                                row.find('.qty-onhand').text(accounting.unformat(v.qty));
+                                row.find('.qty-onhand-inp').val(accounting.unformat(v.qty));
+                                row.find('.qty-rem').text(accounting.unformat(v.qty));
+                                row.find('.qty-rem-inp').val(accounting.unformat(v.qty));
+                                row.find('.cost').val(accounting.unformat(v.purchase_price));
+                                if (v.unit && v.unit.id) row.find('.unit').text(v.unit.code);
+                                if (v.warehouses && v.warehouses.length) {
+                                    row.find('.source option:not(:first)').remove();
+                                    v.warehouses.forEach(warehouse => {
+                                        const productsQty = accounting.unformat(warehouse.products_qty);
+                                        row.find('.source').append(`<option value="${warehouse.id}" products_qty="${productsQty}">${warehouse.title} (${productsQty})</option>`);
+                                    });
+                                }
+                                if ($('#issue_to').val() == 'Employee') row.find('.assignee').attr('disabled', true);
+                                else row.find('.assignee').attr('disabled', false);
                             });
+
+
+                        } catch (error) {
+                            console.error("An error occurred while processing the data: ", error);
                         }
-                        if ($('#issue_to').val() == 'Employee') row.find('.assignee').attr('disabled', true);
-                        else row.find('.assignee').attr('disabled', false);
+                    })
+                    .fail(function(jqXHR, textStatus, errorThrown) {
+                        console.error("Request failed: ", textStatus, errorThrown);
+                        console.error("Response details: ", jqXHR.responseText);
+                        console.error("Request body: ", this.data);
                     });
-                });
+
             }
         },
 
