@@ -322,7 +322,7 @@ class PurchaseRepository extends BaseRepository
         $result = $purchase->update($data);
 
         $prod_variation_ids = [];
-        $data_items = $input['data_items'];
+        $data_items = $input['data_items']; 
         $purchase->items()->whereNotIn('id', array_map(fn($v) => $v['id'], $data_items))->delete();
         // create or update purchase item
         foreach ($data_items as $item) {  
@@ -333,7 +333,6 @@ class PurchaseRepository extends BaseRepository
             if ($item['type'] == 'Stock' && $item['warehouse_id']) {
                 $prod_variation = $purchase_item->product;
                 if (!$prod_variation) $prod_variation = ProductVariation::find($item['item_id']);
-            
                 if ($prod_variation->warehouse_id != $item['warehouse_id']) {   
                     $similar_product = ProductVariation::where(['parent_id' => $prod_variation->parent_id, 'warehouse_id' => $item['warehouse_id']])
                         ->where('name', 'LIKE', '%'. $prod_variation->name .'%')->first();
@@ -346,7 +345,6 @@ class PurchaseRepository extends BaseRepository
                         $prod_variation = $similar_product;
                     }
                 }
-
                 if ($prod_variation) $prod_variation_ids[] = $prod_variation->id;
             }    
 
