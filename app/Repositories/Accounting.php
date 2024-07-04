@@ -1007,14 +1007,33 @@ trait Accounting
         ];
         Transaction::create($cr_data);
 
+        $project_stock_amount = 0;
+        $inventory_stock_amount = 0;
+        foreach ($grn->items as $item) {
+            $amount = $item->qty * $item->rate;
+            if ($item->itemproject_id) $project_stock_amount += $amount;
+            else $inventory_stock_amount += $amount;
+        }
+        // debit WIP Account
+        if ($project_stock_amount > 0) {
+            unset($cr_data['credit'], $cr_data['is_primary']);
+            $account = Account::where('system', 'wip')->first(['id']);
+            $dr_data = array_replace($cr_data, [
+                'account_id' => $account->id,
+                'debit' => $project_stock_amount,
+            ]);    
+            Transaction::create($dr_data);
+        } 
         // debit Inventory (Stock) Account
-        unset($cr_data['credit'], $cr_data['is_primary']);
-        $account = Account::where('system', 'stock')->first(['id']);
-        $dr_data = array_replace($cr_data, [
-            'account_id' => $account->id,
-            'debit' => $grn->subtotal,
-        ]);    
-        Transaction::create($dr_data);
+        if ($inventory_stock_amount > 0) {
+            unset($cr_data['credit'], $cr_data['is_primary']);
+            $account = Account::where('system', 'stock')->first(['id']);
+            $dr_data = array_replace($cr_data, [
+                'account_id' => $account->id,
+                'debit' => $inventory_stock_amount
+            ]);    
+            Transaction::create($dr_data);
+        }
     }
 
     /**
@@ -1023,7 +1042,6 @@ trait Accounting
      */
     public function post_invoiced_grn_bill($utility_bill)
     {
-        // debit Inventory Account
         $account = Account::where('system', 'stock')->first(['id']);
         $tr_category = Transactioncategory::where('code', 'bill')->first(['id', 'code']);
         $dr_data = [
@@ -1043,8 +1061,34 @@ trait Accounting
             'supplier_id' => $utility_bill->supplier_id,
             'bill_id' => $utility_bill->id,
         ];
-        Transaction::create($dr_data);
-        unset($dr_data['debit'], $dr_data['is_primary']);
+
+        $project_stock_amount = 0;
+        $inventory_stock_amount = 0;
+        foreach ($utility_bill->grn_items as $item) {
+            $amount = $item->qty * $item->rate;
+            if ($item->itemproject_id) $project_stock_amount += $amount;
+            else $inventory_stock_amount += $amount;
+        }
+        // debit WIP Account
+        if ($project_stock_amount > 0) {
+            unset($dr_data['debit'], $dr_data['is_primary']);
+            $account = Account::where('system', 'wip')->first(['id']);
+            $dr_data = array_replace($dr_data, [
+                'account_id' => $account->id,
+                'debit' => $project_stock_amount,
+            ]);    
+            Transaction::create($dr_data);
+        } 
+        // debit Inventory (Stock) Account
+        if ($inventory_stock_amount > 0) {
+            unset($dr_data['debit'], $dr_data['is_primary']);
+            $account = Account::where('system', 'stock')->first(['id']);
+            $dr_data = array_replace($dr_data, [
+                'account_id' => $account->id,
+                'debit' => $inventory_stock_amount
+            ]);    
+            Transaction::create($dr_data);
+        }
 
         // debit TAX
         if ($utility_bill->tax > 0) {
