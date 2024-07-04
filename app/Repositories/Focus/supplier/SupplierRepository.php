@@ -53,7 +53,13 @@ class SupplierRepository extends BaseRepository
      */
     public function getForDataTable()
     {
-        $q = $this->query();
+        $q = $this->query()
+            ->orderByRaw("
+                CASE 
+                    WHEN LOWER(name) = LOWER(?) THEN 1 
+                    ELSE 2 
+                END", ['Walk-In'])
+            ->orderByRaw('LOWER(name) ASC');
 
         // supplier user filter
         $supplier_id = auth()->user()->supplier_id;
