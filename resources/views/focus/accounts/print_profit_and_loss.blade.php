@@ -106,7 +106,7 @@
                         @if ($is_revenue || $is_cog || $is_dir_expense)                                          
                             @php
                                 $balance = 0;
-                                $dates = [$dates['start_date'],$dates['end_date']];
+                                $dates = $dates? [$dates['start_date'],$dates['end_date']] : [];
 
                                 $debit = $account
                                 ->transactions()
@@ -130,12 +130,35 @@
                                 $j++;
                             @endphp
                             @if ($balance)
-                                <tr class="dotted">
-                                    <td>{{ $j }}</td>
-                                    <td>{{ $account->number }}</td>
-                                    <td>{{ $account->holder }}</td>
-                                    <td style="text-align: center;">{{ numberFormat($balance) }}</td>
-                                </tr>
+                                @if ($is_cog)
+                                    <tr class="dotted">
+                                        <td>{{ $j }}</td>
+                                        <td>{{ $account->number }}</td>
+                                        <td>{{ $account->holder }} (Materials)</td>
+                                        <td style="text-align: center;">{{ numberFormat($cog_material) }}</td>
+                                    </tr>
+                                    <tr class="dotted">
+                                        <td>{{ $j }}</td>
+                                        <td>{{ $account->number }}</td>
+                                        <td>{{ $account->holder }} (Transport)</td>
+                                        <td style="text-align: center;">{{ numberFormat($cog_transport) }}</td>
+                                    </tr>
+                                    <tr class="dotted">
+                                        <td>{{ $j }}</td>
+                                        <td>{{ $account->number }}</td>
+                                        <td>{{ $account->holder }} (Labour)</td>
+                                        <td style="text-align: center;">{{ numberFormat($cog_labour) }}</td>
+                                    </tr>
+                                    <tr class="dotted">
+                                    </tr>
+                                @else    
+                                    <tr class="dotted">
+                                        <td>{{ $j }}</td>
+                                        <td>{{ $account->number }}</td>
+                                        <td>{{ $account->holder }}</td>
+                                        <td style="text-align: center;">{{ numberFormat($balance) }}</td>
+                                    </tr>
+                                @endif
                             @endif
                         @endif
                     @endforeach
@@ -177,7 +200,7 @@
                     </tr>
                     <tr class="dotted">
                         <td></td>
-                        <td><i>Gross Profit</i></td>
+                        <td><b>Gross Profit</b></td>
                         <td style="text-align: center;"><h5><b>{{ amountFormat($gross_profit) }}</b></h5></td>
                     </tr>
                     <tr class="dotted">
@@ -187,7 +210,7 @@
                     </tr>
                     <tr class="dotted">
                         <td></td>
-                        <td><i>Net Profit</i></td>
+                        <td><b>Net Profit</b></td>
                         <td style="text-align: center;"><h5><b>{{ amountFormat($net_profit) }}</b></h5></td>
                     </tr>
                 </tbody>

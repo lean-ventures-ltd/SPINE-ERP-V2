@@ -192,9 +192,8 @@
 @section('after-scripts')
 <script>
     // datepicker
-    $('.datepicker')
-    .datepicker({format: "{{ config('core.user_date_format') }}", autoHide: true})
-    .datepicker('setDate', new Date());
+    $('.datepicker').datepicker({format: "{{ config('core.user_date_format') }}", autoHide: true}).datepicker('setDate', new Date());
+    
     const dates = @json(($dates));
     if (!Array.isArray(dates)) {
         $('#start_date').datepicker('setDate', new Date(dates.start_date));

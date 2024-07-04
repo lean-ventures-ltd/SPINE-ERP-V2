@@ -283,7 +283,7 @@ class AccountsController extends Controller
         }
                    
         if ($request->type == 'p') 
-            return $this->print_document('profit_and_loss', $accounts, $dates, 0);        
+            return $this->print_document('profit_and_loss', $accounts, $dates, 0, $cog_material, $cog_labour, $cog_transport);        
 
         $bg_styles = ['bg-gradient-x-info', 'bg-gradient-x-purple', 'bg-gradient-x-grey-blue', 'bg-gradient-x-danger',];
         return new ViewResponse('focus.accounts.profit_&_loss', compact('accounts', 'bg_styles', 'dates', 'cog_material', 'cog_labour', 'cog_transport'));
@@ -337,7 +337,7 @@ class AccountsController extends Controller
         $bg_styles = ['bg-gradient-x-info', 'bg-gradient-x-purple', 'bg-gradient-x-grey-blue', 'bg-gradient-x-danger'];
 
         // print balance_sheet
-        if ($request->type == 'p') return $this->print_document('balance_sheet', $accounts, array(0, $date), $net_profit);       
+        if ($request->type == 'p') return $this->print_document('balance_sheet', $accounts, array(0, $date), $net_profit, 0, 0, 0);       
             
         return new ViewResponse('focus.accounts.balance_sheet', compact('accounts', 'bg_styles', 'net_profit', 'date'));
     }
@@ -357,7 +357,7 @@ class AccountsController extends Controller
         $accounts = $q->orderBy('number', 'asc')->get();
         $date = date_for_database($end_date);
         if ($request->type == 'p') 
-            return $this->print_document('trial_balance', $accounts, [0, $date], 0);
+            return $this->print_document('trial_balance', $accounts, [0, $date], 0, 0, 0, 0);
         
         return new ViewResponse('focus.accounts.trial_balance', compact('accounts', 'date'));
     }
@@ -365,10 +365,10 @@ class AccountsController extends Controller
     /**
      * Print document
      */
-    public function print_document(string $name, $accounts, array $dates, float $net_profit)
+    public function print_document(string $name, $accounts, array $dates, float $net_profit, $cog_material, $cog_labour, $cog_transport)
     {
         $account_types = ['Assets', 'Equity', 'Expenses', 'Liabilities', 'Income'];
-        $params = compact('accounts', 'account_types', 'dates', 'net_profit');
+        $params = compact('accounts', 'account_types', 'dates', 'net_profit', 'cog_material', 'cog_labour', 'cog_transport');
         $html = view('focus.accounts.print_' . $name, $params)->render();
         $pdf = new \Mpdf\Mpdf(config('pdf'));
         $pdf->WriteHTML($html);
