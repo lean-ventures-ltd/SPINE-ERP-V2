@@ -247,12 +247,12 @@ class PurchaseRepository extends BaseRepository
         /** If the milestone HAS CHANGED and grand total HAS CHANGED  */
         if($milestoneChanged && $grandTotalChanged){
 
-            if (!$oldMilestoneZero) {
+            if (!$oldMilestoneZero && $budgetLine) {
                 $budgetLine->balance = $budgetLine->balance + $purchase->grandttl;
                 $budgetLine->save();
             }
 
-            if (!$newMilestoneZero) {
+            if (!$newMilestoneZero && $newBudgetLine) {
 
                 $newBudgetLine->balance -= floatval(str_replace(',', '', $input['data']['grandttl']));
                 $newBudgetLine->save();
@@ -261,7 +261,7 @@ class PurchaseRepository extends BaseRepository
         /** If the milestone has NOT changed but grand total HAS CHANGED */
         else if (!$milestoneChanged && $grandTotalChanged){
 
-            if (!$oldMilestoneZero) {
+            if (!$oldMilestoneZero && $budgetLine) {
                 $budgetLine->balance = ($budgetLine->balance + $purchase->grandttl) - floatval(str_replace(',', '', $input['data']['grandttl']));
                 $budgetLine->save();
             }
@@ -269,13 +269,12 @@ class PurchaseRepository extends BaseRepository
         /** If the milestone HAS CHANGED but grand total HAS NOT CHANGED */
         else if($milestoneChanged && !$grandTotalChanged){
 
-            if (!$oldMilestoneZero) {
+            if (!$oldMilestoneZero && $budgetLine) {
                 $budgetLine->balance = $budgetLine->balance + $purchase->grandttl;
                 $budgetLine->save();
             }
 
-            if (!$newMilestoneZero) {
-
+            if (!$newMilestoneZero && $newBudgetLine) {
                 $newBudgetLine->balance -= $purchase->grandttl;
                 $newBudgetLine->save();
             }
