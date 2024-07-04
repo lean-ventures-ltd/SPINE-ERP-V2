@@ -167,7 +167,7 @@ class StatementController extends Controller
                 $lang['title2'] = trans('meta.income_statement');
                 $lang['module'] = 'income_statement';
                 $default_category = ConfigMeta::withoutGlobalScopes()->where('feature_id', '=', 8)->first('feature_value');
-                $category = Transactioncategory::find($default_category['feature_value']);
+                $category = Transactioncategory::withoutGlobalScopes()->find($default_category['feature_value']);
                 $lang['party'] = $category->name;
                 $file_name = preg_replace('/[^A-Za-z0-9]+/', '-', $lang['title'] . '_' . $category->name);
                 $transactions = Transaction::whereBetween('tr_date', [date_for_database($reports->from_date), date_for_database($reports->to_date)])->where('trans_category_id', '=', $category->id)->get();

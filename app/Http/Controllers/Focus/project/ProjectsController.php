@@ -55,6 +55,7 @@ use Illuminate\Validation\ValidationException;
 use Log;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\project\ProjectInvoice;
+use App\Models\project\Task;
 use App\Models\quote\QuoteInvoice;
 
 /**
@@ -944,15 +945,34 @@ class ProjectsController extends Controller
     }
     public function get_all_report(Request $request)
     {
-
+        $accounts = Account::where('account_type', 'Income')->get(['id', 'holder', 'number']);
+        $exp_accounts = Account::where('account_type', 'Expense')->get(['id', 'holder', 'number']);
+        $suppliers = Supplier::get(['id', 'name']);
         $data = $request->only(['project_id','customer_id']);
         $project = Project::find($data['project_id']);
-        //Get quotes
-        //Get tickets
-        //Get budgets via quotes
-        // 
-        dd($project);
-        return view('focus.projects.all_round_report');
+        $leads = [];
+        $djcs = [];
+        $budgets = [];
+        foreach ($project->quotes as $quote){
+            $leads[] = $quote->lead;
+            $djcs[] = $quote->lead ? $quote->lead->djcs : '';
+            $budgets[] = $quote->budget;
+            
+        }
+        // $tasks = [];
+        // foreach ($project->milestones as $milestone){
+        //     $tasks[] = $milestone->tasks;
+        // }
+        $tasks = Task::whereHas('milestone', fn($q) => $q->where('project_milestones.project_id', $project->id))->get();
+        $expensesByMilestone = $this->getExpensesByMilestone($project->id);
+        $invoices = Invoice::whereHas('quotes', function($q)  use ($project) {
+            $q->whereHas('project', function($q) use ($project){
+                $q->where('projects.id',$project->id);
+            });
+        })->orWhereHas('project', fn($q) => $q->where('projects.id',$project->id))
+        ->get();
+        $rjc = $project->rjc;
+        return view('focus.projects.view_all', compact('project', 'leads', 'djcs', 'budgets','accounts','exp_accounts', 'suppliers', 'tasks','expensesByMilestone','invoices', 'rjc'));
     }
 
 }

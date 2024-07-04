@@ -2152,10 +2152,10 @@
                                                    href="{{ route('biller.purchase_classes.get-reports', ['purchase']) }}"><i
                                                class="ft-layers"></i> Purchase Class Reports </a>
                                </li>
-                               {{-- <li data-menu=""><a class="dropdown-item"
+                               <li data-menu=""><a class="dropdown-item"
                                                    href="{{ route('biller.projects.get-project-report') }}"><i
-                                               class="ft-layers"></i> Purchase Class Reports </a>
-                               </li> --}}
+                                               class="ft-layers"></i> Project Report </a>
+                               </li>
                            </ul>
                        </li>
                    </ul>
