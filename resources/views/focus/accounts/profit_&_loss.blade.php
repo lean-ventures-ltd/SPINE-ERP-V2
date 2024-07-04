@@ -114,6 +114,8 @@
                                                             <td>{{ numberFormat($cog_labour) }}</td>
                                                         </tr>
                                                         <tr style="border-top: 2px solid grey;">
+                                                            {{ browserLog('computed-cog: ' . numberFormat($cog_material+$cog_transport+$cog_labour,2), 'trans-cog: ' . numberFormat($balance), 'comput-diff: ' . (round($cog_material+$cog_transport+$cog_labour,2) - $balance)) }}
+                                                            {{ browserLog(+$cog_material, +$cog_transport, +$cog_labour) }}
                                                             {{-- <td>{{ $j }}</td>
                                                             <td>{{ $account->number }}</td>
                                                             <td>{{ $account->holder }}</td>

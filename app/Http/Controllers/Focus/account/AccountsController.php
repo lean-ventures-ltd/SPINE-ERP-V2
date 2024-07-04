@@ -234,24 +234,23 @@ class AccountsController extends Controller
         $cog_material = 0;
         $cog_labour = 0;
         $cog_transport = 0;
-        $project_ids = []; 
         foreach ($accounts->where('system', 'cog') as $account) {
             // project invoice COGs (material, labour, transport)
             $invoice_trs = $account->transactions()
             ->when(@$dates, fn($q) => $q->whereBetween('tr_date', $dates))
             ->where('tr_type', 'inv')
             ->get();
+            $purchase_item_ids = [];
             foreach ($invoice_trs as $invoice_tr) {
                 if ($invoice_tr->invoice) {
                     foreach ($invoice_tr->invoice->quotes as $quote) {
                         $project = @$quote->project_quote->project;
                         if (!$project) continue;
-                        if (in_array($project->id, $project_ids)) continue;
-                        $project_ids[] = $project->id;
                         foreach ($project->purchase_items as $i => $item) {
+                            if (in_array($item->id, $purchase_item_ids)) continue;
+                            $purchase_item_ids[] = $item->id;
                             if ($item->itemproject_id) {
                                 $subtotal = $item->amount - $item->taxrate;
-                                // labour and transport
                                 if ($item->type == 'Expense') {
                                     if(preg_match("/transport/i", @$item->account->holder)) {
                                         $cog_transport += $subtotal;
@@ -260,7 +259,6 @@ class AccountsController extends Controller
                                         $cog_labour += $subtotal;
                                     }
                                 }
-                                // material
                                 if ($item->type == 'Stock') {
                                     $cog_material += $subtotal;
                                 }
@@ -269,14 +267,19 @@ class AccountsController extends Controller
                     }
                 }
             }
-
             // stock-issue, sale-return, stock-adj COGs (material)
             $stock_trs = $account->transactions()
             ->when(@$dates, fn($q) => $q->whereBetween('tr_date', $dates))
             ->where('tr_type', 'stock')
             ->get();
-            $cog_material += $stock_trs->sum('debit');
-            $cog_material -= $stock_trs->sum('credit');
+            $stock_bal = $stock_trs->sum('debit') - $stock_trs->sum('credit');
+            // direct expense on COG
+            $bill_trs = $account->transactions()
+            ->when(@$dates, fn($q) => $q->whereBetween('tr_date', $dates))
+            ->where('tr_type', 'bill')
+            ->get();
+            $expense_bal = $bill_trs->sum('debit') - $bill_trs->sum('credit');
+            $cog_material += $stock_bal + $expense_bal;
         }
                    
         if ($request->type == 'p') 
