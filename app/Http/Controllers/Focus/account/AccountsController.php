@@ -179,7 +179,8 @@ class AccountsController extends Controller
     public function show(Account $account)
     {
         $params =  ['rel_type' => 9, 'rel_id' => $account->id, 'system' => $account->system];
-
+        if (@$account->accountType->system == 'bank') $params['system'] = 'bank';
+        
         return new RedirectResponse(route('biller.transactions.index', $params), []);
     }
 

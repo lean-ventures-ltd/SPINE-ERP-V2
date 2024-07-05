@@ -91,21 +91,21 @@ class TransactionsTableController extends Controller
                 return 'Tr-' . $tr->tid;                
             })
             ->addColumn('tr_type', function ($tr) {
-                $tax_tr_type = $this->tax_transaction('tr_type', $tr);
+                $tax_tr_type = $this->vat_transaction('tr_type', $tr);
                 if ($tax_tr_type) return $tax_tr_type;
                 
                 return $tr->category->name;
             })
             ->addColumn('reference', function ($tr) {
-                $tax_tr = $this->tax_transaction('reference', $tr);
+                $tax_tr = $this->vat_transaction('reference', $tr);
                 if ($tax_tr) return $tax_tr;
                 if ($tr->account) return $tr->account->holder;
             })
             ->addColumn('vat_rate', function ($tr) {
-                return $this->tax_transaction('vat_rate', $tr);                
+                return $this->vat_transaction('vat_rate', $tr);                
             })
             ->addColumn('vat_amount', function ($tr) {
-                return $this->tax_transaction('vat_amount', $tr);
+                return $this->vat_transaction('vat_amount', $tr);
             })
             ->addColumn('payer', function ($tr) {
                 $customer = @$tr->deposit->customer;
@@ -125,7 +125,6 @@ class TransactionsTableController extends Controller
             })
             ->addColumn('balance', function ($tr) use($aggregate, $diff) {
                 if (@$aggregate) return numberFormat(0);
-                    
                 $balance = 0;
                 foreach($this->balance_groups as $group) {
                     if ($group->tid == $tr->tid) {
@@ -158,8 +157,8 @@ class TransactionsTableController extends Controller
             ->make(true);
     }
 
-    // tax transaction
-    public function tax_transaction($col='', $tr)
+    // val transaction
+    public function vat_transaction($col='', $tr)
     {
         if (request('system') == 'tax') {
             switch ($col) {

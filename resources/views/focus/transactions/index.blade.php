@@ -117,6 +117,9 @@
                                             <th>Payer</th>
                                         @elseif (request('system') == 'payable')
                                             <th>Payee</th>
+                                        @elseif (request('system') == 'bank')
+                                            <th>Payer</th>
+                                            <th>Payee</th>
                                         @endif   
                                         <th>Note</th>
                                         @if ($is_tax)
@@ -208,6 +211,9 @@
                             'payer',
                         @elseif (request('system') == 'payable')
                             'payee',
+                        @elseif (request('system') == 'bank')
+                            'payer', 
+                            'payee',
                         @endif
                         'note', 
                         @if (request('system') == 'tax')
@@ -225,6 +231,9 @@
                     @if (in_array(request('system'), ['receivable', 'payable']))
                         { type: "custom-number-sort", targets: [6,7,8] },
                         { type: "custom-date-sort", targets: 9 }
+                    @elseif (request('system') == 'bank')
+                        { type: "custom-number-sort", targets: [7,8,9] },
+                        { type: "custom-date-sort", targets: 10 }
                     @else
                         { type: "custom-number-sort", targets: [5,6,7] },
                         { type: "custom-date-sort", targets: 8 }
@@ -235,7 +244,6 @@
                 dom: 'Blfrtip',
                 buttons: ['csv', 'excel', 'print']
             });
-
         },
     };
 
