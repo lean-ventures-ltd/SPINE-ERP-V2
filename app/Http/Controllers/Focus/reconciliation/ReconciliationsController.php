@@ -94,7 +94,6 @@ class ReconciliationsController extends Controller
      */
     public function update(Request $request, Reconciliation $reconciliation)
     {
-        $request->validate(['end_date' => 'required']);
         try {
             $this->repository->update($reconciliation, $request->except('_token', '_method'));
         } catch (\Throwable $th) {

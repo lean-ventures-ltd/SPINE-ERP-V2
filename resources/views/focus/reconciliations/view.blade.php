@@ -43,8 +43,8 @@
                 </tbody>
             </table>
 
-            <div class="table-responsive">        
-                <table id="ledgerTbl" class="table">
+            <div class="table-responsive" style="max-height: 80vh">        
+                <table id="ledgerTbl text-center" class="table">
                     <thead>
                         <tr class="bg-gradient-directional-blue white">
                             <th>Date</th>
@@ -52,11 +52,12 @@
                             <th>Trans. Ref</th>
                             <th>Payer / Payee</th>
                             <th>Note</th>
-                            <th class="mr-0 pr-0" width="15%">Amount</th>
+                            <th width="15%">Debit</th>
+                            <th width="15%">Credit</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($reconciliation->items()->whereNotNull('checked')->get() as $item)
+                        @foreach ($reconciliation->items->whereNotNull('checked') as $item)
                             @if ($item->journal && $item->journal_item)
                                 @php
                                     $journal = $item->journal;
@@ -68,7 +69,13 @@
                                     <td>{{ gen4tid('JNL-', $journal->tid) }}</td>
                                     <td></td>
                                     <td>{{ $journal->note }}</td>
-                                    <td>{{ $journal_item->debit == 0? numberFormat($journal_item->credit) : numberFormat($journal_item->debit) }}</td>
+                                    @if ($journal_item->debit > 0)
+                                        <td>{{ numberFormat($journal_item->debit) }}</td>
+                                        <td></td>
+                                    @else
+                                        <td></td>
+                                        <td>{{ numberFormat($journal_item->credit) }}</td>
+                                    @endif
                                 </tr>
                             @elseif ($item->payment)
                                 @php
@@ -80,6 +87,7 @@
                                     <td>{{ gen4tid('RMT-', $payment->tid) }}</td>
                                     <td>{{ @$payment->supplier->name }}</td>
                                     <td>{{ $payment->note }}</td>
+                                    <td></td>
                                     <td>{{ numberFormat($payment->amount) }}</td>
                                 </tr>
                             @elseif ($item->deposit)
@@ -93,6 +101,7 @@
                                     <td>{{ @$deposit->customer->company }}</td>
                                     <td>{{ $deposit->note }}</td>
                                     <td>{{ numberFormat($deposit->amount) }}</td>
+                                    <td></td>
                                 </tr>
                             @endif
                         @endforeach
@@ -102,4 +111,12 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('after-scripts')
+<script>
+    $('table thead th').css({'paddingBottom': '3px', 'paddingTop': '3px'});
+    $('table tbody td').css({paddingLeft: '2px', paddingRight: '2px'});
+    $('table thead').css({'position': 'sticky', 'top': 0, 'zIndex': 100});
+</script>
 @endsection
