@@ -46,10 +46,12 @@ class QuoteRepository extends BaseRepository
         });
 
         $q->when(request('source_filter'), function ($q) {
-            $q->with(['lead' => function ($query) {
-                $query->with(['LeadSource' => function ($query) {
+            $q->whereHas('lead', function ($query) {
+                $query->whereHas('LeadSource', function ($query) {
                     $query->where('id', request('source_filter'));
-                }]);
+                });
+            })->with(['lead' => function ($query) {
+                $query->with('LeadSource');
             }]);
         });
         // client filter
