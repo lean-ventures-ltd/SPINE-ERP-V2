@@ -28,6 +28,7 @@ use App\Http\Responses\Focus\account\EditResponse;
 use App\Repositories\Focus\account\AccountRepository;
 use App\Http\Requests\Focus\account\ManageAccountRequest;
 use App\Http\Requests\Focus\account\StoreAccountRequest;
+use App\Models\account\AccountType;
 use App\Models\customer\Customer;
 use App\Models\transaction\Transaction;
 use Illuminate\Support\Facades\Response;
@@ -61,7 +62,9 @@ class AccountsController extends Controller
      */
     public function index(ManageAccountRequest $request)
     {
-        return new ViewResponse('focus.accounts.index');
+        $categories = AccountType::select('category')->distinct()->pluck('category');
+    
+        return new ViewResponse('focus.accounts.index', compact('categories'));
     }
 
     /**
