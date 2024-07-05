@@ -313,7 +313,6 @@
                             text: data[i].name + ' | Balance: ' +  parseFloat(data[i].balance).toFixed(2) + ' | Due on ' + date.toLocaleDateString('en-US', options)
                         }));
 
-                        select
                     }
 
                     let selectedOptionValue = "{{ @$stock_issue->budget_line }}";

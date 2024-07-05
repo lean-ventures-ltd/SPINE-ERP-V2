@@ -144,16 +144,23 @@ class StockIssuesController extends Controller
             ->get(['id', 'notes', 'tid', 'bank_id', 'customer_id']);
 
         $qt = Quote::find($stock_issue->quote_id);
+
         $budgetDetails = [];
-        foreach ($stock_issue->items as $item) {
 
-            $budgetItem = BudgetItem::where('budget_id', $qt->budget->id)
-                ->where('product_id', $item['productvar_id'])
-                ->first();
+        $budget = $qt->budget;
 
-            $bi = [$item['id'] => $budgetItem];
+        if ($budget) {
 
-            $budgetDetails = array_merge($budgetDetails, $bi);
+            foreach ($stock_issue->items as $item) {
+
+                $budgetItem = BudgetItem::where('budget_id', $qt->budget->id)
+                    ->where('product_id', $item['productvar_id'])
+                    ->first();
+
+                $bi = [$item['id'] => $budgetItem];
+
+                $budgetDetails = array_merge($budgetDetails, $bi);
+            }
         }
 
         return view('focus.stock_issues.edit', compact('stock_issue', 'customers', 'employees', 'projects', 'quotes', 'budgetDetails'));
