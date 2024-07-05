@@ -92,16 +92,36 @@ class CustomerRepository extends BaseRepository
             if ($taxid_exists) throw ValidationException::withMessages(['Duplicate Tax Pin']);
             $is_company = Company::where(['id' => auth()->user()->ins, 'taxid' => $input['taxid']])->whereNotNull('taxid')->exists();
             if ($is_company) throw ValidationException::withMessages(['Company Tax Pin not allowed']);
-            if (strlen($input['taxid']) != 11) 
-                throw ValidationException::withMessages(['Customer Tax Pin should contain 11 characters!']);
-            if (!in_array($input['taxid'][0], ['P','A'])) 
-                throw ValidationException::withMessages(['First character of Tax Pin must be letter "P" or "A"']);
-            $pattern = "/^[0-9]+$/i";
-            if (!preg_match($pattern, substr($input['taxid'],1,9))) 
-                throw ValidationException::withMessages(['Character between first and last letters must be numbers']);
-            $letter_pattern = "/^[a-zA-Z]+$/i";
-            if (!preg_match($letter_pattern, $input['taxid'][-1])) 
-                throw ValidationException::withMessages(['Last character of Tax Pin must be a letter!']);
+            // if (strlen($input['taxid']) != 11) 
+            //     throw ValidationException::withMessages(['Customer Tax Pin should contain 11 characters!']);
+            // if (!in_array($input['taxid'][0], ['P','A'])) 
+            //     throw ValidationException::withMessages(['First character of Tax Pin must be letter "P" or "A"']);
+            // $pattern = "/^[0-9]+$/i";
+            // if (!preg_match($pattern, substr($input['taxid'],1,9))) 
+            //     throw ValidationException::withMessages(['Character between first and last letters must be numbers']);
+            // $letter_pattern = "/^[a-zA-Z]+$/i";
+            // if (!preg_match($letter_pattern, $input['taxid'][-1])) 
+            //     throw ValidationException::withMessages(['Last character of Tax Pin must be a letter!']);
+            $taxid = $input['taxid'];
+            $taxid_length = strlen($taxid);
+
+            if ($taxid_length == 10) {
+                // Check if tax ID contains exactly 10 digits
+                if (!preg_match("/^[0-9]{10}$/", $taxid)) {
+                    throw ValidationException::withMessages(['Tax Pin must be a 10-digit number']);
+                }
+            } elseif ($taxid_length == 11) {
+                // Check if tax ID follows the "P123456789A" or "A123456789P" format
+                if (!preg_match("/^[PA][0-9]{9}[A-Z]$/i", $taxid)) {
+                    throw ValidationException::withMessages([
+                        'Tax Pin should be 10 digits or follow the format: "P123456789A" or "A123456789P"'
+                    ]);
+                }
+            } else {
+                // Invalid length
+                throw ValidationException::withMessages(['Customer Tax Pin should contain either 10 digits or follow the format: "P123456789A" or "A123456789P"']);
+            }
+        
         }
         
         // create customer
@@ -163,16 +183,36 @@ class CustomerRepository extends BaseRepository
             if ($taxid_exists) throw ValidationException::withMessages(['Duplicate Tax Pin']);
             $is_company = Company::where(['id' => auth()->user()->ins, 'taxid' => $input['taxid']])->whereNotNull('taxid')->exists();
             if ($is_company) throw ValidationException::withMessages(['Company Tax Pin not allowed']);
-            if (strlen($input['taxid']) != 11) 
-                throw ValidationException::withMessages(['Customer Tax Pin should contain 11 characters']);
-            if (!in_array($input['taxid'][0], ['P','A'])) 
-                throw ValidationException::withMessages(['First character of Tax Pin must be letter "P" or "A"']);
-            $pattern = "/^[0-9]+$/i";
-            if (!preg_match($pattern, substr($input['taxid'],1,9))) 
-                throw ValidationException::withMessages(['Character between first and last letters must be numbers']);
-            $letter_pattern = "/^[a-zA-Z]+$/i";
-            if (!preg_match($letter_pattern, $input['taxid'][-1])) 
-                throw ValidationException::withMessages(['Last character of Tax Pin must be a letter!']);
+            // if (strlen($input['taxid']) != 11) 
+            //     throw ValidationException::withMessages(['Customer Tax Pin should contain 11 characters']);
+            // if (!in_array($input['taxid'][0], ['P','A'])) 
+            //     throw ValidationException::withMessages(['First character of Tax Pin must be letter "P" or "A"']);
+            // $pattern = "/^[0-9]+$/i";
+            // if (!preg_match($pattern, substr($input['taxid'],1,9))) 
+            //     throw ValidationException::withMessages(['Character between first and last letters must be numbers']);
+            // $letter_pattern = "/^[a-zA-Z]+$/i";
+            // if (!preg_match($letter_pattern, $input['taxid'][-1])) 
+            //     throw ValidationException::withMessages(['Last character of Tax Pin must be a letter!']);
+            // Validate tax ID format
+            $taxid = $input['taxid'];
+            $taxid_length = strlen($taxid);
+
+            if ($taxid_length == 10) {
+                // Check if tax ID contains exactly 10 digits
+                if (!preg_match("/^[0-9]{10}$/", $taxid)) {
+                    throw ValidationException::withMessages(['Tax Pin must be a 10-digit number']);
+                }
+            } elseif ($taxid_length == 11) {
+                // Check if tax ID follows the "P123456789A" or "A123456789P" format
+                if (!preg_match("/^[PA][0-9]{9}[A-Z]$/i", $taxid)) {
+                    throw ValidationException::withMessages([
+                        'Tax Pin should be 10 digits or follow the format: "P123456789A" or "A123456789P"'
+                    ]);
+                }
+            } else {
+                // Invalid length
+                throw ValidationException::withMessages(['Customer Tax Pin should contain either 10 digits or follow the format: "P123456789A" or "A123456789P"']);
+            }
         }
         $input = array_replace($input, [
             'open_balance' => numberClean($input['open_balance']),
