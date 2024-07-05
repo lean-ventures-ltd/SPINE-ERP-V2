@@ -219,6 +219,7 @@ class StockIssuesController extends Controller
             $quote = Quote::find($quoteId);
 
             $quote_product_ids = $quote->products()->pluck('product_id')->toArray();
+
             if ($quote->budget) {
                 $quote_product_ids = $quote->budget->items()->pluck('product_id')->toArray();
             }
@@ -243,15 +244,21 @@ class StockIssuesController extends Controller
             }
 
             $budgetDetails = [];
-            foreach ($productvars as $key => $item) {
 
-                $budgetItem = BudgetItem::where('budget_id', $quote->budget->id)
-                    ->where('product_id', $item['id'])
-                    ->first();
+            $budget = $quote->budget;
 
-                $bi = [$item['id'] => $budgetItem];
+            if ($budget){
 
-                $budgetDetails = array_merge($budgetDetails, $bi);
+                foreach ($productvars as $key => $item) {
+
+                    $budgetItem = BudgetItem::where('budget_id', $quote->budget->id)
+                        ->where('product_id', $item['id'])
+                        ->first();
+
+                    $bi = [$item['id'] => $budgetItem];
+
+                    $budgetDetails = array_merge($budgetDetails, $bi);
+                }
             }
 
             return response()->json(compact('productvars', 'budgetDetails'));

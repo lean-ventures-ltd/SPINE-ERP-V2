@@ -153,9 +153,7 @@
                     name: 'company'
                 },
             ],
-            order: [
-                [0, "asc"]
-            ],
+            ordering: false,
             searchDelay: 500,
             // dom: 'frt',
             dom: 'Blfrtip',

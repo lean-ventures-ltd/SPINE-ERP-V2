@@ -36,8 +36,7 @@
 <script>
     $.ajaxSetup({ headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"} });
 
-    $('.datepicker').datepicker({format: "{{config('core.user_date_format')}}", autoHide: true})
-    .datepicker('setDate', new Date())
+    $('.datepicker').datepicker({format: "{{config('core.user_date_format')}}", autoHide: true});
 
     $(document).ready(function() {
 

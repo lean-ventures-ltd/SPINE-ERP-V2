@@ -40,8 +40,7 @@
     const creditnote = @json($creditnote);
 
     // datepicker
-    $('.datepicker').datepicker({format: "{{config('core.user_date_format')}}", autoHide: true})
-    .datepicker('setDate', new Date());
+    $('.datepicker').datepicker({format: "{{config('core.user_date_format')}}", autoHide: true});
     if (creditnote.date) $('#date').datepicker('setDate', new Date(creditnote.date));
 
     // Load customers

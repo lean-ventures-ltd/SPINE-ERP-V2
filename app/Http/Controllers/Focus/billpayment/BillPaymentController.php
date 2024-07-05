@@ -51,7 +51,15 @@ class BillPaymentController extends Controller
         $accounts = Account::whereNull('system')
             ->whereHas('accountType', fn($q) =>  $q->where('system', 'bank'))
             ->get(['id', 'holder']);
-        $suppliers = Supplier::get(['id', 'name']);
+
+        $suppliers = Supplier::orderByRaw("
+                CASE 
+                    WHEN LOWER(name) = LOWER(?) THEN 1 
+                    ELSE 2 
+                END", ['Walk-In'])
+            ->orderByRaw('LOWER(name) ASC')
+            ->get(['id', 'name']);
+
         $employees = User::get();
 
         $direct_bill = [];
@@ -140,7 +148,14 @@ class BillPaymentController extends Controller
      */
     public function edit(Billpayment $billpayment)
     {
-        $suppliers = Supplier::get(['id', 'name']);
+        $suppliers = Supplier::orderByRaw("
+                CASE 
+                    WHEN LOWER(name) = LOWER(?) THEN 1 
+                    ELSE 2 
+                END", ['Walk-In'])
+            ->orderByRaw('LOWER(name) ASC')
+            ->get(['id', 'name']);
+
         $employees = User::get();
         $accounts = Account::whereNull('system')
             ->whereHas('accountType', fn($q) => $q->where('system', 'bank'))

@@ -60,7 +60,14 @@ class CustomerRepository extends BaseRepository
      */
     public function getForDataTable()
     {
-        $q = $this->query()->where('ins', auth()->user()->ins);
+        $q = $this->query()
+                ->orderByRaw("
+                    CASE 
+                        WHEN LOWER(name) = LOWER(?) THEN 1 
+                        ELSE 2 
+                    END", ['Walk-In'])
+                ->orderByRaw('LOWER(name) ASC')
+                ->where('ins', auth()->user()->ins);
 
         return $q->get(['id','name','company','email','address','picture','active','created_at']);
     }
