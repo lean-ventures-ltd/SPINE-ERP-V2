@@ -42,29 +42,34 @@
     $.ajaxSetup({headers: { 'X-CSRF-TOKEN': "{{ csrf_token() }}" }});
     if (invoice.invoicedate) 
         $('#invoicedate').datepicker('setDate', new Date(invoice.invoicedate));
+    }
 
-    // On selecting Tax
+    // On tax change
     $('#tax_id').change(function() {
-        let tax = 0;
-        let subtotal = 0; 
-        let total = 0;
+        const mainTax = accounting.unformat(this.value);
+        const rowTaxeRates = [];
         $('#quoteTbl tbody tr').each(function(i) {
-            let lineSubtotal = accounting.unformat($(this).find('.subtotal').val());
-            let lineQty = accounting.unformat($(this).find('.qty').val());
-            let lineTotal = lineSubtotal * lineQty;
-            const taxRate = $('#tax_id').val() / 100;
-           
-            tax += lineTotal * taxRate;
-            subtotal += lineTotal;
-            total += lineTotal * (1+taxRate);
-             
-            $(this).find('.rate').val(accounting.formatNumber(lineSubtotal, 4));
-            $(this).find('.amount').text(accounting.formatNumber(lineTotal, 4));
+            const taxRate = accounting.unformat($(this).find('.taxrate').val());
+            rowTaxeRates.push(taxRate);
         });
-        $('#subtotal').val(accounting.formatNumber(subtotal));
-        $('#tax').val(accounting.formatNumber(tax));
-        $('#total').val(accounting.formatNumber(total));
-        checkLimits();
+        const disjoint = [mainTax, 0].filter(v => !rowTaxeRates.includes(v));
+        let isError = false;
+        // mixed vat
+        if (rowTaxeRates.includes(0)) {
+            if (mainTax > 0) {
+                if (disjoint.length && !rowTaxeRates.includes(disjoint[0])) isError = true;
+            } else {
+                if (disjoint.length) isError = true;
+            }
+        } else {
+            // single vat
+            if (disjoint.length > 1 && disjoint[0] != 0) isError = true;
+        }
+        if (isError) {
+            alert(`${disjoint[0]}% rate not applicable!`);
+            $('#tax_id').val(0);
+        }
+        computeTotals();
     });
     $('#tax_id').change();
 
@@ -116,6 +121,31 @@
         $('#quoteTbl tbody tr').each(function() {
             $(this).find('td:eq(1)').remove();
         });
+    }
+
+    // compute totals
+    function computeTotals() {
+        let taxable = 0;
+        let subtotal = 0; 
+        let total = 0;
+        const mainTax = accounting.unformat($('#tax_id').val());
+        $('#quoteTbl tbody tr').each(function(i) {
+            $(this).find('.row-index').val(i);
+            const qty = accounting.unformat($(this).find('.qty').val());
+            const rowSubtotal = accounting.unformat($(this).find('.rate').val());
+            const rowTaxable = accounting.unformat($(this).find('.taxable').val());
+            const rowTotal = accounting.unformat($(this).find('.amount').text());
+            const rowTaxRate = accounting.unformat($(this).find('.taxrate').val());
+            if (+rowTaxRate > 0) taxable += qty * rowTaxable;
+            subtotal += qty * rowSubtotal;  
+            total += rowTotal;
+        });
+        const tax = taxable * mainTax/100;
+        total = subtotal + tax;
+        $('#tax').val(accounting.formatNumber(tax));
+        $('#taxable').val(accounting.formatNumber(taxable));
+        $('#subtotal').val(accounting.formatNumber(subtotal));
+        $('#total').val(accounting.formatNumber(total));
     }
 </script>
 @endsection

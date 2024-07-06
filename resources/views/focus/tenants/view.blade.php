@@ -53,9 +53,9 @@
                 <tbody>
                     @php
                         $details = [
-                            'First Name' => $user->first_name,
-                            'Last Name' => $user->last_name,
-                            'User Email' => $user->email,
+                            'First Name' => @$user->first_name,
+                            'Last Name' => @$user->last_name,
+                            'User Email' => @$user->email,
                         ];
                     @endphp
                     @foreach ($details as $key => $val)

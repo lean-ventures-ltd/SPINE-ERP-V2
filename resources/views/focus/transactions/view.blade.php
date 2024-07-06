@@ -108,8 +108,8 @@
                             <th>Type</th>
                             <th>Ledger Account</th>  
                             <th>Note</th>
-                            <th>{{ trans('transactions.debit') }}</th>
-                            <th>{{ trans('transactions.credit') }}</th>
+                            <th>Debit</th>
+                            <th>Credit</th>
                             <th>Date</th>
                             <th>Created At</th>
                             <th>{{ trans('labels.general.actions') }}</th>

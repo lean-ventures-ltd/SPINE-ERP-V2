@@ -306,5 +306,5 @@
 </div>
 
 @section('after-scripts')
-    @include('focus.verifications.form_js')
+@include('focus.verifications.form_js')
 @endsection

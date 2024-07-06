@@ -14,14 +14,52 @@ use App\Models\transactioncategory\Transactioncategory;
 trait Accounting
 {
     /**
-     * Inventory Stock Adjustment
+     * Customer Sale Return
+     * @param object $sale_return
+     */
+    public function post_sale_return($sale_return)
+    {
+        $stock_account = Account::where('system', 'stock')->first(['id']);
+        $tr_category = Transactioncategory::where('code', 'stock')->first(['id', 'code']);
+        // debit Stock Account
+        $dr_data = [
+            'tid' => Transaction::max('tid')+1,
+            'account_id' => $stock_account->id,
+            'trans_category_id' => $tr_category->id,
+            'tr_date' => $sale_return->date,
+            'due_date' => $sale_return->date,
+            'user_id' => $sale_return->user_id,
+            'note' => $sale_return->note,
+            'ins' => $sale_return->ins,
+            'tr_type' => $tr_category->code,
+            'tr_ref' => $sale_return->id,
+            'user_type' => 'customer',
+            'customer_id' => $sale_return->customer_id,
+            'sale_return_id' => $sale_return->id,
+            'is_primary' => 1,
+            'debit' => $sale_return->total,
+        ];
+        Transaction::create($dr_data);
+        unset($dr_data['debit'], $dr_data['is_primary']);
+
+        // credit COG Account
+        $cog_account = Account::where('system', 'cog')->first(['id']);
+        $cr_data = array_replace($dr_data, [
+            'account_id' => $cog_account->id,
+            'credit' =>  $sale_return->total,
+        ]);
+        Transaction::create($cr_data);
+    }
+
+    /**
+     * Inventory Stock Issue
      * @param object $stock_adj
      */
     public function post_stock_issue($stock_issue)
     {
+        // credit Stock Account
         $stock_account = Account::where('system', 'stock')->first(['id']);
         $tr_category = Transactioncategory::where('code', 'stock')->first(['id', 'code']);
-        // credit Stock Account
         $cr_data = [
             'tid' => Transaction::max('tid')+1,
             'account_id' => $stock_account->id,
@@ -50,11 +88,19 @@ trait Accounting
                 'debit' =>  $stock_issue->total,
             ]);
             Transaction::create($dr_data);
-        } else {
+        } else if (!$stock_issue->project_id && $stock_issue->customer_id) {
             // debit COG Account
             $cog_account = Account::where('system', 'cog')->first(['id']);
             $dr_data = array_replace($cr_data, [
                 'account_id' => $cog_account->id,
+                'debit' =>  $stock_issue->total,
+            ]);
+            Transaction::create($dr_data);
+        } else if (!$stock_issue->project_id && $stock_issue->employee_id) {
+            // debit respective Expense account
+            $exp_account = Account::where('id', $stock_issue->account_id)->first(['id']);
+            $dr_data = array_replace($cr_data, [
+                'account_id' => $exp_account->id,
                 'debit' =>  $stock_issue->total,
             ]);
             Transaction::create($dr_data);
@@ -88,6 +134,7 @@ trait Accounting
 
         $tr_data_arr = [];
         $account = Account::find($stock_adj->account_id);
+        // negative stock adjustment
         if ($account->account_type == 'Expense') {
             // credit Inventory
             $tr_data_arr[] = array_replace($tr_data, [
@@ -100,7 +147,9 @@ trait Accounting
                 'account_id' => $stock_adj->account_id,
                 'debit' =>  $stock_adj->total,
             ]);
-        } elseif ($account->account_type == 'Income') {
+        } 
+        // positive stock adjustment
+        elseif ($account->account_type == 'Income') {
             // debit Inventory
             $tr_data_arr[] = array_replace($tr_data, [
                 'account_id' => $stock_account->id,
@@ -353,10 +402,11 @@ trait Accounting
     /**
      * Invoice Transaction
      * @param object $invoice
+     * 
+     * When fx_curr_rate > 1, fx_total is the functional currency else total
      */
     public function post_invoice($invoice)
     {
-        // debit Accounts Receivable (Debtors)
         $account = Account::where('system', 'receivable')->first(['id']);
         $tr_category = Transactioncategory::where('code', 'inv')->first(['id', 'code']);
         $dr_data = [
@@ -376,20 +426,23 @@ trait Accounting
             'debit' => 0,
             'credit' => 0,
             'customer_id' => $invoice->customer_id,
-            'invoice_id' => $invoice->id
+            'invoice_id' => $invoice->id,
+            'fx_curr_rate' => $invoice->fx_curr_rate,
         ];
 
         // debit Accounts Receivable (Debtors)
-        $inc_cr_data = array_replace($dr_data, [
-            'debit' => $invoice->total,
+        $inc_dr_data = array_replace($dr_data, [
+            'debit' => $invoice->fx_curr_rate > 1? $invoice->fx_total : $invoice->total, 
+            'fx_debit' => $invoice->fx_curr_rate > 1? $invoice->total : 0, 
         ]);
-        Transaction::create($inc_cr_data);
+        Transaction::create($inc_dr_data);
         unset($dr_data['is_primary']);
 
         // credit Revenue Account (Income)
         $inc_cr_data = array_replace($dr_data, [
             'account_id' => $invoice->account_id,
-            'credit' => $invoice->subtotal,
+            'credit' => $invoice->fx_curr_rate > 1? $invoice->fx_subtotal : $invoice->subtotal, 
+            'fx_credit' => $invoice->fx_curr_rate > 1? $invoice->subtotal : 0, 
         ]);
         Transaction::create($inc_cr_data);
         unset($dr_data['is_primary']);
@@ -399,7 +452,8 @@ trait Accounting
             $account = Account::where('system', 'tax')->first(['id']);
             $tax_cr_data = array_replace($dr_data, [
                 'account_id' => $account->id,
-                'credit' => $invoice->tax,
+                'credit' => $invoice->fx_curr_rate > 1? $invoice->fx_tax : $invoice->tax, 
+                'fx_credit' => $invoice->fx_curr_rate > 1? $invoice->tax : 0, 
             ]);
             Transaction::create($tax_cr_data);
         }
@@ -407,8 +461,6 @@ trait Accounting
         // WIP and COG transactions
         $tr_data = [];
 
-        // stock amount for items issued from inventory
-        $store_inventory_amount = 0;
         // direct purchase item amounts for item directly issued to project
         $dirpurch_inventory_amount = 0;
         $dirpurch_expense_amount = 0;
@@ -418,7 +470,6 @@ trait Accounting
         $quote_ids = $invoice->products->pluck('quote_id')->toArray();
         $quotes = Quote::whereIn('id', $quote_ids)->get();
         foreach ($quotes as $quote) {
-            $store_inventory_amount  = $quote->projectstock->sum('subtotal');
             // direct purchase items issued to project
             if (isset($quote->project_quote->project)) {
                 foreach ($quote->project_quote->project->purchase_items as $item) {
@@ -449,10 +500,6 @@ trait Accounting
         if ($dirpurch_asset_amount > 0) {
             $tr_data[] = array_replace($cr_data, ['credit' => $dirpurch_asset_amount]);
             $tr_data[] = array_replace($dr_data, ['debit' => $dirpurch_asset_amount]);
-        }
-        if ($store_inventory_amount > 0) {
-            $tr_data[] = array_replace($cr_data, ['credit' => $store_inventory_amount]);
-            $tr_data[] = array_replace($dr_data, ['debit' => $store_inventory_amount]);
         }
         Transaction::insert($tr_data);       
     }
@@ -773,7 +820,6 @@ trait Accounting
             'credit' => $utility_bill->total,
         ]);    
         Transaction::create($cr_data);
-        
     }  
 
     /**
@@ -961,14 +1007,33 @@ trait Accounting
         ];
         Transaction::create($cr_data);
 
+        $project_stock_amount = 0;
+        $inventory_stock_amount = 0;
+        foreach ($grn->items as $item) {
+            $amount = $item->qty * $item->rate;
+            if ($item->itemproject_id) $project_stock_amount += $amount;
+            else $inventory_stock_amount += $amount;
+        }
+        // debit WIP Account
+        if ($project_stock_amount > 0) {
+            unset($cr_data['credit'], $cr_data['is_primary']);
+            $account = Account::where('system', 'wip')->first(['id']);
+            $dr_data = array_replace($cr_data, [
+                'account_id' => $account->id,
+                'debit' => $project_stock_amount,
+            ]);    
+            Transaction::create($dr_data);
+        } 
         // debit Inventory (Stock) Account
-        unset($cr_data['credit'], $cr_data['is_primary']);
-        $account = Account::where('system', 'stock')->first(['id']);
-        $dr_data = array_replace($cr_data, [
-            'account_id' => $account->id,
-            'debit' => $grn->subtotal,
-        ]);    
-        Transaction::create($dr_data);
+        if ($inventory_stock_amount > 0) {
+            unset($cr_data['credit'], $cr_data['is_primary']);
+            $account = Account::where('system', 'stock')->first(['id']);
+            $dr_data = array_replace($cr_data, [
+                'account_id' => $account->id,
+                'debit' => $inventory_stock_amount
+            ]);    
+            Transaction::create($dr_data);
+        }
     }
 
     /**
@@ -977,7 +1042,6 @@ trait Accounting
      */
     public function post_invoiced_grn_bill($utility_bill)
     {
-        // debit Inventory Account
         $account = Account::where('system', 'stock')->first(['id']);
         $tr_category = Transactioncategory::where('code', 'bill')->first(['id', 'code']);
         $dr_data = [
@@ -997,8 +1061,34 @@ trait Accounting
             'supplier_id' => $utility_bill->supplier_id,
             'bill_id' => $utility_bill->id,
         ];
-        Transaction::create($dr_data);
-        unset($dr_data['debit'], $dr_data['is_primary']);
+
+        $project_stock_amount = 0;
+        $inventory_stock_amount = 0;
+        foreach ($utility_bill->grn_items as $item) {
+            $amount = $item->qty * $item->rate;
+            if ($item->itemproject_id) $project_stock_amount += $amount;
+            else $inventory_stock_amount += $amount;
+        }
+        // debit WIP Account
+        if ($project_stock_amount > 0) {
+            unset($dr_data['debit'], $dr_data['is_primary']);
+            $account = Account::where('system', 'wip')->first(['id']);
+            $dr_data = array_replace($dr_data, [
+                'account_id' => $account->id,
+                'debit' => $project_stock_amount,
+            ]);    
+            Transaction::create($dr_data);
+        } 
+        // debit Inventory (Stock) Account
+        if ($inventory_stock_amount > 0) {
+            unset($dr_data['debit'], $dr_data['is_primary']);
+            $account = Account::where('system', 'stock')->first(['id']);
+            $dr_data = array_replace($dr_data, [
+                'account_id' => $account->id,
+                'debit' => $inventory_stock_amount
+            ]);    
+            Transaction::create($dr_data);
+        }
 
         // debit TAX
         if ($utility_bill->tax > 0) {
@@ -1055,7 +1145,6 @@ trait Accounting
             'debit' => $projectstock['total'],
         ]);
         Transaction::create($dr_data);
-        
     }
 
     /**

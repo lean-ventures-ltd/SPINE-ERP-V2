@@ -94,7 +94,6 @@ class ReconciliationsController extends Controller
      */
     public function update(Request $request, Reconciliation $reconciliation)
     {
-        $request->validate(['end_date' => 'required']);
         try {
             $this->repository->update($reconciliation, $request->except('_token', '_method'));
         } catch (\Throwable $th) {
@@ -139,7 +138,10 @@ class ReconciliationsController extends Controller
         $date = [current($date_parts), end($date_parts)];
 
         $journal_items = JournalItem::where('account_id', request('account_id'))
-        ->whereHas('journal', fn($q) => $q->whereMonth('date', $date[0])->whereYear('date', $date[1]))
+        ->whereHas('journal', function ($q) use($date) {
+            $q->whereMonth('date', $date[0])->whereYear('date', $date[1])
+            ->where(fn($q) => $q->where('customer_id', '>', 0)->orwhere('supplier_id', '>', 0));
+        })
         ->get()
         ->each(function($item) use($account_items, $struct) {
             $acc_item = array_replace($struct, [
@@ -203,12 +205,13 @@ class ReconciliationsController extends Controller
         }
         // use last reconciliation if months are consecutive
         $month = $date[0] - 1 ?: 12;
-        $year = $date[1] - 1;
+        $year = $date[0] - 1? $date[1] : $date[1] - 1;
         if (strlen("{$month}") == 1) $month = "0{$month}";
-        $last_recon =  Reconciliation::where('account_id', request('id'))
-        ->where('end_date', 'LIKE', "%{$month}-{$year}%")
-        ->orderBy('id', 'DESC')
-        ->first();
+        $last_recon =  Reconciliation::where('account_id', request('account_id'))
+            ->where('end_date', 'LIKE', "%{$month}-{$year}%")
+            ->orderBy('id', 'DESC')
+            ->first();
+
         if ($last_recon) {
             $last_recon_date = explode('-', $last_recon->end_date);
             $month_diff = intval($date[0]) - intval($last_recon_date[0]);

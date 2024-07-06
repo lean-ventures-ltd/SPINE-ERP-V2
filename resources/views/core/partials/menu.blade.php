@@ -642,7 +642,7 @@
                             </ul>
                         </li>
                         @endauth
-                        {{-- verification --}}
+                        {{-- job verification --}}
                         @permission('manage-quote-verify')
                         <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a
                                     class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
@@ -659,6 +659,20 @@
                                        data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Partial
                                         Verification
                                     </a>
+                                </li>
+                            </ul>
+                        </li>
+                        @endauth
+                        {{-- job valuation --}}
+                        @permission('manage-quote-verify')
+                        <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="ft-file-text"></i> Job Valuation</a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('biller.job_valuations.index') }}" data-toggle="dropdown"><i class="ft-list"></i>Manage Job Valuations</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('biller.job_valuations.quote_index') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Job Valuation</a>
                                 </li>
                             </ul>
                         </li>
@@ -1096,6 +1110,19 @@
                         </ul>
                     </li>
                     @endauth
+
+                    {{-- Sale Returns --}}
+                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-money"></i> Sale Returns</a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{{ route('biller.sale_returns.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Manage Sale Returns</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('biller.sale_returns.create') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Sale Return</a>
+                            </li>
+                        </ul>
+                    </li>
 
                     {{-- Asset and Equipments  --}}
                     @permission('manage-asset-equipment')
@@ -1980,81 +2007,81 @@
                             <ul class="mega-menu-sub">
                                 <li class="nav-item text-bold-600 ml-1 text-info p-1">{{ trans('meta.statements') }}
                                 </li>
-                               <li>
-                                   <a class="dropdown-item" href="#"><i
-                                               class="fa fa-book"></i>{{ trans('meta.finance_account_statement') }}
-                                   </a>
-                                   <ul class="mega-menu-sub">
-                                       <li><a class="dropdown-item"
-                                              href="{{ route('biller.reports.statements', ['account']) }}"><i
-                                                       class="icon-doc"></i>
-                                               {{ trans('meta.finance_account_statement') }}
-                                           </a>
-                                       </li>
-                                       <li><a class="dropdown-item"
-                                              href="{{ route('biller.reports.statements', ['income']) }}"><i
-                                                       class="icon-doc"></i> {{ trans('meta.income_statement') }}</a>
-                                       </li>
-                                       <li><a class="dropdown-item"
-                                              href="{{ route('biller.reports.statements', ['expense']) }}"><i
-                                                       class="icon-doc"></i> {{ trans('meta.expense_statement') }}</a>
-                                       </li>
-                                       <li><a class="dropdown-item"
-                                              href="{{ route('biller.reports.statements', ['pos_statement']) }}"><i
-                                                       class="icon-doc"></i> {{ trans('meta.pos_statement') }}</a>
-                                       </li>
-                                   </ul>
-                               </li>
+{{--                                <li>--}}
+{{--                                    <a class="dropdown-item" href="#"><i--}}
+{{--                                                class="fa fa-book"></i>{{ trans('meta.finance_account_statement') }}--}}
+{{--                                    </a>--}}
+{{--                                    <ul class="mega-menu-sub">--}}
+{{--                                        <li><a class="dropdown-item"--}}
+{{--                                               href="{{ route('biller.reports.statements', ['account']) }}"><i--}}
+{{--                                                        class="icon-doc"></i>--}}
+{{--                                                {{ trans('meta.finance_account_statement') }}--}}
+{{--                                            </a>--}}
+{{--                                        </li>--}}
+{{--                                        <li><a class="dropdown-item"--}}
+{{--                                               href="{{ route('biller.reports.statements', ['income']) }}"><i--}}
+{{--                                                        class="icon-doc"></i> {{ trans('meta.income_statement') }}</a>--}}
+{{--                                        </li>--}}
+{{--                                        <li><a class="dropdown-item"--}}
+{{--                                               href="{{ route('biller.reports.statements', ['expense']) }}"><i--}}
+{{--                                                        class="icon-doc"></i> {{ trans('meta.expense_statement') }}</a>--}}
+{{--                                        </li>--}}
+{{--                                        <li><a class="dropdown-item"--}}
+{{--                                               href="{{ route('biller.reports.statements', ['pos_statement']) }}"><i--}}
+{{--                                                        class="icon-doc"></i> {{ trans('meta.pos_statement') }}</a>--}}
+{{--                                        </li>--}}
+{{--                                    </ul>--}}
+{{--                                </li>--}}
 
 
-                               <li>
-                                   <a class="dropdown-item" href="#"><i
-                                               class="fa fa-smile-o"></i>{{ trans('customers.customer') }}</a>
-                                   <ul class="mega-menu-sub">
-                                       <li><a class="dropdown-item"
-                                              href="{{ route('biller.reports.statements', ['customer']) }}"
-                                              data-toggle="dropdown">{{ trans('meta.customer_statements') }}</a>
-                                       </li>
-                                       <li><a class="dropdown-item"
-                                              href="{{ route('biller.reports.statements', ['product_customer_statement']) }}"
-                                              data-toggle="dropdown">{{ trans('meta.product_customer_statement') }}</a>
-                                       </li>
-                                   </ul>
-                               </li>
+{{--                                <li>--}}
+{{--                                    <a class="dropdown-item" href="#"><i--}}
+{{--                                                class="fa fa-smile-o"></i>{{ trans('customers.customer') }}</a>--}}
+{{--                                    <ul class="mega-menu-sub">--}}
+{{--                                        <li><a class="dropdown-item"--}}
+{{--                                               href="{{ route('biller.reports.statements', ['customer']) }}"--}}
+{{--                                               data-toggle="dropdown">{{ trans('meta.customer_statements') }}</a>--}}
+{{--                                        </li>--}}
+{{--                                        <li><a class="dropdown-item"--}}
+{{--                                               href="{{ route('biller.reports.statements', ['product_customer_statement']) }}"--}}
+{{--                                               data-toggle="dropdown">{{ trans('meta.product_customer_statement') }}</a>--}}
+{{--                                        </li>--}}
+{{--                                    </ul>--}}
+{{--                                </li>--}}
 
 
-                               <li>
-                                   <a class="dropdown-item" href="#"><i
-                                               class="fa fa-truck"></i>{{ trans('suppliers.supplier') }}</a>
-                                   <ul class="mega-menu-sub">
-                                       <li><a class="dropdown-item"
-                                              href="{{ route('biller.reports.statements', ['supplier']) }}"
-                                              data-toggle="dropdown">{{ trans('meta.supplier_statements') }}</a>
-                                       </li>
-                                       <li><a class="dropdown-item"
-                                              href="{{ route('biller.reports.statements', ['product_supplier_statement']) }}"
-                                              data-toggle="dropdown">{{ trans('meta.product_supplier_statement') }}</a>
-                                       </li>
-                                   </ul>
-                               </li>
+{{--                                <li>--}}
+{{--                                    <a class="dropdown-item" href="#"><i--}}
+{{--                                                class="fa fa-truck"></i>{{ trans('suppliers.supplier') }}</a>--}}
+{{--                                    <ul class="mega-menu-sub">--}}
+{{--                                        <li><a class="dropdown-item"--}}
+{{--                                               href="{{ route('biller.reports.statements', ['supplier']) }}"--}}
+{{--                                               data-toggle="dropdown">{{ trans('meta.supplier_statements') }}</a>--}}
+{{--                                        </li>--}}
+{{--                                        <li><a class="dropdown-item"--}}
+{{--                                               href="{{ route('biller.reports.statements', ['product_supplier_statement']) }}"--}}
+{{--                                               data-toggle="dropdown">{{ trans('meta.product_supplier_statement') }}</a>--}}
+{{--                                        </li>--}}
+{{--                                    </ul>--}}
+{{--                                </li>--}}
 
 
-                               <li>
-                                   <a class="dropdown-item" href="#"><i
-                                               class="icon-doc"></i>{{ trans('meta.tax_statements') }}</a>
-                                   <ul class="mega-menu-sub">
-                                       <li><a class="dropdown-item"
-                                              href="{{ route('biller.reports.statements', ['tax']) }}"
-                                              data-toggle="dropdown">{{ trans('meta.tax_statements') }}
-                                               {{ trans('meta.sales') }}</a>
-                                       </li>
-                                       <li><a class="dropdown-item"
-                                              href="{{ route('biller.reports.statements', ['tax']) }}?s=purchase"
-                                              data-toggle="dropdown">{{ trans('meta.tax_statements') }}
-                                               {{ trans('meta.purchase') }}</a>
-                                       </li>
-                                   </ul>
-                               </li>
+{{--                                <li>--}}
+{{--                                    <a class="dropdown-item" href="#"><i--}}
+{{--                                                class="icon-doc"></i>{{ trans('meta.tax_statements') }}</a>--}}
+{{--                                    <ul class="mega-menu-sub">--}}
+{{--                                        <li><a class="dropdown-item"--}}
+{{--                                               href="{{ route('biller.reports.statements', ['tax']) }}"--}}
+{{--                                               data-toggle="dropdown">{{ trans('meta.tax_statements') }}--}}
+{{--                                                {{ trans('meta.sales') }}</a>--}}
+{{--                                        </li>--}}
+{{--                                        <li><a class="dropdown-item"--}}
+{{--                                               href="{{ route('biller.reports.statements', ['tax']) }}?s=purchase"--}}
+{{--                                               data-toggle="dropdown">{{ trans('meta.tax_statements') }}--}}
+{{--                                                {{ trans('meta.purchase') }}</a>--}}
+{{--                                        </li>--}}
+{{--                                    </ul>--}}
+{{--                                </li>--}}
 
 
                                 <li><a class="dropdown-item" href="#"><i class="fa fa-th"></i>{{trans('meta.product_statement')}}</a>
@@ -2103,63 +2130,59 @@
                                                class="fa fa-sun-o"></i> {{ trans('meta.supplier_graphical_overview') }}
                                    </a>
                                </li>
-                               <li data-menu=""><a class="dropdown-item"
-                                                   href="{{ route('biller.reports.charts', ['product']) }}"><i
-                                               class="ft-trending-up"></i>
-                                       {{ trans('meta.product_graphical_overview') }}
-                                   </a>
-                               </li>
-                               <li data-menu=""><a class="dropdown-item"
-                                                   href="{{ route('biller.reports.charts', ['income_vs_expenses']) }}"><i
-                                               class="icon-pie-chart"></i>
-                                       {{ trans('meta.income_vs_expenses_overview') }}
-                                   </a>
-                               </li>
+{{--                                <li data-menu=""><a class="dropdown-item"--}}
+{{--                                                    href="{{ route('biller.reports.charts', ['product']) }}"><i--}}
+{{--                                                class="ft-trending-up"></i>--}}
+{{--                                        {{ trans('meta.product_graphical_overview') }}--}}
+{{--                                    </a>--}}
+{{--                                </li>--}}
+{{--                                <li data-menu=""><a class="dropdown-item"--}}
+{{--                                                    href="{{ route('biller.reports.charts', ['income_vs_expenses']) }}"><i--}}
+{{--                                                class="icon-pie-chart"></i>--}}
+{{--                                        {{ trans('meta.income_vs_expenses_overview') }}--}}
+{{--                                    </a>--}}
+{{--                                </li>--}}
                             </ul>
                         </li>
                     </ul>
                 </li>
 
                 {{-- summary reports --}}
-               <li class="col-md-3" data-mega-col="col-md-3">
-                   <ul class="drilldown-menu">
-                       <li class="menu-list">
-                           <ul class="mega-menu-sub">
-                               <li class="nav-item text-bold-600 ml-1 text-info p-1">
-                                   {{ trans('meta.summary_reports') }}
-                               </li>
-                               <li data-menu=""><a class="dropdown-item"
-                                                   href="{{ route('biller.reports.summary', ['income']) }}"><i
-                                               class="ft-check-circle"></i> {{ trans('meta.income_summary') }}</a>
-                               </li>
-                               <li data-menu=""><a class="dropdown-item"
-                                                   href="{{ route('biller.reports.summary', ['expense']) }}"><i
-                                               class="fa fa fa-bullhorn"></i> {{ trans('meta.expense_summary') }}</a>
-                               </li>
-                               <li data-menu=""><a class="dropdown-item"
-                                                   href="{{ route('biller.reports.summary', ['sale']) }}"><i
-                                               class="ft-aperture"></i> {{ trans('meta.sale_summary') }}</a>
-                               </li>
-                               <li data-menu=""><a class="dropdown-item"
-                                                   href="{{ route('biller.reports.summary', ['purchase']) }}"><i
-                                               class="ft-disc"></i> {{ trans('meta.purchase_summary') }}</a>
-                               </li>
-                               <li data-menu=""><a class="dropdown-item"
-                                                   href="{{ route('biller.reports.summary', ['products']) }}"><i
-                                               class="ft-layers"></i> {{ trans('meta.products_summary') }}</a>
-                               </li>
-                               <li data-menu=""><a class="dropdown-item"
-                                                   href="{{ route('biller.purchase_classes.get-reports', ['purchase']) }}"><i
-                                               class="ft-layers"></i> Purchase Class Reports </a>
-                               </li>
-                               <li data-menu=""><a class="dropdown-item"
-                                                   href="{{ route('biller.projects.get-project-report') }}"><i
-                                               class="ft-layers"></i> Project Report </a>
-                               </li>
-                           </ul>
-                       </li>
-                   </ul>
-               </li>
+{{--                <li class="col-md-3" data-mega-col="col-md-3">--}}
+{{--                    <ul class="drilldown-menu">--}}
+{{--                        <li class="menu-list">--}}
+{{--                            <ul class="mega-menu-sub">--}}
+{{--                                <li class="nav-item text-bold-600 ml-1 text-info p-1">--}}
+{{--                                    {{ trans('meta.summary_reports') }}--}}
+{{--                                </li>--}}
+{{--                                <li data-menu=""><a class="dropdown-item"--}}
+{{--                                                    href="{{ route('biller.reports.summary', ['income']) }}"><i--}}
+{{--                                                class="ft-check-circle"></i> {{ trans('meta.income_summary') }}</a>--}}
+{{--                                </li>--}}
+{{--                                <li data-menu=""><a class="dropdown-item"--}}
+{{--                                                    href="{{ route('biller.reports.summary', ['expense']) }}"><i--}}
+{{--                                                class="fa fa fa-bullhorn"></i> {{ trans('meta.expense_summary') }}</a>--}}
+{{--                                </li>--}}
+{{--                                <li data-menu=""><a class="dropdown-item"--}}
+{{--                                                    href="{{ route('biller.reports.summary', ['sale']) }}"><i--}}
+{{--                                                class="ft-aperture"></i> {{ trans('meta.sale_summary') }}</a>--}}
+{{--                                </li>--}}
+{{--                                <li data-menu=""><a class="dropdown-item"--}}
+{{--                                                    href="{{ route('biller.reports.summary', ['purchase']) }}"><i--}}
+{{--                                                class="ft-disc"></i> {{ trans('meta.purchase_summary') }}</a>--}}
+{{--                                </li>--}}
+{{--                                <li data-menu=""><a class="dropdown-item"--}}
+{{--                                                    href="{{ route('biller.reports.summary', ['products']) }}"><i--}}
+{{--                                                class="ft-layers"></i> {{ trans('meta.products_summary') }}</a>--}}
+{{--                                </li>--}}
+{{--                                <li data-menu=""><a class="dropdown-item"--}}
+{{--                                                    href="{{ route('biller.purchase_classes.get-reports', ['purchase']) }}"><i--}}
+{{--                                                class="ft-layers"></i> Purchase Class Reports </a>--}}
+{{--                                </li>--}}
+{{--                            </ul>--}}
+{{--                        </li>--}}
+{{--                    </ul>--}}
+{{--                </li>--}}
 
                 {{-- import data --}}
                 <li class="col-md-3" data-mega-col="col-md-3">
@@ -2175,12 +2198,12 @@
                                         <i class="fa fa-file-excel-o"></i> Prospects
                                     </a>
                                 </li>
-                               <li>
-                                   <a class="dropdown-item"
-                                      href="{{ route('biller.import.general', ['customer']) }}">
-                                       <i class="fa fa-file-excel-o"></i> Customers
-                                   </a>
-                               </li>
+{{--                                <li>--}}
+{{--                                    <a class="dropdown-item"--}}
+{{--                                       href="{{ route('biller.import.general', ['customer']) }}">--}}
+{{--                                        <i class="fa fa-file-excel-o"></i> Customers--}}
+{{--                                    </a>--}}
+{{--                                </li>--}}
                                 <li>
                                     <a class="dropdown-item"
                                        href="{{ route('biller.import.general', ['products']) }}">

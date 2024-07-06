@@ -75,11 +75,12 @@
     </div>
 </div>
 
+<!-- reconciliations table -->
 <div class="card">
     <div class="card-content">
         <div class="card-body">
-            <div class="table-responsive" style="height: 50vh">
-                <table class="table tfr" id="transactions">
+            <div class="table-responsive" style="max-height: 80vh">
+                <table class="table tfr text-center" id="transactions">
                     <thead>
                         <tr class="bg-gradient-directional-blue white">
                             <th>Date</th>
@@ -87,8 +88,10 @@
                             <th>Trans. Ref</th>
                             <th>Payer / Payee</th>
                             <th>Note</th>
-                            <th class="mr-0 pr-0" width="15%">Amount</th>
-                            <th class="ml-0 pl-0"><input id="check-all" type="checkbox" autocomplete="off"></th>
+                            <th class="d-none" width="15%">Amount</th>
+                            <th width="15%">Debit</th>
+                            <th width="15%">Credit</th>
+                            <th><input id="check-all" type="checkbox" autocomplete="off"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -105,8 +108,15 @@
                                         <td class="trans-ref">{{ gen4tid('JNL-', $journal->tid) }}</td>
                                         <td class="client-suppler"></td>
                                         <td class="note">{{ $journal->note }}</td>
-                                        <td class="mr-0 pr-0"><span class="cash">{{ $journal_item->debit == 0? numberFormat($journal_item->credit) : numberFormat($journal_item->debit) }}</span></td>
-                                        <td class="ml-0 pl-0"><input class="check" type="checkbox" autocomplete="off"></td>
+                                        <td class="d-none"><span class="cash">{{ $journal_item->debit == 0? numberFormat($journal_item->credit) : numberFormat($journal_item->debit) }}</span></td>
+                                        @if ($journal_item->debit > 0)
+                                            <td><span class="debit">{{ numberFormat($journal_item->debit) }}</span></td>
+                                            <td><span class="credit"></span></td>
+                                        @else
+                                            <td><span class="debit"></span></td>
+                                            <td><span class="credit">{{ numberFormat($journal_item->credit) }}</span></td>
+                                        @endif
+                                        <td><input class="check" type="checkbox" autocomplete="off"></td>
                                         <input type="hidden" name="checked[]" value="{{ $item->checked }}" class="check-inp">
                                         <input type="hidden" name="man_journal_id[]" value="{{ $journal->id }}" class="journal-id">
                                         <input type="hidden" name="journal_item_id[]" value="{{ $journal_item->id }}" class="journalitem-id">
@@ -123,8 +133,10 @@
                                         <td class="trans-ref">{{ gen4tid('RMT-', $payment->tid) }}</td>
                                         <td class="client-suppler">{{ @$payment->supplier->name }}</td>
                                         <td class="note">{{ $payment->note }}</td>
-                                        <td class="mr-0 pr-0"><span class="cash">{{ numberFormat($payment->amount) }}</span></td>
-                                        <td class="ml-0 pl-0"><input class="check" type="checkbox" autocomplete="off"></td>
+                                        <td class="d-none"><span class="cash">{{ numberFormat($payment->amount) }}</span></td>
+                                        <td><span class="debit"></span></td>
+                                        <td><span class="credit">{{ numberFormat($deposit->amount) }}</span></td>
+                                        <td><input class="check" type="checkbox" autocomplete="off"></td>
                                         <input type="hidden" name="checked[]" value="{{ $item->checked }}" class="check-inp">
                                         <input type="hidden" name="man_journal_id[]" class="journal-id">
                                         <input type="hidden" name="journal_item_id[]" class="journalitem-id">
@@ -141,8 +153,10 @@
                                         <td class="trans-ref">{{ gen4tid('PMT-', $deposit->tid) }}</td>
                                         <td class="client-supplier">{{ @$deposit->customer->company }}</td>
                                         <td class="note">{{ $deposit->note }}</td>
-                                        <td class="mr-0 pr-0"><span class="cash">{{ numberFormat($deposit->amount) }}</span></td>
-                                        <td class="ml-0 pl-0"><input class="check" type="checkbox" autocomplete="off"></td>
+                                        <td class="d-none"><span class="cash">{{ numberFormat($deposit->amount) }}</span></td>
+                                        <td><span class="debit">{{ numberFormat($deposit->amount) }}</span></td>
+                                        <td><span class="credit"></span></td>
+                                        <td><input class="check" type="checkbox" autocomplete="off"></td>
                                         <input type="hidden" name="checked[]" value="{{ $item->checked }}" class="check-inp">
                                         <input type="hidden" name="man_journal_id[]" class="journal-id">
                                         <input type="hidden" name="journal_item_id[]" class="journalitem-id">
@@ -158,8 +172,10 @@
                                 <td class="trans-ref"></td>
                                 <td class="client-supplier"></td>
                                 <td class="note"></td>
-                                <td class="mr-0 pr-0"><span class="cash"></span></td>
-                                <td class="ml-0 pl-0"><input class="check" type="checkbox" autocomplete="off"></td>
+                                <td class="d-none"><span class="cash"></span></td>
+                                <td><span class="debit"></span></td>
+                                <td><span class="credit"></span></td>
+                                <td><input class="check" type="checkbox" autocomplete="off"></td>
                                 <input type="hidden" name="checked[]" class="check-inp">
                                 <input type="hidden" name="man_journal_id[]" class="journal-id">
                                 <input type="hidden" name="journal_item_id[]" class="journalitem-id">
@@ -174,184 +190,6 @@
     </div>
 </div>
 
-
 @section('after-scripts')
-<script>
-    const config = {
-        ajax: {
-            headers: {
-                'X-CSRF-TOKEN': "{{ csrf_token() }}"
-            }
-        },
-        date: {format: "{{config('core.user_date_format')}}", autoHide: true},
-    };
-
-    const Index = {
-        initRow: '',
-
-        init() {
-            $.ajaxSetup(config.ajax);
-            // month picker
-            $('.datepicker').datepicker({
-                autoHide: true,
-                changeMonth: true,
-                changeYear: true,
-                showButtonPanel: true,
-                format: 'MM-yyyy',
-                onClose: function(dateText, inst) { 
-                    $(this).datepicker('setDate', new Date(inst.selectedYear, inst.selectedMonth, 1));
-                }
-            }).datepicker('setDate', "{{ date('m-Y') }}");
-        
-            Index.initRow = $('#transactions tbody tr:first');
-
-            $('#recon-form').submit(Index.onFormSubmit);
-            $('#account').change(Index.onAccountChange);
-            $('#end_date').change(() => $('#account').change());
-            $('#end_balance').keyup(Index.onEndBalKeyUp);
-            $('#end_balance').change(Index.onEndBalChange);
-            $('#check-all').change(Index.onCheckAllChange);
-            $('#transactions').on('change', '.check', Index.onCheckBoxChange);
-            
-            // editing
-            const data = @json(@$reconciliation);
-            const data_items = @json(@$reconciliation->items);
-            if (data && data_items.length) {
-                $('#account').attr('disabled', true);
-                $('#end_date').datepicker('setDate', data.end_date).attr('disabled', true);
-                $('#end_balance').keyup().change();
-                $('#transactions tbody tr').each(function() {
-                    const row = $(this);
-                    const checkinp = row.find('.check-inp');
-                    if (checkinp.val() == 1) row.find('.check').prop('checked', true).change();
-                });
-            } 
-        },
-
-        onFormSubmit(e) {
-            const balanceDiff = accounting.unformat($('#balance_diff').val());
-            const msg = 'Balance Difference is Not Zero! Your Transactions Do Not Match Your Statement. Are you sure to proceed?';
-            if (balanceDiff != 0 && !confirm(msg)) e.preventDefault();
-        },
-
-        onAccountChange() {
-            $('#transactions tbody tr').remove();
-            $('#begin_balance').val('0.00');
-            $('.begin-bal').text('0.00');
-            if (!this.value) return;
-
-            const url = "{{ route('biller.reconciliations.account_items') }}";
-            const params = {account_id: $(this).val(), end_date: $('#end_date').val()};
-            $.post(url, params, data => {
-                data.forEach((v,i) => {
-                    if(i == 0) {
-                        $('#begin_balance').val(accounting.formatNumber(v.begin_balance*1));
-                        $('.begin-bal').text(accounting.formatNumber(v.begin_balance*1));
-                    }
-                    const row = Index.initRow.clone();
-                    row.removeClass('d-none');
-                    row.find('.journalitem-id').val(v.journal_item_id);
-                    row.find('.journal-id').val(v.man_journal_id);
-                    row.find('.pmt-id').val(v.payment_id);
-                    row.find('.dep-id').val(v.deposit_id);
-                    row.find('.date').text(v.date.split('-').reverse().join('-') || '');
-                    row.find('.type').text(v.type);
-                    row.find('.trans-ref').text(v.trans_ref);
-                    row.find('.client-supplier').text(v.client_supplier);
-                    row.find('.note').text(v.note);
-                    row.find('.cash').text(accounting.formatNumber(v.amount*1));
-                    $('#transactions tbody').append(row);
-                });
-            });
-        },
-
-        onEndBalChange() {
-            const value = accounting.unformat(this.value);
-            $(this).val(accounting.formatNumber(value));
-        },
-
-        onEndBalKeyUp() {
-            const endBal = accounting.unformat(this.value);
-            const clearedBal = accounting.unformat($('.cleared-bal').text());
-            const balanceDiff = endBal - clearedBal;
-
-            $('.endin-bal').text(accounting.formatNumber(endBal));
-            $('.bal-diff').text(accounting.formatNumber(balanceDiff));
-            $('#balance_diff').val(accounting.formatNumber(balanceDiff));
-        },
-
-        onCheckBoxChange() {
-            const row = $(this).parents('tr');
-            const type = row.find('.type').text();
-            const endBal = accounting.unformat($('.endin-bal').text());
-            const beginBal = accounting.unformat($('.begin-bal').text());
-            const cash = accounting.unformat(row.find('.cash').text());
-            let cashIn = accounting.unformat($('.cash-in').text());
-            let cashOut = accounting.unformat($('.cash-out').text());
-            if (type == 'cash-in') {
-                if ($(this).is(':checked')) cashIn += cash;
-                else cashIn -= cash;
-            }
-            if (type == 'cash-out') {
-                if ($(this).is(':checked')) cashOut += cash;
-                else cashOut -= cash;
-            }
-
-            if ($(this).is(':checked')) row.find('.check-inp').val(1);
-            else row.find('.check-inp').val('');
-
-            $('.cash-in').text(accounting.formatNumber(cashIn));
-            $('.cash-out').text(accounting.formatNumber(cashOut));
-            $('#cash_in').val(accounting.formatNumber(cashIn));
-            $('#cash_out').val(accounting.formatNumber(cashOut));
-
-            const clearedBal = beginBal - cashOut + cashIn;
-            $('.cleared-bal').text(accounting.formatNumber(clearedBal));
-            $('#cleared_balance').val(accounting.formatNumber(clearedBal));
-
-            const balDiff = endBal - clearedBal;
-            $('.bal-diff').text(accounting.formatNumber(balDiff));
-            $('#balance_diff').val(accounting.formatNumber(balDiff));
-        },
-
-        onCheckAllChange() {
-            let cashIn = 0;
-            let cashOut = 0;
-            if ($(this).is(':checked')) {
-                $('#transactions tbody tr').each(function() {
-                    const row = $(this);
-                    row.find('.check').prop('checked', true);
-                    row.find('.check-inp').val(1);
-                    const type = row.find('.type').text();
-                    const cash = accounting.unformat(row.find('.cash').text());
-                    if (type == 'cash-in') cashIn += cash;
-                    if (type == 'cash-out') cashOut += cash;
-                });
-            } else {
-                $('#transactions tbody tr').each(function() {
-                    const row = $(this);
-                    row.find('.check').prop('checked', false);
-                    row.find('.check-inp').val('');
-                });
-            }
-            $('.cash-in').text(accounting.formatNumber(cashIn));
-            $('.cash-out').text(accounting.formatNumber(cashOut));
-            $('#cash_in').val(accounting.formatNumber(cashIn));
-            $('#cash_out').val(accounting.formatNumber(cashOut));
-
-            const endBal = accounting.unformat($('.endin-bal').text());
-            const beginBal = accounting.unformat($('.begin-bal').text());
-
-            const clearedBal = beginBal - cashOut + cashIn;
-            $('.cleared-bal').text(accounting.formatNumber(clearedBal));
-            $('#cleared_balance').val(accounting.formatNumber(clearedBal));
-
-            const balDiff = endBal - clearedBal;
-            $('.bal-diff').text(accounting.formatNumber(balDiff));
-            $('#balance_diff').val(accounting.formatNumber(balDiff));
-        }
-    }
-
-    $(Index.init);
-</script>
+@include('focus.reconciliations.form_js')
 @endsection

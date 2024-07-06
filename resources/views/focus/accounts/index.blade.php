@@ -17,6 +17,23 @@
         </div>
     </div>
     <div class="content-body">
+        <div class="card">
+            <div class="card-content">
+                <div class="card-body">
+                    <div class="row form-group">
+                        <div class="col-4">
+                            <select id="category" class="form-control custom-select">
+                                <option value="">-- Account Category --</option>
+                                @foreach ($categories as $item)
+                                    <option value="{{ $item }}">{{ $item }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-12">
                 <div class="card">
@@ -54,69 +71,55 @@
 @section('after-scripts')
 {{ Html::script(mix('js/dataTable.js')) }}
 <script>
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': "{{ csrf_token() }}"
-        }
-    });
-    setTimeout(() => draw_data(), "{{ config('master.delay') }}")
-            
-    function draw_data() {
-        var dataTable = $('#accounts-table').dataTable({
-            processing: true,
-            serverSide: true,
-            responsive: true,
-            stateSave: true,
-            ajax: {
-                url: "{{ route('biller.accounts.get') }}",
-                type: 'post'
-            },
-            columns: [{
-                    data: 'DT_Row_Index',
-                    name: 'id'
-                },
-                {
-                    data: 'system_type',
-                    name: 'system_type'
-                },
-                {
-                    data: 'number',
-                    name: 'number'
-                },
-                {
-                    data: 'holder',
-                    name: 'holder'
-                },
-                {
-                    data: 'account_type',
-                    name: 'account_type'
-                },
-                {
-                    data: 'debit',
-                    name: 'debit'
-                },
-                {
-                    data: 'credit',
-                    name: 'credit'
-                },
-                {
-                    data: 'balance',
-                    name: 'balance'
-                },
-                {
-                    data: 'actions',
-                    name: 'actions',
-                    searchable: false,
-                    sortable: false
-                }
-            ],
-            order: [
-                [0, "desc"]
-            ],
-            searchDelay: 500,
-            dom: 'Blfrtip',
-            buttons: ['csv', 'excel', 'print'],
-        });
+    const config = {
+        ajax: {
+            headers: {
+                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+            }
+        },
     }
+
+    const Index = {
+        init() {
+            $.ajaxSetup(config.ajax);
+            $('#category').change(Index.categoryChange);
+            Index.drawDataTable();
+        },
+
+        categoryChange() {
+            $('#accounts-table').DataTable().destroy();
+            return Index.drawDataTable();
+        },
+
+        drawDataTable() {
+            $('#accounts-table').dataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                stateSave: true,
+                ajax: {
+                    url: "{{ route('biller.accounts.get') }}",
+                    type: 'POST',
+                    data: {category: $('#category').val()}
+                },
+                columns: [
+                    {data: 'DT_Row_Index', name: 'id'},
+                    ...['system_type', 'number', 'holder', 'account_type', 'debit', 'credit', 'balance'].map(v => ({data: v, name: v})),    
+                    {
+                        data: 'actions',
+                        name: 'actions',
+                        searchable: false,
+                        sortable: false
+                    }
+                ],
+                order: [[0, "desc"]],
+                searchDelay: 500,
+                dom: 'Blfrtip',
+                buttons: ['csv', 'excel', 'print'],
+            });
+        },
+    }
+
+    $(Index.init);
 </script>
 @endsection

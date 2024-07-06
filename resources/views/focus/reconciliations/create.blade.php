@@ -22,7 +22,7 @@
             @include('focus.reconciliations.form')
             <div class="edit-form-btn row">
                 {{ link_to_route('biller.reconciliations.index', trans('buttons.general.cancel'), [], ['class' => 'btn btn-danger btn-md col-1 ml-auto mr-1']) }}
-                {{ Form::submit(trans('buttons.general.crud.create'), ['class' => 'btn btn-primary btn-md col-1 mr-2']) }}                                           
+                {{ Form::submit('Submit', ['class' => 'btn btn-primary btn-md col-1 mr-2']) }}                                           
             </div>
         {{ Form::close() }}
     </div>
