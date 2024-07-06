@@ -115,7 +115,7 @@
                                             <i class="icon-clock font-large-1 white"></i>
                                         </div>
                                         <div class="p-2 bg-gradient-x-warning white media-body radius-8-right">
-                                            <h6>Yesterday's Labour Hours XXXX</h6>
+                                            <h6>Yesterday's Labour Hours PQRSTU</h6>
                                             <h5 class="text-bold-400 mb-0">
                                                 {{ $labourAllocationData['yesterday']['ylaTotalManHours'] }} hrs
                                                 <small class="float-right mr-4">Target: 72</small>
