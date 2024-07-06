@@ -1,7 +1,9 @@
 <?php
 
 Route::group(['namespace' => 'sale_return'], function () {
-    Route::post('sale_returns/invoice_stock_items', 'SaleReturnsController@invoice_stock_items')->name('sale_returns.invoice_stock_items');
+    Route::post('sale_returns/select_quotes', 'SaleReturnsController@select_quotes')->name('sale_returns.select_quotes');
+    Route::post('sale_returns/select_invoices', 'SaleReturnsController@select_invoices')->name('sale_returns.select_invoices');
+    Route::post('sale_returns/issued_stock_items', 'SaleReturnsController@issued_stock_items')->name('sale_returns.issued_stock_items');
     Route::resource('sale_returns', 'SaleReturnsController');
     // datatable
     Route::post('sale_returns/get', 'SaleReturnsTableController')->name('sale_returns.get');

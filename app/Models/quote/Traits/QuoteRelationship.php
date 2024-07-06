@@ -19,13 +19,11 @@ use App\Models\project\BudgetSkillset;
 use App\Models\project\Project;
 use App\Models\project\ProjectQuote;
 use App\Models\projectstock\Projectstock;
-use App\Models\quote\Quote;
 use App\Models\stock_issue\StockIssue;
 use App\Models\term\Term;
 use App\Models\verifiedjcs\VerifiedJc;
 use App\Models\quote\EquipmentQuote;
 use App\Models\quote\QuoteInvoice;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -33,6 +31,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 trait QuoteRelationship
 {
+    public function stock_issues()
+    {
+        return $this->hasMany(StockIssue::class);
+    }
+
     public function project()
     {
         // return $this->hasOne(Project::class, 'main_quote_id');

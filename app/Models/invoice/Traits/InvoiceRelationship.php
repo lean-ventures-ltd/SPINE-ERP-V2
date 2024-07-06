@@ -6,7 +6,6 @@ use App\Models\branch\Branch;
 use App\Models\account\Account;
 use App\Models\creditnote\CreditNote;
 use App\Models\currency\Currency;
-use App\Models\project\ProjectRelations;
 use App\Models\lead\Lead;
 use App\Models\customer\Customer;
 use App\Models\items\InvoiceItem;
@@ -18,12 +17,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\project\Project;
 use App\Models\project\ProjectInvoice;
 use App\Models\quote\QuoteInvoice;
+use App\Models\stock_issue\StockIssue;
 
 /**
  * Class InvoiceRelationship
  */
 trait InvoiceRelationship
 {
+    public function stock_issues()
+    {
+        return $this->hasMany(StockIssue::class);
+    }
+    
     public function quotes()
     {
         return $this->hasManyThrough(Quote::class, InvoiceItem::class, 'invoice_id', 'id', 'id', 'quote_id');

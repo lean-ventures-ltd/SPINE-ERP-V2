@@ -1,19 +1,39 @@
 {{ Html::script('focus/js/select2.min.js') }}
 <script type="text/javascript">
+    $('table thead th').css({'paddingBottom': '3px', 'paddingTop': '3px'});
+    $('table tbody td').css({paddingLeft: '2px', paddingRight: '2px'});
+    $('table thead').css({'position': 'sticky', 'top': 0, 'zIndex': 100});
     config = {
         ajax: {headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"}},
         date: {format: "{{ config('core.user_date_format')}}", autoHide: true},
         invoiceSelect: {
             allowClear: true,
             ajax: {
-                url: "{{ route('biller.invoices.client_invoices') }}",
+                url: "{{ route('biller.sale_returns.select_invoices') }}",
                 dataType: 'json',
-                type: 'GET',
+                type: 'POST',
                 data: ({term}) => ({search: term, customer_id: $("#customer").val()}),
                 processResults: data => {
                     return { 
                         results: data.map(v => ({
-                            text: `${v.tid}`.length < 4? 'INV-' + `000${v.tid}`.slice(-4) + ` ${v.notes}` : `INV-${v.tid} ${v.notes}`, 
+                            text: v.notes,
+                            id: v.id
+                        }))
+                    }
+                },
+            }
+        },
+        quoteSelect: {
+            allowClear: true,
+            ajax: {
+                url: "{{ route('biller.sale_returns.select_quotes') }}",
+                dataType: 'json',
+                type: 'POST',
+                data: ({term}) => ({search: term, customer_id: $("#customer").val(), reference: $('#ref').val()}),
+                processResults: data => {
+                    return { 
+                        results: data.map(v => ({
+                            text: v.notes,
                             id: v.id
                         }))
                     }
@@ -26,15 +46,17 @@
         initRow: '',
 
         init() {
-            $('#productsTbl tbody td').css({paddingLeft: '2px', paddingRight: '2px'});
             $.ajaxSetup(config.ajax);
             $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
             $('#customer').select2({allowClear: true});
             $('#invoice').select2(config.invoiceSelect);
+            $('#quote').select2(config.quoteSelect);
             Index.initRow = $('#productsTbl tbody tr:first');
 
-            $('#customer').change(() => $('#invoice').val('').change());
+            $('#customer').change(Index.customerChange);
+            $('#ref').change(Index.referenceChange).change();
             $('#invoice').change(Index.invoiceChange);
+            $('#quote').change(Index.quoteChange);
             
             $('#productsTbl').on('keyup', '.return-qty', Index.returnQtyChange);
                 
@@ -47,16 +69,53 @@
             }
         },
 
+        customerChange() {
+            $('#invoice').val('').change();
+            $('#quote').val('').change();
+        },
+
+        referenceChange() {
+            if (this.value == 'invoice') {
+                $('.quote-col').addClass('d-none');
+                $('.invoice-col').removeClass('d-none');
+            } else {
+                $('.quote-col').removeClass('d-none');
+                $('.invoice-col').addClass('d-none');
+            }
+            $('#invoice').val('').change();
+            $('#quote').val('').change();
+        },
+
+        quoteChange() {
+            $('#productsTbl tbody').html('');
+            const url = "{{ route('biller.sale_returns.issued_stock_items') }}";
+            const params = {quote_id: $(this).val()};
+            $.post(url, params, data => {
+                data.forEach((v,i) => {
+                    const row = Index.initRow.clone();
+                    row.find('.serial').text(i+1);
+                    row.find('.name').text(v.name);
+                    row.find('.product-code').text(v.code);
+                    row.find('.unit').text(v.uom);
+                    row.find('.qty-onhand').text(+v.qty);
+                    row.find('.qty-onhand-inp').val(+v.qty);
+                    row.find('.cost').val(+v.purchase_price);
+                    row.find('.prodvar-id').val(v.id);
+                    row.find('.verified-item-id').val(v.verified_item_id);
+                    $('#productsTbl tbody').append(row);
+                });                
+            });
+        },
+
         invoiceChange() {
             $('#productsTbl tbody').html('');
-            const url = "{{ route('biller.sale_returns.invoice_stock_items') }}";
+            const url = "{{ route('biller.sale_returns.issued_stock_items') }}";
             const params = {invoice_id: $(this).val()};
             $.post(url, params, data => {
                 data.forEach((v,i) => {
                     const row = Index.initRow.clone();
                     row.find('.serial').text(i+1);
                     row.find('.name').text(v.name);
-                    row.find('.reference').text(v.reference);
                     row.find('.product-code').text(v.code);
                     row.find('.unit').text(v.uom);
                     row.find('.qty-onhand').text(+v.qty);
@@ -98,7 +157,6 @@
                     row.find('.new-qty-inp').val(qtyOnHand - originValue + returnQty);
                 } 
             }
-
             Index.calcTotals();
         },
 

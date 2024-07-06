@@ -69,19 +69,6 @@ class StockIssueRepository extends BaseRepository
         $productvar_ids = $stock_issue->items->pluck('productvar_id')->toArray();
         updateStockQty($productvar_ids);
 
-            $product = ProductVariation::where('id', $productId)->first();
-
-            foreach ($issuedProducts as $isp){
-
-                if (intval($isp['productvar_id']) === $productId && intval($isp['issue_qty']) > 0) {
-                    $product->qty -= intval($isp['issue_qty']);
-                    $product->save();
-                }
-            }
-        }
-
-//        $productsAfter = ProductVariation::whereIn('id', $productvarIds)->get()->toArray();
-//        return StockIssue::where('id', $stock_issue->id)->with('items')->first();//->with('items')->get();
         /** accounting */
         $this->post_stock_issue($stock_issue);
 

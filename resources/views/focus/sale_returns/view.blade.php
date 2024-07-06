@@ -26,6 +26,7 @@
                                 'Date' => dateFormat($sale_return->date),
                                 'Customer' => (@$sale_return->customer->company ?: @$sale_return->customer->name),
                                 'Invoice' => $sale_return->invoice? gen4tid('INV-', $sale_return->invoice->tid) . ' ' . $sale_return->invoice->notes : '',
+                                'Quote / PI' => $sale_return->quote? gen4tid($sale_return->quote->bank_id? 'PI-' : 'QT-', $sale_return->quote->tid) . ' ' . $sale_return->quote->notes : '',
                                 'Stock Total' => numberFormat($sale_return->total),
                             ];
                         @endphp
@@ -43,7 +44,7 @@
                                 <tr class="bg-gradient-directional-blue white">
                                     <th>#</th>
                                     <th width="25%">Stock Item</th>
-                                    <th>Quote/PI Ref</th>
+                                    
                                     <th>Item Code</th>
                                     <th>UoM</th>
                                     <th>Qty On-Hand</th>
@@ -58,11 +59,6 @@
                                     <tr>
                                         <td>{{ $i+1 }}</td>
                                         <td>{{ @$item->productvar->name }}</td>
-                                        @php
-                                            $quote = @$item->verified_item->quote;
-                                            $tid = $quote? gen4tid($quote->bank_id? 'PI-': 'QT-', $quote->tid) : '';
-                                        @endphp
-                                        <td>{{ $tid }}</td>
                                         <td><b>{{ @$item->productvar->code }}</b></td>
                                         <td>{{ @$item->productvar->product->unit->code }}</td>
                                         <td>{{ +$item->qty_onhand }}</td>

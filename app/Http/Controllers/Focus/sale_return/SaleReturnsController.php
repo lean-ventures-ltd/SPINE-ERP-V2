@@ -22,6 +22,7 @@ use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
 use App\Models\customer\Customer;
 use App\Models\invoice\Invoice;
+use App\Models\quote\Quote;
 use App\Models\sale_return\SaleReturn;
 use App\Models\warehouse\Warehouse;
 use App\Repositories\Focus\sale_return\SaleReturnRepository;
@@ -144,11 +145,53 @@ class SaleReturnsController extends Controller
     }
 
     /**
+     * Fetch client invoices
+     */
+    public function select_quotes(Request $request)
+    {
+        $w = $request->search; 
+        $invoices = Quote::when(request('reference'), fn($q) => request('reference') == 'proforma'? $q->where('bank_id', '>', 0) : $q->where('bank_id', 0))
+        ->whereHas('currency', fn($q) => $q->where('rate', 1))
+        ->whereHas('stock_issues')
+        ->where('customer_id', $request->customer_id)
+        ->where(fn($q) => $q->where('notes', 'LIKE', "%{$w}%")->orWhere('tid', 'LIKE', "%{$w}%"))
+        ->limit(6)
+        ->get()
+        ->map(function($v) {
+            $v->notes = gen4tid($v->bank_id? 'PI-' : 'QT-', $v->tid) . ' ' . $v->notes;
+            return $v;
+        });
+            
+        return response()->json($invoices);
+    }
+
+    /**
+     * Fetch client invoices
+     */
+    public function select_invoices(Request $request)
+    {
+        $w = $request->search; 
+        $invoices = Invoice::whereHas('currency', fn($q) => $q->where('rate', 1))
+        ->whereHas('stock_issues')
+        ->where('customer_id', $request->customer_id)
+        ->where(fn($q) => $q->where('notes', 'LIKE', "%{$w}%")->orWhere('tid', 'LIKE', "%{$w}%"))
+        ->limit(6)
+        ->get()
+        ->map(function($v) {
+            $v->notes = gen4tid('INV-', $v->tid) . ' ' . $v->notes;
+            return $v;
+        });
+            
+        return response()->json($invoices);
+    }
+
+    /**
      * Invoice Stock Items
      */
-    public function invoice_stock_items(Request $request)
+    public function issued_stock_items(Request $request)
     {
         $productvars = [];
+        // invoice stock items
         $invoice = Invoice::find(request('invoice_id'));
         if ($invoice && $invoice->products) {
             $quote_ids = $invoice->products->pluck('quote_id')->toArray();
@@ -161,7 +204,6 @@ class SaleReturnsController extends Controller
                         foreach ($quote->verified_products as $verified_prod) {
                             $productvar = $verified_prod->product_variation;
                             if ($productvar) {
-                                $productvar['reference'] = gen4tid($quote->bank_id? 'PI-' : 'QT-', $quote->tid);
                                 $productvar['verified_item_id'] = $verified_prod->id;
                                 $productvar['uom'] = @$productvar->product->unit->code;
                                 $productvars[] = $productvar;
@@ -174,11 +216,22 @@ class SaleReturnsController extends Controller
                 elseif ($inv_product->product_id) {
                     $productvar = $inv_product->product_variation;
                     if ($productvar) {
-                        $productvar['reference'] = '';
                         $productvar['verified_item_id'] = null;
                         $productvar['uom'] = @$productvar->product->unit->code;
                         $productvars[] = $productvar;
                     }
+                }
+            }
+        }
+        // quote / pi stock items
+        $quote = Quote::find(request('quote_id'));
+        if ($quote) {
+            foreach ($quote->products as $quote_prod) {
+                $productvar = $quote_prod->variation;
+                if ($productvar) {
+                    $productvar['verified_item_id'] = null;
+                    $productvar['uom'] = @$productvar->product->unit->code;
+                    $productvars[] = $productvar;
                 }
             }
         }
