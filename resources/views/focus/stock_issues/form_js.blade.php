@@ -60,6 +60,7 @@
             $('#productsTbl tbody td').css({paddingLeft: '5px', paddingRight: '5px', paddingBottom: 0});
             $.ajaxSetup(config.ajax);
             $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
+            $('#account').select2({ allowClear: true });
             Index.quoteOpts = $('#quote option:not(:first)').clone();
             ['#employee', '#customer', '#project', '#quote'].forEach(v => $(v).select2({allowClear: true}));
 
@@ -98,6 +99,19 @@
                     row.find('.amount').val(v.amount*1);
                     row.find('.prodvar-id').val(v.productvar_id);
                 });
+                if (data.issue_to == 'Employee') {
+                    $('#employee').parents(".select-col").removeClass('d-none');
+                    $('#productsTbl .assignee').attr('disabled', true);
+                } else if (data.issue_to == 'Customer') {
+                    $('#customer').parents(".select-col").removeClass('d-none');
+                    $('#employee').parents(".select-col").addClass('d-none');
+                    $('#productsTbl .assignee').attr('disabled', false);
+                } else {
+                    $('#project').parents(".select-col").removeClass('d-none');
+                    $('#employee').parents(".select-col").addClass('d-none');
+                    $('#productsTbl .assignee').attr('disabled', false);
+
+                }
                 Index.calcTotals();
             }
 

@@ -650,12 +650,14 @@
                 const row = $(this).parents("tr:first");
 
                 if (row.hasClass('misc')) {
-                    $('#productid-' + i).val(data.id);
+                    $('#productid-' + i).val(data.product_id);
                     $('#name-' + i).val(data.name);
                     $('#unit-' + i).val(data.unit);
                     $('#qty-' + i).val(1);
                     $('#estqty-' + i).val(1);
                     $('#taxrate-' + i).val(0);
+                    $('#product_type-' + i).val(data.product_type);
+                    $('#client_product_id-' + i).val(data.client_product_id);
 
                     const currencyRate = $('#currency option:selected').attr('currency_rate');
                     if (currencyRate > 1) {
@@ -674,7 +676,7 @@
                     // $('#rate-' + i).val(accounting.formatNumber(rate)).change();
                     $('#rate-' + i).val(accounting.formatNumber(data.purchase_price)).change();
 
-
+                    
 
 
                     if (data.units) {
@@ -682,10 +684,12 @@
                         if (units.length) $('#unit-' + i).val(units[0].code);
                     }
                 } else {
-                    $('#productid-' + i).val(data.id);
+                    $('#productid-' + i).val(data.product_id);
                     $('#name-' + i).val(data.name);
                     $('#unit-' + i).val(data.unit);
                     $('#qty-' + i).val(1);
+                    $('#product_type-' + i).val(data.product_type);
+                    $('#client_product_id-' + i).val(data.client_product_id);
 
                     const currencyRate = $('#currency option:selected').attr('currency_rate');
                     if (currencyRate > 1) {

@@ -178,12 +178,16 @@ class ProductsController extends Controller
                 ->map(function ($v) {
                     $value = $v->row_num > 0 ? "($v->row_num)" : '';
                     return $v->fill([
+                        'product_id' => $v->variation ? $v->variation->id : 0,
                         'name' => "{$v->descr} {$value}",
                         'unit' => $v->uom,
                         'price' => $v->rate,
                         'purchase_price' => $v->variation ? $v->variation->purchase_price : 0,
+                        'product_type' => 'client_product',
+                        'client_product_id' => $v->id,
                     ]);
                 });
+
 
             return response()->json($products);
         }
@@ -208,6 +212,9 @@ class ProductsController extends Controller
                 'product_des' => @$row->product->product_des,
                 'units' => $row->product? $row->product->units->toArray(): [],
                 'warehouse' => $row->warehouse? $row->warehouse->toArray() : [],
+                'product_type' => 'inventory_product',
+                'client_product_id' => 0,
+                'product_id' => $row->id,
             ]);
             
             // set purchase price (LIFO valuation method)

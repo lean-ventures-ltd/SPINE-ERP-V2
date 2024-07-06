@@ -65,7 +65,7 @@
 </div>
 <hr>
 <div class="row mb-1">
-    <div class="col-md-6 col-12">
+    <div class="col-md-4 col-12">
         <label for="quote">Load Items From Quote / PI</label>
         <select
                 name="quote_id"
@@ -88,7 +88,7 @@
         </select>
     </div>
 
-    <div class="col-md-6 col-12">
+    <div class="col-md-4 col-12">
 
         <label for="budget_line" class="caption" style="display: inline-block;">Project Budget Line</label>
 
@@ -97,6 +97,17 @@
         </select>
 
         <p id="budget_line_warning" class="text-red ml-2" style="color: red; font-size: 16px; "> </p>
+    </div>
+    <div class="col-md-4 col-12">
+
+        <label for="ledger" class="caption" style="display: inline-block;">Ledger Account</label>
+
+        <select id="account" name="account_id" class="form-control" data-placeholder="Search Ledger Account">
+            <option value="">Search Ledger Account</option>
+            @foreach ($accounts as $account)
+                <option value="{{$account->id}}" {{$account->id == @$stock_issue->account_id ? 'selected' : ''}}>{{$account->holder}}</option>
+            @endforeach
+        </select>
     </div>
 
 </div>

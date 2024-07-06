@@ -120,7 +120,7 @@ class QuotesController extends Controller
         ]);
         $data_items = $request->only([
             'numbering', 'product_id', 'product_name', 'product_qty', 'product_subtotal', 'product_price', 'tax_rate',
-            'unit', 'estimate_qty', 'buy_price', 'row_index', 'a_type', 'misc'
+            'unit', 'estimate_qty', 'buy_price', 'row_index', 'a_type', 'misc','product_type','client_product_id'
         ]);
 
         $skill_items = $request->only(['skill', 'charge', 'hours', 'no_technician' ]);
@@ -185,7 +185,7 @@ class QuotesController extends Controller
         ]);
         $data_items = $request->only([
             'id', 'numbering', 'product_id', 'product_name', 'product_qty', 'product_subtotal', 'product_price', 'tax_rate',
-            'unit', 'estimate_qty', 'buy_price', 'row_index', 'a_type', 'misc'
+            'unit', 'estimate_qty', 'buy_price', 'row_index', 'a_type', 'misc','product_type','client_product_id'
         ]);
         $skill_items = $request->only(['skill_id', 'skill', 'charge', 'hours', 'no_technician']);
         $equipments = $request->only(['eqid','unique_id','equipment_tid','equip_serial','make_type','item_id','capacity','location','fault','row_index_id']);

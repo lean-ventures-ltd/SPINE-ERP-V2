@@ -53,7 +53,7 @@ class StockIssueRepository extends BaseRepository
         }
 
         // create stock issue
-        $data = Arr::only($input, ['date', 'ref_no', 'issue_to', 'employee_id', 'customer_id', 'project_id', 'note', 'quote_id', 'budget_line', 'total']);
+        $data = Arr::only($input, ['date', 'ref_no', 'issue_to', 'employee_id', 'customer_id', 'project_id', 'note', 'quote_id', 'budget_line', 'total','account_id']);
 
         $stock_issue = StockIssue::create($data);
 
@@ -115,7 +115,7 @@ class StockIssueRepository extends BaseRepository
         }
 
         // create stock issue
-        $data = Arr::only($input, ['date', 'ref_no', 'issue_to', 'employee_id', 'customer_id', 'project_id', 'note', 'quote_id', 'budget_line', 'total']);
+        $data = Arr::only($input, ['date', 'ref_no', 'issue_to', 'employee_id', 'customer_id', 'project_id', 'note', 'quote_id', 'budget_line', 'total','account_id']);
         $result = $stock_issue->update($data);
 
         $data_items = array_diff_key($input, $data);
@@ -175,11 +175,18 @@ class StockIssueRepository extends BaseRepository
     {
         DB::beginTransaction();
         $productvar_ids = $stock_issue->items()->pluck('productvar_id')->toArray();
+        foreach ($stock_issue->items as $item) {
+            $product_variation = $item->productvar;
+            if($product_variation){
+                $product_variation->qty += $item->issue_qty;
+                $product_variation->update(); 
+            }
+        }
 
         $stock_issue->transactions()->delete();
         $stock_issue->items()->delete();
         // update stock Qty
-        updateStockQty($productvar_ids);
+        // updateStockQty($productvar_ids);
 
         if ($stock_issue->delete()) {
             DB::commit();

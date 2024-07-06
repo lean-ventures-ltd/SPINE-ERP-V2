@@ -593,12 +593,14 @@
                     const row = $(this).parents("tr:first");
 
                     if (row.hasClass('misc')) {
-                        $('#productid-' + i).val(data.id);
+                        $('#productid-' + i).val(data.product_id);
                         $('#name-' + i).val(data.name);
                         $('#unit-' + i).val(data.unit);
                         $('#qty-' + i).val(1);
                         $('#estqty-' + i).val(1);
                         $('#taxrate-' + i).val(0);
+                        $('#product_type-' + i).val(data.product_type);
+                        $('#client_product_id-' + i).val(data.client_product_id);
 
                         // currency conversion
                         const currencyRate = $('#currency option:selected').attr('currency_rate');
@@ -626,10 +628,12 @@
                             });
                         }
                     } else {
-                        $('#productid-' + i).val(data.id);
+                        $('#productid-' + i).val(data.product_id);
                         $('#name-' + i).val(data.name);
                         $('#unit-' + i).val(data.unit);
                         $('#qty-' + i).val(1);
+                        $('#product_type-' + i).val(data.product_type);
+                        $('#client_product_id-' + i).val(data.client_product_id);
                         // currency conversion
                         const currencyRate = $('#currency option:selected').attr('currency_rate');
                         if (currencyRate > 1) {
