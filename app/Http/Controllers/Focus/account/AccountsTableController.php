@@ -96,7 +96,8 @@ class AccountsTableController extends Controller
                 return  @$account->accountType->name;
             })
             ->addColumn('system_type', function ($account) {
-                return $account->system? 'default' : 'custom';
+                $ledger_status = $account->is_parent && $account->is_parent? 'sub-ledger' : 'ledger';
+                return $account->system? "default-{$ledger_status}" : "custom-{$ledger_status}";
             })
             ->addColumn('actions', function ($account) {
                 return $account->action_buttons;
