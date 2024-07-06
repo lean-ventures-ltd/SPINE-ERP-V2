@@ -31,7 +31,13 @@ class AccountRepository extends BaseRepository
    */
   public function getForDataTable()
   {
-    return $this->query()->get();
+    $q = $this->query();
+
+    $q->when(request('category'), function($q) {
+      $q->where('account_type', request('category'));
+    });
+    
+    return $q->get();
   }
 
   /**

@@ -164,8 +164,7 @@
                     <label for="refer_no" class="caption">{{trans('general.reference')}} No.</label>
                     <div class="input-group">
                         <div class="input-group-addon"><span class="icon-bookmark-o" aria-hidden="true"></span></div>                                            
-                        <input id="reference_no" type="text" name="doc_ref" class="form-control round" placeholder="{{ trans('general.reference') }}" value="{{ @$purchase->doc_ref_backup }}" required>
-
+                        <input id="reference_no" type="text" name="doc_ref" class="form-control round" placeholder="{{ trans('general.reference') }}" value="{{ @$purchase->doc_ref }}" required>
                     </div>
                 </div>
                 <div class="col-sm-4">
@@ -216,8 +215,6 @@
                         @endforeach
                     </select>
                 </div>
-
-
                 <div class="col-6">
                     <label for="payer" class="caption">Requisition Items</label>
                     <select class="form-control" id="quoteselect" data-placeholder="Search Quote">
@@ -226,8 +223,6 @@
                     </select>
                     <input type="hidden" name="quote_id" value="0" id="quoteid">
                 </div>
-
-
             </div>
         </div>
     </div>

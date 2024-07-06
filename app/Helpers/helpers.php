@@ -911,13 +911,9 @@ function sqlQuery($builder)
 // update Stock Quantity
 function updateStockQty($productvar_ids=[])
 {
-    foreach ($productvar_ids as $key => $id) {
-        // qty in
-        $op_stock_qty = \App\Models\items\OpeningStockItem::where('productvar_id', $id)->sum('qty');
-        $dir_purchase_qty = \App\Models\items\PurchaseItem::where('item_id', $id)->where('type', 'Stock')->sum('qty');
-        
-        $grn_qty = 0;
-        \App\Models\items\GoodsreceivenoteItem::whereHas('purchaseorder_item')
+    foreach ($productvar_ids as $id) {
+        // qty in        
+        $grn_items = \App\Models\items\GoodsreceivenoteItem::whereHas('purchaseorder_item')
         ->whereHas('goodsreceivenote', function($q) use($id) {
             $q->where(function($q) use($id) {
                 $q->whereHas('supplier', function($q) use($id) {
@@ -932,8 +928,9 @@ function updateStockQty($productvar_ids=[])
                 });
             });
         })
-        ->get()
-        ->each(function($v) use($grn_qty) {
+        ->get();
+        $grn_qty = 0;
+        foreach ($grn_items as $v) {
             // check if is default product variation or supplier product 
             $prod_variation = $v->productvariation;
             if (@$v->goodsreceivenote->purchaseorder->pricegroup_id && $v->supplier_product) {
@@ -956,20 +953,22 @@ function updateStockQty($productvar_ids=[])
             } elseif ($prod_variation) {
                 $grn_qty += $v->qty;
             }
-        });
-            
+        }
+        $op_stock_qty = \App\Models\items\OpeningStockItem::where('productvar_id', $id)->sum('qty');
+        $dir_purchase_qty = \App\Models\items\PurchaseItem::where('item_id', $id)->where('type', 'Stock')->sum('qty');
+        $sale_return_qty = \App\Models\sale_return\SaleReturnItem::where('productvar_id', $id)->sum('return_qty');    
         $pos_adj_qty = \App\Models\stock_adj\StockAdjItem::where('productvar_id', $id)->where('qty_diff', '>', 0)->sum('qty_diff');
-        $total_in = $op_stock_qty + $dir_purchase_qty + $grn_qty + $pos_adj_qty;
+        $total_in = $op_stock_qty + $dir_purchase_qty + $grn_qty + $pos_adj_qty + $sale_return_qty;
+        
+        // inter-location transfer
+        $transf_qty = \App\Models\items\StockTransferItem::where('productvar_id', $id)->sum('qty_transf');
+        $transf_rcv_qty = \App\Models\stock_rcv\StockRcvItem::where('productvar_id', $id)->sum('qty_rcv');
+        $total_in = $total_in - $transf_qty + $transf_rcv_qty;
+
         // qty out
         $neg_adj_qty = \App\Models\stock_adj\StockAdjItem::where('productvar_id', $id)->where('qty_diff', '<', 0)->sum('qty_diff');
         $issue_qty = \App\Models\stock_issue\StockIssueItem::where('productvar_id', $id)->sum('issue_qty');
         $total_out = $issue_qty + -$neg_adj_qty;
-
-        // inter-location transfer
-        $transf_qty = \App\Models\items\StockTransferItem::where('productvar_id', $id)->sum('qty_transf');
-        $transf_rcv_qty = \App\Models\stock_rcv\StockRcvItem::where('productvar_id', $id)->sum('qty_rcv');
-        $total_in -= $transf_qty;
-        $total_in += $transf_rcv_qty;
         
         \App\Models\product\ProductVariation::where('id', $id)->update(['qty' => ($total_in - $total_out)]);
     }

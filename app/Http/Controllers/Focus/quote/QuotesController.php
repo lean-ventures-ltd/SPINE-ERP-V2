@@ -302,7 +302,7 @@ class QuotesController extends Controller
     {
         $data = $request->only(['id', 'verify_no', 'gen_remark', 'project_closure_date', 'total', 'tax', 'subtotal']);
         $data_items = $request->only([
-            'remark', 'row_index', 'item_id', 'a_type', 'numbering', 'product_id',
+            'remark', 'row_index', 'item_id', 'a_type', 'numbering', 'product_id', 'product_tax', 'tax_rate',
             'product_name', 'product_qty', 'product_price', 'product_subtotal', 'unit'
         ]);
         $job_cards = $request->only(['type', 'jcitem_id', 'reference', 'date', 'technician', 'equipment_id', 'fault']);

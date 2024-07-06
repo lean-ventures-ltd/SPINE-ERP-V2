@@ -21,93 +21,89 @@
                 <div id="invoice-template" class="card-body">
                     <div class="row">
                         @if($invoice['status']!='canceled')
-                        <div class="col">
-                            <a href="{{ route('biller.invoices.edit_project_invoice', $invoice) }}" class="btn btn-warning mb-1"><i class="fa fa-pencil"></i> Edit</a>
-                            <a href="#modal_bill_payment_1" data-toggle="modal" data-remote="false" data-type="reminder" class="btn btn-large btn-info mb-1" title="Partial Payment"><span class="fa fa-money"></span> {{trans('general.make_payment')}} </a>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-facebook dropdown-toggle mb-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="fa fa-envelope-o"></span> {{trans('customers.email')}}
-                                </button>
-                                <div class="dropdown-menu"><a href="#sendEmail" data-toggle="modal" data-remote="false" class="dropdown-item send_bill" data-type="1" data-type1="notification">{{trans('general.invoice_notification')}}</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a href="#sendEmail" data-toggle="modal" data-remote="false" class="dropdown-item send_bill" data-type="2" data-type1="reminder">{{trans('general.payment_reminder')}}</a>
-                                    <a href="#sendEmail" data-toggle="modal" data-remote="false" class="dropdown-item send_bill" data-type="3" data-type1="received">{{trans('general.payment_received')}}</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a href="#sendEmail" data-toggle="modal" data-remote="false" class="dropdown-item send_bill" href="#" data-type="4" data-type1="overdue"> {{trans('general.payment_overdue')}}</a><a href="#sendEmail" data-toggle="modal" data-remote="false" class="dropdown-item send_bill" data-type="5" data-type1="refund">{{trans('general.refund_generated')}}</a>
+                            <div class="col">
+                                <a href="{{ route('biller.invoices.edit_project_invoice', $invoice) }}" class="btn btn-warning mb-1"><i class="fa fa-pencil"></i> Edit</a>
+                                <a href="#modal_bill_payment_1" data-toggle="modal" data-remote="false" data-type="reminder" class="btn btn-large btn-info mb-1" title="Partial Payment"><span class="fa fa-money"></span> {{trans('general.make_payment')}} </a>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-facebook dropdown-toggle mb-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="fa fa-envelope-o"></span> {{trans('customers.email')}}
+                                    </button>
+                                    <div class="dropdown-menu"><a href="#sendEmail" data-toggle="modal" data-remote="false" class="dropdown-item send_bill" data-type="1" data-type1="notification">{{trans('general.invoice_notification')}}</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a href="#sendEmail" data-toggle="modal" data-remote="false" class="dropdown-item send_bill" data-type="2" data-type1="reminder">{{trans('general.payment_reminder')}}</a>
+                                        <a href="#sendEmail" data-toggle="modal" data-remote="false" class="dropdown-item send_bill" data-type="3" data-type1="received">{{trans('general.payment_received')}}</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a href="#sendEmail" data-toggle="modal" data-remote="false" class="dropdown-item send_bill" href="#" data-type="4" data-type1="overdue"> {{trans('general.payment_overdue')}}</a><a href="#sendEmail" data-toggle="modal" data-remote="false" class="dropdown-item send_bill" data-type="5" data-type1="refund">{{trans('general.refund_generated')}}</a>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <!-- SMS -->
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-blue dropdown-toggle mb-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="fa fa-mobile"></span> {{trans('general.sms')}}
-                                </button>
-                                <div class="dropdown-menu"><a href="#sendSMS" data-toggle="modal" data-remote="false" class="dropdown-item send_sms" data-type="11" data-type1="notification">{{trans('general.invoice_notification')}}</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a href="#sendSMS" data-toggle="modal" data-remote="false" class="dropdown-item send_sms" data-type="12" data-type1="reminder">{{trans('general.payment_reminder')}}</a>
-                                    <a href="#sendSMS" data-toggle="modal" data-remote="false" class="dropdown-item send_sms" data-type="13" data-type1="received">{{trans('general.payment_received')}}</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a href="#sendSMS" data-toggle="modal" data-remote="false" class="dropdown-item send_sms" href="#" data-type="14" data-type1="overdue">{{trans('general.payment_overdue')}}</a><a href="#sendSMS" data-toggle="modal" data-remote="false" class="dropdown-item send_sms" data-type="15" data-type1="refund">{{trans('general.refund_generated')}}</a>
+                                <!-- SMS -->
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-blue dropdown-toggle mb-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="fa fa-mobile"></span> {{trans('general.sms')}}
+                                    </button>
+                                    <div class="dropdown-menu"><a href="#sendSMS" data-toggle="modal" data-remote="false" class="dropdown-item send_sms" data-type="11" data-type1="notification">{{trans('general.invoice_notification')}}</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a href="#sendSMS" data-toggle="modal" data-remote="false" class="dropdown-item send_sms" data-type="12" data-type1="reminder">{{trans('general.payment_reminder')}}</a>
+                                        <a href="#sendSMS" data-toggle="modal" data-remote="false" class="dropdown-item send_sms" data-type="13" data-type1="received">{{trans('general.payment_received')}}</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a href="#sendSMS" data-toggle="modal" data-remote="false" class="dropdown-item send_sms" href="#" data-type="14" data-type1="overdue">{{trans('general.payment_overdue')}}</a><a href="#sendSMS" data-toggle="modal" data-remote="false" class="dropdown-item send_sms" data-type="15" data-type1="refund">{{trans('general.refund_generated')}}</a>
+                                    </div>
                                 </div>
-                            </div>
-                            @php
-                                $valid_token = token_validator('','i' . $invoice['id'].$invoice['tid'],true);
-                                $link = route( 'biller.print_bill',[$invoice['id'],1,$valid_token,1]);
-                                $link_download = route( 'biller.print_bill',[$invoice['id'],1,$valid_token,2]);
-                                $link_preview = route( 'biller.view_bill',[$invoice['id'],1,$valid_token,0]);
-                                if ($invoice['i_class'] > 1) {
-                                    $title = trans('invoices.subscription');
-                                    $inv_no = prefix(6).' # '.$invoice['tid'];
-                                } elseif ($invoice['i_class'] == 1) {
-                                    $title = trans('invoices.pos');
-                                    $inv_no = prefix(10).' # '.$invoice['tid'];
-                                } else {
-                                    $title = trans('invoices.invoice');
-                                    $inv_no = prefix(1).' # '.$invoice['tid'];
-                                }
-                            @endphp
-                            <div class="btn-group ">
-                                <button type="button" class="btn btn-success mb-1 btn-min-width dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fa fa-print"></i> {{trans('general.print')}}
-                                </button>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item" target="_blank" href="{{$link}}">{{trans('general.print')}}</a>
+                                @php
+                                    $valid_token = token_validator('','i' . $invoice['id'].$invoice['tid'],true);
+                                    $link = route( 'biller.print_bill',[$invoice['id'],1,$valid_token,1]);
+                                    $link_download = route( 'biller.print_bill',[$invoice['id'],1,$valid_token,2]);
+                                    $link_preview = route( 'biller.view_bill',[$invoice['id'],1,$valid_token,0]);
+                                    if ($invoice['i_class'] > 1) {
+                                        $title = trans('invoices.subscription');
+                                        $inv_no = prefix(6).' # '.$invoice['tid'];
+                                    } elseif ($invoice['i_class'] == 1) {
+                                        $title = trans('invoices.pos');
+                                        $inv_no = prefix(10).' # '.$invoice['tid'];
+                                    } else {
+                                        $title = trans('invoices.invoice');
+                                        $inv_no = prefix(1).' # '.$invoice['tid'];
+                                    }
+                                @endphp
+                                <div class="btn-group ">
+                                    <button type="button" class="btn btn-success mb-1 btn-min-width dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa fa-print"></i> {{trans('general.print')}}
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" target="_blank" href="{{$link}}">{{trans('general.print')}}</a>
+                                    </div>
                                 </div>
-                            </div>
-                            <a href="{{$link_preview}}" class="btn btn-purple mb-1"><i class="fa fa-globe"></i> {{trans('general.preview')}}
-                            </a>
-                            <a href="#pop_model_1" data-toggle="modal" data-remote="false" class="btn btn-large btn-cyan mb-1" title="Change Status"><span class="fa fa-retweet"></span> {{trans('general.change_status')}}</a>
-                            <a href="#pop_model_2" class="btn btn-danger mb-1" data-toggle="modal" data-remote="false"><i class="fa fa-minus-circle"> </i> {{trans('general.cancel')}}
-                            </a>
-                            <div class="btn-group ">
-                                <button type="button" class="btn btn-primary mb-1 btn-min-width dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="icon-anchor"></i> {{trans('general.extra_options')}}
-                                </button>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{{route('biller.invoices.print_document',[$invoice['id'],1])}}">{{trans('general.delivery_note')}}</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="{{route( 'biller.print_bill',[$invoice['id'],3,$valid_token,1])}}">{{trans('general.proforma_invoice')}}</a>
+                                <a href="{{$link_preview}}" class="btn btn-purple mb-1"><i class="fa fa-globe"></i> {{trans('general.preview')}}
+                                </a>
+                                <a href="#pop_model_1" data-toggle="modal" data-remote="false" class="btn btn-large btn-cyan mb-1" title="Change Status"><span class="fa fa-retweet"></span> {{trans('general.change_status')}}</a>
+                                <a href="#pop_model_2" class="btn btn-danger mb-1" data-toggle="modal" data-remote="false"><i class="fa fa-minus-circle"> </i> {{trans('general.cancel')}}
+                                </a>
+                                <div class="btn-group ">
+                                    <button type="button" class="btn btn-primary mb-1 btn-min-width dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="icon-anchor"></i> {{trans('general.extra_options')}}
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="{{route('biller.invoices.print_document',[$invoice['id'],1])}}">{{trans('general.delivery_note')}}</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="{{route( 'biller.print_bill',[$invoice['id'],3,$valid_token,1])}}">{{trans('general.proforma_invoice')}}</a>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="btn-group ">
-                                <button type="button" class="btn btn-vimeo mb-1 btn-md dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-print"></i> {{trans('general.pos_print')}}
-                                </button>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{{route('biller.print_compact',[$invoice['id'],1,$valid_token,1])}}">{{trans('general.pdf_print')}}</a>
+                                <div class="btn-group ">
+                                    <button type="button" class="btn btn-vimeo mb-1 btn-md dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-print"></i> {{trans('general.pos_print')}}
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="{{route('biller.print_compact',[$invoice['id'],1,$valid_token,1])}}">{{trans('general.pdf_print')}}</a>
+                                    </div>
                                 </div>
+                                @if($invoice['i_class']>1)
+                                <a href="#pop_model_4" data-toggle="modal" data-remote="false" class="btn btn-large btn-blue-grey mb-1" title="Change Status"><span class="fa fa-superscript"></span> {{trans('invoices.subscription')}}</a>
+                                @endif
                             </div>
-                            @if($invoice['i_class']>1)
-                            <a href="#pop_model_4" data-toggle="modal" data-remote="false" class="btn btn-large btn-blue-grey mb-1" title="Change Status"><span class="fa fa-superscript"></span> {{trans('invoices.subscription')}}</a>
-                            @endif
-                        </div>
                         @else
                         <div class="badge text-center white d-block m-1"><span class="bg-danger round p-1">&nbsp;&nbsp;{{trans('payments.'.$invoice['status'])}}&nbsp;&nbsp;</span>
                         </div>
                         @endif
                     </div>
-                    @if($invoice['currency'])
-                    <div class="badge text-center white d-block m-1"><span class="bg-danger round p-1">&nbsp;&nbsp;{{trans('general.different_currency')}}&nbsp;&nbsp;</span>
-                    </div>
-                    @endif
 
                     <!-- Invoice Company Details -->
                     <div id="invoice-company-details" class="row">
@@ -202,16 +198,16 @@
                                                     <p class="text-muted">{!!$product['product_des'] !!}</p>
                                                     </p>@if($product['serial']){{$product['serial']}}@endif
                                                 </td>
-                                                <td class="text-right">{{amountFormat($product['product_price'])}}</td>
-                                                <td class="text-right">{{numberFormat($product['product_qty'])}} {{$product['unit']}}</td>
+                                                <td class="text-right">{{ numberFormat($product['product_price']) }}</td>
+                                                <td class="text-right">{{ +$product['product_qty'] }} {{$product['unit']}}</td>
                                                 @if ($product->product_amount > 0)
-                                                <td class="text-right">{{amountFormat($product->product_tax)}} <span class="font-size-xsmall">({{ round($product->product_tax / $product->product_price * 100)}}%)</span>
-                                                </td>
-                                                <td class="text-right">{{amountFormat($product->product_amount)}}</td>
-                                                @else
-                                                    <td class="text-right">{{amountFormat(0)}} <span class="font-size-xsmall">(0%)</span>
+                                                    <td class="text-right">{{ numberFormat($product->product_tax)}} <span class="font-size-xsmall">({{ round($product->product_tax / $product->product_price * 100)}}%)</span>
                                                     </td>
-                                                    <td class="text-right">{{amountFormat($product->product_price)}}</td>
+                                                    <td class="text-right">{{ numberFormat($product->product_amount)}}</td>
+                                                @else
+                                                    <td class="text-right">{{ numberFormat(0)}} <span class="font-size-xsmall">(0%)</span>
+                                                    </td>
+                                                    <td class="text-right">{{ numberFormat($product->product_price)}}</td>
                                                 @endif
                                             </tr>
                                             <tr>
@@ -245,54 +241,54 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Summary totals -->
                             <div class="col-md-5 col-sm-12">
                                 <p class="lead">{{trans('general.summary')}}</p>
                                 <div class="table-responsive">
                                     <table class="table">
                                         <tbody>
                                             @php
-                                                $products = $invoice->products->filter(fn($v) => @$v->product_tax == 0);
-                                                $non_taxable_amount = $products->sum('product_price');
-                                                $products = $invoice->products->filter(fn($v) => @$v->product_tax > 0);
-                                                $taxable_amount = $products->sum('product_price');
+                                                $non_taxable_amount = $invoice->products()->where('product_tax', 0)->sum(DB::raw('product_qty*product_price'));
+                                                $taxable_amount = $invoice->products()->where('product_tax', '>', 0)->sum(DB::raw('product_qty*product_price'));
                                             @endphp
                                             @if (@$taxable_amount)
                                             <tr>
                                                 <td>Taxable Total</td>
-                                                <td class="text-right">{{amountFormat($taxable_amount)}}</td>
+                                                <td class="text-right">{{amountFormat($taxable_amount, $invoice->currency_id)}}</td>
                                             </tr>
                                             @endif
                                             
                                             @if (@$non_taxable_amount)
                                             <tr>
                                                 <td>Non-Taxable Total</td>
-                                                <td class="text-right">{{amountFormat($non_taxable_amount)}}</td>
+                                                <td class="text-right">{{amountFormat($non_taxable_amount, $invoice->currency_id)}}</td>
                                             </tr>
                                             @endif
                                             
                                             <tr>
                                                 <td>{{trans('general.subtotal')}}</td>
-                                                <td class="text-right">{{amountFormat($invoice['subtotal'])}}</td>
+                                                <td class="text-right">{{amountFormat($invoice['subtotal'], $invoice->currency_id)}}</td>
                                             </tr>
                                             
                                             <tr>
                                                 <td>VAT</td>
-                                                <td class="text-right">{{amountFormat($invoice['tax'])}}</td>
+                                                <td class="text-right">{{amountFormat($invoice['tax'], $invoice->currency_id)}}</td>
                                             </tr>
                                             
                                             <tr>
                                                 <td class="text-bold-800">Grand Total</td>
-                                                <td class="text-bold-800 text-right">{{amountFormat($invoice['total'])}}</td>
+                                                <td class="text-bold-800 text-right">{{amountFormat($invoice['total'], $invoice->currency_id)}}</td>
                                             </tr>
                                             
                                             <tr>
                                                 <td>{{trans('general.payment_made')}}</td>
-                                                <td class="text-primary text-right">(-) <span id="payment_made">{{ amountFormat($invoice->amountpaid) }}</span>
+                                                <td class="text-primary text-right">(-) <span id="payment_made">{{ amountFormat($invoice->amountpaid, $invoice->currency_id) }}</span>
                                                 </td>
                                             </tr>
                                             <tr class="bg-grey bg-lighten-4">
                                                 <td class="text-bold-800">{{trans('general.balance_due')}}</td>
-                                                <td class="text-bold-800 text-right text-danger" id="payment_due"> {{ amountFormat($invoice->total - $invoice->amountpaid) }}</td>
+                                                <td class="text-bold-800 text-right text-danger" id="payment_due"> {{ amountFormat($invoice->total - $invoice->amountpaid, $invoice->currency_id) }}</td>
                                             </tr>
                                         </tbody>
                                     </table>

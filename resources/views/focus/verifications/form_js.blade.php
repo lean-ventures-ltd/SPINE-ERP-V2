@@ -13,8 +13,6 @@
         $(this).datepicker(config.date).datepicker('setDate', new Date(d));
     });
 
-    const verification = @json(@$verification);
-
     // on qty, price, tax_rate change
     $('#productsTbl').on('change', '.qty, .price, .taxid', function() {
         const row = $(this).parents('tr');
@@ -40,6 +38,7 @@
     const initProductRow = $('#productsTbl tbody tr:first').html();
     const initTitleRow = $('#productsTbl tbody tr:last').html();
     $('#productsTbl tbody tr').remove();
+    const verification = @json(@$verification);
     if (verification) {
         const verificationItems = @json(@$verification->items);
         verificationItems.forEach((v,i) => {
@@ -120,6 +119,7 @@
                 el.find('.qt-itemid').val(v.id);
                 el.find('.prodid').val(v.product_id);
             } else {
+                // title type
                 $('#productsTbl tbody').append(`<tr>${initTitleRow}</tr>`);
                 const el =  $('#productsTbl tbody tr:last');
                 el.find('.index').val(i);

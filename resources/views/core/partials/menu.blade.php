@@ -642,7 +642,7 @@
                             </ul>
                         </li>
                         @endauth
-                        {{-- verification --}}
+                        {{-- job verification --}}
                         @permission('manage-quote-verify')
                         <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a
                                     class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
@@ -659,6 +659,20 @@
                                        data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Partial
                                         Verification
                                     </a>
+                                </li>
+                            </ul>
+                        </li>
+                        @endauth
+                        {{-- job valuation --}}
+                        @permission('manage-quote-verify')
+                        <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="ft-file-text"></i> Job Valuation</a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('biller.job_valuations.index') }}" data-toggle="dropdown"><i class="ft-list"></i>Manage Job Valuations</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('biller.job_valuations.quote_index') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Job Valuation</a>
                                 </li>
                             </ul>
                         </li>
@@ -1096,6 +1110,19 @@
                         </ul>
                     </li>
                     @endauth
+
+                    {{-- Sale Returns --}}
+                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i class="fa fa-money"></i> Sale Returns</a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{{ route('biller.sale_returns.index') }}" data-toggle="dropdown"> <i class="ft-list"></i> Manage Sale Returns</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('biller.sale_returns.create') }}" data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Sale Return</a>
+                            </li>
+                        </ul>
+                    </li>
 
                     {{-- Asset and Equipments  --}}
                     @permission('manage-asset-equipment')
@@ -2153,8 +2180,8 @@
                                                class="ft-layers"></i> Purchase Class Reports </a>
                                </li>
                                <li data-menu=""><a class="dropdown-item"
-                                                   href="{{ route('biller.projects.get-project-report') }}"><i
-                                               class="ft-layers"></i> Project Report </a>
+                                                    href="{{ route('biller.projects.get-project-report') }}"><i
+                                                class="ft-layers"></i> Project Report </a>
                                </li>
                            </ul>
                        </li>

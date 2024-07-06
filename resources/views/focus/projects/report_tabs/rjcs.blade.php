@@ -19,18 +19,18 @@
                     </a>
                 </li>
             </ul>
-
+            @if ($rjc)
             <div class="tab-content px-1 pt-1" id='rjc-report'>
                 <div class="tab-pane active in" id="active1" aria-labelledby="customer-details" role="tabpanel">
                     <table id="customer-table" class="table table-lg table-bordered zero-configuration" cellspacing="0" width="100%">
                         <tbody>
                             <tr>
                                 <th>Project</th>
-                                <td>{{ $rjc->project->name }}</td>
+                                <td>{{ @$rjc->project->name }}</td>
                             </tr>
                             <tr>
                                 <th>Project No.</th>
-                                <td>{{ $rjc->project->tid }}</td>
+                                <td>{{ @$rjc->project->tid }}</td>
                             </tr>
                             <tr>
                                 <th>Region</th>
@@ -114,6 +114,7 @@
                     </table>
                 </div>
             </div>
+            @endif
         </div>
     </div>
     

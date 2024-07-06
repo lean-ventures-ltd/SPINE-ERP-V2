@@ -219,6 +219,8 @@
                 <td class="text-center">${dropDown()}</td>
                 <input type="hidden" name="item_id[]" value="0" id="itemid-${val}">
                 <input type="hidden" name="product_id[]" value=0 id="productid-${val}">
+                <input type="hidden" name="product_tax[]" value=0 id="producttax-${val}">
+                <input type="hidden" name="tax_rate[]" value=0 id="taxrate-${val}">
                 <input type="hidden" name="row_index[]" value="0" id="rowindex-${val}">
                 <input type="hidden" name="a_type[]" value="1" id="atype-${val}">
             </tr>
@@ -239,6 +241,8 @@
                 <input type="hidden" name="product_qty[]" value="0">
                 <input type="hidden" name="product_price[]" value="0">
                 <input type="hidden" name="product_subtotal[]" value="0">
+                <input type="hidden" name="product_tax[]" value=0>
+                <input type="hidden" name="tax_rate[]" value=0>
                 <input type="hidden" name="row_index[]" value="0" id="rowindex-${val}">
                 <input type="hidden" name="a_type[]" value="2" id="atype-${val}">
             </tr>
@@ -275,6 +279,8 @@
             $('#itemname-'+i).val(item.product_name);
             $('#unit-'+i).val(item.unit); 
             $('#remark-'+i).val(item.remark);
+            $('#taxrate-'+i).val(+item.tax_rate);
+            $('#producttax-'+i).val(item.tax_rate * 0.01 * item.product_subtotal);
             $('#amount-'+i).val(accounting.formatNumber(item.product_qty));
             $('#price-'+i).val(accounting.formatNumber(item.product_subtotal)).attr('readonly', false);
             $('#rateinclusive-'+i).val(accounting.formatNumber(item.product_price));                
