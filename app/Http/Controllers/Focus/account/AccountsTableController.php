@@ -75,7 +75,6 @@ class AccountsTableController extends Controller
     public function __invoke(ManageAccountRequest $request)
     {
         $tr_accounts = Transaction::selectRaw('account_id, SUM(debit) as debit, SUM(credit) as credit')
-        ->where('ins', auth()->user()->ins)
         ->groupBy('account_id')
         ->get();
         
@@ -93,8 +92,8 @@ class AccountsTableController extends Controller
             ->addColumn('balance', function ($account) {
                 return numberFormat($this->balance);
             })
-            ->addColumn('account_type', function ($account) {
-                return  $account->account_type;
+            ->editColumn('account_type', function ($account) {
+                return  @$account->accountType->name;
             })
             ->addColumn('system_type', function ($account) {
                 return $account->system? 'default' : 'custom';

@@ -20,6 +20,7 @@ namespace App\Http\Controllers\Focus\stock_issue;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
+use App\Models\account\Account;
 use App\Models\customer\Customer;
 use App\Models\hrm\Hrm;
 use App\Models\product\ProductVariation;
@@ -88,8 +89,10 @@ class StockIssuesController extends Controller
             ->whereNotNull('approved_method')
             ->whereNotNull('approved_by')
             ->get(['id', 'notes', 'tid', 'bank_id', 'customer_id']);
+        
+        $accounts = Account::where('account_type', 'Expense')->get(['id', 'number', 'holder', 'account_type']);
 
-        return view('focus.stock_issues.create', compact('customers', 'employees', 'projects', 'quotes'));
+        return view('focus.stock_issues.create', compact('customers', 'employees', 'projects', 'quotes', 'accounts'));
     }
 
     /**
@@ -142,6 +145,7 @@ class StockIssuesController extends Controller
             ->whereNotNull('approved_method')
             ->whereNotNull('approved_by')
             ->get(['id', 'notes', 'tid', 'bank_id', 'customer_id']);
+        $accounts = Account::where('account_type', 'Expense')->get(['id', 'number', 'holder', 'account_type']);
 
         $qt = Quote::find($stock_issue->quote_id);
 
@@ -163,7 +167,7 @@ class StockIssuesController extends Controller
             }
         }
 
-        return view('focus.stock_issues.edit', compact('stock_issue', 'customers', 'employees', 'projects', 'quotes', 'budgetDetails'));
+        return view('focus.stock_issues.edit', compact('stock_issue', 'customers', 'employees', 'projects', 'quotes', 'budgetDetails','accounts'));
     }
 
     /**

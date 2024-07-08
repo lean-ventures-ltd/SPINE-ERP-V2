@@ -48,8 +48,10 @@
             </td>
             <input type="hidden" name="misc[]" value="0" id="misc-p0">
             <input type="hidden" name="product_id[]" value="0" id="productid-p0">
+            <input type="hidden" name="client_product_id[]" value="0" id="client_product_id-p0">
             <input type="hidden" class="index" name="row_index[]" value="0" id="rowindex-p0">
             <input type="hidden" name="a_type[]" value="1" id="atype-p0">
+            <input type="hidden" name="product_type[]" value="inventory_product" id="product_type-p0">
             <input type="hidden" name="id[]" value="0">
         </tr>
         <!-- End Product Row -->
@@ -65,6 +67,7 @@
             </td>
             <input type="hidden" name="misc[]" value="0" id="misc-t1">
             <input type="hidden" name="product_id[]" value="0" id="productid-t1">
+            <input type="hidden" name="client_product_id[]" value="0" id="client_product_id-t1">
             <input type="hidden" name="unit[]">
             <input type="hidden" name="product_qty[]" value="0">
             <input type="hidden" name="product_price[]" value="0">
@@ -74,6 +77,7 @@
             <input type="hidden" name="buy_price[]" value="0">
             <input type="hidden" class="index" name="row_index[]" value="0" id="rowindex-t1">
             <input type="hidden" name="a_type[]" value="2" id="atype-t1">
+            <input type="hidden" name="product_type[]" value="title" id="product_type-t0">
             <input type="hidden" name="id[]" value="0">
         </tr>
         <!-- End Title Row -->
@@ -120,8 +124,10 @@
                         </td>
                         <input type="hidden" name="misc[]" value="{{ $item->misc }}" id="misc-p{{$k}}">
                         <input type="hidden" name="product_id[]" value="{{ $item->product_id }}" id="productid-p{{$k}}">
+                        <input type="hidden" name="client_product_id[]" value="0" id="client_product_id-p{{$k}}">
                         <input type="hidden" class="index" name="row_index[]" value="{{ $item->row_index }}" id="rowindex-p{{$k}}">
                         <input type="hidden" name="a_type[]" value="1" id="atype-p{{$k}}">
+                        <input type="hidden" name="product_type[]" value="{{$item->product_type}}" id="product_type-p{{$k}}">
                         <input type="hidden" name="id[]" value="{{ $item->id }}">
                     </tr>
                 @else
@@ -136,6 +142,7 @@
                         </td>
                         <input type="hidden" name="misc[]" value="{{ $item->misc }}" id="misc-t{{$k}}">
                         <input type="hidden" name="product_id[]" value="0" id="productid-t{{$k}}">
+                        <input type="hidden" name="client_product_id[]" value="0" id="client_product_id-t{{$k}}">
                         <input type="hidden" name="unit[]">
                         <input type="hidden" name="product_qty[]" value="0">
                         <input type="hidden" name="product_price[]" value="0">
@@ -145,6 +152,7 @@
                         <input type="hidden" name="buy_price[]" value="0">
                         <input type="hidden" class="index" name="row_index[]" value="{{ $item->row_index }}" id="rowindex-t{{$k}}">
                         <input type="hidden" name="a_type[]" value="2" id="atype-t{{$k}}">
+                        <input type="hidden" name="product_type[]" value="{{$item->product_type}}" id="product_type-t{{$k}}">
                         <input type="hidden" name="id[]" value="{{ $item->id }}">
                     </tr>
                 @endif

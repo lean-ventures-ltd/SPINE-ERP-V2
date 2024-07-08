@@ -146,7 +146,7 @@ trait ClientSupplierAuth
     }
 
     public function deleteAuth($entity, $user_type)
-    {
+    { 
         $user = null;
         if ($user_type == 'client_user') $user = User::where('client_user_id', $entity->id)->first();
         if ($user_type == 'client_vendor') $user = User::where('client_vendor_id', $entity->id)->first();
@@ -155,9 +155,11 @@ trait ClientSupplierAuth
 
         if ($user) {
             $this->removeAuthImage($user);
-            $user->role()->first()->delete();
-            RoleUser::where(['user_id' => $user->id])->delete();
-            PermissionUser::where('user_id', $user->id)->delete();
+            if($user->role){
+                $user->role()->first()->delete();
+                RoleUser::where(['user_id' => $user->id])->delete();
+                PermissionUser::where('user_id', $user->id)->delete();
+            }
             $user->delete(); 
             return true;
         }

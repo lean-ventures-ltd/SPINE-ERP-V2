@@ -65,7 +65,7 @@
 </div>
 <hr>
 <div class="row mb-1">
-    <div class="col-md-6 col-12">
+    <div class="col-md-4 col-12">
         <label for="quote">Load Items From Quote / PI</label>
         <select
                 name="quote_id"
@@ -88,7 +88,7 @@
         </select>
     </div>
 
-    <div class="col-md-6 col-12">
+    <div class="col-md-4 col-12">
 
         <label for="budget_line" class="caption" style="display: inline-block;">Project Budget Line</label>
 
@@ -97,6 +97,17 @@
         </select>
 
         <p id="budget_line_warning" class="text-red ml-2" style="color: red; font-size: 16px; "> </p>
+    </div>
+    <div class="col-md-4 col-12">
+
+        <label for="ledger" class="caption" style="display: inline-block;">Ledger Account</label>
+
+        <select id="account" name="account_id" class="form-control" data-placeholder="Search Ledger Account">
+            <option value="">Search Ledger Account</option>
+            @foreach ($accounts as $account)
+                <option value="{{$account->id}}" {{$account->id == @$stock_issue->account_id ? 'selected' : ''}}>{{$account->holder}}</option>
+            @endforeach
+        </select>
     </div>
 
 </div>
@@ -126,10 +137,10 @@
                         <td><span class="budget">{{ number_format(@$budgetDetails[$i]['product_qty'], 2) }}</span></td>
                         <td><span class="qty-onhand">{{ +$item->qty_onhand }}</span></td>
                         <td><span class="qty-rem">{{ +$item->qty_rem }}</span></td>
-                        <td><input type="text" name="issue_qty[]" value="{{ +$item->issue_qty }}" class="form-control issue-qty" autocomplete="off" required></td>
+                        <td><input type="text" name="issue_qty[]" value="{{ +$item->issue_qty }}" class="form-control issue-qty" autocomplete="off"></td>
                         <td class="td-source">
                             <input type="hidden" name="warehouse_id[]" value="{{ $item->warehouse_id }}" class="source-inp">
-                            <select name="warehouse_id[]" id="source-{{$i+1}}" class="form-control source" data-placeholder="Search Location" required disabled>
+                            <select name="warehouse_id[]" id="source-{{$i+1}}" class="form-control source" data-placeholder="Search Location" disabled>
                                 <option value=""></option>
                                 <option value="{{ $item->warehouse_id }}" products_qty="{{ +$item->qty_onhand }}" selected>
                                     {{ @$item->warehouse->title }} ({{ +$item->qty_onhand }})
@@ -168,9 +179,9 @@
                     <td><span class="budget"></span></td>
                     <td><span class="qty-onhand"></span></td>
                     <td><span class="qty-rem"></span></td>
-                    <td><input type="text" name="issue_qty[]" class="form-control issue-qty" autocomplete="off" required></td>
+                    <td><input type="text" name="issue_qty[]" class="form-control issue-qty" autocomplete="off"></td>
                     <td class="td-source">
-                        <select name="warehouse_id[]" id="source-1" class="form-control source" data-placeholder="Search Location" required>
+                        <select name="warehouse_id[]" id="source-1" class="form-control source" data-placeholder="Search Location">
                             <option value=""></option>
                         </select>
                     </td>

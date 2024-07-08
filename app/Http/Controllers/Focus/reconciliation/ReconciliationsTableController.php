@@ -38,7 +38,7 @@ class ReconciliationsTableController extends Controller
                 return @$recon->account->holder;
             })
             ->editColumn('end_date', function ($recon) {
-                return dateFormat($recon->end_date);
+                return $recon->end_date;
             })
             ->editColumn('end_balance', function ($recon) {
                 return numberFormat($recon->end_balance);

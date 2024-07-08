@@ -101,7 +101,6 @@ class PurchasesController extends Controller
         ]);
 
         if (!empty($data['cu_invoice_no'])){
-
             $refBackup = ['doc_ref_backup' => $data['doc_ref']];
             $data['doc_ref'] = $data['cu_invoice_no'];
             $data = array_merge($data, $refBackup);
@@ -114,7 +113,12 @@ class PurchasesController extends Controller
         $data_items = array_filter($data_items, fn($v) => $v['item_id']);
         if (!$data_items) throw ValidationException::withMessages(['Please use suggested options for input within a row!']);
 
-        $purchase = $this->repository->create(compact('data', 'data_items'));
+        try {
+            $purchase = $this->repository->create(compact('data', 'data_items'));
+        } catch (\Throwable $th) {
+            if ($th instanceof ValidationException) throw $th;
+            return errorHandler('Error Creating Direct Purchase', $th);
+        }
 
         $msg = 'Direct Purchase Created Successfully.'
             .' <span class="pl-5 font-weight-bold h5"><a href="'. route('biller.billpayments.create', ['src_id' => $purchase->id, 'src_type' => 'direct_purchase']) .'" target="_blank" class="btn btn-purple">
@@ -144,13 +148,11 @@ class PurchasesController extends Controller
      */
     public function update(StorePurchaseRequest $request, Purchase $purchase)
     {
-
         $request->validate([
             'cu_invoice_no' => ['nullable', 'numeric', 'regex:/^0*[1-9]\d{16,18}$/'],
         ], [
             'cu_invoice_no.regex' => 'The :attribute must be numeric and have a length between 17 and 19 digits.',
         ]);
-
 
         // extract input details
         $data = $request->only([
@@ -159,7 +161,7 @@ class PurchasesController extends Controller
             'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl', 'is_tax_exc', 'project_milestone', 'purchase_class', 'cu_invoice_no'
         ]);
         $data_items = $request->only([
-            'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom', 'asset_purchase_class'
+            'id', 'item_id', 'description', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'warehouse_id', 'uom', 'asset_purchase_class'
         ]);
 
         if (!empty($data['cu_invoice_no'])){
@@ -177,16 +179,13 @@ class PurchasesController extends Controller
         $data_items = array_filter($data_items, fn($v) => $v['item_id']);
         if (!$data_items) throw ValidationException::withMessages(['Please use suggested options for input within a row!']);
 
-        $purchase = $this->repository->update($purchase, compact('data', 'data_items'));
-        $payment_params = "src_id={$purchase->id}&src_type=direct_purchase";
-//
-//            DB::commit();
-//
-//        } catch (Exception $e){
-//            DB::rollBack();
-//            return redirect()->back()->with('flash_error', 'SQL ERROR : ' . $e->getMessage());
-//        }
-
+        try {
+            $purchase = $this->repository->update($purchase, compact('data', 'data_items'));
+            $payment_params = "src_id={$purchase->id}&src_type=direct_purchase";
+        } catch (\Throwable $th) {
+            if ($th instanceof ValidationException) throw $th;
+          return errorHandler('Error Updating Direct Purchase', $th);
+        }
 
         $msg = 'Direct Purchase Updated Successfully.';
         $msg .= ' <span class="pl-5 font-weight-bold h5"><a href="'. route('biller.billpayments.create', $payment_params) .'" target="_blank" class="btn btn-purple"><i class="fa fa-money"></i> Direct Payment</a></span>';

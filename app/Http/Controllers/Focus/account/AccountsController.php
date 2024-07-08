@@ -28,6 +28,7 @@ use App\Http\Responses\Focus\account\EditResponse;
 use App\Repositories\Focus\account\AccountRepository;
 use App\Http\Requests\Focus\account\ManageAccountRequest;
 use App\Http\Requests\Focus\account\StoreAccountRequest;
+use App\Models\account\AccountType;
 use App\Models\customer\Customer;
 use App\Models\transaction\Transaction;
 use Illuminate\Support\Facades\Response;
@@ -61,7 +62,9 @@ class AccountsController extends Controller
      */
     public function index(ManageAccountRequest $request)
     {
-        return new ViewResponse('focus.accounts.index');
+        $categories = AccountType::select('category')->distinct()->pluck('category');
+    
+        return new ViewResponse('focus.accounts.index', compact('categories'));
     }
 
     /**
@@ -176,7 +179,8 @@ class AccountsController extends Controller
     public function show(Account $account)
     {
         $params =  ['rel_type' => 9, 'rel_id' => $account->id, 'system' => $account->system];
-
+        if (@$account->accountType->system == 'bank') $params['system'] = 'bank';
+        
         return new RedirectResponse(route('biller.transactions.index', $params), []);
     }
 
@@ -225,27 +229,68 @@ class AccountsController extends Controller
     public function profit_and_loss(Request $request)
     {
         $dates = $request->only('start_date', 'end_date');
-        $dates = array_map(function ($v) { 
-            return date_for_database($v); 
-        }, $dates);
+        $dates = array_map(fn($v) => date_for_database($v), $dates);
 
-        $q = Account::whereHas('transactions', function ($q) use($dates) {
-                $q->when($dates, function ($q) use($dates) {
-                    $q->whereBetween('tr_date', $dates);
-                });
-            });
+        $accounts = Account::whereHas('transactions', function ($q) use($dates) {
+            $q->when($dates, fn($q) =>$q->whereBetween('tr_date', $dates));
+        })->get();
 
-        $accounts = $q->get();
+        $cog_material = 0;
+        $cog_labour = 0;
+        $cog_transport = 0;
+        foreach ($accounts->where('system', 'cog') as $account) {
+            // project invoice COGs (material, labour, transport)
+            $invoice_trs = $account->transactions()
+            ->when(@$dates, fn($q) => $q->whereBetween('tr_date', $dates))
+            ->where('tr_type', 'inv')
+            ->get();
+            $purchase_item_ids = [];
+            foreach ($invoice_trs as $invoice_tr) {
+                if ($invoice_tr->invoice) {
+                    foreach ($invoice_tr->invoice->quotes as $quote) {
+                        $project = @$quote->project_quote->project;
+                        if (!$project) continue;
+                        foreach ($project->purchase_items as $i => $item) {
+                            if (in_array($item->id, $purchase_item_ids)) continue;
+                            $purchase_item_ids[] = $item->id;
+                            if ($item->itemproject_id) {
+                                $subtotal = $item->amount - $item->taxrate;
+                                if ($item->type == 'Expense') {
+                                    if(preg_match("/transport/i", @$item->account->holder)) {
+                                        $cog_transport += $subtotal;
+                                    }
+                                    if(preg_match("/labour/i", @$item->account->holder)) {
+                                        $cog_labour += $subtotal;
+                                    }
+                                }
+                                if ($item->type == 'Stock') {
+                                    $cog_material += $subtotal;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // stock-issue, sale-return, stock-adj COGs (material)
+            $stock_trs = $account->transactions()
+            ->when(@$dates, fn($q) => $q->whereBetween('tr_date', $dates))
+            ->where('tr_type', 'stock')
+            ->get();
+            $stock_bal = $stock_trs->sum('debit') - $stock_trs->sum('credit');
+            // direct expense on COG
+            $bill_trs = $account->transactions()
+            ->when(@$dates, fn($q) => $q->whereBetween('tr_date', $dates))
+            ->where('tr_type', 'bill')
+            ->get();
+            $expense_bal = $bill_trs->sum('debit') - $bill_trs->sum('credit');
+            $cog_material += $stock_bal + $expense_bal;
+        }
+                   
+        if ($request->type == 'p') 
+            return $this->print_document('profit_and_loss', $accounts, $dates, 0, $cog_material, $cog_labour, $cog_transport);        
 
-        if ($request->type == 'p') {
-            return $this->print_document('profit_and_loss', $accounts, $dates, 0);
-        } 
-
-        $bg_styles = [
-            'bg-gradient-x-info', 'bg-gradient-x-purple', 'bg-gradient-x-grey-blue', 'bg-gradient-x-danger',
-        ];
-            
-        return new ViewResponse('focus.accounts.profit_&_loss', compact('accounts', 'bg_styles', 'dates'));
+        $bg_styles = ['bg-gradient-x-info', 'bg-gradient-x-purple', 'bg-gradient-x-grey-blue', 'bg-gradient-x-danger',];
+        return new ViewResponse('focus.accounts.profit_&_loss', compact('accounts', 'bg_styles', 'dates', 'cog_material', 'cog_labour', 'cog_transport'));
     }
 
     /**
@@ -296,7 +341,7 @@ class AccountsController extends Controller
         $bg_styles = ['bg-gradient-x-info', 'bg-gradient-x-purple', 'bg-gradient-x-grey-blue', 'bg-gradient-x-danger'];
 
         // print balance_sheet
-        if ($request->type == 'p') return $this->print_document('balance_sheet', $accounts, array(0, $date), $net_profit);       
+        if ($request->type == 'p') return $this->print_document('balance_sheet', $accounts, array(0, $date), $net_profit, 0, 0, 0);       
             
         return new ViewResponse('focus.accounts.balance_sheet', compact('accounts', 'bg_styles', 'net_profit', 'date'));
     }
@@ -316,7 +361,7 @@ class AccountsController extends Controller
         $accounts = $q->orderBy('number', 'asc')->get();
         $date = date_for_database($end_date);
         if ($request->type == 'p') 
-            return $this->print_document('trial_balance', $accounts, [0, $date], 0);
+            return $this->print_document('trial_balance', $accounts, [0, $date], 0, 0, 0, 0);
         
         return new ViewResponse('focus.accounts.trial_balance', compact('accounts', 'date'));
     }
@@ -324,10 +369,10 @@ class AccountsController extends Controller
     /**
      * Print document
      */
-    public function print_document(string $name, $accounts, array $dates, float $net_profit)
+    public function print_document(string $name, $accounts, array $dates, float $net_profit, $cog_material, $cog_labour, $cog_transport)
     {
         $account_types = ['Assets', 'Equity', 'Expenses', 'Liabilities', 'Income'];
-        $params = compact('accounts', 'account_types', 'dates', 'net_profit');
+        $params = compact('accounts', 'account_types', 'dates', 'net_profit', 'cog_material', 'cog_labour', 'cog_transport');
         $html = view('focus.accounts.print_' . $name, $params)->render();
         $pdf = new \Mpdf\Mpdf(config('pdf'));
         $pdf->WriteHTML($html);

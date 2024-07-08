@@ -53,14 +53,16 @@ class ReconciliationRepository extends BaseRepository
 
         $data_items = Arr::only($input, ['checked', 'man_journal_id', 'journal_item_id', 'payment_id', 'deposit_id']);
         $data = array_diff_key($input, $data_items);
-        $recon = Reconciliation::create($data);
-        $data_items['reconciliation_id'] = array_fill(0, count($data_items['payment_id']), $recon->id);
+        $reconciliation = Reconciliation::create($data);
+        $data_items['reconciliation_id'] = array_fill(0, count($data_items['payment_id']), $reconciliation->id);
         $data_items = modify_array($data_items);
+        $data_items = array_filter($data_items, fn($v) => $v['checked']);
+        if (!$data_items) throw ValidationException::withMessages(['Reconciled line items required!']);
         ReconciliationItem::insert($data_items);
     
-        if ($recon) {
+        if ($reconciliation) {
             DB::commit();
-            return $recon;
+            return $reconciliation;
         }
     }
 
@@ -72,7 +74,7 @@ class ReconciliationRepository extends BaseRepository
      * @throws GeneralException
      * return bool
      */
-    public function update(Reconciliation $reconciliation, array $input)
+    public function update(Reconciliation $reconciliationciliation, array $input)
     { 
         DB::beginTransaction();
         
@@ -83,10 +85,12 @@ class ReconciliationRepository extends BaseRepository
 
         $data_items = Arr::only($input, ['checked', 'man_journal_id', 'journal_item_id', 'payment_id', 'deposit_id']);
         $data = array_diff_key($input, $data_items);
-        $result = $reconciliation->update($data);
-        $data_items['reconciliation_id'] = array_fill(0, count($data_items['checked']), $reconciliation->id);
+        $result = $reconciliationciliation->update($data);
+        $data_items['reconciliation_id'] = array_fill(0, count($data_items['checked']), $reconciliationciliation->id);
         $data_items = modify_array($data_items);
-        $reconciliation->items()->delete();
+        $data_items = array_filter($data_items, fn($v) => $v['checked']);
+        if (!$data_items) throw ValidationException::withMessages(['Reconciled line items required!']);
+        $reconciliationciliation->items()->delete();
         ReconciliationItem::insert($data_items);
     
         if ($result) {
@@ -102,12 +106,12 @@ class ReconciliationRepository extends BaseRepository
      * @throws GeneralException
      * @return bool
      */
-    public function delete(Reconciliation $reconciliation)
+    public function delete(Reconciliation $reconciliationciliation)
     {
         DB::beginTransaction();
 
-        $reconciliation->items()->delete();    
-        if ($reconciliation->delete()) {
+        $reconciliationciliation->items()->delete();    
+        if ($reconciliationciliation->delete()) {
             DB::commit();
             return true;
         }

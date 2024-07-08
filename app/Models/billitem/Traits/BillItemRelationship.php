@@ -2,20 +2,26 @@
 
 namespace App\Models\billitem\Traits;
 
+use App\Models\account\Account;
+
 /**
  * Class InvoiceRelationship
  */
 trait BillItemRelationship
 {
+    public function account()
+    {
+        return $this->belongsTo(Account::class, 'item_id')->withoutGlobalScopes();
+    }
 
-      public function customer()
+    public function customer()
     {
         return $this->belongsTo('App\Models\customer\Customer')->withoutGlobalScopes();
     }
 
-     public function products()
+    public function products()
     {
-        return $this->hasMany('App\Models\items\InvoiceItem','invoice_id')->withoutGlobalScopes();
+        return $this->hasMany('App\Models\items\InvoiceItem', 'invoice_id')->withoutGlobalScopes();
     }
 
     public function user()

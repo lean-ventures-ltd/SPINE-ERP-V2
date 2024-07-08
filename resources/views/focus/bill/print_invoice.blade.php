@@ -318,10 +318,8 @@
 				</td>
 				
 				@php
-                    $products = $resource->products->filter(fn($v) => @$v->product_tax == 0);
-                    $non_taxable_amount = $products->sum('product_price');
-                    $products = $resource->products->filter(fn($v) => @$v->product_tax > 0);
-                    $taxable_amount = $products->sum('product_price');
+                    $non_taxable_amount = $resource->products()->where('product_tax', 0)->sum(DB::raw('product_qty*product_price'));
+                    $taxable_amount = $resource->products()->where('product_tax', '>', 0)->sum(DB::raw('product_qty*product_price'));
                 @endphp
                 <td class="bd align-r">Taxable Total:</td>
 				<td class="bd align-r">{{ numberFormat($taxable_amount) }}</td>
