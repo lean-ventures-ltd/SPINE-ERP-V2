@@ -67,8 +67,11 @@ class StockIssuesTableController extends Controller
                 $quote = $stock_issue->quote;
 
                 if (!empty($quote)) {
-                    return   '<a href="' . route('biller.stock_issues.show', $stock_issue->id) . '">' . '<i>' . gen4tid('QT-', $quote->tid) . '</i> ' . '</a> <b> | </b>' . $quote->notes;
-                } else return '<b> QUOTE NOT FOUND </b>';
+                    return   '<a href="' . route('biller.quotes.show', $stock_issue->quote->id) . '">' . '<i>' . gen4tid('QT-', $quote->tid) . '</i> ' . '</a> <b> | </b>' . $quote->notes;
+                } elseif (!empty($stock_issue->invoice)) {
+                    return   '<a href="' . route('biller.invoices.show', $stock_issue->invoice->id) . '">' . '<i>' . gen4tid('INV-', $stock_issue->invoice->tid) . '</i> ' . '</a> <b> | </b>' . $stock_issue->invoice->notes;
+                }
+                else return '<b> QUOTE NOT FOUND </b>';
             })
             ->editColumn('total', function ($stock_issue) {
                 return numberFormat($stock_issue->total);
