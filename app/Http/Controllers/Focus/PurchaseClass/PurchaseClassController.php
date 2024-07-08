@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Focus\PurchaseClass;
 
+use App\FinancialYear;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
 use App\Models\PurchaseClass\PurchaseClass;
@@ -22,19 +23,24 @@ class PurchaseClassController extends Controller
 
         if ($request->ajax()) {
 
-            $purchaseClasses = PurchaseClass::all();
+            if (empty($request->financial_year)) $purchaseClasses = PurchaseClass::all();
+            else $purchaseClasses = PurchaseClass::where('financial_year_id', $request->financial_year)->get();
 
             return Datatables::of($purchaseClasses)
 
-                ->editColumn('start_date', function ($model) {
+                ->editColumn('financial_year_id', function ($model) {
 
-                    if ($model->start_date == '0000-00-00') return '<b><i> N/A </i></b>';
-                    return (new DateTime($model->start_date))->format('jS M Y');
+                    $fId = $model->financial_year_id;
+
+                    if(!empty($fId)) return FinancialYear::find($model->financial_year_id)->name;
+                    else return '<b><i> Financial Year Not Set </i></b>';
                 })
-                ->editColumn('end_date', function ($model) {
+                ->editColumn('budget', function ($model) {
 
-                    if ($model->end_date == '0000-00-00') return '<b><i> N/A </i></b>';
-                    return (new DateTime($model->end_date))->format('jS M Y');
+                    $budget = $model->budget;
+
+                    if(!empty($budget)) return number_format($budget);
+                    else return '<b><i> Budget Not Set </i></b>';
                 })
                 ->addColumn('action', function ($model) {
 
@@ -57,13 +63,15 @@ class PurchaseClassController extends Controller
                             </a>';
 
                 })
-                ->rawColumns(['start_date', 'end_date','action'])
+                ->rawColumns(['financial_year_id', 'budget','action'])
                 ->make(true);
 
         }
 
+        $financialYears = FinancialYear::all(['id', 'name']);
 
-        return view('focus.purchase_classes.index');
+
+        return view('focus.purchase_classes.index', compact('financialYears'));
     }
 
     public function reportIndex(Request $request)
@@ -97,7 +105,9 @@ class PurchaseClassController extends Controller
     public function create()
     {
 
-        return view('focus.purchase_classes.create');
+        $financialYears = FinancialYear::all(['id', 'name']);
+
+        return view('focus.purchase_classes.create',  compact('financialYears'));
     }
 
     /**
@@ -113,33 +123,15 @@ class PurchaseClassController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'budget'=> ['required', 'numeric'],
             'description' => ['required', 'string'],
-            'start_date' => ['required', 'date_format:d-m-Y'],
-            'end_date' => [
-                'required',
-                'date_format:d-m-Y',
-                function ($attribute, $value, $fail) use ($request) {
-                    // Convert start_date and end_date to DateTime objects
-                    $startDate = \DateTime::createFromFormat('d-m-Y', $request->start_date);
-                    $endDate = \DateTime::createFromFormat('d-m-Y', $value);
-
-                    // Check if the end date is after the start date
-                    if ($startDate && $endDate && $endDate <= $startDate) {
-                        $fail('The end date must be a date after the start date.');
-                    }
-                }
-            ],
+            'financial_year_id' => ['required', 'integer'],
         ]);
-
-        $validated['start_date'] = (new DateTime($validated['start_date']))->format('Y-m-d');
-        $validated['end_date'] = (new DateTime($validated['end_date']))->format('Y-m-d');
 
         $purchaseClass = new PurchaseClass();
         $purchaseClass->fill($validated);
-        $purchaseClass->ins = auth()->user()->ins;
 
         $purchaseClass->save();
 
-        return new RedirectResponse(route('biller.purchase-classes.index'), ['flash_success' => "Purchase class '" . $purchaseClass->name . "' updated successfully"]);
+        return new RedirectResponse(route('biller.purchase-classes.index'), ['flash_success' => "Purchase class '" . $purchaseClass->name . "' saved successfully"]);
     }
 
     /**
@@ -256,11 +248,9 @@ class PurchaseClassController extends Controller
     public function edit($id)
     {
         $purchaseClass = PurchaseClass::find($id);
+        $financialYears = FinancialYear::all(['id', 'name']);
 
-        $purchaseClass->start_date = (new DateTime($purchaseClass->start_date))->format('d-m-Y');
-        $purchaseClass->end_date = (new DateTime($purchaseClass->end_date))->format('d-m-Y');
-
-        return view('focus.purchase_classes.edit', compact('purchaseClass'));
+        return view('focus.purchase_classes.edit', compact('purchaseClass', 'financialYears'));
     }
 
     /**
@@ -274,31 +264,12 @@ class PurchaseClassController extends Controller
     public function update(Request $request, $id)
     {
 
-        $purchaseClass = PurchaseClass::find($id);
-
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'budget'=> ['required', 'numeric'],
             'description' => ['required', 'string'],
-            'start_date' => ['required', 'date_format:d-m-Y'],
-            'end_date' => [
-                'required',
-                'date_format:d-m-Y',
-                function ($attribute, $value, $fail) use ($request) {
-                    // Convert start_date and end_date to DateTime objects
-                    $startDate = \DateTime::createFromFormat('d-m-Y', $request->start_date);
-                    $endDate = \DateTime::createFromFormat('d-m-Y', $value);
-
-                    // Check if the end date is after the start date
-                    if ($startDate && $endDate && $endDate <= $startDate) {
-                        $fail('The end date must be a date after the start date.');
-                    }
-                }
-            ],
+            'financial_year_id' => ['required', 'integer'],
         ]);
-
-        $validated['start_date'] = (new DateTime($validated['start_date']))->format('Y-m-d');
-        $validated['end_date'] = (new DateTime($validated['end_date']))->format('Y-m-d');
 
         $purchaseClass = PurchaseClass::find($id);
         $purchaseClass->fill($validated);
@@ -324,11 +295,11 @@ class PurchaseClassController extends Controller
 
         if (count($directsAndOrders->purchases) > 0){
             return redirect()->route('biller.purchase-classes.index')
-                ->with('flash_error', 'Delete Blocked as Purchase Class is Allocated to ' . count($directsAndOrders->purchases) . ' purchases');
+                ->with('flash_error', 'Action Denied! Purchase Class is Allocated to ' . count($directsAndOrders->purchases) . ' purchases');
         }
         else if (count($directsAndOrders->purchaseOrders) > 0){
             return redirect()->route('biller.purchase-classes.index')
-                ->with('flash_error', 'Delete Blocked as Purchase Class is Allocated to ' . count($directsAndOrders->purchases) . ' purchase orders');
+                ->with('flash_error', 'Action Denied! Purchase Class is Allocated to ' . count($directsAndOrders->purchases) . ' purchase orders');
         }
 
         $purchaseClass->delete();

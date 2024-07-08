@@ -5,7 +5,7 @@
 <div>
 
     <div class="row mb-2">
-        <div class="col-8 col-lg-4">
+        <div class="col-12 col-lg-4">
             <label for="name" class="mt-2">Name</label>
             <input type="text" id="name" name="name" required class="form-control box-size mb-2">
         </div>
@@ -16,23 +16,23 @@
         </div>
 
         <div class="col-12 col-lg-8">
+            <label for="financial_year_id" >Financial Year</label>
+            <select class="form-control box-size mb-2" id="financial_year_id" name="financial_year_id" required>
+
+                <option value=""> Select a Financial Year </option>
+
+                @foreach ($financialYears as $fY)
+                    <option value="{{ $fY['id'] }}">
+                        {{ $fY['name'] }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="col-12 col-lg-8">
             <label for="description">Description</label>
             <textarea name="description" id="description" class="col-8 col-lg-8 tinyinput" cols="30" rows="10"></textarea>
         </div>
-    </div>
-
-    <div class="row my-2">
-
-        <div class="col-4">
-            <label for="from_date">Start Date</label>
-            <input type="text" id="start_date" name="start_date" required placeholder="Start From..." class="datepicker form-control box-size mb-2">
-        </div>
-
-        <div class="col-4">
-            <label for="to_date">End Date</label>
-            <input type="text" id="end_date" name="end_date" required placeholder="End On..." class="datepicker form-control box-size mb-2">
-        </div>
-
     </div>
 
 </div>

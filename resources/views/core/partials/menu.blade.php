@@ -1327,6 +1327,29 @@
                         </ul>
                     </li>
                     @endauth
+
+
+                    @permission('manage-financial-year')
+                    <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a
+                                class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown"><i
+                                    class="fa fa-newspaper-o"></i> Financial Years
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ route('biller.financial_years.index') }}"
+                                   data-toggle="dropdown"> <i class="ft-list"></i> Manage Financial Years
+                                </a>
+                            </li>
+                            @permission('create-financial-year')
+                            <li><a class="dropdown-item" href="{{ route('biller.financial_years.create') }}"
+                                   data-toggle="dropdown"> <i class="fa fa-plus-circle"></i> Create Financial Year
+                                </a>
+                            </li>
+                            @endauth
+                        </ul>
+                    </li>
+                    @endauth
+
+
                 </ul>
             </li>
         @endif

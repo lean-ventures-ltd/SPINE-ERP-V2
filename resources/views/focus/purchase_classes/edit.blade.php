@@ -54,6 +54,20 @@
                                         </div>
 
                                         <div class="col-12 col-lg-8">
+                                            <label for="financial_year_id" >Financial Year</label>
+                                            <select class="form-control box-size mb-2" id="financial_year_id" name="financial_year_id" required>
+
+                                                <option value=""> Select a Financial Year </option>
+
+                                                @foreach ($financialYears as $fY)
+                                                    <option value="{{ ($fY['id']) }}" @if($purchaseClass['financial_year_id'] === $fY['id']) selected @endif>
+                                                        {{ $fY['name'] }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="col-12 col-lg-8">
                                             <label for="description">Description</label>
                                             <textarea name="description" id="description" class="col-8 col-lg-8 tinyinput" cols="30" rows="10">
                                                 @if(!empty($purchaseClass)) {{$purchaseClass['description']}} @endif
@@ -61,23 +75,6 @@
                                         </div>
                                     </div>
 
-                                    <div class="row my-2">
-
-                                        <div class="col-4">
-                                            <label for="from_date">Start Date</label>
-                                            <input type="text" id="start_date" name="start_date" required placeholder="Start From..." class="datepicker form-control box-size mb-2"
-                                                   @if(!empty($purchaseClass)) value="{{$purchaseClass['start_date']}}" @endif
-                                            >
-                                        </div>
-
-                                        <div class="col-4">
-                                            <label for="to_date">End Date</label>
-                                            <input type="text" id="end_date" name="end_date" required placeholder="End On..." class="datepicker form-control box-size mb-2"
-                                                   @if(!empty($purchaseClass)) value="{{$purchaseClass['end_date']}}" @endif
-                                            >
-                                        </div>
-
-                                    </div>
 
                                     <div class="edit-form-btn">
                                         {{ link_to_route('biller.purchase-classes.index', trans('buttons.general.cancel'), [], ['class' => 'btn btn-secondary btn-md mr-1']) }}

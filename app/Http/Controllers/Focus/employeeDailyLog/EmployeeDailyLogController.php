@@ -823,9 +823,10 @@ class EmployeeDailyLogController extends Controller
             array('name' => 'edit-crm-ticket-tag', 'display_name' => 'CRM Ticket Tag Edit Permission'),
             array('name' => 'delete-crm-ticket-tag', 'display_name' => 'CRM Ticket Tag Delete Permission'),
             array('name' => 'manage-crm-ticket', 'display_name' => 'CRM Ticket Manage Permission'),
-            array('name' => 'create-crm-ticket', 'display_name' => 'CRM Ticket Create Permission'),
-            array('name' => 'edit-crm-ticket', 'display_name' => 'CRM Ticket Edit Permission'),
-            array('name' => 'delete-crm-ticket', 'display_name' => 'CRM Ticket Delete Permission')
+            array('name' => 'manage-financial-year', 'display_name' => 'Financial Year Manage Permission', 'module_id' => 7),
+            array('name' => 'create-financial-year', 'display_name' => 'Financial Year Create Permission', 'module_id' => 7),
+            array('name' => 'edit-financial-year', 'display_name' => 'Financial Year Edit Permission', 'module_id' => 7),
+            array('name' => 'delete-financial-year', 'display_name' => 'Financial Year Delete Permission', 'module_id' => 7)
         );
 
         foreach ($rosePermissions as $perm){
