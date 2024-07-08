@@ -51,6 +51,7 @@ Route::group(['namespace' => 'invoice'], function () {
     Route::get('draft_view/{id}', 'InvoicesController@draft_view')->name('invoices.draft_view');
     Route::post('pos_update', 'InvoicesController@pos_update')->name('invoices.pos_update');
     Route::get('invoices/client_invoices', 'InvoicesController@client_invoices')->name('invoices.client_invoices');
+    Route::post('invoices/nullify_invoice/{invoice}', 'InvoicesController@nullify_invoice')->name('invoices.nullify_invoice');
     Route::post('invoices/unallocated_payment', 'InvoicesController@unallocated_payment')->name('invoices.unallocated_payment');
 
     // payment

@@ -49,6 +49,7 @@ use App\Models\term\Term;
 use App\Models\verification\Verification;
 use App\Repositories\Focus\invoice_payment\InvoicePaymentRepository;
 use App\Repositories\Focus\pos\PosRepository;
+use DB;
 use Endroid\QrCode\QrCode;
 use Error;
 use Illuminate\Validation\ValidationException;
@@ -398,6 +399,23 @@ class InvoicesController extends Controller
         return new RedirectResponse(route('biller.invoices.index'), ['flash_success' => 'Project Invoice Updated successfully' . $msg]);
     }
 
+    /**
+     * Nullify Invoice
+     * 
+     */
+    public function nullify_invoice(Request $request, Invoice $invoice)
+    {
+        try {
+            DB::beginTransaction();
+            $invoice->update(['is_cancelled' => 1]);
+            $invoice->transactions()->delete();
+            DB::commit();
+        } catch (\Throwable $th) {
+            return errorHandler($th->getMessage(), $th);
+        }
+
+        return new RedirectResponse(route('biller.invoices.show', $invoice), ['flash_success' => 'Invoice nullified successfully']);
+    }
 
     /**
      * Create invoice payment

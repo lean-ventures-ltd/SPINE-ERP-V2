@@ -32,15 +32,13 @@
 
 @section('extra-scripts')
 {{ Html::script('core/app-assets/vendors/js/extensions/sweetalert.min.js') }}
-<script type="text/javascript">
-    // default values
-    const invoice = @json($invoice);
-
-    // Initialize datepicker
+<script type="text/javascript">    
     $('.datepicker').datepicker({format: "{{config('core.user_date_format')}}", autoHide: true})
     .datepicker('setDate', new Date());
     $.ajaxSetup({headers: { 'X-CSRF-TOKEN': "{{ csrf_token() }}" }});
-    if (invoice.invoicedate) 
+
+    const invoice = @json($invoice);
+    if (invoice.invoicedate) {
         $('#invoicedate').datepicker('setDate', new Date(invoice.invoicedate));
     }
 

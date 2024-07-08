@@ -71,7 +71,8 @@ class Invoice extends Model
             $instance->fill([
                 'user_id' => auth()->user()->id,
                 'ins' => auth()->user()->ins,
-                'tid' => Invoice::getTid() + 1,
+                'tid' => Invoice::where('ins', auth()->user()->ins)->max('tid')+1,
+                'status' => $instance->status ?: 'due',
             ]);
             return $instance;
         });
@@ -81,10 +82,5 @@ class Invoice extends Model
                 $builder->where('ins', auth()->user()->ins);
             }
         });
-    }
-
-    static function getTid()
-    {
-        return Invoice::where('ins', auth()->user()->ins)->max('tid');
     }
 }
