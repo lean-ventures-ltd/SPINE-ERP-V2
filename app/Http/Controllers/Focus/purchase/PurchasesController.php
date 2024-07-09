@@ -172,7 +172,6 @@ class PurchasesController extends Controller
             $data = array_merge($data, $refBackup);
         }
 
-
         $data['ins'] = auth()->user()->ins;
         $data['user_id'] = auth()->user()->id;
 
@@ -180,21 +179,19 @@ class PurchasesController extends Controller
         $data_items = array_filter($data_items, fn($v) => $v['item_id']);
         if (!$data_items) throw ValidationException::withMessages(['Please use suggested options for input within a row!']);
 
-//        return compact('data', 'data_items');
-
         try {
             $purchase = $this->repository->update($purchase, compact('data', 'data_items'));
             $payment_params = "src_id={$purchase->id}&src_type=direct_purchase";
         }
         catch (\Exception $ex) {
 
-                return [
-                    'message' => $ex->getMessage(),
-                    'code' => $ex->getCode(),
-                    'file' => $ex->getFile(),
-                    'line' => $ex->getLine(),
-                ];
-
+//                return [
+//                    'message' => $ex->getMessage(),
+//                    'code' => $ex->getCode(),
+//                    'file' => $ex->getFile(),
+//                    'line' => $ex->getLine(),
+//                ];
+//
                 return errorHandler('Error Updating Direct Purchase', $ex);
             }
 
