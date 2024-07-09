@@ -29,6 +29,7 @@ use App\Repositories\Focus\purchase\PurchaseRepository;
 use App\Http\Requests\Focus\purchase\ManagePurchaseRequest;
 use App\Http\Requests\Focus\purchase\StorePurchaseRequest;
 use App\Http\Responses\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -179,13 +180,23 @@ class PurchasesController extends Controller
         $data_items = array_filter($data_items, fn($v) => $v['item_id']);
         if (!$data_items) throw ValidationException::withMessages(['Please use suggested options for input within a row!']);
 
+//        return compact('data', 'data_items');
+
         try {
             $purchase = $this->repository->update($purchase, compact('data', 'data_items'));
             $payment_params = "src_id={$purchase->id}&src_type=direct_purchase";
-        } catch (\Throwable $th) {
-            if ($th instanceof ValidationException) throw $th;
-          return errorHandler('Error Updating Direct Purchase', $th);
         }
+        catch (\Exception $ex) {
+
+                return [
+                    'message' => $ex->getMessage(),
+                    'code' => $ex->getCode(),
+                    'file' => $ex->getFile(),
+                    'line' => $ex->getLine(),
+                ];
+
+                return errorHandler('Error Updating Direct Purchase', $ex);
+            }
 
         $msg = 'Direct Purchase Updated Successfully.';
         $msg .= ' <span class="pl-5 font-weight-bold h5"><a href="'. route('biller.billpayments.create', $payment_params) .'" target="_blank" class="btn btn-purple"><i class="fa fa-money"></i> Direct Payment</a></span>';

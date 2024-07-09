@@ -178,8 +178,10 @@ class PurchaseRepository extends BaseRepository
         // update stock qty
         updateStockQty($prod_variation_ids);
 
+        $milestoneId = $input['data']['project_milestone'] ?? 0;
+
         /** Updating Budget Line Balance **/
-        $budgetLine = ProjectMileStone::find($input['data']['project_milestone']);
+        $budgetLine = ProjectMileStone::find($milestoneId);
         if (!empty($budgetLine)){
             $budgetLine->balance -= floatval(str_replace(',', '', $input['data']['grandttl']));
             $budgetLine->save();
@@ -215,12 +217,15 @@ class PurchaseRepository extends BaseRepository
 
         /** Handling milestone changes */
         $budgetLine = ProjectMileStone::find($purchase->project_milestone);
-        $newBudgetLine = ProjectMileStone::find($input['data']['project_milestone']);
+
+        $newMilestoneId = $input['data']['project_milestone'] ?? 0;
+
+        $newBudgetLine = ProjectMileStone::find($newMilestoneId);
 
 
-        $milestoneChanged = intval($purchase->project_milestone) !== intval($input['data']['project_milestone']);
+        $milestoneChanged = intval($purchase->project_milestone) !== intval($newMilestoneId);
         $grandTotalChanged = floatval($purchase->grandttl) !== floatval(str_replace(',', '', $input['data']['grandttl']));
-        $newMilestoneZero = intval($input['data']['project_milestone']) === 0;
+        $newMilestoneZero = intval($newMilestoneId) === 0;
         $oldMilestoneZero = intval($purchase->project_milestone) === 0;
 
 
