@@ -63,7 +63,6 @@
     // datepicker
     $('.datepicker')
         .datepicker({format: "{{ config('core.user_date_format')}}", autoHide:true})
-        .datepicker('setDate', new Date())
 
     // On searching supplier
     $('#supplierbox').change(function() {

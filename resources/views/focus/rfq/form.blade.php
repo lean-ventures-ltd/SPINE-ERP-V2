@@ -82,24 +82,24 @@
                 </div>
                 <div class="col-sm-4"><label for="transaction_date" class="caption">RFQ Date*</label>
                     <div class="input-group">                                            
-                        {{ Form::text('date', null, ['class' => 'form-control datepicker', 'id' => 'date']) }}
+                        {{ Form::text('date', null, ['class' => 'form-control datepicker', 'id' => 'date', 'required' => 'required']) }}
                     </div>
                 </div>
                 <div class="col-sm-4"><label for="due_date" class="caption">Due Date*</label>
                     <div class="input-group">                                            
-                        {{ Form::text('due_date', null, ['class' => 'form-control datepicker', 'id' => 'due_date']) }}
+                        {{ Form::text('due_date', null, ['class' => 'form-control datepicker', 'id' => 'due_date', 'required' => 'required']) }}
                     </div>
                 </div>
             </div>
 
             <div class="form-group row">
-                <div class="col-4">
-                    <label for="taxFormat" class="caption">Tax</label>
-                    <select class="custom-select" name="tax" id="tax">
-                        <option value="inclusive" {{ "inclusive" == @$po->tax ? 'selected' : ''}}>Inclusive</option>
-                        <option value="exclusive" {{ "exclusive" == @$po->tax ? 'selected' : ''}}>Exclusive</option>
-                    </select>
-                </div>
+{{--                <div class="col-4">--}}
+{{--                    <label for="taxFormat" class="caption">Tax</label>--}}
+{{--                    <select class="custom-select" name="tax" id="tax">--}}
+{{--                        <option value="inclusive" {{ "inclusive" == @$po->tax ? 'selected' : ''}}>Inclusive</option>--}}
+{{--                        <option value="exclusive" {{ "exclusive" == @$po->tax ? 'selected' : ''}}>Exclusive</option>--}}
+{{--                    </select>--}}
+{{--                </div>--}}
 
                 {{-- <div class="col-4">
                     <label for="pricing" >Pricing</label>                    
@@ -127,7 +127,7 @@
             <div class="form-group row">
                 <div class="col-sm-12">
                     <label for="toAddInfo" class="caption">Subject*</label>
-                    {{ Form::textarea('note', null, ['class' => 'form-control', 'placeholder' => trans('general.note'), 'rows'=>'2', 'required']) }}
+                    {{ Form::textarea('subject', null, ['class' => 'form-control', 'placeholder' => trans('general.note'), 'rows'=>'2', 'required']) }}
                 </div>
             </div>
             <div class="form-group row">
@@ -161,9 +161,9 @@
     <li class="nav-item bg-danger">
         <a class="nav-link " id="active-tab2" data-toggle="tab" href="#active2" aria-controls="active2" role="tab">Expenses</a>
     </li>
-    <li class="nav-item bg-success">
-        <a class="nav-link text-danger" id="active-tab3" data-toggle="tab" href="#active3" aria-controls="active3" role="tab">Assets & Equipments</a>
-    </li>
+{{--    <li class="nav-item bg-success">--}}
+{{--        <a class="nav-link text-danger" id="active-tab3" data-toggle="tab" href="#active3" aria-controls="active3" role="tab">Assets & Equipments</a>--}}
+{{--    </li>--}}
     {{-- <li class="nav-item bg-secondary">
         <a class="nav-link" id="active-tab4" data-toggle="tab" href="#active4" aria-controls="active4" role="tab">Queued Requisition Items</a>
     </li> --}}
@@ -174,8 +174,14 @@
     <!-- tab2 -->
     @include('focus.rfq.partials.expense_tab')
     <!-- tab3 -->
-    @include('focus.rfq.partials.asset_tab')
+{{--    @include('focus.rfq.partials.asset_tab')--}}
     <!-- tab4 -->
     {{-- @include('focus.purchaseorders.partials.queue_stock') --}}
+
 </div>
+
+<div class="mt-2">
+    {{ Form::submit('Generate RFQ', ['class' => 'btn btn-success sub-btn btn-lg']) }}
+</div>
+
 <input type="hidden" name="supplier_type" value="supplier">

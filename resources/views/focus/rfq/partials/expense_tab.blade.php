@@ -102,18 +102,8 @@
                 </td>
                 <td colspan="6"></td>
             </tr>
-            <tr class="bg-white">
-                <td colspan="5" align="right"><b>{{trans('general.total_tax')}}</b></td>
-                <td align="left" colspan="2">{{config('currency.symbol')}} <span id="exprow_taxttl" class="lightMode">0</span></td>
-            </tr>
-            <tr class="bg-white">
-                <td colspan="5" align="right"><b>{{trans('general.grand_total')}} ({{config('currency.symbol')}})</b></td>
-                <td align="left" colspan="2">
-                    <input type="text" class="form-control" name="expense_grandttl" value="0.00" id="exp_grandttl" readonly>
-                    <input type="hidden" name="expense_subttl" value="0.00" id="exp_subttl">
-                    <input type="hidden" name="expense_tax" value="0.00" id="exp_tax">
-                </td>
-            </tr>
+
+
         </tbody>
     </table>
 </div>

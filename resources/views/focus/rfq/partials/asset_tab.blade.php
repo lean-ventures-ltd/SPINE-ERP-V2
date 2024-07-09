@@ -96,20 +96,8 @@
                 </td>
                 <td colspan="6"></td>
             </tr>
-            <tr class="bg-white">
-                <td colspan="5" align="right"><b>{{trans('general.total_tax')}}</b></td>
-                <td align="left" colspan="2">{{config('currency.symbol')}} <span id="assettaxrow">0</span></td>
-            </tr>
-            <tr class="bg-white">
-                <td colspan="5" align="right">
-                    <b>{{trans('general.grand_total')}} ({{config('currency.symbol')}})</b>
-                </td>
-                <td align="left" colspan="2">
-                    <input type="text" class="form-control" name="asset_grandttl" value="0.00" id="asset_grandttl" readonly>
-                    <input type="hidden" name="asset_tax" value="0.00" id="asset_tax">
-                    <input type="hidden" name="asset_subttl" value="0.00" id="asset_subttl">
-                </td>
-            </tr>
+
+
         </tbody>
     </table>
 </div>

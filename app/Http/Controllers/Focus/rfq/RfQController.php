@@ -7,11 +7,14 @@ use App\Http\Requests\Focus\rfq\CreateRfQRequest;
 use App\Http\Requests\Focus\rfq\DeleteRfQRequest;
 use App\Http\Requests\Focus\rfq\EditRfQRequest;
 use App\Http\Requests\Focus\rfq\ManageRfQRequest;
+use App\Http\Requests\Focus\rfq\StoreRfQRequest;
 use App\Models\additional\Additional;
 use App\Models\pricegroup\Pricegroup;
+use App\Models\rfq\RfQItem;
 use App\Models\term\Term;
 use App\Models\warehouse\Warehouse;
 use App\Repositories\Focus\rfq\RfQRepository;
+use DateTime;
 use Illuminate\Http\Request;
 use App\Http\Responses\ViewResponse;
 use App\Models\supplier\Supplier;
@@ -51,19 +54,6 @@ class RfQController extends Controller
     public function create(CreateRfQRequest $request)
     {
 
-        $ins = auth()->user()->ins;
-        $prefixes = prefixesArray(['rfq'], $ins);
-        $last_tid = RfQ::where('ins', $ins)->max('tid');
-        $warehouses = Warehouse::all();
-        $additionals = Additional::all();
-        $pricegroups = Pricegroup::all();
-        $supplier = Supplier::where('name', 'Walk-in')->first(['id', 'name']);
-        $price_supplier = Supplier::whereHas('products')->get(['id', 'name']);
-        // Purchase order
-        $terms = Term::where('type', 5)->get();
-
-        return compact('last_tid','warehouses', 'additionals', 'pricegroups','price_supplier','price_supplier', 'terms', 'prefixes');
-
         return new CreateResponse('focus.rfq.create');
     }
 
@@ -73,34 +63,59 @@ class RfQController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(CreateRfQRequest $request)
+    public function store(StoreRfQRequest $request)
     {
-        // $order = $request->only([
-        //     'supplier_id', 'tid', 'date', 'due_date', 'term_id', 'project_id', 'note', 'tax',
-        //     'stock_subttl', 'stock_tax', 'stock_grandttl', 'expense_subttl', 'expense_tax', 'expense_grandttl',
-        //     'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl'
-        // ]);
-        // $order_items = $request->only([
-        //     'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'rate', 'taxrate', 'itemtax', 'amount', 'type', 'product_code', 'warehouse_id'
-        // ]);
-        $order = $request->only([
-            'tid', 'date', 'due_date', 'term_id', 'project_id', 'note', 'tax',
-            'stock_subttl', 'stock_tax', 'stock_grandttl', 'expense_subttl', 'expense_tax', 'expense_grandttl',
-            'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl'
-        ]);
-        $order_items = $request->only([
+
+        $request->validated();
+
+        $rfq = $request->only(['tid', 'date', 'due_date', 'project_id', 'subject', 'tax',]);
+        $rfqItems = $request->only([
             'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'type', 'product_code', 'warehouse_id'
         ]);
 
-        $order['ins'] = auth()->user()->ins;
-        $order['user_id'] = auth()->user()->id;
+        $rfq['ins'] = auth()->user()->ins;
+        $rfq['user_id'] = auth()->user()->id;
         // modify and filter items without item_id
-        $order_items = modify_array($order_items);
-        $order_items = array_filter($order_items, function ($v) {
+        $rfqItems = modify_array($rfqItems);
+        $rfqItems = array_filter($rfqItems, function ($v) {
             return $v['item_id'];
         });
 
-        $result = $this->repository->create(compact('order', 'order_items'));
+//        return compact('rfq', 'rfqItems');
+
+        $newRfq = new RfQ();
+        $newRfq->fill($rfq);
+        $newRfq->date = (new DateTime($rfq['date']))->format('Y-m-d');
+        $newRfq->due_date = (new DateTime($rfq['due_date']))->format('Y-m-d');
+
+        $newRfq->save();
+
+        $RFQITEMS = [];
+        foreach ($rfqItems as $item){
+
+            $newRfqItem = new RfQItem();
+
+            $newRfqItem->fill($item);
+
+            $newRfqItem->rfq_id = $newRfq->id;
+            $newRfqItem->type = strtoupper($item['type']);
+
+            if ($item['type'] === 'Stock') {
+
+                $newRfqItem->product_id = $item['item_id'];
+                $newRfqItem->project_id = $newRfq->project_id;
+            }
+            else if ($item['type'] === 'Expense') {
+
+                $newRfqItem->expense_account_id = $item['item_id'];
+                $newRfqItem->project_id = $item['itemproject_id'];
+            }
+
+            $newRfqItem->quantity = $item['qty'];
+
+            $newRfqItem->save();
+            array_push($RFQITEMS, $newRfqItem);
+        }
 
         return new RedirectResponse(route('biller.rfq.index'), ['flash_success' => 'RFQ created successfully']);
     }
@@ -125,7 +140,7 @@ class RfQController extends Controller
      */
     public function edit(EditRfQRequest $request, $id)
     {
-        $rfq = RfQ::find($id);
+        return $rfq = RfQ::find($id);
         return new EditResponse($rfq);
     }
 
@@ -141,7 +156,7 @@ class RfQController extends Controller
         $rfq = RfQ::find($id);
 
         $order = $request->only([
-            'tid', 'date', 'due_date', 'term_id', 'project_id', 'note', 'tax',
+            'tid', 'date', 'due_date', 'term_id', 'project_id', 'subject', 'tax',
             'stock_subttl', 'stock_tax', 'stock_grandttl', 'expense_subttl', 'expense_tax', 'expense_grandttl',
             'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl'
         ]);

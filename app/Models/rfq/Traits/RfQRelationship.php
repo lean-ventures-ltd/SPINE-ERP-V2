@@ -2,6 +2,7 @@
 
 namespace App\Models\rfq\Traits;
 
+use App\Models\product\ProductVariation;
 use App\Models\rfq\RfQItem;
 
 trait RfQRelationship

@@ -8,7 +8,10 @@ class RfQItem extends Model
 {
     protected $table = 'rfq_items';
 
-    protected $fillable = [];
+    protected $fillable = [
+        'description',
+        'uom',
+    ];
 
     protected $attributes = [];
 
@@ -30,7 +33,7 @@ class RfQItem extends Model
     {
         parent::boot();
         static::addGlobalScope('ins', function ($builder) {
-            $builder->where('ins', '=', auth()->user()->ins);
+            $builder->where('rfq_items.ins', '=', auth()->user()->ins);
         });
     }
 }

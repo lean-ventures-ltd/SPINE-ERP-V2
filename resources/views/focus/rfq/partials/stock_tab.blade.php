@@ -135,23 +135,8 @@
                 </td>
                 <td colspan="7"></td>
             </tr>
-            <tr class="bg-white">
-                <td colspan="6" align="right"><b>{{trans('general.total_tax')}}</b></td>                   
-                <td align="left" colspan="2">
-                    {{config('currency.symbol')}} <span id="invtax" class="lightMode">0</span>
-                </td>
-            </tr>
-            <tr class="bg-white">
-                <td colspan="6" align="right">
-                    <b>Inventory Total ({{ config('currency.symbol') }})</b>
-                </td>
-                <td align="left" colspan="2">
-                    <input type="text" class="form-control" name="stock_grandttl" value="0.00" id="stock_grandttl" readonly>
-                    <input type="hidden" name="stock_subttl" value="0.00" id="stock_subttl">
-                    <input type="hidden" name="stock_tax" value="0.00" id="stock_tax">
-                </td>
-            </tr>
+
+
         </tbody>
     </table>
-    {{ Form::submit('Generate RFQ', ['class' => 'btn btn-success sub-btn btn-lg']) }}
 </div>

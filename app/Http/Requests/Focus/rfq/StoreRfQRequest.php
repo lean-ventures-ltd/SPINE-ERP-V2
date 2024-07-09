@@ -4,7 +4,7 @@ namespace App\Http\Requests\Focus\rfq;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateRfQRequest extends FormRequest
+class StoreRfQRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,6 +23,9 @@ class CreateRfQRequest extends FormRequest
      */
     public function rules()
     {
-
+        return [
+            'date' => ['required', 'date', 'before:due_date'],
+            'due_date' => ['required', 'date', 'after:date']
+        ];
     }
 }

@@ -23,7 +23,7 @@ class CreateResponse implements Responsable
     {
         $ins = auth()->user()->ins;
         $prefixes = prefixesArray(['rfq'], $ins);
-        $last_tid = RfQ::where('ins', $ins)->max('tid');
+        $last_tid = 1;
         $warehouses = Warehouse::all();
         $additionals = Additional::all();
         $pricegroups = Pricegroup::all();
@@ -32,7 +32,7 @@ class CreateResponse implements Responsable
         // Purchase order
         $terms = Term::where('type', 5)->get();
 
-        return compact('last_tid','warehouses', 'additionals', 'pricegroups','price_supplier','price_supplier', 'terms', 'prefixes');
+//        return compact('last_tid','warehouses', 'additionals', 'pricegroups','price_supplier','price_supplier', 'terms', 'prefixes');
 
         return view('focus.rfq.create', compact('last_tid','warehouses', 'additionals', 'pricegroups','price_supplier','price_supplier', 'terms', 'prefixes'));
     }
