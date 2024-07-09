@@ -79,7 +79,7 @@ class HealthAndSafetyTrackingController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
-       $input = $request->all();
+        $input = $request->all();
 
         $input['employee'] = json_encode($request->employee);;
         $input['ins'] = auth()->user()->ins;

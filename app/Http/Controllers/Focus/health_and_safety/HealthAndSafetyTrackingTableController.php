@@ -46,20 +46,20 @@ class HealthAndSafetyTrackingTableController extends Controller
             ->addColumn('status', function ($healthAndSafetyTracking) {
                 return $healthAndSafetyTracking->status;
             })
-            ->addColumn('pdca_cycle', function ($healthAndSafetyTracking) {
-                // $pdcaCycle= '';
-                if ($healthAndSafetyTracking->pdca_cycle == 'plan') {
-                    $pdcaCycle = "Action Identified";
-                } elseif ($healthAndSafetyTracking->pdca_cycle == 'do') {
-                    $pdcaCycle = "Action Being Implemented";
-                } elseif ($healthAndSafetyTracking->pdca_cycle == 'check') {
-                    $pdcaCycle = "Action Being Evaluated";
-                } elseif ($healthAndSafetyTracking->pdca_cycle == 'act') {
-                    $pdcaCycle = "Action Closed";
-                }
-
-                return $pdcaCycle;
-            })
+//            ->addColumn('pdca_cycle', function ($healthAndSafetyTracking) {
+//                // $pdcaCycle= '';
+//                if ($healthAndSafetyTracking->pdca_cycle == 'plan') {
+//                    $pdcaCycle = "Action Identified";
+//                } elseif ($healthAndSafetyTracking->pdca_cycle == 'do') {
+//                    $pdcaCycle = "Action Being Implemented";
+//                } elseif ($healthAndSafetyTracking->pdca_cycle == 'check') {
+//                    $pdcaCycle = "Action Being Evaluated";
+//                } elseif ($healthAndSafetyTracking->pdca_cycle == 'act') {
+//                    $pdcaCycle = "Action Closed";
+//                }
+//
+//                return $pdcaCycle;
+//            })
             ->addColumn('resolution_time', function ($healthAndSafetyTracking) {
                 return $healthAndSafetyTracking->timing;
             })
