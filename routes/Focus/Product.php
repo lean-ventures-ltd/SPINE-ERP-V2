@@ -17,7 +17,9 @@ Route::group(['namespace' => 'stock_rcv'], function () {
 
 Route::group(['namespace' => 'stock_issue'], function () {
     Route::post('stock_issues/quote_pi_products', 'StockIssuesController@quote_pi_products')->name('stock_issues.quote_pi_products');
+    Route::post('stock_issues/select_invoices', 'StockIssuesController@select_invoices')->name('stock_issues.select_invoices');
     Route::get('stock-issues/quote-products/{quoteId}', 'StockIssuesController@quote_pi_products')->name('stock-issues.get-quote-products');
+    Route::post('stock_issues/issue_invoice_items', 'StockIssuesController@issue_invoice_items')->name('stock_issues.issue_invoice_items');
     Route::resource('stock_issues', 'StockIssuesController');
     // datatable
     Route::post('stock_issues/get', 'StockIssuesTableController')->name('stock_issues.get');

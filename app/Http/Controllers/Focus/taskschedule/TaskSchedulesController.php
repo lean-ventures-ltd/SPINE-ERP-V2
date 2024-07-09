@@ -188,6 +188,7 @@ class TaskSchedulesController extends Controller
                 'unit' => 'Lot',
                 'purchase_price' => 0,
                 'price' => $v->equipments->sum('service_rate'),
+                'product_id' => $v->id,
             ]);
 
         return response()->json($taskschedules);

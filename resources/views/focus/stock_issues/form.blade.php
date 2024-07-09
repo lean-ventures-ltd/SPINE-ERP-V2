@@ -58,14 +58,22 @@
 </div>
 
 <div class="row">
-    <div class="col-md-12 col-12">
+    <div class="col-md-2 col-12">
+        <label for="tid">Reference</label>
+    <select name="reference" id="ref" class="custom-select">
+            @foreach (['quote', 'invoice'] as $item)
+                <option value="{{$item}}" {{$item == @$stock_issue->reference ? 'selected' : ''}}>{{ ucfirst($item) }}</option>
+            @endforeach
+    </select>
+    </div>
+    <div class="col-md-10 col-12">
         <label for="note">Note</label>
         {{ Form::text('note', null, ['class' => 'form-control', 'id' => 'note', 'required' => 'required']) }}
     </div>
 </div>
 <hr>
 <div class="row mb-1">
-    <div class="col-md-4 col-12">
+    <div class="col-md-4 col-12 quote-col">
         <label for="quote">Load Items From Quote / PI</label>
         <select
                 name="quote_id"
@@ -85,6 +93,17 @@
                     {{ gen4tid($row->bank_id? 'PI-' : 'QT-', $row->tid) }} {{ $row->notes }}
                 </option>
             @endforeach
+        </select>
+    </div>
+    <div class="col-md-4 col-12 invoice-col d-none">
+        <label for="invoice">Invoice</label>
+        <select name="invoice_id" id="invoice" class="form-control" data-placeholder="Search Invoice" autocomplete="off">
+            <option value=""></option>
+            @if (isset($stock_issue->invoice))
+                <option value="{{ $stock_issue->invoice_id }}" selected>
+                    {{ gen4tid('INV-', $stock_issue->invoice->tid) . ' ' . $stock_issue->invoice->notes }}
+                </option>
+            @endif
         </select>
     </div>
 

@@ -12,6 +12,7 @@ use App\Models\product\ProductMeta;
 use App\Models\warehouse\Warehouse;
 use App\Models\pricegroup\Pricegroup;
 use App\Models\pricegroup\PriceGroupVariation;
+use App\Models\project\BudgetItem;
 
 /**
  * Class ProductRelationship
@@ -26,6 +27,10 @@ trait ProductVariationRelationship
     public function quote_item()
     {
         return $this->hasOne(QuoteItem::class, 'product_id');
+    }
+    public function budget_item()
+    {
+        return $this->hasOne(BudgetItem::class, 'product_id');
     }
 
     public function purchase_item()
