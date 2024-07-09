@@ -47,6 +47,7 @@
         <label for="tid" class="caption">Select {{ trans('general.tax') }}*</label>
         <div class="input-group">
             <select class="custom-select round" name='tax_id' id="tax_id" required>
+                <option value="">Default</option>
                 @foreach ($additionals as $row)
                     <option value="{{ +$row->value }}" {{ @$invoice && $invoice->tax_id == $row->value? 'selected' : '' }}>
                         {{ $row->name }}
