@@ -1,6 +1,10 @@
 {{ Html::script('focus/js/select2.min.js') }}
 {{ Html::script(mix('js/dataTable.js')) }}
 <script>
+    $('table thead th').css({'paddingBottom': '3px', 'paddingTop': '3px'});
+    $('table tbody td').css({paddingLeft: '2px', paddingRight: '2px'});
+    $('table thead').css({'position': 'sticky', 'top': 0, 'zIndex': 100});
+
     const config = {
         ajax: { headers: {'X-CSRF-TOKEN': "{{ csrf_token() }}"} },
         date: {format: "{{config('core.user_date_format')}}", autoHide: true}, 
@@ -27,36 +31,37 @@
             $('.datepicker').datepicker(config.date).datepicker('setDate', new Date());
             $('#person').select2(config.select2);
 
-            $('#person').change(this.customerChange);
-            $('#payment_type').change(this.paymentTypeChange);
-            $('#rel_payment').change(this.relatedPaymentChange);
+            $('#person').change(Form.customerChange);
+            $('#payment_type').change(Form.paymentTypeChange);
+            $('#rel_payment').change(Form.relatedPaymentChange);
+            $('#currency').change(Form.currencyChange);
+            
+            $('#invoiceTbl').on('change', '.paid', Form.allocationChange);
+            $('#amount').keyup(Form.allocateAmount)
+                .focusout(Form.amountFocusOut)
+                .focus(Form.amountFocus);
 
-            $('#invoiceTbl').on('change', '.paid', this.allocationChange);
-            $('#amount').keyup(this.allocateAmount)
-                .focusout(this.amountFocusOut)
-                .focus(this.amountFocus);
-
-            $('form').submit(this.formSubmit);
+            $('form').submit(Form.formSubmit);
             
             // edit mode
-            if (this.invoicePayment && this.invoicePayment.id) {
-                const pmt = this.invoicePayment;
+            const pmt = @json(@$invoice_payment);
+            if (pmt && pmt.id) {
+                ['person', 'payment_type', 'rel_payment', 'currency'].forEach(v => $(`#${v}`).attr('disabled', true));
                 if (pmt.date) $('#date').datepicker('setDate', new Date(pmt.date));
                 if (pmt.note) $('#note').val(pmt.note);
-                $('#person').attr('disabled', true);
-                $('#payment_type').attr('disabled', true);
                 $('#amount').val(accounting.formatNumber(pmt.amount*1));
                 $('#account').val(pmt.account_id);
                 $('#payment_mode').val(pmt.payment_mode);
                 $('#reference').val(pmt.reference);
-                $('#rel_payment').attr('disabled', true);
-                this.calcTotal();
+                $('#fx_curr_rate').val(+pmt.fx_curr_rate);
+                Form.calcTotal();
                 // allocation
                 if (pmt.rel_payment_id) {
                     ['account', 'payment_mode', 'reference'].forEach(v => $(`#${v}`).attr('disabled', true));
                 }
             } else {
-                this.loadUnallocatedPayments();
+                $('#currency').change();
+                Form.loadUnallocatedPayments();
             }
         },
 
@@ -90,7 +95,7 @@
                 <tr>
                     <td class="text-center">${v.invoiceduedate.split('-').reverse().join('-')}</td>
                     <td>${v.tid}</td>
-                    <td class="text-center">${v.notes}</td>
+                    <td class="text-left">${v.notes}</td>
                     <td>${v.status}</td>
                     <td>${accounting.formatNumber(v.total)}</td>
                     <td>${accounting.formatNumber(v.amountpaid)}</td>
@@ -101,16 +106,25 @@
             `;
         },
 
+        currencyChange() {
+            const rate = $(this).find('option:selected').attr('rate');
+            $('#fx_curr_rate').val(+rate);
+            $('#person').change();
+        },
+
         customerChange() {
             $('#amount').val('');
             $('#allocate_ttl').val('');
             $('#balance').val('');
             $('#invoiceTbl tbody tr').remove();
+            $('#rel_payment option:not(:eq(0))').remove();
+            Form.loadUnallocatedPayments();
             
             customer_id = this.value;
-            if (customer_id) {
+            currency_id = $('#currency').val();
+            if (customer_id && $('#payment_type').val() == 'per_invoice') {
                 // fetch invoices
-                const url = "{{ route('biller.invoices.client_invoices') }}?customer_id=" + customer_id;
+                const url = "{{ route('biller.invoices.client_invoices') }}?customer_id="+customer_id+'&currency_id='+currency_id;
                 $.get(url, data => {
                     data.forEach((v, i) => {
                         $('#invoiceTbl tbody').append(Form.invoiceRow(v, i));
@@ -119,29 +133,29 @@
                 
                 $('#rel_payment').val('');
                 $('#rel_payment option').each(function() {
-                    if ($(this).attr('customer_id') == customer_id)
-                        $(this).removeClass('d-none');
-                    else $(this).addClass('d-none');
-                })
-            } else {
-                $('#rel_payment option:not(:eq(0))').remove();
-                Form.loadUnallocatedPayments();
+                    $(this).addClass('d-none');
+                    if ($(this).attr('customer_id') == customer_id) $(this).removeClass('d-none');
+                });
             }
         },
 
         loadUnallocatedPayments() {
-            $('#rel_payment').attr('disabled', false).change();
+            if ($('#person').val() && $('#payment_type').val() == 'per_invoice') {
+                $('#rel_payment').attr('disabled', false).val('').change();
+            } else {
+                $('#rel_payment').attr('disabled', true).val('').change();
+            }
             const payments = @json($unallocated_pmts);
             payments.forEach(v => {
-                let balance = parseFloat(v.amount) -  parseFloat(v.allocate_ttl);
-                balance = accounting.formatNumber(balance);
+                let balance = accounting.unformat(v.amount - v.allocate_ttl);
                 let paymentType = v.payment_type.split('_').join(' ');
-                paymentType = paymentType.charAt(0).toUpperCase() + paymentType.slice(1);
                 let date = v.date.split('-').reverse().join('-');
-
+                
+                paymentType = paymentType.charAt(0).toUpperCase() + paymentType.slice(1);
+                balance = accounting.formatNumber(balance);
                 let text = `(${balance} - ${paymentType}: ${date}) - ${v.payment_mode.toUpperCase()} ${v.reference}`;
                 
-                let option = `
+                $('#rel_payment').append(`
                     <option
                         value=${v.id}
                         amount=${v.amount}
@@ -150,11 +164,10 @@
                         paymentMode=${v.payment_mode}
                         reference=${v.reference}
                         date=${v.date}
-                        >
+                    >
                         ${text}
                     </option>
-                    `;
-                $('#rel_payment').append(option);
+                `);
             });
         },
 
@@ -163,13 +176,13 @@
             $('#allocate_ttl').val('');
             $('#balance').val('');
             if ($(this).val() == 'per_invoice') {
-                $('#rel_payment').val(0).attr('disabled', false).change();
+                $('#rel_payment').val('').attr('disabled', false).change();
                 $('#person').change();
                 const payments = @json($unallocated_pmts);
                 if (payments.length) Form.loadUnallocatedPayments();
             } else {
                 $('#invoiceTbl tbody tr').remove();
-                $('#rel_payment').val(0).attr('disabled', true);
+                $('#rel_payment').val('').attr('disabled', true);
                 $('#rel_payment option:not(:first)').remove();
                 $('#amount').val('').attr('readonly', false);
                 $('#account').val('').attr('disabled', false);
@@ -189,21 +202,33 @@
         allocateAmount() {
             let dueTotal = 0;
             let allocateTotal = 0;
-            let amount = accounting.unformat($(this).val());
-            $('#invoiceTbl tbody tr').each(function(i) {
-                const due = accounting.unformat($(this).find('.due').text());
-                if (due > amount) $(this).find('.paid').val(accounting.formatNumber(amount));
-                else if (amount >= due) $(this).find('.paid').val(accounting.formatNumber(due));
-                else $(this).find('.paid').val(0);
-                const paid = accounting.unformat($(this).find('.paid').val());
-                amount -= paid;
-                dueTotal += due;
-                allocateTotal += paid;
-            });
-            $('#allocate_ttl').val(accounting.formatNumber(allocateTotal));
-            $('#balance').val(accounting.formatNumber(dueTotal - allocateTotal));
-            const amount2 = accounting.unformat($(this).val());
-            $('#unallocate_ttl').val(accounting.formatNumber(amount2 - allocateTotal));
+            let decrAmount = accounting.unformat($(this).val());
+            const pmt = @json(@$invoice_payment);
+            if (pmt && pmt.id) {
+                $('#invoiceTbl tbody tr').each(function(i) {
+                    const paid = accounting.unformat($(this).find('.paid').val());
+                    decrAmount -= paid;
+                    allocateTotal += paid;
+                });
+                const amount = accounting.unformat($(this).val());
+                $('#unallocate_ttl').val(accounting.formatNumber(amount - allocateTotal));
+                $('#allocate_ttl').val(accounting.formatNumber(allocateTotal));
+            } else {
+                $('#invoiceTbl tbody tr').each(function(i) {
+                    const due = accounting.unformat($(this).find('.due').html());
+                    if (due > decrAmount) $(this).find('.paid').val(accounting.formatNumber(decrAmount));
+                    else if (decrAmount >= due) $(this).find('.paid').val(accounting.formatNumber(due));
+                    else $(this).find('.paid').val(0);
+                    const paid = accounting.unformat($(this).find('.paid').val());
+                    decrAmount -= paid;
+                    dueTotal += due;
+                    allocateTotal += paid;
+                });
+                $('#allocate_ttl').val(accounting.formatNumber(allocateTotal));
+                $('#balance').val(accounting.formatNumber(dueTotal - allocateTotal));
+                const amount = accounting.unformat($(this).val());
+                $('#unallocate_ttl').val(accounting.formatNumber(amount - allocateTotal));
+            }
         },
 
         amountFocus() {
@@ -216,7 +241,7 @@
         },
 
         relatedPaymentChange() {
-            if ($(this).val()*1) {
+            if (+this.value) {
                 const opt = $(this).find(':selected');
                 $('#date').datepicker('setDate', new Date(opt.attr('date'))).attr('readonly', true);
                 $('#reference').val(opt.attr('reference')).attr('readonly', true);
@@ -242,12 +267,12 @@
                 dueTotal += due;
                 allocateTotal += paid;
             });
-            $('#allocate_ttl').val(accounting.formatNumber(allocateTotal));
-            $('#balance').val(accounting.formatNumber(dueTotal - allocateTotal));
             const amount = accounting.unformat($('#amount').val());
             $('#unallocate_ttl').val(accounting.formatNumber(amount - allocateTotal));
+            $('#allocate_ttl').val(accounting.formatNumber(allocateTotal));
+            $('#balance').val(accounting.formatNumber(dueTotal - allocateTotal));
         },
     };    
 
-    $(() => Form.init());
+    $(Form.init);
 </script>

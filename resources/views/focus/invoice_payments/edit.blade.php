@@ -16,15 +16,9 @@
     </div>
 
     <div class="content-body">
-        <div class="card">
-            <div class="card-content">
-                <div class="card-body">
-                    {{ Form::model($invoice_payment, ['route' => array('biller.invoice_payments.update', $invoice_payment), 'method' => 'PATCH']) }}
-                        @include('focus.invoice_payments.form')
-                    {{ Form::close() }}
-                </div>
-            </div>
-        </div>
+        {{ Form::model($invoice_payment, ['route' => array('biller.invoice_payments.update', $invoice_payment), 'method' => 'PATCH']) }}
+            @include('focus.invoice_payments.form')
+        {{ Form::close() }}
     </div>
 </div>
 @endsection

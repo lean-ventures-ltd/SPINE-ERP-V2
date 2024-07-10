@@ -274,7 +274,6 @@ class InvoicesController extends Controller
             }
         });
 
-        
         // check if quotes are of same currency
         $currency_ids = $quotes->pluck('currency_id')->toArray();
         if (count(array_unique($currency_ids)) > 1) throw ValidationException::withMessages(['Selected items must be of same currency!']);
@@ -295,7 +294,8 @@ class InvoicesController extends Controller
         if(!empty($cuNo)) $newCuInvoiceNo = explode('KRAMW', auth()->user()->business->etr_code)[1] . $cuNo;
         else $newCuInvoiceNo = '';
 
-        return new ViewResponse('focus.invoices.create_project_invoice',
+        return new ViewResponse(
+            'focus.invoices.create_project_invoice',
             compact('quotes', 'customer', 'last_tid', 'banks', 'accounts', 'terms', 'quote_ids', 'additionals', 'currency', 'prefixes', 'newCuInvoiceNo'),
         );
     }
@@ -540,7 +540,11 @@ class InvoicesController extends Controller
     public function client_invoices(Request $request)
     {
         $w = $request->search; 
-        $query = Invoice::query()->whereHas('currency', fn($q) => $q->where('rate', 1))
+        $currency_id = $request->currency_id;
+        $query = Invoice::query()->whereHas('currency', function($q) use($currency_id) {
+            if ($currency_id) $q->where('currency_id', $currency_id);
+            else $q->where('rate', 1);
+        })
         ->where('customer_id', $request->customer_id)->whereIn('status', ['due', 'partial']);
 
         if ($w) $invoices = $query->where('notes', 'LIKE', "%{$w}%")->orderBy('invoiceduedate', 'ASC')->limit(6)->get();

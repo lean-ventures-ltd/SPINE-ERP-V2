@@ -16,15 +16,9 @@
     </div>
 
     <div class="content-body">
-        <div class="card">
-            <div class="card-content">
-                <div class="card-body">
-                    {{ Form::open(['route' => 'biller.invoice_payments.store', 'method' => 'POST', 'id' => 'invoicePay']) }}
-                        @include('focus.invoice_payments.form')
-                    {{ Form::close() }}
-                </div>
-            </div>
-        </div>
+        {{ Form::open(['route' => 'biller.invoice_payments.store', 'method' => 'POST', 'id' => 'invoicePay']) }}
+            @include('focus.invoice_payments.form')
+        {{ Form::close() }}
     </div>
 </div>
 @endsection
