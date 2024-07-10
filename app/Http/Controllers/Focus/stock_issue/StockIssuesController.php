@@ -65,8 +65,7 @@ class StockIssuesController extends Controller
      */
     public function create()
     {
-        $customers = Customer::whereHas('invoices')
-            ->orWhereHas('projects')
+        $customers = Customer::whereHas('quotes')
             ->get(['id', 'company', 'name']);
 
         $employees = Hrm::where([
@@ -123,9 +122,7 @@ class StockIssuesController extends Controller
      */
     public function edit(StockIssue $stock_issue)
     {
-        $customers = Customer::whereHas('invoices')
-        ->orWhereHas('projects')
-        ->get(['id', 'company', 'name']);
+        $customers = Customer::whereHas('quotes')->get(['id', 'company', 'name']);
         $employees = Hrm::where([
             'customer_id' => null,
             'supplier_id' => null,
