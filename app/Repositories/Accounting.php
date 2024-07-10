@@ -242,8 +242,8 @@ trait Accounting
             'tr_ref' => $manual_journal->id,
             'user_type' => 'customer',
             'is_primary' => 1,
-            'customer_id' => @$manual_journal->customer_id,
-            'man_journal_id' => @$manual_journal->id,
+            'customer_id' => $manual_journal->customer_id,
+            'man_journal_id' => $manual_journal->id,
         ];
         Transaction::create($dr_data);
 
@@ -512,12 +512,29 @@ trait Accounting
     {
         $account = Account::where('system', 'receivable')->first(['id']);
         $tr_category = Transactioncategory::where('code', 'dep')->first(['id', 'code']);
-        $tid = Transaction::where('ins', $invoice_deposit->ins)->max('tid') + 1;
+        $tid = Transaction::where('ins', $invoice_deposit->ins)->max('tid')+1;
+
+        $fx_invoice_total = 0;
+        $fx_gain_total = 0;
+        $fx_loss_total = 0;
+        foreach ($invoice_deposit->items as $item) {
+            if ($item->invoice) {
+                $fx_invoice_total += round($item['paid'] * $item->invoice->fx_curr_rate, 4);
+                $fx_gain_total += $item->fx_gain;
+                $fx_loss_total += $item->fx_loss;
+            }
+        }
+        
+        $deposit_amount = $invoice_deposit->amount;
+        $fx_deposit_amount = $invoice_deposit->fx_amount;
+        $fx_rate = $invoice_deposit->fx_curr_rate;
         $cr_data = [
             'tid' => $tid,
             'account_id' => $account->id,
             'trans_category_id' => $tr_category->id,
-            'credit' => $invoice_deposit->amount,
+            'credit' => $fx_rate > 1? $fx_invoice_total : $deposit_amount,
+            'fx_credit' => $fx_rate > 1? $deposit_amount : 0,
+            'fx_curr_rate' => $fx_rate,
             'tr_date' => $invoice_deposit->date,
             'due_date' => $invoice_deposit->date,
             'user_id' => $invoice_deposit->user_id,
@@ -527,53 +544,105 @@ trait Accounting
             'tr_ref' => $invoice_deposit->id,
             'user_type' => 'customer',
             'is_primary' => 1,
-            'customer_id' => @$invoice_deposit->customer_id,
-            'deposit_id' => @$invoice_deposit->id,
+            'customer_id' => $invoice_deposit->customer_id,
+            'deposit_id' => $invoice_deposit->id,
         ];
 
+        /**
+         * On allocation of advance payment
+         */
         if ($invoice_deposit->is_advance_allocation) {
             // credit Receivables (Debtors)
             Transaction::create($cr_data);
             
-            // debit customer Advance DEP
-            unset($cr_data['credit'], $cr_data['is_primary']);
+            // debit customer Advance DEP (Liability)
+            unset($cr_data['credit'], $cr_data['fx_credit'], $cr_data['is_primary']);
             $account = Account::where('system', 'adv_dep')->first(['id']);
             $dr_data = array_replace($cr_data, [
                 'account_id' => $account->id,
-                'debit' => $invoice_deposit->amount,
+                'debit' => $fx_rate > 1? $fx_deposit_amount : $deposit_amount,
+                'fx_debit' => $fx_rate > 1? $deposit_amount : 0,
             ]);    
             Transaction::create($dr_data);
+
+            /**
+             * since invoice is applied via Accounts Receivable
+             */
+            // credit Foreign Gain Account (Revenue)
+            if ($fx_gain_total > 0) {
+                $account = Account::where('system', 'frx_gain')->first(['id']);
+                $cr_data = array_replace($cr_data, [
+                    'account_id' => $account->id,
+                    'credit' => $fx_gain_total,
+                ]);    
+                Transaction::create($cr_data);
+            } elseif ($fx_loss_total > 0) {
+                // debit Foreign Loss Account (Expense)
+                $account = Account::where('system', 'frx_loss')->first(['id']);
+                $dr_data = array_replace($cr_data, [
+                    'account_id' => $account->id,
+                    'debit' => $fx_loss_total,
+                ]);    
+                Transaction::create($dr_data);
+            }
         } else {
             /**
-             * Non-allocation of lumpsome payment
+             * Advance Payment
              */
             if ($invoice_deposit->payment_type == 'advance_payment') {
-                // credit customer Advance DEP
+                // credit customer Advance DEP (Liability)
                 $account = Account::where('system', 'adv_dep')->first(['id']);
-                $cr_data['account_id'] = $account->id;
+                $cr_data = array_replace($cr_data, [
+                    'account_id' => $account->id,
+                    'credit' => $fx_rate > 1? $fx_deposit_amount : $deposit_amount,
+                    'fx_credit' => $fx_rate > 1? $deposit_amount : 0,
+                ]);    
                 Transaction::create($cr_data);
                 
-                // debit bank
-                unset($cr_data['credit'], $cr_data['is_primary']);
+                // debit bank (Cash Account)
+                unset($cr_data['credit'], $cr_data['fx_credit'], $cr_data['is_primary']);
                 $dr_data = array_replace($cr_data, [
                     'account_id' => $invoice_deposit->account_id,
-                    'debit' => $invoice_deposit->amount,
+                    'debit' => $fx_rate > 1? $fx_deposit_amount : $deposit_amount,
+                    'fx_debit' => $fx_rate > 1? $deposit_amount : 0,
                 ]);    
                 Transaction::create($dr_data);
             } else {
                 // credit Receivables (Debtors)
                 Transaction::create($cr_data);
                             
-                // debit bank
-                unset($cr_data['credit'], $cr_data['is_primary']);
+                // debit bank (Cash Account)
+                unset($cr_data['credit'], $cr_data['fx_credit'], $cr_data['is_primary']);
                 $dr_data = array_replace($cr_data, [
                     'account_id' => $invoice_deposit->account_id,
-                    'debit' => $invoice_deposit->amount,
+                    'debit' => $fx_rate > 1? $fx_deposit_amount : $deposit_amount,
+                    'fx_debit' => $fx_rate > 1? $deposit_amount : 0,
                 ]);    
                 Transaction::create($dr_data);
+
+                /**
+                 * since invoice is applied via Accounts Receivable
+                 */
+                // credit Foreign Gain Account (Revenue)
+                if ($fx_gain_total > 0) {
+                    $account = Account::where('system', 'frx_gain')->first(['id']);
+                    $cr_data = array_replace($cr_data, [
+                        'account_id' => $account->id,
+                        'credit' => $fx_gain_total,
+                    ]);    
+                    Transaction::create($cr_data);
+                } elseif ($fx_loss_total > 0) {
+                    // debit Foreign Loss Account (Expense)
+                    $account = Account::where('system', 'frx_loss')->first(['id']);
+                    $dr_data = array_replace($cr_data, [
+                        'account_id' => $account->id,
+                        'debit' => $fx_loss_total,
+                    ]);    
+                    Transaction::create($dr_data);
+                }
             }
         }
-                
+        // dd(Transaction::orderBy('id', 'desc')->limit(3)->get()->toArray());
     }
 
     /**
@@ -1107,44 +1176,6 @@ trait Accounting
             'credit' => $utility_bill->total,
         ]);    
         Transaction::create($cr_data);
-    }
-
-    /**
-     * Project Stock Issuance
-     * @param ProjectStock $projectstock
-     */
-    public function post_projectstock_issuance($projectstock)
-    {
-        // credit Inventory (stock) Account
-        $account = Account::where('system', 'stock')->first('id');
-        $tr_category = Transactioncategory::where('code', 'stock')->first(['id', 'code']);
-        $cr_data = [
-            'tid' => Transaction::max('tid')+1,
-            'account_id' => $account->id,
-            'trans_category_id' => $tr_category->id,
-            'credit' => $projectstock->total,
-            'tr_date' => $projectstock->date,
-            'due_date' => $projectstock->date,
-            'note' => $projectstock->note,
-            'user_id' => $projectstock->user_id,
-            'ins' => $projectstock->ins,
-            'tr_type' => $tr_category->code,
-            'tr_ref' => $projectstock->id,
-            'user_type' => 'customer',
-            'is_primary' => 1,
-            'customer_id' => @$projectstock->quote->customer_id,
-            'projectstock_issuance_id' => $projectstock->id
-        ];
-        Transaction::create($cr_data);
-
-        // debit WIP Account
-        unset($cr_data['credit'], $cr_data['is_primary']);
-        $account = Account::where('system', 'wip')->first('id');
-        $dr_data = array_replace($cr_data, [
-            'account_id' =>  $account->id,
-            'debit' => $projectstock['total'],
-        ]);
-        Transaction::create($dr_data);
     }
 
     /**

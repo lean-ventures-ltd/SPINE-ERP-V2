@@ -29,20 +29,20 @@
                                         class="datepicker form-control box-size mb-2">
                                         {{-- {{ Form::text('date', null, ['class' => 'form-control datepicker', 'id' => 'date']) }} --}}
                                 </div>
-                                <div class="col-6">
-                                    <label for="ticket">PDCA Cycle</label>
-                                    <div class="input-group">
-                                        <div class="input-group-addon"><span class="icon-file-text-o"
-                                                aria-hidden="true"></span></div>
-                                        <select class="custom-select" id="pdca_cycle" name="pdca_cycle">
-                                            <option value="">Select PDCA Cycle</option>
-                                            <option value="plan">Action Identified(PLAN)</option>
-                                            <option value="do">Action Being Implemented(DO)</option>
-                                            <option value="check">Action Being Evaluated(CHECK)</option>
-                                            <option value="act">Action Closed(ACT)</option>
-                                        </select>
-                                    </div>
-                                </div>
+{{--                                <div class="col-6">--}}
+{{--                                    <label for="ticket">PDCA Cycle</label>--}}
+{{--                                    <div class="input-group">--}}
+{{--                                        <div class="input-group-addon"><span class="icon-file-text-o"--}}
+{{--                                                aria-hidden="true"></span></div>--}}
+{{--                                        <select class="custom-select" id="pdca_cycle" name="pdca_cycle">--}}
+{{--                                            <option value="">Select PDCA Cycle</option>--}}
+{{--                                            <option value="plan">Action Identified(PLAN)</option>--}}
+{{--                                            <option value="do">Action Being Implemented(DO)</option>--}}
+{{--                                            <option value="check">Action Being Evaluated(CHECK)</option>--}}
+{{--                                            <option value="act">Action Closed(ACT)</option>--}}
+{{--                                        </select>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
                             </div>
                         </div>
                     </div>
@@ -65,7 +65,6 @@
                                             <th>Incident</th>
                                             <th>Root Cause</th>
                                             <th>Status</th>
-                                            <th>PDCA Cycle</th>
                                             <th>Resolution Time</th>
                                             <th>Actions</th>
                                         </tr>
@@ -168,10 +167,6 @@
                         {
                             data: 'status',
                             name: 'status'
-                        },
-                        {
-                            data: 'pdca_cycle',
-                            name: 'pdca_cycle'
                         },
                         {
                             data: 'resolution_time',

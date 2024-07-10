@@ -49,6 +49,7 @@ use App\Models\term\Term;
 use App\Models\verification\Verification;
 use App\Repositories\Focus\invoice_payment\InvoicePaymentRepository;
 use App\Repositories\Focus\pos\PosRepository;
+use DB;
 use Endroid\QrCode\QrCode;
 use Error;
 use Illuminate\Validation\ValidationException;
@@ -273,7 +274,6 @@ class InvoicesController extends Controller
             }
         });
 
-        
         // check if quotes are of same currency
         $currency_ids = $quotes->pluck('currency_id')->toArray();
         if (count(array_unique($currency_ids)) > 1) throw ValidationException::withMessages(['Selected items must be of same currency!']);
@@ -294,7 +294,8 @@ class InvoicesController extends Controller
         if(!empty($cuNo)) $newCuInvoiceNo = explode('KRAMW', auth()->user()->business->etr_code)[1] . $cuNo;
         else $newCuInvoiceNo = '';
 
-        return new ViewResponse('focus.invoices.create_project_invoice',
+        return new ViewResponse(
+            'focus.invoices.create_project_invoice',
             compact('quotes', 'customer', 'last_tid', 'banks', 'accounts', 'terms', 'quote_ids', 'additionals', 'currency', 'prefixes', 'newCuInvoiceNo'),
         );
     }
@@ -398,6 +399,23 @@ class InvoicesController extends Controller
         return new RedirectResponse(route('biller.invoices.index'), ['flash_success' => 'Project Invoice Updated successfully' . $msg]);
     }
 
+    /**
+     * Nullify Invoice
+     * 
+     */
+    public function nullify_invoice(Request $request, Invoice $invoice)
+    {
+        try {
+            DB::beginTransaction();
+            $invoice->update(['is_cancelled' => 1]);
+            $invoice->transactions()->delete();
+            DB::commit();
+        } catch (\Throwable $th) {
+            return errorHandler($th->getMessage(), $th);
+        }
+
+        return new RedirectResponse(route('biller.invoices.show', $invoice), ['flash_success' => 'Invoice nullified successfully']);
+    }
 
     /**
      * Create invoice payment
@@ -522,7 +540,11 @@ class InvoicesController extends Controller
     public function client_invoices(Request $request)
     {
         $w = $request->search; 
-        $query = Invoice::query()->whereHas('currency', fn($q) => $q->where('rate', 1))
+        $currency_id = $request->currency_id;
+        $query = Invoice::query()->whereHas('currency', function($q) use($currency_id) {
+            if ($currency_id) $q->where('currency_id', $currency_id);
+            else $q->where('rate', 1);
+        })
         ->where('customer_id', $request->customer_id)->whereIn('status', ['due', 'partial']);
 
         if ($w) $invoices = $query->where('notes', 'LIKE', "%{$w}%")->orderBy('invoiceduedate', 'ASC')->limit(6)->get();

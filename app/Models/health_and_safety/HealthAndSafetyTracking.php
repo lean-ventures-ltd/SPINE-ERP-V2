@@ -31,7 +31,11 @@ class HealthAndSafetyTracking extends Model
         'timing',
         'comments',
         'ins',
-        'user_id'
+        'user_id',
+        'plan',
+        'do',
+        'check',
+        'act'
     ];
 
     protected $attributes = [];

@@ -5,7 +5,10 @@
 @section('content')
 <div class="content-wrapper">
     <div class="content-header row mb-1">
-        <div class="col-12">
+        <div class="content-header-left col-6">
+            <h4 class="content-header-title">Edit Invoice Details</h4>
+        </div>
+        <div class="col-6">
             <div class="btn-group float-right">
                 @include('focus.invoices.partials.invoices-header-buttons')
             </div>
@@ -13,34 +16,27 @@
     </div>
 
     <div class="content-body">
-        <div class="card">
-            <div class="card-content">
-                <div class="card-header">
-                    <div id="credit_limit" class="align-center"></div>
-                </div>
-                <div class="card-body">
-                    {{ Form::model($invoice, ['route' => ['biller.invoices.update_project_invoice', $invoice], 'method' => 'POST']) }}
-                        @php $customer = $invoice->customer; @endphp
-                        @include('focus.invoices.project_invoice_form')
-                    {{ Form::close() }}
-                </div>
-            </div>
-        </div>
+        {{ Form::model($invoice, ['route' => ['biller.invoices.update_project_invoice', $invoice], 'method' => 'POST']) }}
+            @php $customer = $invoice->customer; @endphp
+            @include('focus.invoices.project_invoice_form')
+        {{ Form::close() }}
     </div>
 </div>
 @endsection
 
 @section('extra-scripts')
 {{ Html::script('core/app-assets/vendors/js/extensions/sweetalert.min.js') }}
-<script type="text/javascript">
-    // default values
-    const invoice = @json($invoice);
+<script type="text/javascript">  
+    $('table thead th').css({'paddingBottom': '3px', 'paddingTop': '3px'});
+    $('table tbody td').css({paddingLeft: '2px', paddingRight: '2px'});
+    $('table thead').css({'position': 'sticky', 'top': 0, 'zIndex': 100});
 
-    // Initialize datepicker
     $('.datepicker').datepicker({format: "{{config('core.user_date_format')}}", autoHide: true})
     .datepicker('setDate', new Date());
     $.ajaxSetup({headers: { 'X-CSRF-TOKEN': "{{ csrf_token() }}" }});
-    if (invoice.invoicedate) 
+
+    const invoice = @json($invoice);
+    if (invoice.invoicedate) {
         $('#invoicedate').datepicker('setDate', new Date(invoice.invoicedate));
     }
 

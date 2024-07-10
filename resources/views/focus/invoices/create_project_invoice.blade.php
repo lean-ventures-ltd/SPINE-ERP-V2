@@ -6,7 +6,7 @@
 <div class="content-wrapper">
     <div class="content-header row mb-1">
         <div class="content-header-left col-6">
-            <h4 class="content-header-title">Invoice Management</h4>
+            <h4 class="content-header-title">Generate Invoice</h4>
         </div>
         <div class="col-6">
             <div class="btn-group float-right">
@@ -16,18 +16,9 @@
     </div>
 
     <div class="content-body">
-        <div class="card">
-            <div class="card-header">
-                <div id="credit_limit" class="align-center"></div>
-            </div>
-            <div class="card-content">
-                <div class="card-body">
-                    {{ Form::open(['route' => 'biller.invoices.store_project_invoice', 'method' => 'POST']) }}
-                        @include('focus.invoices.project_invoice_form')
-                    {{ Form::close() }}
-                </div>
-            </div>
-        </div>
+        {{ Form::open(['route' => 'biller.invoices.store_project_invoice', 'method' => 'POST']) }}
+            @include('focus.invoices.project_invoice_form')
+        {{ Form::close() }}
     </div>
 </div>
 @endsection
@@ -35,6 +26,10 @@
 @section('extra-scripts')
 {{ Html::script('core/app-assets/vendors/js/extensions/sweetalert.min.js') }}
 <script type="text/javascript">
+    $('table thead th').css({'paddingBottom': '3px', 'paddingTop': '3px'});
+    $('table tbody td').css({paddingLeft: '2px', paddingRight: '2px'});
+    $('table thead').css({'position': 'sticky', 'top': 0, 'zIndex': 100});
+
     // Initialize datepicker
     $('.datepicker')
     .datepicker({format: "{{config('core.user_date_format')}}", autoHide: true})

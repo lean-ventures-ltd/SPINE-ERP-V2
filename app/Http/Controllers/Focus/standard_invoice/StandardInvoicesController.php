@@ -74,7 +74,7 @@ class StandardInvoicesController extends Controller
      */
     public function create(Request $request)
     {
-        $tid = Invoice::getTid();
+        $tid = Invoice::max('tid')+1;
 
         $customers = Customer::where('id', '>', 1)->get(['id', 'company']);
         $banks = Bank::all();

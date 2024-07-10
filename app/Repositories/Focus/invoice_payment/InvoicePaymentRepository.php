@@ -4,6 +4,7 @@ namespace App\Repositories\Focus\invoice_payment;
 
 use App\Exceptions\GeneralException;
 use App\Models\customer\Customer;
+use App\Models\invoice\Invoice;
 use App\Models\invoice_payment\InvoicePayment;
 use App\Models\items\InvoicePaymentItem;
 use App\Repositories\Accounting;
@@ -47,13 +48,13 @@ class InvoicePaymentRepository extends BaseRepository
      * @return InvoicePayment $payment
      */
     public function create(array $input)
-    {
+    {   
         DB::beginTransaction();
 
         $data = $input['data'];
         foreach ($data as $key => $val) {
             if ($key == 'date') $data[$key] = date_for_database($val);
-            if (in_array($key, ['amount', 'allocate_ttl'])) 
+            if (in_array($key, ['amount', 'allocate_ttl', 'fx_curr_rate'])) 
                 $data[$key] = numberClean($val);
         }
 
@@ -79,10 +80,26 @@ class InvoicePaymentRepository extends BaseRepository
         $tid = InvoicePayment::max('tid');
         if ($data['tid'] <= $tid) $data['tid'] = $tid+1;
         $data['next_date'] = $this->computeNextDate($data['customer_id'], $data['date'], $data['amount']);
+        if (@$data['fx_curr_rate'] > 1) {
+            $data['fx_amount'] = round($data['amount'] * $data['fx_curr_rate'],4);
+            $data['fx_allocate_ttl'] = round($data['allocate_ttl'] * $data['fx_curr_rate'],4);
+        }
         $result = InvoicePayment::create($data);
-        foreach ($data_items as $key => $val) {
-            $data_items[$key]['paidinvoice_id'] = $result->id;
-            $data_items[$key]['paid'] = numberClean($val['paid']);
+        
+        foreach ($data_items as $key => $item) {
+            $item['paidinvoice_id'] = $result->id;
+            $item['paid'] = numberClean($item['paid']);
+            if ($result->fx_curr_rate > 1) {
+                $item['fx_rate'] = $result->fx_curr_rate;
+                $item['fx_paid'] = round($item['paid'] * $result->fx_curr_rate, 4);
+                $invoice_fx_total = 0;
+                $invoice = Invoice::find($item['invoice_id']);
+                if ($invoice) $invoice_fx_total = round($item['paid'] * $invoice->fx_curr_rate, 4);
+                $fx_diff = $invoice_fx_total - $item['fx_paid'];
+                if ($fx_diff > 0) $item['fx_loss'] = $fx_diff;
+                else $item['fx_gain'] = -$fx_diff;
+            }
+            $data_items[$key] = $item;
         }
         InvoicePaymentItem::insert($data_items);
 
@@ -132,12 +149,11 @@ class InvoicePaymentRepository extends BaseRepository
      * return bool
      */
     public function update($invoice_payment, array $input)
-    {
-        // dd($input); 
+    {  
         $data = $input['data'];
         foreach ($data as $key => $val) {
             if ($key == 'date') $data[$key] = date_for_database($val);
-            if (in_array($key, ['amount', 'allocate_ttl'])) $data[$key] = numberClean($val);
+            if (in_array($key, ['amount', 'allocate_ttl', 'fx_curr_rate'])) $data[$key] = numberClean($val);
         }
 
         if ($data['amount'] == 0) throw ValidationException::withMessages(['amount is required']);
@@ -162,15 +178,34 @@ class InvoicePaymentRepository extends BaseRepository
 
         // update payment
         $data['next_date'] = $this->computeNextDate($invoice_payment->customer_id, $data['date'], $data['amount']);
+        if (@$data['fx_curr_rate'] > 1) {
+            $data['fx_amount'] = round($data['amount'] * $data['fx_curr_rate'],4);
+            $data['fx_allocate_ttl'] = round($data['allocate_ttl'] * $data['fx_curr_rate'],4);
+        }
         $result = $invoice_payment->update($data);
 
         foreach ($invoice_payment->items as $pmt_item) {
             $is_allocated = false;
-            foreach ($data_items as $data_item) {
-                if ($data_item['id'] == $pmt_item->id) {
+            foreach ($data_items as $item) {
+                if ($item['id'] == $pmt_item->id) {
                     $is_allocated = true;
-                    $data_item['paid'] = numberClean($data_item['paid']);
-                    $pmt_item->update(['paid' => $data_item['paid']]);
+                    $item['paid'] = numberClean($item['paid']);
+                    if (@$data['fx_curr_rate'] > 1) {
+                        $item['fx_rate'] = $data['fx_curr_rate'];
+                        $item['fx_paid'] = round($item['paid'] * $data['fx_curr_rate'], 4);
+                        $invoice = Invoice::find($item['invoice_id']);
+                        if ($invoice) $invoice_fx_total = round($item['paid'] * $invoice->fx_curr_rate, 4);
+                        $fx_diff = $invoice_fx_total - $item['fx_paid'];
+                        if ($fx_diff > 0) $item['fx_loss'] = $fx_diff;
+                        else $item['fx_gain'] = -$fx_diff;
+                    } 
+                    $pmt_item->update([
+                        'paid' => $item['paid'], 
+                        'fx_rate' => @$data['fx_curr_rate'], 
+                        'fx_paid' => @$item['fx_paid'],
+                        'fx_loss' => @$item['fx_loss'],
+                        'fx_gain' => @$item['fx_gain'],
+                    ]);
                 }
             }
             if (!$is_allocated) $pmt_item->delete();
@@ -226,11 +261,11 @@ class InvoicePaymentRepository extends BaseRepository
         }
 
         DB::beginTransaction();
-        $invoice_payment_id = $invoice_payment->id;
+
         $allocation_id = $invoice_payment->rel_payment_id;
         $is_allocation = boolval($invoice_payment->rel_payment_id);
         $customer = $invoice_payment->customer;
-        $invoice_ids = $invoice_payment->items()->pluck('invoice_id')->toArray();
+        $invoice_ids = $invoice_payment->items->pluck('invoice_id')->toArray();
     
         $invoice_payment->items()->delete();
         $result =  $invoice_payment->delete();

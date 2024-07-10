@@ -67,16 +67,7 @@
                             </select>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-2">
-                                <label for="amount">Total Amount (Ksh.)</label>
-                                <input type="text" id="amount_total" class="form-control" readonly>
-                            </div>                            
-                            <div class="col-2">
-                                <label for="unallocate">Outstanding (Ksh.)</label>
-                                <input type="text" id="balance_total" class="form-control" readonly>
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
             </div>
@@ -87,6 +78,16 @@
                 <div class="card">
                     <div class="card-content">
                         <div class="card-body">
+                            <div class="row no-gutters mb-2">
+                                <div class="col-md-2">
+                                    <label for="amount">Total Amount (Ksh.)</label>
+                                    <input type="text" id="amount_total" class="form-control form-control-sm" style="width:10em" readonly>
+                                </div>                            
+                                <div class="col-md-2">
+                                    <label for="unallocate">Outstanding (Ksh.)</label>
+                                    <input type="text" id="balance_total" class="form-control form-control-sm" style="width:10em" readonly>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="col-md-2">{{ trans('general.search_date')}} </div>
                                 <div class="col-md-2">
