@@ -327,8 +327,15 @@ class InvoicesController extends Controller
 
         try {
             $result = $this->repository->create_project_invoice(compact('bill', 'bill_items'));
-        } catch (\Throwable $th) {
-            return errorHandler('Error Creating Project Invoice', $th);
+        } catch (\Exception $ex) {
+
+//            return [
+//                'message' => $ex->getMessage(),
+//                'code' => $ex->getCode(),
+//                'file' => $ex->getFile(),
+//                'line' => $ex->getLine(),
+//            ];
+            return errorHandler('Error Creating Project Invoice', $ex);
         }
 
         // print preview
