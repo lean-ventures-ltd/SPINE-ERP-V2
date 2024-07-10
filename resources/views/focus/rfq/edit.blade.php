@@ -20,7 +20,7 @@
     <div class="content-body"> 
         <div class="card">
             <div class="card-body">
-                {{ Form::model($po, ['route' => ['biller.rfq.update', $po], 'method' => 'PATCH']) }}
+                {{ Form::model($rfq, ['route' => ['biller.rfq.update', $rfq->id], 'method' => 'PATCH']) }}
                     @include('focus.rfq.form')
                 {{ Form::close() }}
             </div>
@@ -47,14 +47,14 @@
     }
 
     // defaults
-    $('#ref_type').val("{{ $po->doc_ref_type }}");
-    $('#tax').val("{{ $po->tax }}")
+    $('#ref_type').val("{{ $rfq->doc_ref_type }}");
+    $('#tax').val("{{ $rfq->tax }}")
 
     // default datepicker values
     $('.datepicker')
     .datepicker({format: "{{ config('core.user_date_format')}}", autoHide: true})
-    $('#date').datepicker('setDate', new Date("{{ $po->date }}"));
-    $('#due_date').datepicker('setDate', new Date("{{ $po->due_date }}"));
+    $('#date').datepicker('setDate', new Date("{{ $rfq->date }}"));
+    $('#due_date').datepicker('setDate', new Date("{{ $rfq->due_date }}"));
 
     // On searching supplier
     $('#supplierbox').change(function() {
@@ -73,8 +73,8 @@
             
             $('#pricegroup_id').val(priceCustomer);
     });
-    const supplierText = "{{ $po->supplier? $po->supplier->name : '' }} : ";
-    const supplierVal = "{{ $po->supplier_id }}-{{ $po->supplier? $po->supplier->taxid : '' }}";
+    const supplierText = "{{ $rfq->supplier? $rfq->supplier->name : '' }} : ";
+    const supplierVal = "{{ $rfq->supplier_id }}-{{ $rfq->supplier? $rfq->supplier->taxid : '' }}";
     $('#supplierbox').append(new Option(supplierText, supplierVal, true, true)).change();
 
 
@@ -108,8 +108,8 @@
         $('#projectexptext-0').val(projectText);
         $('#projectexpval-0').val($(this).val());
     });
-    const projectName = "{{ $po->project? $po->project->name : '' }}";
-    const projectId = "{{ $po->project_id }}";
+    const projectName = "{{ $rfq->project_id? $rfq->project->name : '' }}";
+    const projectId = "{{ $rfq->project_id }}";
     if (projectId) $('#project').append(new Option(projectName, projectId, true, true)).change();
 
     // Update transaction table
@@ -161,36 +161,41 @@
     /**
      * Stock Tab
      */
-    let stockRowId = @json(count($po->products));
+    let stockRowId = @json(count($rfq->products));
     const stockHtml = [$('#stockTbl tbody tr:eq(0)').html(), $('#stockTbl tbody tr:eq(1)').html()];
     $('#stockTbl tbody tr:lt(2)').remove(); 
     const stockUrl = "{{ route('biller.products.purchase_search') }}"
     const projectstockUrl = "{{ route('biller.projects.project_search') }}"
     $('.projectstock').autocomplete(prediction(projectstockUrl,projectstockSelect));
     $('.stockname').autocomplete(predict(stockUrl, stockSelect));
+
+
     $('#stockTbl').on('click', '#addstock, .remove', function() {
         if ($(this).is('#addstock')) {
             stockRowId++;
             const i = stockRowId;
             const html = stockHtml.reduce((prev, curr) => {
-                const text = curr.replace(/-0/g, '-'+i).replace(/d-none/g, '');
+                const text = curr.replace(/-0/g, '-' + i).replace(/d-none/g, '');
                 return prev + '<tr>' + text + '</tr>';
             }, '');
 
-            $('#stockTbl tbody tr:eq(-3)').before(html);
+            // Append the new row as the second last row
+            $('#stockTbl tbody tr:last').before(html);
             $('.stockname').autocomplete(predict(stockUrl, stockSelect));
-            $('.projectstock').autocomplete(prediction(projectstockUrl,projectstockSelect));
-            taxRule('rowtax-'+i, $('#tax').val());
+            $('.projectstock').autocomplete(prediction(projectstockUrl, projectstockSelect));
+            $('#increment-' + i).val(i);
+            const projectText = $("#project option:selected").text().replace(/\s+/g, ' ');
+            $('#projectstocktext-' + i).val(projectText);
+            taxRule('rowtax-' + i, $('#tax').val());
 
-            //Add the previous supplier data            
+            // Add the previous supplier data
             let priceCustomer = '';
-                $('#pricegroup_id option').each(function () {
-                    if ($('#supplierid').val() == $(this).val())
+            $('#pricegroup_id option').each(function() {
+                if ($('#supplierid').val() == $(this).val())
                     priceCustomer = $(this).val();
-                    console.log(priceCustomer);
-                });
-                
-                $('#pricegroup_id').val(priceCustomer);
+            });
+
+            $('#pricegroup_id').val(priceCustomer);
         }
 
         if ($(this).is('.remove')) {
@@ -198,8 +203,10 @@
             $tr.next().remove();
             $tr.remove();
             calcStock();
-        }    
-    })
+        }
+    });
+
+
     $('#stockTbl').on('change', '.qty, .price, .rowtax, .uom, .warehouse', function() {
         const el = $(this);
         const row = el.parents('tr:first');
@@ -318,12 +325,13 @@
     /**
      * Expense Tab
      */
-    let expRowId = @json(count($po->products));
+    let expRowId = @json(count($rfq->products));
     const expHtml = [$('#expTbl tbody tr:eq(0)').html(), $('#expTbl tbody tr:eq(1)').html()];
     $('#expTbl tbody tr:lt(2)').remove(); 
     const expUrl = "{{ route('biller.accounts.account_search') }}?type=Expense";
     $('.accountname').autocomplete(predict(expUrl, expSelect));
     $('.projectexp').autocomplete(predict(projectUrl, projectExpSelect));
+
     $('#expTbl').on('click', '#addexp, .remove', function() {
         if ($(this).is('#addexp')) {
             expRowId++;
@@ -333,10 +341,11 @@
                 return prev + '<tr>' + text + '</tr>';
             }, '');
 
-            $('#expTbl tbody tr:eq(-3)').before(html);
+            $('#expTbl tbody tr:last').before(html);
             $('.accountname').autocomplete(predict(expUrl, expSelect));
             $('.projectexp').autocomplete(predict(projectUrl, projectExpSelect));
             const projectText = $("#project option:selected").text().replace(/\s+/g, ' ');
+            $('#expenseinc-' + i).val(i);
             $('#projectexptext-'+i).val(projectText);
             $('#projectexpval-'+i).val($("#project option:selected").val());
             taxRule('expvat-'+i, $('#tax').val());
@@ -348,46 +357,7 @@
             calcExp();
         }    
     });
-    $('#expTbl').on('change', '.exp_qty, .exp_price, .exp_vat', function() {
-        const $tr = $(this).parents('tr:first');
-        const qty = $tr.find('.exp_qty').val();
-        const price = $tr.find('.exp_price').val().replace(/,/g, '') || 0;
-        const rowtax = $tr.find('.exp_vat').val()/100 + 1;
-        const amount = qty * price * rowtax;
-        const taxable = amount - (qty * price);
 
-        $tr.find('.exp_price').val((price*1).toLocaleString());
-        $tr.find('.exp_tax').text(taxable.toLocaleString());
-        $tr.find('.exp_amount').text(amount.toLocaleString());
-        $tr.find('.exptaxr').val(taxable.toLocaleString());
-        $tr.find('.expamountr').val(amount.toLocaleString());
-        calcExp();
-
-        if ($(this).is('.exp_price')) {
-            $tr.next().find('.descr').attr('required', true);
-        }
-    });
-    $('#expqty-0').change();
-    function calcExp() {
-        let tax = 0;
-        let totalInc = 0;
-        $('#expTbl tbody tr').each(function() {
-            if (!$(this).find('.exp_qty').val()) return;
-            const qty = $(this).find('.exp_qty').val();
-            const price = $(this).find('.exp_price').val().replace(/,/g, '') || 0;
-            const rowtax = $(this).find('.exp_vat').val()/100 + 1;
-
-            const amount = qty * price * rowtax;
-            const taxable = amount - qty * price;
-            tax += parseFloat(taxable.toFixed(2));
-            totalInc += parseFloat(amount.toFixed(2));
-        });
-        $('#exprow_taxttl').text(tax.toLocaleString());
-        $('#exp_tax').val(tax.toLocaleString());
-        $('#exp_subttl').val((totalInc - tax).toLocaleString());
-        $('#exp_grandttl').val((totalInc).toLocaleString());
-        transxnCalc();
-    }
 
     // account and project autocomplete
     let accountRowId = 0;
@@ -412,7 +382,7 @@
     /**
      * Asset tab
      */
-    let assetRowId = @json(count($po->products));;
+    let assetRowId = @json(count($rfq->products));;
     const assetHtml = [$('#assetTbl tbody tr:eq(0)').html(), $('#assetTbl tbody tr:eq(1)').html()];
     $('#assetTbl tbody tr:lt(2)').remove(); 
     const assetUrl = "{{ route('biller.assetequipments.product_search') }}";

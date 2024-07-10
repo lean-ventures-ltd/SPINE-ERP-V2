@@ -2,13 +2,12 @@
 
 namespace App\Models\rfq\Traits;
 
+use App\Models\account\Account;
 use App\Models\product\ProductVariation;
 use App\Models\rfq\RfQItem;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 trait RfQRelationship
 {
-    public function products()
-    {
-        return $this->hasMany(RfQItem::class, 'rfq_id')->withoutGlobalScopes();
-    }
+
 }

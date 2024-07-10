@@ -23,6 +23,8 @@ class CreateRfQRequest extends FormRequest
      */
     public function rules()
     {
-
+        [
+            //
+        ];
     }
 }

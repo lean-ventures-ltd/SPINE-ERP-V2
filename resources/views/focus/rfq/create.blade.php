@@ -301,31 +301,33 @@
     $('.stockname').autocomplete(predict(stockUrl, stockSelect));
     $('.projectstock').autocomplete(prediction(projectstockUrl,projectstockSelect));
     $('#rowtax-0').mousedown(function() { taxRule('rowtax-0', $('#tax').val()); });
+
     $('#stockTbl').on('click', '#addstock, .remove', function() {
         if ($(this).is('#addstock')) {
             stockRowId++;
             const i = stockRowId;
             const html = stockHtml.reduce((prev, curr) => {
-                const text = curr.replace(/-0/g, '-'+i).replace(/d-none/g, '');
+                const text = curr.replace(/-0/g, '-' + i).replace(/d-none/g, '');
                 return prev + '<tr>' + text + '</tr>';
             }, '');
 
-            $('#stockTbl tbody tr:eq(-3)').before(html);
+            // Append the new row as the second last row
+            $('#stockTbl tbody tr:last').before(html);
             $('.stockname').autocomplete(predict(stockUrl, stockSelect));
-            $('.projectstock').autocomplete(prediction(projectstockUrl,projectstockSelect));
-            $('#increment-'+i).val(i+1);
+            $('.projectstock').autocomplete(prediction(projectstockUrl, projectstockSelect));
+            $('#increment-' + i).val(i+1);
             const projectText = $("#project option:selected").text().replace(/\s+/g, ' ');
-            $('#projectstocktext-'+i).val(projectText);
-            taxRule('rowtax-'+i, $('#tax').val());
+            $('#projectstocktext-' + i).val(projectText);
+            taxRule('rowtax-' + i, $('#tax').val());
 
-            //Add the previous supplier data            
+            // Add the previous supplier data
             let priceCustomer = '';
-                $('#pricegroup_id option').each(function () {
-                    if ($('#supplierid').val() == $(this).val())
+            $('#pricegroup_id option').each(function() {
+                if ($('#supplierid').val() == $(this).val())
                     priceCustomer = $(this).val();
-                });
-                
-                $('#pricegroup_id').val(priceCustomer);
+            });
+
+            $('#pricegroup_id').val(priceCustomer);
         }
 
         if ($(this).is('.remove')) {
@@ -333,8 +335,9 @@
             $tr.next().remove();
             $tr.remove();
             calcStock();
-        }    
-    })
+        }
+    });
+
     $('#stockTbl').on('change', '.qty, .price, .rowtax, .uom, #quoteselect, .warehouse', function() {
         const el = $(this);
         const row = el.parents('tr:first');
@@ -447,7 +450,7 @@
                 return prev + '<tr>' + text + '</tr>';
             }, '');
 
-            $('#expTbl tbody tr:eq(-3)').before(html);
+            $('#expTbl tbody tr:last').before(html);
             $('.accountname').autocomplete(predict(expUrl, expSelect));
             $('.projectexp').autocomplete(predict(projectUrl, projectExpSelect));
             $('#expenseinc-'+i).val(i+1);

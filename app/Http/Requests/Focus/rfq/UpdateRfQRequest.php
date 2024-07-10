@@ -24,7 +24,8 @@ class UpdateRfQRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'date' => ['required', 'date', 'before:due_date'],
+            'due_date' => ['required', 'date', 'after:date']
         ];
     }
 }

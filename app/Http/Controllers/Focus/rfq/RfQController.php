@@ -8,6 +8,7 @@ use App\Http\Requests\Focus\rfq\DeleteRfQRequest;
 use App\Http\Requests\Focus\rfq\EditRfQRequest;
 use App\Http\Requests\Focus\rfq\ManageRfQRequest;
 use App\Http\Requests\Focus\rfq\StoreRfQRequest;
+use App\Http\Requests\Focus\rfq\UpdateRfQRequest;
 use App\Models\additional\Additional;
 use App\Models\pricegroup\Pricegroup;
 use App\Models\rfq\RfQItem;
@@ -15,6 +16,7 @@ use App\Models\term\Term;
 use App\Models\warehouse\Warehouse;
 use App\Repositories\Focus\rfq\RfQRepository;
 use DateTime;
+use Exception;
 use Illuminate\Http\Request;
 use App\Http\Responses\ViewResponse;
 use App\Models\supplier\Supplier;
@@ -22,8 +24,10 @@ use App\Http\Responses\Focus\rfq\CreateResponse;
 use App\Http\Responses\Focus\rfq\EditResponse;
 use App\Http\Responses\RedirectResponse;
 use App\Models\rfq\RfQ;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use BillDetailsTrait;
+use Illuminate\Validation\ValidationException;
 
 
 class RfQController extends Controller
@@ -51,7 +55,7 @@ class RfQController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(CreateRfQRequest $request)
+    public function create(Request $request)
     {
 
         return new CreateResponse('focus.rfq.create');
@@ -83,39 +87,50 @@ class RfQController extends Controller
 
 //        return compact('rfq', 'rfqItems');
 
-        $newRfq = new RfQ();
-        $newRfq->fill($rfq);
-        $newRfq->date = (new DateTime($rfq['date']))->format('Y-m-d');
-        $newRfq->due_date = (new DateTime($rfq['due_date']))->format('Y-m-d');
+        try{
+            DB::beginTransaction();
 
-        $newRfq->save();
+            $newRfq = new RfQ();
+            $newRfq->fill($rfq);
+            $newRfq->date = (new DateTime($rfq['date']))->format('Y-m-d');
+            $newRfq->due_date = (new DateTime($rfq['due_date']))->format('Y-m-d');
 
-        $RFQITEMS = [];
-        foreach ($rfqItems as $item){
+            $newRfq->save();
 
-            $newRfqItem = new RfQItem();
+            foreach ($rfqItems as $item){
 
-            $newRfqItem->fill($item);
+                $newRfqItem = new RfQItem();
 
-            $newRfqItem->rfq_id = $newRfq->id;
-            $newRfqItem->type = strtoupper($item['type']);
+                $newRfqItem->fill($item);
 
-            if ($item['type'] === 'Stock') {
+                $newRfqItem->rfq_id = $newRfq->id;
+                $newRfqItem->type = strtoupper($item['type']);
 
-                $newRfqItem->product_id = $item['item_id'];
-                $newRfqItem->project_id = $newRfq->project_id;
+                if ($item['type'] === 'Stock') {
+
+                    $newRfqItem->product_id = $item['item_id'];
+                    $newRfqItem->project_id = $newRfq->project_id;
+                }
+                else if ($item['type'] === 'Expense') {
+
+                    $newRfqItem->expense_account_id = $item['item_id'];
+                    $newRfqItem->project_id = $newRfq->project_id;;
+                }
+
+                $newRfqItem->quantity = $item['qty'];
+
+                $newRfqItem->save();
             }
-            else if ($item['type'] === 'Expense') {
 
-                $newRfqItem->expense_account_id = $item['item_id'];
-                $newRfqItem->project_id = $item['itemproject_id'];
-            }
-
-            $newRfqItem->quantity = $item['qty'];
-
-            $newRfqItem->save();
-            array_push($RFQITEMS, $newRfqItem);
+            DB::commit();
         }
+        catch (Exception $ex) {
+
+            DB::rollBack();
+            return errorHandler('Error Updating Direct Purchase', $th);
+        }
+
+
 
         return new RedirectResponse(route('biller.rfq.index'), ['flash_success' => 'RFQ created successfully']);
     }
@@ -140,7 +155,7 @@ class RfQController extends Controller
      */
     public function edit(EditRfQRequest $request, $id)
     {
-        return $rfq = RfQ::find($id);
+        $rfq = RfQ::find($id);
         return new EditResponse($rfq);
     }
 
@@ -151,28 +166,76 @@ class RfQController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(EditRfQRequest $request, $id)
-    {        
-        $rfq = RfQ::find($id);
+    public function update(UpdateRfQRequest $request, $id)
+    {
 
-        $order = $request->only([
-            'tid', 'date', 'due_date', 'term_id', 'project_id', 'subject', 'tax',
-            'stock_subttl', 'stock_tax', 'stock_grandttl', 'expense_subttl', 'expense_tax', 'expense_grandttl',
-            'asset_tax', 'asset_subttl', 'asset_grandttl', 'grandtax', 'grandttl', 'paidttl'
-        ]);
-        $order_items = $request->only([
-            'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'type', 'product_code', 'warehouse_id'
+        $request->validated();
+
+        $rfq = $request->only(['tid', 'date', 'due_date', 'project_id', 'subject', 'tax',]);
+        $rfqItems = $request->only([
+            'id', 'item_id', 'description', 'uom', 'itemproject_id', 'qty', 'type', 'product_code', 'warehouse_id'
         ]);
 
-        $order['ins'] = auth()->user()->ins;
-        $order['user_id'] = auth()->user()->id;
         // modify and filter items without item_id
-        $order_items = modify_array($order_items);
-        $order_items = array_filter($order_items, function ($v) {
+        $rfqItems = modify_array($rfqItems);
+        $rfqItems = array_filter($rfqItems, function ($v) {
             return $v['item_id'];
         });
 
-        $result = $this->repository->update($rfq, compact('order', 'order_items'));
+//        return compact('rfq', 'rfqItems');
+
+        try{
+            DB::beginTransaction();
+
+            $editedRfq = RfQ::find($id);
+            $editedRfq->fill($rfq);
+            $editedRfq->date = (new DateTime($editedRfq['date']))->format('Y-m-d');
+            $editedRfq->due_date = (new DateTime($editedRfq['due_date']))->format('Y-m-d');
+            $editedRfq->save();
+
+            foreach ($rfqItems as $item){
+
+                if(empty($item['id'])) $editedRfqItem = new RfQItem();
+                else $editedRfqItem = RfQItem::find($item['id']);
+
+                $editedRfqItem->fill($item);
+
+                $editedRfqItem->rfq_id = $editedRfq->id;
+                $editedRfqItem->type = strtoupper($item['type']);
+
+                if ($item['type'] === 'Stock') {
+
+                    $editedRfqItem->product_id = $item['item_id'];
+                    $editedRfqItem->project_id = $editedRfq->project_id;
+                }
+                else if ($item['type'] === 'Expense') {
+
+                    $editedRfqItem->expense_account_id = $item['item_id'];
+                    $editedRfqItem->project_id = $editedRfq->project_id;;
+                }
+
+                $editedRfqItem->quantity = $item['qty'];
+
+                $editedRfqItem->save();
+            }
+
+            DB::commit();
+        }
+        catch (Exception $ex) {
+
+            DB::rollBack();
+
+            return [
+                'message' => $ex->getMessage(),
+                'code' => $ex->getCode(),
+                'file' => $ex->getFile(),
+                'line' => $ex->getLine(),
+            ];
+
+
+            return errorHandler('Error Updating Direct Purchase', $th);
+        }
+
 
         return new RedirectResponse(route('biller.rfq.index'), ['flash_success' => 'RFQ updated successfully']);
     }

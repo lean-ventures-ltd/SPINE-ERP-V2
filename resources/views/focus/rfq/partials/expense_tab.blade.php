@@ -34,8 +34,7 @@
                 {{-- <td>{{config('currency.symbol')}} <b><span class="exp_amount" id="expamount-0">0</span></b></td> --}}
                 <td><button type="button" class="btn btn-danger remove d-none"><i class="fa fa-minus-square" aria-hidden="true"></i></button></td>
                 <input type="hidden" id="expitemid-0" name="item_id[]">
-                <input type="hidden" class="exptaxr" name="taxrate[]">
-                <input type="hidden" class="expamountr" name="amount[]">
+
                 <input type="hidden" name="type[]" value="Expense">
                 <input type="hidden" name="id[]" value="0">
             </tr>
@@ -43,39 +42,25 @@
                 <td colspan="3">
                     <textarea id="expdescr-0" class="form-control descr" name="description[]" placeholder="Enter Description"></textarea>
                 </td>
-                <td colspan="5">
-                    <input type="text" class="form-control projectexp" id="projectexptext-0" placeholder="Search Project by Name, Customer, Branch">
-                    <input type="hidden" name="itemproject_id[]" id="projectexpval-0">
-                </td>
+
             </tr>
             <!-- end layout -->
 
             <!-- fetched rows -->
-            @isset ($po)
+            @isset ($rfq)
                 @php ($i = 0)
-                @foreach ($po->products as $item)
-                    @if ($item->type == 'Expense')
+                @foreach ($rfq->items as $item)
+                    @if ($item->type === 'EXPENSE')
                         <tr>
                             <td><input type="text" class="form-control" value="{{$i+1}}" id="expenseinc-{{$i}}" disabled></td>
                             <td><input type="text" class="form-control accountname" name="name[]" value="{{ @$item->account->holder }}" placeholder="Enter Ledger" id="accountname-{{$i}}"></td>
-                            <td><input type="text" class="form-control exp_qty" name="qty[]" value="{{ number_format($item->qty, 1) }}" id="expqty-{{$i}}"></td>
+                            <td><input type="text" class="form-control exp_qty" name="qty[]" value="{{ number_format($item->quantity, 1) }}" id="expqty-{{$i}}"></td>
                             <td><input type="text" class="form-control uom" name="uom[]" value="{{ $item->uom }}" id="uom-0"></td>                    
-                            <td><input type="text" class="form-control exp_price" name="rate[]" value="{{ (float) $item->rate }}" id="expprice-{{$i}}"></td>
-                            <td>
-                                <select class="form-control exp_vat" name="itemtax[]" id="expvat-{{$i}}">
-                                    @foreach ($additionals as $tax)
-                                        <option value="{{ (int) $tax->value }}" {{ $tax->value == $item->itemtax ? 'selected' : ''}}>
-                                            {{ $tax->name }}
-                                        </option>
-                                    @endforeach                  
-                                </select>
-                            </td>                          
-                            <td class="text-center"><span class="exp_tax" id="exptax-{{$i}}">{{ (float) $item->taxrate }}</span></td>
-                            <td>{{config('currency.symbol')}} <b><span class="exp_amount" id="expamount-{{$i}}">{{ (float) $item->amount }}</span></b></td>
+
+
                             <td><button type="button" class="btn btn-danger remove"><i class="fa fa-minus-square" aria-hidden="true"></i></button></td>
-                            <input type="hidden" id="expitemid-{{$i}}" name="item_id[]"value="{{ $item->item_id }}" >
-                            <input type="hidden" class="exptaxr" name="taxrate[]" value="{{ (float) $item->taxrate }}">
-                            <input type="hidden" class="expamountr" name="amount[]" value="{{ (float) $item->amount }}">
+                            <input type="hidden" id="expitemid-{{$i}}" name="item_id[]"value="{{ $item->expense_account_id }}" >
+
                             <input type="hidden" name="type[]" value="Expense">
                             <input type="hidden" name="id[]" value="{{ $item->id }}">
                         </tr>
@@ -83,10 +68,7 @@
                             <td colspan="3">
                                 <textarea id="expdescr-{{$i}}" class="form-control descr" name="description[]" placeholder="Enter Description">{{ $item->description }}</textarea>
                             </td>
-                            <td colspan="5">
-                                <input type="text" class="form-control projectexp" value="{{ $item->project ? $item->project->name : '' }}" id="projectexptext-{{$i}}" placeholder="Enter Project">
-                                <input type="hidden" name="itemproject_id[]" value="{{ $item->itemproject_id }}" id="projectexpval-{{$i}}">
-                            </td>
+
                         </tr>
                         @php ($i++)
                     @endif

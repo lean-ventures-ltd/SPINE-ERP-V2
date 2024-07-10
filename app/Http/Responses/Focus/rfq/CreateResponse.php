@@ -23,7 +23,7 @@ class CreateResponse implements Responsable
     {
         $ins = auth()->user()->ins;
         $prefixes = prefixesArray(['rfq'], $ins);
-        $last_tid = 1;
+        $last_tid = RfQ::all()->max('tid');
         $warehouses = Warehouse::all();
         $additionals = Additional::all();
         $pricegroups = Pricegroup::all();

@@ -34,8 +34,7 @@
                 {{-- <td class="text-center">{{config('currency.symbol')}} <b><span class='amount' id="result-0">0</span></b></td>  --}}
                 <td><button type="button" class="btn btn-danger remove"><i class="fa fa-minus-square" aria-hidden="true"></i></button></td>
                 <input type="hidden" id="stockitemid-0" name="item_id[]">
-                <input type="hidden" class="stocktaxr" name="taxrate[]">
-                <input type="hidden" class="stockamountr" name="amount[]">
+
                 {{-- <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="0"> --}}
                 <input type="hidden" name="type[]" value="Stock">
                 <input type="hidden" name="id[]" value="0">
@@ -43,59 +42,61 @@
             <tr>
                 <td colspan="2">
                     <textarea id="stockdescr-0" class="form-control descr" name="description[]" placeholder="Product Description"></textarea>
+                    <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" id="projectstockval-0">
                 </td>
-                <td><input type="text" class="form-control product_code" name="product_code[]" id="product_code-0" readonly></td>
-                <td>
-                    <select name="warehouse_id[]" class="form-control warehouse" id="warehouseid-0">
-                        <option value="">-- Warehouse --</option>
-                        @foreach ($warehouses as $row)
-                            <option value="{{ $row->id }}">{{ $row->title }}</option>
-                        @endforeach
-                    </select>
-                </td>
+
+
+{{--                <td><input type="text" class="form-control product_code" name="product_code[]" id="product_code-0" readonly></td>--}}
+{{--                <td>--}}
+{{--                    <select name="warehouse_id[]" class="form-control warehouse" id="warehouseid-0">--}}
+{{--                        <option value="">-- Warehouse --</option>--}}
+{{--                        @foreach ($warehouses as $row)--}}
+{{--                            <option value="{{ $row->id }}">{{ $row->title }}</option>--}}
+{{--                        @endforeach--}}
+{{--                    </select>--}}
+{{--                </td>--}}
                 <td colspan="3">
                     {{-- <div class="form-group">
                         <label for="project" class="caption">Projects</label>
                         <select class="form-control" name="project_id" id="project" data-placeholder="Search Project by Name, Customer, Branch">
                         </select>
                     </div> --}}
-                    <input type="text" class="form-control projectstock" id="projectstocktext-0" placeholder="Search Project By Name">
-                    <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" id="projectstockval-0">
+{{--                    <input type="text" class="form-control projectstock" id="projectstocktext-0" placeholder="Search Project By Name">--}}
+
                 </td>
                 <td colspan="6"></td>
             </tr>
             <!-- end layout -->
 
             <!-- fetched rows -->
-            @isset ($po)
+            @isset ($rfq)
                 @php ($i = 0)
-                @foreach ($po->products as $item)
-                    @if ($item->type == 'Stock')
+                @foreach ($rfq->items as $item)
+                    @if ($item->type === 'STOCK')
                         <tr>
                             <td><input type="text" class="form-control increment" value="{{$i+1}}" id="increment-0" disabled></td>
-                            <td><input type="text" class="form-control stockname" name="name[]" value="{{ $item->description }}" placeholder="Product Name" id='stockname-{{$i}}'></td>
-                            <td><input type="text" class="form-control qty" name="qty[]" value="{{ number_format($item->qty, 1) }}" id="qty-{{$i}}"></td>                    
+                            <td><input type="text" class="form-control stockname" name="name[]" value="{{ $item->product->name }}" placeholder="Product Name" id='stockname-{{$i}}'></td>
+                            <td><input type="text" class="form-control qty" name="qty[]" value="{{ number_format($item->quantity, 1) }}" id="qty-{{$i}}"></td>
                             <td>
                                 <select name="uom[]" id="uom-{{ $i }}" class="form-control uom">
                                     <option value="{{ $item->uom }}" selected>{{ $item->uom }}</option>
                                 </select>
                             </td>
-                            <td><input type="text" class="form-control price" name="rate[]" value="{{ (float) $item->rate }}" id="price-{{$i}}"></td>
-                            <td>
-                                <select class="form-control rowtax" name="itemtax[]" id="rowtax-{{$i}}">
-                                    @foreach ($additionals as $tax)
-                                        <option value="{{ (int) $tax->value }}" {{ $tax->value == $item->itemtax ? 'selected' : ''}}>
-                                            {{ $tax->name }}
-                                        </option>
-                                    @endforeach                                                    
-                                </select>
-                            </td>
-                            <td><input type="text" class="form-control taxable" value="{{ (float) $item->taxrate }}" readonly></td>
-                            <td class="text-center">{{config('currency.symbol')}} <b><span class='amount' id="result-{{$i}}">{{ (float) $item->amount }}</span></b></td>              
+{{--                            <td><input type="text" class="form-control price" name="rate[]" value="{{ (float) $item->rate }}" id="price-{{$i}}"></td>--}}
+{{--                            <td>--}}
+{{--                                <select class="form-control rowtax" name="itemtax[]" id="rowtax-{{$i}}">--}}
+{{--                                    @foreach ($additionals as $tax)--}}
+{{--                                        <option value="{{ (int) $tax->value }}" {{ $tax->value == $item->itemtax ? 'selected' : ''}}>--}}
+{{--                                            {{ $tax->name }}--}}
+{{--                                        </option>--}}
+{{--                                    @endforeach                                                    --}}
+{{--                                </select>--}}
+{{--                            </td>--}}
+{{--                            <td><input type="text" class="form-control taxable" value="{{ (float) $item->taxrate }}" readonly></td>--}}
+{{--                            <td class="text-center">{{config('currency.symbol')}} <b><span class='amount' id="result-{{$i}}">{{ (float) $item->amount }}</span></b></td>              --}}
                             <td><button type="button" class="btn btn-danger remove"><i class="fa fa-minus-square" aria-hidden="true"></i></button></td>
-                            <input type="hidden" id="stockitemid-{{$i}}" name="item_id[]" value="{{ $item->item_id }}">
-                            <input type="hidden" class="stocktaxr" name="taxrate[]" value="{{ (float) $item->taxrate }}">
-                            <input type="hidden" class="stockamountr" name="amount[]" value="{{ (float) $item->amount }}">
+                            <input type="hidden" id="stockitemid-{{$i}}" name="item_id[]" value="{{ $item->product_id }}">
+
                             <!--<input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="0">-->
                             <input type="hidden" name="type[]" value="Stock">
                             <input type="hidden" name="id[]" value="{{ $item->id }}">
@@ -104,21 +105,21 @@
                             <td colspan=2>
                                 <textarea id="stockdescr-{{$i}}" class="form-control descr" name="description[]" placeholder="Product Description">{{ $item->description }}</textarea>
                             </td>
-                            <td><input type="text" class="form-control product_code" value="{{$item->product_code}}" name="product_code[]" id="product_code-{{$i}}" readonly></td>
-                            <td>
-                                <select name="warehouse_id[]" class="form-control warehouse" id="warehouseid-{{$i}}">
-                                    <option value="">-- Warehouse --</option>
-                                    @foreach ($warehouses as $row)
-                                        <option value="{{ $row->id }}" {{ $row->id == $item->warehouse_id? 'selected' : '' }}>
-                                            {{ $row->title }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </td>
-                            <td colspan="4">
-                                <input type="text" class="form-control projectstock" value="{{ $item->project_name }}" id="projectstocktext-{{$i}}" placeholder="Search Project By Name">
-                                <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="{{ $item->itemproject_id ? $item->itemproject_id : '0' }}" id="projectstockval-{{$i}}">
-                            </td>
+{{--                            <td><input type="text" class="form-control product_code" value="{{$item->product_code}}" name="product_code[]" id="product_code-{{$i}}" readonly></td>--}}
+{{--                            <td>--}}
+{{--                                <select name="warehouse_id[]" class="form-control warehouse" id="warehouseid-{{$i}}">--}}
+{{--                                    <option value="">-- Warehouse --</option>--}}
+{{--                                    @foreach ($warehouses as $row)--}}
+{{--                                        <option value="{{ $row->id }}" {{ $row->id == $item->warehouse_id? 'selected' : '' }}>--}}
+{{--                                            {{ $row->title }}--}}
+{{--                                        </option>--}}
+{{--                                    @endforeach--}}
+{{--                                </select>--}}
+{{--                            </td>--}}
+{{--                            <td colspan="4">--}}
+{{--                                <input type="text" class="form-control projectstock" value="{{ $item->project_name }}" id="projectstocktext-{{$i}}" placeholder="Search Project By Name">--}}
+{{--                                <input type="hidden" class="stockitemprojectid" name="itemproject_id[]" value="{{ $item->itemproject_id ? $item->itemproject_id : '0' }}" id="projectstockval-{{$i}}">--}}
+{{--                            </td>--}}
                             <td colspan="6"></td>
                         </tr>
                         @php ($i++)

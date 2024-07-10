@@ -76,8 +76,8 @@
                     <label for="tid" class="caption">RFQ No.</label>
                     <div class="input-group">
                         <div class="input-group-addon"><span class="icon-file-text-o" aria-hidden="true"></span></div>
-                        {{ Form::text('tid', gen4tid("{$prefixes[0]}-", @$po? $po->tid : $last_tid+1), ['class' => 'form-control round', 'disabled']) }}
-                        {{ Form::hidden('tid', @$po? $po->tid : $last_tid+1) }}
+                        {{ Form::text('tid', gen4tid("RFQ-", @$rfq? $rfq->tid : $last_tid+1), ['class' => 'form-control round', 'disabled']) }}
+                        {{ Form::hidden('tid', @$rfq? $rfq->tid : $last_tid+1) }}
                     </div>
                 </div>
                 <div class="col-sm-4"><label for="transaction_date" class="caption">RFQ Date*</label>
@@ -93,38 +93,6 @@
             </div>
 
             <div class="form-group row">
-{{--                <div class="col-4">--}}
-{{--                    <label for="taxFormat" class="caption">Tax</label>--}}
-{{--                    <select class="custom-select" name="tax" id="tax">--}}
-{{--                        <option value="inclusive" {{ "inclusive" == @$po->tax ? 'selected' : ''}}>Inclusive</option>--}}
-{{--                        <option value="exclusive" {{ "exclusive" == @$po->tax ? 'selected' : ''}}>Exclusive</option>--}}
-{{--                    </select>--}}
-{{--                </div>--}}
-
-                {{-- <div class="col-4">
-                    <label for="pricing" >Pricing</label>                    
-                    <select id="pricegroup_id" name="pricegroup_id" class="custom-select">
-                        <option value="0" selected>Default </option>
-                        @foreach($price_supplier as $group)
-                                <option value="{{ $group->id }}">{{ $group->name }}</option>
-                            
-                        @endforeach
-                    </select>                    
-                </div> --}}
-
-                <div class="col-4">
-                    <label for="terms">Terms</label>
-                    <select name="term_id" class="form-control">
-                        @foreach ($terms as $term)
-                            <option value="{{ $term->id }}" {{ $term->id == @$po->term_id ? 'selected' : ''}}>
-                                {{ $term->title }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            
-            <div class="form-group row">
                 <div class="col-sm-12">
                     <label for="toAddInfo" class="caption">Subject*</label>
                     {{ Form::textarea('subject', null, ['class' => 'form-control', 'placeholder' => trans('general.note'), 'rows'=>'2', 'required']) }}
@@ -133,7 +101,7 @@
             <div class="form-group row">
                 <div class="col-sm-12">
                     <div class="form-group">
-                        <label for="project" class="caption">Projects</label>
+                        <label for="project" class="caption">Project</label>
                         <select class="form-control" name="project_id" id="project" data-placeholder="Search Project by Name, Customer, Branch">
                         </select>
                     </div>

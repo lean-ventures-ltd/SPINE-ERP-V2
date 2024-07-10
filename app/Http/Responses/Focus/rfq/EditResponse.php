@@ -28,8 +28,8 @@ class EditResponse implements Responsable
      */
     public function toResponse($request)
     {
-        $po = $this->rfq;
-        $prefixes = prefixesArray(['rfq'], $po->ins);
+        $rfq = $this->rfq;
+//        $prefixes = prefixesArray(['rfq'], $rfq->ins);
 
         $additionals = Additional::all();
         $pricegroups = Pricegroup::all();
@@ -40,20 +40,20 @@ class EditResponse implements Responsable
         $terms = Term::where('type', 5)->get();
 
         
-        // assign project name
-        foreach ($po->products as $po_items) {
-            if ($po_items->project){
-                $quote_tid = !$po_items->project->quote ?: gen4tid('QT-', $po_items->project->quote->tid);
-                $customer = !$po_items->project->customer ?: $po_items->project->customer->company;
-                $branch = !$po_items->project->branch ?: $po_items->project->branch->name;
-                $project_tid = gen4tid('PRJ-', $po_items->project->tid);
-                $project = $po_items->project->name;
-                $customer_branch = "{$customer}" .'-'. "{$branch}";
-                // 
-                $po_items['project_name'] = "[" . $quote_tid ."]"." - " . $customer_branch. " - ".$project_tid." - ".$project;
-            }
-        }
+//        // assign project name
+//        foreach ($rfq->products as $po_items) {
+//            if ($po_items->project){
+//                $quote_tid = !$po_items->project->quote ?: gen4tid('QT-', $po_items->project->quote->tid);
+//                $customer = !$po_items->project->customer ?: $po_items->project->customer->company;
+//                $branch = !$po_items->project->branch ?: $po_items->project->branch->name;
+//                $project_tid = gen4tid('PRJ-', $po_items->project->tid);
+//                $project = $po_items->project->name;
+//                $customer_branch = "{$customer}" .'-'. "{$branch}";
+//                //
+//                $po_items['project_name'] = "[" . $quote_tid ."]"." - " . $customer_branch. " - ".$project_tid." - ".$project;
+//            }
+//        }
 
-        return view('focus.rfq.edit', compact('po', 'additionals','warehouses', 'pricegroups','price_supplier', 'terms', 'prefixes'));
+        return view('focus.rfq.edit', compact('rfq', 'additionals','warehouses', 'pricegroups','price_supplier', 'terms'));
     }
 }

@@ -36,7 +36,7 @@ class RfQTableController extends Controller
             ->escapeColumns(['id'])
             ->addIndexColumn()
             ->addColumn('tid', function ($rfq) use ($prefixes) {
-                return '<a class="font-weight-bold" href="' . route('biller.rfq.show', $rfq) . '">' . gen4tid("{$prefixes[0]}-", $rfq->tid) . '</a>';
+                return '<a class="font-weight-bold" href="' . route('biller.rfq.show', $rfq) . '">' . gen4tid("RFQ-", $rfq->tid) . '</a>';
             })
             // ->addColumn('supplier', function ($po) {
             //     if ($po->supplier)

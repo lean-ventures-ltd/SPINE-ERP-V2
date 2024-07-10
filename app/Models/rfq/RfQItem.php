@@ -2,7 +2,10 @@
 
 namespace App\Models\rfq;
 
+use App\Models\account\Account;
+use App\Models\product\ProductVariation;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RfQItem extends Model
 {
@@ -32,8 +35,17 @@ class RfQItem extends Model
     protected static function boot()
     {
         parent::boot();
-        static::addGlobalScope('ins', function ($builder) {
-            $builder->where('rfq_items.ins', '=', auth()->user()->ins);
-        });
+
+    }
+
+
+    public function account(): BelongsTo {
+
+        return $this->belongsTo(Account::class, 'expense_account_id', 'id');
+    }
+
+    public function product(): BelongsTo {
+
+        return $this->belongsTo(ProductVariation::class, 'product_id', 'id');
     }
 }
