@@ -46,9 +46,6 @@ class RfQTableController extends Controller
             //     // return $po->items->count();
             //     return 1;
             // })
-            ->addColumn('note', function ($rfq) {
-                return $rfq->note;
-            })
             ->addColumn('rfq_date', function ($rfq) {
                 return dateFormat($rfq->date);
             })

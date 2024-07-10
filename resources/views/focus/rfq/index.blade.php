@@ -29,7 +29,7 @@
                                         <th>#</th>
                                         <th>RFQ No</th>
                                         {{-- <th>{{ trans('suppliers.supplier') }}</th> --}}
-                                        <th>Note</th>
+                                        <th>Subject</th>
                                         {{-- <th>Product Types</th> --}}
                                         {{-- <th>{{ trans('general.amount') }}</th> --}}
                                         <th>RFQ Date</th>
@@ -126,8 +126,8 @@
                     //     name: 'supplier'
                     // },
                     {
-                        data: 'note',
-                        name: 'note'
+                        data: 'subject',
+                        name: 'subject'
                     },
                     // {
                     //     data: 'count',
