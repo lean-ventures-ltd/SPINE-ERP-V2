@@ -17,13 +17,20 @@ class PurchaseClass extends Model
         'name',
         'budget',
         'description',
-        'start_date',
-        'end_date'
+        'financial_year_id',
     ];
 
     protected static function boot()
     {
         parent::boot();
+
+        static::creating(function ($instance) {
+            $instance->ins = auth()->user()->ins;
+            $instance->user_id = auth()->user()->id;
+            return $instance;
+        });
+
+
         static::addGlobalScope('ins', function ($builder) {
             $builder->where('purchase_classes.ins', '=', auth()->user()->ins);
         });

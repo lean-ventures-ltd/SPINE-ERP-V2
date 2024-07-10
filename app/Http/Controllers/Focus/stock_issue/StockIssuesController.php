@@ -20,8 +20,10 @@ namespace App\Http\Controllers\Focus\stock_issue;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
+use App\Models\account\Account;
 use App\Models\customer\Customer;
 use App\Models\hrm\Hrm;
+use App\Models\invoice\Invoice;
 use App\Models\product\ProductVariation;
 use App\Models\project\BudgetItem;
 use App\Models\project\Project;
@@ -88,8 +90,10 @@ class StockIssuesController extends Controller
             ->whereNotNull('approved_method')
             ->whereNotNull('approved_by')
             ->get(['id', 'notes', 'tid', 'bank_id', 'customer_id']);
+        
+        $accounts = Account::where('account_type', 'Expense')->get(['id', 'number', 'holder', 'account_type']);
 
-        return view('focus.stock_issues.create', compact('customers', 'employees', 'projects', 'quotes'));
+        return view('focus.stock_issues.create', compact('customers', 'employees', 'projects', 'quotes', 'accounts'));
     }
 
     /**
@@ -142,12 +146,13 @@ class StockIssuesController extends Controller
             ->whereNotNull('approved_method')
             ->whereNotNull('approved_by')
             ->get(['id', 'notes', 'tid', 'bank_id', 'customer_id']);
+        $accounts = Account::where('account_type', 'Expense')->get(['id', 'number', 'holder', 'account_type']);
 
         $qt = Quote::find($stock_issue->quote_id);
 
         $budgetDetails = [];
 
-        $budget = $qt->budget;
+        $budget = $qt ? $qt->budget : [];
 
         if ($budget) {
 
@@ -163,7 +168,7 @@ class StockIssuesController extends Controller
             }
         }
 
-        return view('focus.stock_issues.edit', compact('stock_issue', 'customers', 'employees', 'projects', 'quotes', 'budgetDetails'));
+        return view('focus.stock_issues.edit', compact('stock_issue', 'customers', 'employees', 'projects', 'quotes', 'budgetDetails','accounts'));
     }
 
     /**
@@ -230,45 +235,57 @@ class StockIssuesController extends Controller
             if ($quote->budget) {
                 $quote_product_ids = $quote->budget->items()->pluck('product_id')->toArray();
             }
-
-            $productvars = ProductVariation::whereIn('id', array_filter($quote_product_ids))
+            
+            $budget = $quote->budget;
+            $productvars = ProductVariation::whereIn('id', $quote_product_ids)
                 ->whereHas('product', fn($q) => $q->where('stock_type', '!=', 'service'))
                 ->get()
-                ->map(function ($v) {
+                ->map(function ($v) use($budget){
+                    // dd($budget,  $v->id);
                     $v->unit = @$v->product->unit;
+                    $v->budget_qty = 0;
+                    if ($budget){
+                        $v->budget_qty =  BudgetItem::where('budget_id', $budget->id)
+                            ->where('product_id', $v->id)
+                            ->sum('new_qty');
+                    }
                     unset($v->product);
                     return $v;
                 });
             foreach ($productvars as $key => $item) {
+                
                 $warehouses = Warehouse::whereHas('products', fn($q) => $q->where('name', 'LIKE', "%{$item->name}%"))
                     ->with(['products' => fn($q) => $q->where('name', 'LIKE', "%{$item->name}%")])
                     ->get();
+
                 foreach ($warehouses as $i => $wh) {
                     $warehouses[$i]['products_qty'] = $wh->products->sum('qty');
                     unset($warehouses[$i]['products']);
                 }
                 $productvars[$key]['warehouses'] = $warehouses;
+                //  dd($warehouses);
             }
+            // dd($productvars, count(array_filter($quote_product_ids)), count($productvars));
 
-            $budgetDetails = [];
+            // $budgetDetails = [];
 
-            $budget = $quote->budget;
+            // $budget = $quote->budget;
 
-            if ($budget){
+            // if ($budget){
 
-                foreach ($productvars as $key => $item) {
+            //     foreach ($productvars as $key => $item) {
 
-                    $budgetItem = BudgetItem::where('budget_id', $quote->budget->id)
-                        ->where('product_id', $item['id'])
-                        ->first();
+            //         $budgetItem = BudgetItem::where('budget_id', $quote->budget->id)
+            //             ->where('product_id', $item['id'])
+            //             ->first();
 
-                    $bi = [$item['id'] => $budgetItem];
+            //         $bi = [$item['id'] => $budgetItem];
 
-                    $budgetDetails = array_merge($budgetDetails, $bi);
-                }
-            }
+            //         $budgetDetails = array_merge($budgetDetails, $bi);
+            //     }
+            // }
 
-            return response()->json(compact('productvars', 'budgetDetails'));
+            return response()->json(compact('productvars'));
         }
         catch (\Exception $ex) {
                 return [
@@ -279,5 +296,75 @@ class StockIssuesController extends Controller
                     'line' => $ex->getLine(),
                 ];
         }
+    }
+
+    /**
+     * Fetch client invoices
+     */
+    public function select_invoices(Request $request)
+    {
+        $w = $request->search; 
+        $invoices = Invoice::whereHas('currency', fn($q) => $q->where('rate', 1))
+        // ->whereHas('stock_issues')
+        ->where('customer_id', $request->customer_id)
+        ->where(fn($q) => $q->where('notes', 'LIKE', "%{$w}%")->orWhere('tid', 'LIKE', "%{$w}%"))
+        ->limit(6)
+        ->get()
+        ->map(function($v) {
+            $v->notes = gen4tid('INV-', $v->tid) . ' ' . $v->notes;
+            return $v;
+        });
+            
+        return response()->json($invoices);
+    }
+
+    public function issue_invoice_items()
+    {
+        $productvars = [];
+        // invoice stock items
+        $invoice = Invoice::find(request('invoice_id'));
+        if ($invoice && $invoice->products) {
+            $quote_ids = $invoice->products->pluck('quote_id')->toArray();
+            $quote_ids = array_unique($quote_ids);
+            foreach ($invoice->products as $inv_product) {
+                // verification invoice
+                if ($inv_product->quote_id) {
+                    $quote = $inv_product->quote;
+                    if ($quote) {
+                        foreach ($quote->verified_products as $verified_prod) {
+                            $productvar = $verified_prod->product_variation;
+                            if ($productvar) {
+                                $productvar['verified_item_id'] = $verified_prod->id;
+                                $productvar['uom'] = @$productvar->product->unit->code;
+                                $productvars[] = $productvar;
+                            }
+                        }
+                    }
+                    if (count($quote_ids) == 1) break;
+                } 
+                // non-verification invoice (detached)
+                elseif ($inv_product->product_id) {
+                    $productvar = $inv_product->product_variation;
+                    if ($productvar) {
+                        $productvar['verified_item_id'] = null;
+                        $productvar['uom'] = @$productvar->product->unit->code;
+                        $productvars[] = $productvar;
+                    }
+                }
+            }
+        }
+        foreach ($productvars as $key => $item) {
+                
+            $warehouses = Warehouse::whereHas('products', fn($q) => $q->where('name', 'LIKE', "%{$item->name}%"))
+                ->with(['products' => fn($q) => $q->where('name', 'LIKE', "%{$item->name}%")])
+                ->get();
+
+            foreach ($warehouses as $i => $wh) {
+                $warehouses[$i]['products_qty'] = $wh->products->sum('qty');
+                unset($warehouses[$i]['products']);
+            }
+            $productvars[$key]['warehouses'] = $warehouses;
+        }
+        return response()->json($productvars);
     }
 }

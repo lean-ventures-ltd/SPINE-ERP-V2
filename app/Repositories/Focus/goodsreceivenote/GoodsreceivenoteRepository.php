@@ -5,6 +5,7 @@ namespace App\Repositories\Focus\goodsreceivenote;
 use App\Exceptions\GeneralException;
 use App\Models\goodsreceivenote\Goodsreceivenote;
 use App\Models\items\GoodsreceivenoteItem;
+use App\Models\items\PurchaseorderItem;
 use App\Models\items\UtilityBillItem;
 use App\Models\product\ProductVariation;
 use App\Models\supplier\Supplier;
@@ -105,14 +106,14 @@ class GoodsreceivenoteRepository extends BaseRepository
 
             // check if is default product variation or is supplier product 
             $prod_variation = $item->productvariation;
-            if (@$result->purchaseorder->pricegroup_id && $item->supplier_product) {
-                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            } 
-            elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
-                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            }
-        
-            if($item->warehouse_id && $prod_variation){    
+            // if (@$result->purchaseorder->pricegroup_id && $item->supplier_product) {
+            //     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            // } 
+            // elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
+            //     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            // }
+    
+            if($item->warehouse_id){    
                 if ($prod_variation->warehouse_id != $item['warehouse_id']) {   
                     $is_similar = false;
                     $similar_products = ProductVariation::where('id', '!=', $prod_variation->id)
@@ -132,11 +133,22 @@ class GoodsreceivenoteRepository extends BaseRepository
                         $prod_variation = $new_product;
                     }
                 }
-
-                if ($prod_variation) updateStockQty([$prod_variation->id]);
+                if (isset($prod_variation->product->units)) {
+                    foreach ($prod_variation->product->units as $unit) {
+                        if ($unit->code == $po_item['uom']) {
+                            // dd($prod_variation->product->units, $unit, $po_item['uom']);
+                            if ($unit->unit_type == 'base') {
+                                $prod_variation->increment('qty', $item->qty);
+                            } else {
+                                $prod_variation->increment('qty', $item->qty * $unit->base_ratio);
+                                // dd($prod_variation);
+                            }
+                        }
+                    }
+                } 
+                elseif ($prod_variation) $prod_variation->increment('qty', $item->qty);
                 else throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);
-            } elseif (!$prod_variation) {
-                throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);
+                // dd($prod_variation);
             }
         }
 
@@ -191,6 +203,38 @@ class GoodsreceivenoteRepository extends BaseRepository
         DB::beginTransaction();
         
         $result = $goodsreceivenote->update($input);
+
+        // reverse previous stock qty
+        foreach ($goodsreceivenote->items as $i => $item) {
+            $po_item = $item->purchaseorder_item;
+            if (!$po_item) throw ValidationException::withMessages(['Line ' . strval($i+1) . ' related purchase order item does not exist!']);
+            $po_item->decrement('qty_received', $item->qty);
+            
+            // check if is default product variation or supplier product 
+            $prod_variation = $item->productvariation;
+            if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
+                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            } 
+            elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
+                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            }
+            // apply unit conversion
+            if (isset($prod_variation->product->units)) {
+                foreach ($prod_variation->product->units as $unit) {
+                    if ($unit->code == $po_item['uom']) {
+                        if ($prod_variation->warehouse_id > 0) {
+                            if ($unit->unit_type == 'base') {
+                                $prod_variation->decrement('qty', $item->qty);
+                            } else {
+                                $prod_variation->decrement('qty', $item->qty * $unit->base_ratio);
+                            }
+                        }
+                    }
+                }   
+            } 
+            elseif ($prod_variation) $prod_variation->decrement('qty', $item->qty);      
+            else throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order No. ' . $po_item->purchaseorder->tid]);
+        }
         
         // update goods receive note items
         $data_items = Arr::only($input, ['qty', 'rate', 'id','warehouse_id', 'itemproject_id']);
@@ -216,38 +260,28 @@ class GoodsreceivenoteRepository extends BaseRepository
             
             // check if is default product variation or supplier product 
             $prod_variation = $item->productvariation;
-            if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
-                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            } elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
-                $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-            }
-
-            if($item->warehouse_id && $prod_variation){    
-                if ($prod_variation->warehouse_id != $item['warehouse_id']) {   
-                    $is_similar = false;
-                    $similar_products = ProductVariation::where('id', '!=', $prod_variation->id)
-                        ->where('name', 'LIKE', '%'. $prod_variation->name .'%')->get();
-                    foreach ($similar_products as $s_product) {
-                        if ($prod_variation->warehouse_id == $item['warehouse_id']) {
-                            $is_similar = true;
-                            $prod_variation = $s_product;
-                            break;
+            // if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
+            //     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            // } elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
+            //     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+            // }
+            
+            // apply unit conversion
+            if (isset($prod_variation->product->units)) {
+                foreach ($prod_variation->product->units as $unit) {
+                    if ($unit->code == $po_item['uom']) {
+                        if ($item['warehouse_id'] > 0) {
+                            if ($unit->unit_type == 'base') {
+                                $prod_variation->increment('qty', $item->qty);
+                            } else {
+                                $prod_variation->increment('qty', $item->qty * $unit->base_ratio);
+                            }
                         }
                     }
-                    if (!$is_similar) {
-                        $new_product = clone $prod_variation;
-                        $new_product->warehouse_id = $item['warehouse_id'];
-                        unset($new_product->id, $new_product->qty);
-                        $new_product->save();
-                        $prod_variation = $new_product;
-                    }
-                }
-
-                if ($prod_variation) updateStockQty([$prod_variation->id]);
-                else throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);
-            } elseif (!$prod_variation) {
-                throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);
-            }        
+                }   
+            } 
+            elseif ($prod_variation) $prod_variation->increment('qty', $item->qty);
+            else throw ValidationException::withMessages(['Product on line ' . strval($i+1) . ' may not exist! Please update it from the Purchase Order number ' . $po_item->purchaseorder->tid]);  
         }
 
         // update purchase order status
@@ -286,34 +320,46 @@ class GoodsreceivenoteRepository extends BaseRepository
 
         $grn_bill = $goodsreceivenote->bill;
         if ($grn_bill) {
-            if ($grn_bill->payments()->exists()) {
+            if ($grn_bill->payments()->exists()) 
                 throw ValidationException::withMessages(['Not Allowed! Goods Receive Note is billed on Bill No. '. gen4tid('', $grn_bill->tid). 'with associated payments']);
-            }
             $grn_bill->transactions()->delete();
             $grn_bill->items()->delete();
             $grn_bill->delete();
         }
 
-        // update stock qty 
-        $prod_variation_ids = [];
+        // decrease inventory stock 
         foreach ($goodsreceivenote->items as $item) {
             $po_item = $item->purchaseorder_item;
             if ($po_item) {
                 $po_item->decrement('qty_received', $item->qty);
                 // check if is default product variation or supplier product 
                 $prod_variation = $item->productvariation;
-                if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
-                    $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-                } elseif ($item->supplier_product) {
-                    $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
-                }
-                if ($prod_variation) $prod_variation_ids[] = $prod_variation->id;
+                // if (@$goodsreceivenote->purchaseorder->pricegroup_id && $item->supplier_product) {
+                //     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+                // } 
+                // elseif (@$item->supplier_product->product_code == $po_item['product_code']) {
+                //     $prod_variation = ProductVariation::where('code', $item->supplier_product->product_code)->first();
+                // }
+                // apply unit conversion
+                if (isset($prod_variation->product->units)) {
+                    foreach ($prod_variation->product->units as $unit) {
+                        if ($unit->code == $po_item['uom']) {
+                            if ($item['warehouse_id'] > 0) {
+                                if ($unit->unit_type == 'base') {
+                                    $prod_variation->decrement('qty', $item['qty']);
+                                } else {
+                                    $prod_variation->decrement('qty', $item['qty'] * $unit->base_ratio);
+                                }
+                            }
+                        }
+                    }   
+                } 
+                elseif ($prod_variation) $prod_variation->decrement('qty', $item['qty']);
             }
         }
 
         // delete received items
         $goodsreceivenote->items()->delete();
-        updateStockQty([$prod_variation_ids]);
 
         // update purchase order status
         if ($goodsreceivenote->purchaseorder) {

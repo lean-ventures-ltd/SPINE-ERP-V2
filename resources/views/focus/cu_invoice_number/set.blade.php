@@ -5,18 +5,10 @@
 @section('content')
 <div class="content-wrapper">
     <div class="content-header row mb-1">
+
         <div class="content-header-left col-6">
             <h3 class="mb-0">Set The Next CU Invoice Number</h3>
         </div>
-
-{{--        <div class="content-header-right col-6">--}}
-{{--            <div class="media width-250 float-right">--}}
-{{--                <div class="media-body media-right text-right">--}}
-{{--                    @include('focus.lead_sources.partials.header-buttons')--}}
-{{--                </div>--}}
-{{--            </div>--}}
-{{--        </div>--}}
-
 
     </div>
     
@@ -29,51 +21,13 @@
 {{--                            {{ Form::open(['route' => 'biller.lead-sources.store', 'method' => 'POST', 'id' => 'create-employee-daily-log']) }}--}}
                             <div class="form-group">
 
-                                <div class="row mb-2">
-
-                                    <div class="col-10 col-lg-7">
-
-                                        <h3 class="mb-1">Current Control Unit Invoice Number is <b> {{ $currentCuInvNo }} </b></h3>
-
-                                        <div class="d-flex align-items-baseline">
-                                            <h3 class="mr-1"> {{ $cuPrefix }} </h3>
-                                            <input type="number" step="1" id="cu_no" name="cu_no"  required class="form-control box-size text-lg"/>
-                                        </div>
-                                        <label id="response" class="text-red"></label>
-
-                                        <div class="row mt-1">
-                                            <div class="col-8 col-lg-4 d-flex align-items-baseline">
-                                                <label for="nhif">Status</label>
-                                                <select name="cuActive" id="cuActive" class="form-control round ml-1" required >
-                                                    @php
-                                                        $cuActiveOptions = [
-                                                            'Active' => 1,
-                                                            'Deactivated' => 0
-                                                        ];
-                                                    @endphp
-
-                                                    @foreach ($cuActiveOptions as $option => $value)
-                                                        <option value="{{ $value }}" @if($cuActive === $value) selected @endif>{{ $option }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-
-                                        </div>
 
 
-
-                                    </div>
-
-                                </div>
 
                                 <div class="edit-form-btn">
 
 {{--                                    {{ Form::submit(trans('buttons.general.crud.create'), ['class' => 'btn btn-primary btn-md', 'id']) }}--}}
-                                    <div class="d-flex align-items-baseline">
-                                        {{ link_to_route('biller.dashboard', trans('buttons.general.cancel'), [], ['class' => 'btn btn-secondary btn-md']) }}
-                                        <button class="btn btn-primary btn-md ml-1" id="setNumber"> Set CU Invoice Number </button>
-                                        <label id="result" class="ml-2"></label>
-                                    </div>
+
 
 
 

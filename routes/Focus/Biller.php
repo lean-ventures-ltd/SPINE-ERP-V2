@@ -590,3 +590,11 @@ Route::group(['namespace' => 'creditnote'], function () {
     Route::post('creditnotes/get', 'CreditNotesTableController')->name('creditnotes.get');
 });
 
+Route::group(['namespace' => 'financial_year'], function () {
+
+    Route::resource('financial_years', 'FinancialYearController');
+
+});
+
+
+

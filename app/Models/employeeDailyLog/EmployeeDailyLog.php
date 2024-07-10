@@ -40,7 +40,6 @@ class EmployeeDailyLog extends Model
         parent::boot();
 
         static::creating(function ($instance) {
-
             $instance->ins = auth()->user()->ins;
             return $instance;
         });

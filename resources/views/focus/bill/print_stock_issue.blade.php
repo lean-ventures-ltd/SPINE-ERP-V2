@@ -223,8 +223,8 @@
 			<tr>
 				<td width="8%">No.</td>
 				<td width="42%">ITEM DESCRIPTION</td>
-				<td width="15%">QTY</td>
 				<td width="15%">UoM</td>
+				<td width="15%">QTY</td>
 				<td width="20%">Tick</td>
 			</tr>
 		</thead>
@@ -247,8 +247,8 @@
 						@endphp
 						<td>{{ $i+1 }}</td>
 						<td>{{ @$product->productvar->name }}</td>
-						<td class="align-c">{{ +$product->issue_qty }}</td>
 						<td class="align-c">{{ $unit }}</td>
+						<td class="align-c">{{ +$product->issue_qty }}</td>
 						<td class="align-c"></td>
 						
 					</tr>
@@ -262,6 +262,11 @@
 					@endfor
 				</tr>
 			@endfor
+			<tr>
+				<td colspan="3" class="bd-t"><em>Issued by: <b>{{@$resource->user->fullname}}</b></td>
+				<td class="bd align-r"><b></b></td>
+				<td class="bd align-r"></td>
+			</tr>
 			<!--  -->
 			
 		</tbody>
@@ -286,7 +291,7 @@
 			</td>
 		</tr>
 	</table><br>
-	<h3 class="mt-3">Goods Received in good order and condition By:</h3>
+	<h3 class="mt-3">Goods Received in good order and condition by:</h3>
 	<table class="generator mt-3" cellpadding="10">
 		<tr>
 			<td width="45%">

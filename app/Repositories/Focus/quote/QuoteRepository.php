@@ -320,6 +320,7 @@ class QuoteRepository extends BaseRepository
 
         // quote line items
         $data_items = $input['data_items'];
+        // dd($data_items);
         $data_items = array_map(function ($v) use($result) {
             return array_replace($v, [
                 'quote_id' => $result->id, 

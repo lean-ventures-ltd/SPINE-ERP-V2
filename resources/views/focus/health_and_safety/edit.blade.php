@@ -1,4 +1,10 @@
+<!DOCTYPE html>
+
 @extends ('core.layouts.app')
+
+<head>
+    <script src="https://cdn.tiny.cloud/1/ewcb9ttdxkr6mv3uyc8ueykuqz06aja4t3e7wuqyfqfwq17z/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+</head>
 
 @section('title', 'Health And Safety Tracking')
 
@@ -58,6 +64,15 @@
             format: '{{ config('core.user_date_format') }}'
         });
         $('#date').datepicker('setDate', '{{ date(config('core.user_date_format')) }}');
+
+
+        tinymce.init({
+            selector: '.tinyinput',
+            menubar: false,
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link table | align lineheight | checklist numlist bullist indent outdent | removeformat',
+            height: 300,
+        });
 
 
         function select2Config(url, callback) {

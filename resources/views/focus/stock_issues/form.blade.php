@@ -58,14 +58,22 @@
 </div>
 
 <div class="row">
-    <div class="col-md-12 col-12">
+    <div class="col-md-2 col-12">
+        <label for="tid">Reference</label>
+    <select name="reference" id="ref" class="custom-select">
+            @foreach (['quote', 'invoice'] as $item)
+                <option value="{{$item}}" {{$item == @$stock_issue->reference ? 'selected' : ''}}>{{ ucfirst($item) }}</option>
+            @endforeach
+    </select>
+    </div>
+    <div class="col-md-10 col-12">
         <label for="note">Note</label>
         {{ Form::text('note', null, ['class' => 'form-control', 'id' => 'note', 'required' => 'required']) }}
     </div>
 </div>
 <hr>
 <div class="row mb-1">
-    <div class="col-md-6 col-12">
+    <div class="col-md-4 col-12 quote-col">
         <label for="quote">Load Items From Quote / PI</label>
         <select
                 name="quote_id"
@@ -87,8 +95,19 @@
             @endforeach
         </select>
     </div>
+    <div class="col-md-4 col-12 invoice-col d-none">
+        <label for="invoice">Invoice</label>
+        <select name="invoice_id" id="invoice" class="form-control" data-placeholder="Search Invoice" autocomplete="off">
+            <option value=""></option>
+            @if (isset($stock_issue->invoice))
+                <option value="{{ $stock_issue->invoice_id }}" selected>
+                    {{ gen4tid('INV-', $stock_issue->invoice->tid) . ' ' . $stock_issue->invoice->notes }}
+                </option>
+            @endif
+        </select>
+    </div>
 
-    <div class="col-md-6 col-12">
+    <div class="col-md-4 col-12">
 
         <label for="budget_line" class="caption" style="display: inline-block;">Project Budget Line</label>
 
@@ -97,6 +116,17 @@
         </select>
 
         <p id="budget_line_warning" class="text-red ml-2" style="color: red; font-size: 16px; "> </p>
+    </div>
+    <div class="col-md-4 col-12">
+
+        <label for="ledger" class="caption" style="display: inline-block;">Ledger Account</label>
+
+        <select id="account" name="account_id" class="form-control" data-placeholder="Search Ledger Account">
+            <option value="">Search Ledger Account</option>
+            @foreach ($accounts as $account)
+                <option value="{{$account->id}}" {{$account->id == @$stock_issue->account_id ? 'selected' : ''}}>{{$account->holder}}</option>
+            @endforeach
+        </select>
     </div>
 
 </div>

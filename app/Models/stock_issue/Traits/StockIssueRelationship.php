@@ -4,6 +4,7 @@ namespace App\Models\stock_issue\Traits;
 
 use App\Models\customer\Customer;
 use App\Models\hrm\Hrm;
+use App\Models\invoice\Invoice;
 use App\Models\project\Project;
 use App\Models\quote\Quote;
 use App\Models\stock_issue\StockIssueItem;
@@ -19,6 +20,10 @@ trait StockIssueRelationship
     public function employee()
     {
         return $this->belongsTo(Hrm::class, 'employee_id');
+    }
+    public function user()
+    {
+        return $this->belongsTo(Hrm::class, 'user_id');
     }
 
     public function project()
@@ -39,6 +44,10 @@ trait StockIssueRelationship
     public function quote()
     {
         return $this->belongsTo(Quote::class, 'quote_id', 'id');
+    }
+    public function invoice()
+    {
+        return $this->belongsTo(Invoice::class, 'invoice_id', 'id');
     }
 
 }

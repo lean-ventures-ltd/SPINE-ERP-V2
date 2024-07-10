@@ -26,15 +26,31 @@
                 <div class="card">
                     <div class="card-content">
                         <div class="card-body">
-                            
 
-                            <table id="etc-table" class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
+                            <div class="row mt-2 mb-1">
+
+                                <div class="col-8 col-lg-6">
+                                    <label for="financial_year_id" >Filter by Financial Year</label>
+                                    <select class="form-control box-size mb-2" id="financial_year_id" name="financial_year_id" required>
+
+                                        <option value=""> Select a Financial Year </option>
+
+                                        @foreach ($financialYears as $fY)
+                                            <option value="{{ $fY['id'] }}">
+                                                {{ $fY['name'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                            </div>
+
+                                <table id="purchase-class-table" class="table table-striped table-bordered zero-configuration" cellspacing="0" width="100%">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
                                         <th>Budget</th>
-                                        <th>Start Date</th>
-                                        <th>End Date</th>
+                                        <th>Financial Year</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -55,14 +71,19 @@
 
 @section('after-scripts')
 {{ Html::script(mix('js/dataTable.js')) }}
+{{ Html::script('focus/js/select2.min.js') }}
+
 <script>
     setTimeout(() => draw_data(), "{{ config('master.delay') }}");
 
     $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': "{{ csrf_token() }}"} });
 
+    $('#financial_year_id').select2();
+
     function draw_data() {
         const tableLan = {@lang('datatable.strings')};
-        var dataTable = $('#etc-table').dataTable({
+
+        var dataTable = $('#purchase-class-table').dataTable({
             processing: true,
             serverSide: true,
             responsive: true,
@@ -70,7 +91,9 @@
             ajax: {
                 url: '{{ route("biller.purchase-classes.index") }}',
                 type: 'GET',
-                data: { c_type: 0 }
+                data: {
+                    financial_year: $('#financial_year_id').val(),
+                }
             },
             columns: [
                 {
@@ -82,12 +105,8 @@
                     name: 'budget'
                 },
                 {
-                    data: 'start_date',
-                    name: 'start_date'
-                },
-                {
-                    data: 'end_date',
-                    name: 'end_date'
+                    data: 'financial_year_id',
+                    name: 'financial_year_id'
                 },
                 {
                     data: 'action',
@@ -104,5 +123,11 @@
             buttons: ['csv', 'excel', 'print'],
         });
     }
+
+    $('#financial_year_id').change( () => {
+        $('#purchase-class-table').DataTable().destroy();
+        draw_data();
+    })
+
 </script>
 @endsection
