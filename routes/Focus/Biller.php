@@ -596,5 +596,11 @@ Route::group(['namespace' => 'financial_year'], function () {
 
 });
 
+Route::group(['namespace' => 'documentManager'], function () {
+
+    Route::resource('document-manager', 'DocumentManagerController');
+
+});
+
 
 
