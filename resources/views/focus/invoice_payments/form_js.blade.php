@@ -108,7 +108,7 @@
 
         currencyChange() {
             const rate = $(this).find('option:selected').attr('rate');
-            $('#fx_curr_rate').val(+rate);
+            $('#fx_curr_rate').val(accounting.unformat(rate));
             $('#person').change();
         },
 
