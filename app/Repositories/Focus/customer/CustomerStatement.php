@@ -19,7 +19,8 @@ trait CustomerStatement
      * Statement on account transactions
      */
     public function getTransactionsForDataTable($customer_id = 0)
-    {            
+    {      
+             
         $params = ['customer_id' => request('customer_id', $customer_id)];
         $q = Transaction::whereHas('account', function ($q) { 
             $q->where('system', 'receivable');  
@@ -34,7 +35,7 @@ trait CustomerStatement
         ->orWhere(function($q) use($params) {
             $q->whereHas('manualjournal', fn($q) => $q->where($params))
             ->where('debit', '>', 0);     
-        });
+        });  
         
         // on date filter
         if (request('start_date') && request('is_transaction')) {
@@ -63,6 +64,53 @@ trait CustomerStatement
         return $q->get();
     }
 
+    public function getTransactionsForMail($customer_id = 0, $start_date = null)
+    {
+        $params = ['customer_id' => request('customer_id', $customer_id)];
+        $q = Transaction::withoutGlobalScopes()
+        ->whereHas('account', function ($q) { 
+            $q->withoutGlobalScopes() // Add withoutGlobalScopes here if needed
+            ->where('system', 'receivable');  
+        })
+        ->where(function ($q) use ($params) {
+            $q->whereHas('invoice', fn($q) => $q->withoutGlobalScopes()->where($params))
+            ->orWhereHas('deposit', fn($q) => $q->withoutGlobalScopes()->where($params))
+            ->orWhereHas('withholding', fn($q) => $q->withoutGlobalScopes()->where($params))
+            ->orWhereHas('creditnote', fn($q) => $q->withoutGlobalScopes()->where($params))
+            ->orWhereHas('debitnote', fn($q) => $q->withoutGlobalScopes()->where($params));
+        })
+        ->orWhere(function ($q) use ($params) {
+            $q->whereHas('manualjournal', fn($q) => $q->withoutGlobalScopes()->where($params))
+            ->where('debit', '>', 0);
+        });
+    
+        // on date filter
+        if ($start_date) {
+            $from = date_for_database($start_date);
+            $tr_ids = $q->pluck('id')->toArray();
+            
+            $params = ['id', 'tr_date', 'tr_type', 'note', 'debit', 'credit'];
+            $transactions = Transaction::withoutGlobalScopes()->whereIn('id', $tr_ids)->whereBetween('tr_date', [$from, date('Y-m-d')])->get($params);
+            // compute balance brought foward as of start date
+            $bf_transactions = Transaction::withoutGlobalScopes()->whereIn('id', $tr_ids)->where('tr_date', '<', $from)->get($params);
+            $debit_balance = $bf_transactions->sum('debit') - $bf_transactions->sum('credit');
+            if ($debit_balance) {
+                $record = (object) array(
+                    'id' => 0,
+                    'tr_date' => date('Y-m-d', strtotime($from . ' - 1 day')),
+                    'tr_type' => 'balance',
+                    'note' => '** Balance Brought Foward ** ',
+                    'debit' => $debit_balance > 0 ? $debit_balance : 0,
+                    'credit' => $debit_balance < 0 ? ($debit_balance * -1) : 0,
+                );
+                // merge brought foward balance with the rest of the transactions
+                $transactions = collect([$record])->merge($transactions);
+            }
+            return $transactions;
+        }
+        return $q->get();
+    }
+
     /**
      * Statement on invoice records
      */
@@ -72,6 +120,34 @@ trait CustomerStatement
         
         $q->with(['payments', 'withholding_payments', 'creditnotes', 'debitnotes']);
         
+        
+        return $this->generate_statement($q->get());
+    }
+    public function getStatementForMail($customer_id = 0)
+    {
+        $q = Invoice::withoutGlobalScopes()->where('customer_id', request('customer_id', $customer_id));
+        $q->with([
+            'payments' => function ($query) {
+                $query->withoutGlobalScopes();
+            },
+            'payments.paid_invoice' => function ($query) {
+                $query->withoutGlobalScopes();
+            },
+            'payments.paid_invoice.account' => function ($query) {
+                $query->withoutGlobalScopes();
+            },
+            'withholding_payments' => function ($query) {
+                $query->withoutGlobalScopes();
+            },
+            'creditnotes' => function ($query) {
+                $query->withoutGlobalScopes();
+            },
+            'debitnotes' => function ($query) {
+                $query->withoutGlobalScopes();
+            },
+        ]);
+        // dd($q->get(), $customer_id);
+        // 
         return $this->generate_statement($q->get());
     }
 
@@ -79,7 +155,7 @@ trait CustomerStatement
     public function generate_statement($invoices = [])
     {
         $i = 0;
-        $statement = collect();
+        $statement = collect();    
         foreach ($invoices as $invoice) {
             $i++;
             $invoice_id = $invoice->id;
@@ -95,9 +171,9 @@ trait CustomerStatement
                 'invoice_id' => $invoice_id
             );
             // invoice deposits
-            $payments = collect();
+            $payments = collect();       
             foreach ($invoice->payments as $pmt) {
-                if (!$pmt->paid_invoice) continue;
+                if (!$pmt->paid_invoice) continue;            
                 $i++;
                 $reference = $pmt->paid_invoice->reference;
                 $mode = $pmt->paid_invoice->payment_mode;
@@ -116,7 +192,7 @@ trait CustomerStatement
                     'payment_item_id' => $pmt->id
                 );
                 $payments->add($record);
-            }    
+            }           
             // invoice withholdings
             $withholdings = collect();
             foreach ($invoice->withholding_payments as $pmt) {
@@ -138,7 +214,7 @@ trait CustomerStatement
                 $withholdings->add($record);
             }  
             // invoice credit notes
-            $creditnotes = collect();
+            $creditnotes = collect();     
             foreach ($invoice->creditnotes as $cnote) {
                 $i++;
                 $record = (object) array(

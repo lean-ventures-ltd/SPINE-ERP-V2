@@ -8,6 +8,7 @@ use DB;
 use App\Exceptions\GeneralException;
 use App\Repositories\BaseRepository;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -43,8 +44,14 @@ class RosemailerRepository extends BaseRepository
             Mail::send($view, array('title'=>config('core.cname'),'body' => $data), function ($message) use ($input) {
                 $message->to($input['mail_to']);
                 $message->subject($input['subject']);
+                if (isset($input['statement']) && !empty($input['statement'])) {
+                    $message->attachData($input['statement'], 'customer_statement.pdf', [
+                        'mime' => 'application/pdf',
+                    ]);
+                }
             });
         } catch (\Exception $e) {
+            Log::error($e->getMessage());
             return json_encode(array('status' => 'Error', 'message' => trans('general.email_error')));
         }
         if (!$output) $output = array('status' => 'Success', 'message' => trans('general.email_sent'));

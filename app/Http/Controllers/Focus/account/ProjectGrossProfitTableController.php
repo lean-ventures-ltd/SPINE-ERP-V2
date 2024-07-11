@@ -89,12 +89,25 @@ class ProjectGrossProfitTableController extends Controller
             })
             ->addColumn('income', function($project) {
                 $income = 0;
-                foreach ($project->quotes as $quote) {
-                    $inv_product = $quote->invoice_product;
-                    if ($inv_product) $income += $quote->subtotal;                        
+
+                $subtotals = $project->quotes->map(function ($quote){
+                    return $quote->verified_amount;
+                });
+
+                foreach ($subtotals as $sT) {
+
+                    $income += doubleval($sT);
                 }
+
                 $this->income = $income;
                 return numberFormat($income);
+
+//                foreach ($project->quotes as $quote) {
+//                    $inv_product = $quote->invoice_product;
+//                    if ($inv_product) $income += $quote->subtotal;
+//                }
+//                $this->income = $income;
+//                return numberFormat($income);
             })
             ->addColumn('expense', function($project) {
                 $total_estimate = 0;
@@ -104,7 +117,14 @@ class ProjectGrossProfitTableController extends Controller
                     $labour_amount = $project->labour_allocations()->sum(DB::raw('hrs * 500')) / $project->quotes->count();
                     $expense_amount = $dir_purchase_amount + $proj_grn_amount + $labour_amount;
                     if ($quote->projectstock) $expense_amount += $quote->projectstock->sum('total');
-                    $total_estimate += $expense_amount;
+
+                    $stockIssues = $quote->stockIssues->map(function ($sI){
+                        return $sI->total;
+                    });
+
+                    $stockIssuesValue = array_sum($stockIssues->toArray());
+
+                    $total_estimate += $expense_amount + $stockIssuesValue;
                 }
                 $this->expense = $total_estimate;
                 return numberFormat($total_estimate);

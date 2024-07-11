@@ -34,7 +34,7 @@
                     <div class="input-group">
                         {{ Form::text('date', null, ['class' => 'form-control datepicker', 'id' => 'date', 'required']) }}
                     </div>
-                </div>     
+                </div>   
                 <div class="col-md-2">            
                     <label for="currency_code">Forex Rate</label>
                     <div class="row no-gutters">
@@ -43,12 +43,12 @@
                                 @foreach ($currencies as $row)
                                     @if (@$invoice_payment)
                                         @if ($row->id == $invoice_payment->currency_id)
-                                            <option value="{{ $row->id }}" rate="{{+$invoice_payment->fx_curr_rate}}" selected>{{ $row->code }}</option>
+                                            <option value="{{ $row->id }}" rate="{{$invoice_payment->fx_curr_rate}}" selected>{{ $row->code }}</option>
                                         @else    
-                                            <option value="{{ $row->id }}" rate="{{+$row->rate}}">{{ $row->code }}</option>
+                                            <option value="{{ $row->id }}" rate="{{$row->rate}}">{{ $row->code }}</option>
                                         @endif
                                     @else
-                                        <option value="{{ $row->id }}" rate="{{+$row->rate}}" {{$row->rate == 1? 'selected' : ''}}>{{ $row->code }}</option>
+                                        <option value="{{ $row->id }}" rate="{{$row->rate}}" {{$row->rate == 1? 'selected' : ''}}>{{ $row->code }}</option>
                                     @endif
                                 @endforeach
                             </select>
