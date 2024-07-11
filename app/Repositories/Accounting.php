@@ -783,11 +783,11 @@ trait Accounting
         $dr_data = [];
         unset($cr_data['credit'], $cr_data['is_primary']);
 
-        // debit Stock
+        // stock items
         $wip_account = Account::where('system', 'wip')->first(['id']);
         $stock_exists = $purchase->items()->where('type', 'Stock')->count();
         if ($stock_exists) {
-            // if project stock, WIP account else Stock account
+            // debit WIP account
             $is_project_stock = $purchase->items()->where('type', 'Stock')->where('itemproject_id', '>', 0)->count();
             if ($is_project_stock) {
                 $dr_data[] = array_replace($cr_data, [
@@ -795,6 +795,7 @@ trait Accounting
                     'debit' => $purchase['stock_subttl'],
                 ]);    
             } else {
+                // debit Stock
                 $account = Account::where('system', 'stock')->first(['id']);
                 $dr_data[] = array_replace($cr_data, [
                     'account_id' => $account->id,
@@ -1085,7 +1086,7 @@ trait Accounting
         }
         // debit WIP Account
         if ($project_stock_amount > 0) {
-            unset($cr_data['credit'], $cr_data['is_primary']);
+            unset($cr_data['credit']);
             $account = Account::where('system', 'wip')->first(['id']);
             $dr_data = array_replace($cr_data, [
                 'account_id' => $account->id,
@@ -1095,7 +1096,8 @@ trait Accounting
         } 
         // debit Inventory (Stock) Account
         if ($inventory_stock_amount > 0) {
-            unset($cr_data['credit'], $cr_data['is_primary']);
+            if ($project_stock_amount > 0) unset($cr_data['is_primary']);
+            unset($cr_data['credit']);
             $account = Account::where('system', 'stock')->first(['id']);
             $dr_data = array_replace($cr_data, [
                 'account_id' => $account->id,
@@ -1140,7 +1142,6 @@ trait Accounting
         }
         // debit WIP Account
         if ($project_stock_amount > 0) {
-            unset($dr_data['debit'], $dr_data['is_primary']);
             $account = Account::where('system', 'wip')->first(['id']);
             $dr_data = array_replace($dr_data, [
                 'account_id' => $account->id,
@@ -1150,7 +1151,7 @@ trait Accounting
         } 
         // debit Inventory (Stock) Account
         if ($inventory_stock_amount > 0) {
-            unset($dr_data['debit'], $dr_data['is_primary']);
+            if ($project_stock_amount > 0) unset($dr_data['is_primary']);
             $account = Account::where('system', 'stock')->first(['id']);
             $dr_data = array_replace($dr_data, [
                 'account_id' => $account->id,
@@ -1162,14 +1163,15 @@ trait Accounting
         // debit TAX
         if ($utility_bill->tax > 0) {
             $account = Account::where('system', 'tax')->first(['id']);
-            $cr_data = array_replace($dr_data, [
+            $dr_data = array_replace($dr_data, [
                 'account_id' => $account->id,
                 'debit' => $utility_bill->tax,
             ]);
-            Transaction::create($cr_data);
+            Transaction::create($dr_data);
         }
 
         // credit Accounts Payable (creditors)
+        unset($dr_data['debit']);
         $account = Account::where('system', 'payable')->first(['id']);
         $cr_data = array_replace($dr_data, [
             'account_id' => $account->id,
