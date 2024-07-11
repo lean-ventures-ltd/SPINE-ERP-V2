@@ -18,7 +18,7 @@
     <div class="content-body">
         <div class="card">
             <div class="card-content">
-                <div class="card-body">
+                <div class="card-body filter">
                     {{ Form::model($billpayment, ['route' => array('biller.billpayments.update', $billpayment), 'method' => 'PATCH']) }}
                         @include('focus.billpayments.form')
                     {{ Form::close() }}

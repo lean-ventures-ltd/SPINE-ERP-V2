@@ -489,8 +489,51 @@ class SuppliersController extends Controller
                 }
                 
                 return $v;
-            }); 
+            });
+            if (request('supplier_name') || request('bill_number') || request('start_date')){
+                $bills = UtilityBill::where('supplier_id', request('supplier_id'))
+                ->whereColumn('amount_paid', '<', 'total')
+                ->when(request('bill_number'), fn($q) => $q->where('tid', request('bill_number')))
+                ->when(request('start_date') && request('end_date'), function ($q) {
+                    $q->whereBetween('due_date', array_map(fn($v) => date_for_database($v), [request('start_date'), request('end_date')]));
+                })
+                ->when(request('supplier_name'), fn($q) => $q->whereHas('purchase', function($q){
+                    $q->where('suppliername',request('supplier_name'));
+                }))
+                ->with([
+                    'supplier' => fn($q) => $q->select('id', 'name'),
+                    'purchase' => fn($q) => $q->select('id', 'suppliername', 'note'),
+                    'grn' => fn($q) => $q->select('id', 'note'),
+                ])
+                ->orderBy('due_date', 'asc')->get()
+                ->map(function ($v) {
+                    if ($v->document_type == 'direct_purchase') {
+                        $v->suppliername = $v->purchase->suppliername;
+                        if ($v->grn) unset($v->grn);
+                    } elseif ($v->document_type == 'goods_receive_note') {
+                       if ($v->purchase) unset($v->purchase);
+                    }
+                    
+                    return $v;
+                }); 
+            } 
+        $supplierNames = $bills->map(function ($bill) {
+                $supplier_name = '';
+                if ($bill->document_type == 'direct_purchase') {
+                    $supplier_name =  $bill->purchase->suppliername ?? null;
+                    return $supplier_name;
+                } elseif ($bill->document_type == 'goods_receive_note') {
+                     $supplier_name = $bill->suppliername ?? null;
+                    return $supplier_name;
+                }
+                return $supplier_name;
+            })->filter()->unique()->values();
+        $bill_numbers = $bills->map(function ($bill) {
+                return $bill->tid;
+            })->filter()->unique()->values();
+
         
-        return response()->json($bills);
+        $response = ['bills' => $bills, 'bill_numbers' => $bill_numbers, 'supplier_names' => $supplierNames];
+        return response()->json($response);
     }
 }

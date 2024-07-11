@@ -18,7 +18,7 @@
     <div class="content-body">
         <div class="card">
             <div class="card-content">
-                <div class="card-body">
+                <div class="card-body filter">
                     {{ Form::open(['route' => 'biller.billpayments.store', 'method' => 'POST']) }}
                         @include('focus.billpayments.form')
                     {{ Form::close() }}

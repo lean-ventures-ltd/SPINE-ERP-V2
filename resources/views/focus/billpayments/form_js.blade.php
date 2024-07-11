@@ -38,7 +38,9 @@
                 }
             }
 
-            $('#supplier').change(this.supplierChange);  
+            // $('#supplier').change(this.supplierChange);  
+            $('.filter').on('change','#supplier, #supplier_name, #bill_number', this.supplierChange);
+            $('#search_btn').on('click', this.searchChange);
             $('#employee').change(this.employeeChange);     
             $('#payment_type').change(this.paymentTypeChange);
             $('#rel_payment').change(this.unallocatedPmtChange);         
@@ -136,7 +138,9 @@
 
         supplierChange() {
             $('#billsTbl tbody tr').remove();
-            const supplier_id = this.value;
+            const supplier_id = $('#supplier').val();
+            const supplier_name = $('#supplier_name').val();
+            const bill_number = $('#bill_number').val();
             if (supplier_id) {
                 $('#employee').attr({required: false, disabled: true});
                 // filter supplier unallocated payments
@@ -148,8 +152,69 @@
                     }
                 });
                 // fetch bills
-                $.post("{{ route('biller.suppliers.bills') }}", {supplier_id}, data => {
-                    data.forEach((v,i) => $('#billsTbl tbody').append(Form.billRow(v,i)));
+                
+                $.post("{{ route('biller.suppliers.bills') }}", {supplier_id, supplier_name, bill_number}, data => {
+                    data.bills.forEach((v,i) => $('#billsTbl tbody').append(Form.billRow(v,i)));
+                    var $select = $('#supplier_name');
+                    // $select.empty();
+                    data.supplier_names.forEach(function(name) {
+                        var option = $('<option>', {
+                            value: name,
+                            text: name
+                        });
+                        $select.append(option);
+                    });
+                    var $bill_select = $('#bill_number');
+                    data.bill_numbers.forEach(function(name) {
+                        var option = $('<option>', {
+                            value: name,
+                            text: name
+                        });
+                        $bill_select.append(option);
+                    });
+                });
+            } else {
+                $('#employee').attr({required: true, disabled: false});
+            }
+        },
+        searchChange() {
+            $('#billsTbl tbody tr').remove();
+            const supplier_id = $('#supplier').val();
+            const supplier_name = $('#supplier_name').val();
+            const bill_number = $('#bill_number').val();
+            const start_date = $('#start_date').val();
+            const end_date = $('#end_date').val();
+            if (supplier_id) {
+                $('#employee').attr({required: false, disabled: true});
+                // filter supplier unallocated payments
+                $('#rel_payment option:not(:first)').each(function() {
+                    if ($(this).attr('supplier_id') == supplier_id) {
+                        $(this).removeClass('d-none');
+                    } else  {
+                        $(this).addClass('d-none');
+                    }
+                });
+                // fetch bills
+                
+                $.post("{{ route('biller.suppliers.bills') }}", {supplier_id, supplier_name, bill_number, start_date, end_date}, data => {
+                    data.bills.forEach((v,i) => $('#billsTbl tbody').append(Form.billRow(v,i)));
+                    var $select = $('#supplier_name');
+                    // $select.empty();
+                    data.supplier_names.forEach(function(name) {
+                        var option = $('<option>', {
+                            value: name,
+                            text: name
+                        });
+                        $select.append(option);
+                    });
+                    var $bill_select = $('#bill_number');
+                    data.bill_numbers.forEach(function(name) {
+                        var option = $('<option>', {
+                            value: name,
+                            text: name
+                        });
+                        $bill_select.append(option);
+                    });
                 });
             } else {
                 $('#employee').attr({required: true, disabled: false});
@@ -164,6 +229,7 @@
                 // fetch bills
                 $.post("{{ route('biller.utility-bills.employee_bills') }}", {employee_id}, data => {
                     data.forEach((v,i) => $('#billsTbl tbody').append(Form.billRow(v,i)));
+                   
                 });
             } else {
                 $('#supplier').attr({required: true, disabled: false});
