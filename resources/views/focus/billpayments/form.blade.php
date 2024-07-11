@@ -112,6 +112,37 @@
         {{ Form::text('note', null, ['class' => 'form-control', 'id' => 'note', 'required']) }}
     </div>  
 </div>
+<h5>Filter Options</h5>
+<hr>
+<div class="row form-group">
+    <div class="col-4">
+        <label for="supplier">Supplier Names</label>
+        <select id="supplier_name" class="form-control select2" data-placeholder="Choose supplier">
+            <option value=""></option>   
+        </select>
+    </div>
+    <div class="col-2">
+        <label for="bill">Bill Number</label>
+        <select id="bill_number" class="form-control select2" data-placeholder="Choose Bill" >
+            <option value=""></option>   
+        </select>
+    </div>
+    @php
+        $now = date('d-m-Y');
+        $start = date('d-m-Y', strtotime("{$now} - 1 months"));
+    @endphp
+    <div class="col-2">
+        <label for="">Start Date</label>
+        <input type="text" value="{{ $start }}" id="start_date" class="form-control datepicker">
+    </div>
+    <div class="col-2">
+        <label for="">End Date</label>
+        <input type="text" value="{{ $now }}" id="end_date" class="form-control datepicker">
+    </div>
+    <div class="col-2">
+        <input type="button" id="search_btn" value="Search" class="btn btn-info">
+    </div>
+</div>
 
 <div class="table-responsive">
     <table class="table tfr my_stripe_single text-center" id="billsTbl">
