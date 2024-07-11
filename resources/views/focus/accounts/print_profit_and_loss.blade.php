@@ -106,7 +106,7 @@
                         @if ($is_revenue || $is_cog || $is_dir_expense)                                          
                             @php
                                 $balance = 0;
-                                $dates = $dates? [$dates['start_date'],$dates['end_date']] : [];
+                                // $dates = $dates? [$dates['start_date'],$dates['end_date']] : [];
 
                                 $debit = $account
                                 ->transactions()

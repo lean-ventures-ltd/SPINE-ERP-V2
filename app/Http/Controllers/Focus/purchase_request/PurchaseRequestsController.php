@@ -22,6 +22,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\RedirectResponse;
 use App\Http\Responses\ViewResponse;
 use App\Models\Access\User\User;
+use App\Models\hrm\Hrm;
 use App\Models\purchase_request\PurchaseRequest;
 use App\Repositories\Focus\purchase_request\PurchaseRequestRepository;
 use Illuminate\Http\Request;
@@ -59,7 +60,7 @@ class PurchaseRequestsController extends Controller
     public function create()
     {
         $tid = PurchaseRequest::where('ins', auth()->user()->ins)->max('tid');
-        $users = User::all();
+        $users = Hrm::all();
 
         return view('focus.purchase_requests.create', compact('users', 'tid'));
     }
@@ -84,7 +85,7 @@ class PurchaseRequestsController extends Controller
      */
     public function edit(PurchaseRequest $purchase_request)
     {
-        $users = User::all();
+        $users = Hrm::all();
 
         return view('focus.purchase_requests.edit', compact('purchase_request', 'users'));
     }

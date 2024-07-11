@@ -29,6 +29,8 @@ use App\Http\Requests\Focus\customer\ManageCustomerRequest;
 use App\Http\Requests\Focus\customer\CreateCustomerRequest;
 use App\Http\Requests\Focus\customer\EditCustomerRequest;
 use App\Models\Company\Company;
+use App\Repositories\Focus\general\RosemailerRepository;
+use Carbon\Carbon;
 use DateTime;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
@@ -248,6 +250,22 @@ class CustomersController extends Controller
 
         return $invoices;
     }
+    public function statement_invoices_for_mail($customer)
+    {
+        $invoices = collect();
+        $statement = $this->repository->getStatementForMail($customer->id);
+        foreach ($statement as $row) {
+            if ($row->type == 'invoice') $invoices->add($row);
+            else {
+                $last_invoice = $invoices->last();
+                if ($last_invoice->invoice_id == $row->invoice_id) {
+                    $last_invoice->credit += $row->credit;
+                }
+            }
+        }
+
+        return $invoices;
+    }
 
 
     /**
@@ -375,6 +393,67 @@ class CustomersController extends Controller
             "Expires" => "0"
         );
         return Response::stream($pdf->Output('statement_on_account' . '.pdf', 'I'), 200, $headers);
+    }
+
+    public function generatePdf($customer_id, $company)
+    {
+        // $customer = Customer::findOrFail($customer_id);
+        $page = '';
+        $params = [];
+            // statement on account
+            $page = 'focus.customers.statements.customer_statement';
+
+            $now_date = Carbon::now();
+            $dateOneMonthAgo = $now_date->subMonth();
+            $start_date = $dateOneMonthAgo->format('Y-m-d');
+            $transactions = $this->repository->getTransactionsForMail($customer_id, $start_date)->sortBy('tr_date');
+            // dd($start_date);
+            // $company = Company::get();
+            $customer = Customer::withoutGlobalScopes()->where('ins', $company->id)->find($customer_id);
+
+            $statement_invoices = $this->statement_invoices_for_mail($customer);
+            $aging_cluster = $this->aging_cluster($customer, $statement_invoices);
+
+            $inv_statements = $this->repository->getStatementForMail($customer_id);
+            // dd($inv_statements);
+            
+
+            $params = compact('transactions','inv_statements', 'start_date', 'company', 'customer', 'aging_cluster');
+        
+        $html = view($page, $params)->render(); // Load a view file as HTML
+
+        $pdf = new \Mpdf\Mpdf(config('pdf'));
+        $pdf->WriteHTML($html);
+        $pdfOutput = $pdf->Output('', 'S'); // Output as a string
+
+        return $pdfOutput;
+        // return Response::stream($pdf->Output('statement_on_account' . '.pdf', 'I'), 200, $headers);
+    }
+
+    public function sendMonthlyStatements()
+    {
+        // $customers = Customer::all();
+        $companies = Company::all();
+        // dd($companies);
+        foreach ($companies as $company)
+        {
+            $customers = Customer::withoutGlobalScopes()->where('ins',$company->id)->get();
+            // dd($customers);
+            foreach ($customers as $customer) {
+                $pdfOutput = $this->generatePdf($customer->id, $company);
+
+                $email_input = [
+                    'text' => "Monthly Customer Statement from " . $company->name.' if for more information email Accountant '.$company->email,
+                    'subject' => 'Monthly Customer Statement',
+                    'mail_to' => $customer->email,
+                    'statement' => $pdfOutput,
+                    'customer_name' => @$customer->name,
+                ];
+                (new RosemailerRepository)->send($email_input['text'], $email_input);
+            }
+        }
+        
+        return response()->json(['message' => 'Monthly statements sent.']);
     }
 
 }
